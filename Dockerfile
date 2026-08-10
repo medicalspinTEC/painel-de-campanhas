@@ -16,7 +16,7 @@ COPY prisma ./prisma/
 
 # --ignore-scripts: o postinstall (prisma generate) roda no builder, onde
 # o schema completo e a saída lib/generated já estão disponíveis.
-RUN pnpm install --frozen-lockfile --ignore-scripts
+RUN npm install --legacy-peer-deps --frozen-lockfile
 
 # ================= BUILDER =================
 FROM base AS builder
