@@ -11,12 +11,13 @@ WORKDIR /app
 # ================= DEPS =================
 FROM base AS deps
 
-COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* .npmrc* ./
 COPY prisma ./prisma/
+COPY prisma.config.ts ./
 
-# --ignore-scripts: o postinstall (prisma generate) roda no builder, onde
-# o schema completo e a saída lib/generated já estão disponíveis.
-RUN npm install --legacy-peer-deps --frozen-lockfile
+# onlyBuiltDependencies (pnpm-workspace.yaml) libera os build scripts do
+# Prisma; o postinstall (prisma generate) roda aqui usando o schema + config.
+RUN pnpm install --frozen-lockfile
 
 # ================= BUILDER =================
 FROM base AS builder

@@ -1,5 +1,25 @@
+# Não abortar quando build scripts ficam pendentes de aprovação.
+# O Prisma 7 usa driver adapter (@prisma/adapter-pg), então não precisa do
+# engine binário; msw só é usado em testes. Assim o build no Docker não falha
+# com ERR_PNPM_IGNORED_BUILDS.
+strictDepBuilds: false
+
+# Ainda assim, liberamos explicitamente os builds destes pacotes quando possível.
+onlyBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - prisma
+  - msw
+  - sharp
+  - esbuild
+
+# Overrides migrados de package.json — o pnpm 11 não lê mais "pnpm.overrides"
+# do package.json.
+overrides:
+  hono: 4.12.25
+  next: 16.3.0
+
 allowBuilds:
   '@prisma/engines': set this to true or false
   msw: set this to true or false
   prisma: set this to true or false
-  sharp: set this to true or false
