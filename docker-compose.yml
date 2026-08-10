@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-campanhas}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-campanhas}
+      POSTGRES_DB: ${POSTGRES_DB:-campanhas}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-campanhas} -d ${POSTGRES_DB:-campanhas}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Roda `prisma migrate deploy` uma vez e encerra. A app só sobe depois.
+  migrate:
+    build:
+      context: .
+      target: migrator
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://campanhas:campanhas@db:5432/campanhas?schema=public}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://campanhas:campanhas@db:5432/campanhas?schema=public}
+      # Integrações externas (opcionais — têm defaults no código).
+      EVOLUTION_API_URL: ${EVOLUTION_API_URL:-}
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY:-}
+      EVOLUTION_INSTANCE_NAME: ${EVOLUTION_INSTANCE_NAME:-}
+      N8N_DISPAROS_WEBHOOK_URL: ${N8N_DISPAROS_WEBHOOK_URL:-}
+      INGEST_TOKEN: ${INGEST_TOKEN:-}
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  db_data:

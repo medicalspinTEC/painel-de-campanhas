@@ -1,0 +1,254 @@
+// Schema do painel de follow-up para WhatsApp.
+// Após alterar este arquivo rode: pnpm prisma:generate && pnpm prisma:migrate
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum LeadStatus {
+  novo
+  em_campanha
+  respondeu
+  qualificado
+  encerrado
+}
+
+enum CampaignStatus {
+  ativa
+  pausada
+  encerrada
+  rascunho
+}
+
+enum EventType {
+  mensagem_enviada
+  falha
+  resposta
+  qualificado
+  campanha_iniciada
+  campanha_encerrada
+}
+
+/// Nível de severidade dos logs de sistema (não confundir com eventos de lead).
+enum AppLogNivel {
+  info
+  aviso
+  erro
+  critico
+}
+
+model Lead {
+  id       String @id @default(cuid())
+  nome     String
+  telefone String
+
+  // Dimensões de segmentação. Ficam como texto para que novos produtos ou
+  // marcas não exijam uma migration de enum.
+  produto String
+  marca   String
+  persona String
+  regiao  String
+
+  status LeadStatus @default(novo)
+
+  campanhaId String?
+  campanha   Campaign? @relation(fields: [campanhaId], references: [id], onDelete: SetNull)
+
+  campanhas LeadCampaign[]
+
+  entradaCampanhaEm DateTime?
+  criadoEm          DateTime  @default(now())
+  atualizadoEm      DateTime  @updatedAt
+
+  eventos TimelineEvent[]
+
+  // A listagem ordena por data de criação e filtra por campanha e status.
+  @@index([campanhaId])
+  @@index([status])
+  @@index([criadoEm])
+}
+
+model Campaign {
+  id        String         @id @default(cuid())
+  nome      String
+  descricao String?
+  status    CampaignStatus @default(rascunho)
+
+  recorrenciaDias Int       @default(7)
+  dataFinal       DateTime?
+
+  // Marca o momento do último (re)início da campanha. A dedupe de envio só
+  // considera mensagens disparadas a partir daqui, então reiniciar a campanha
+  // permite reenviar a mensagem inicial aos leads.
+  reiniciadaEm DateTime?
+
+  // Filtros de público da campanha (nulo = sem restrição na dimensão).
+  filtroProduto String?
+  filtroMarca   String?
+  filtroPersona String?
+  filtroRegiao  String?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  mensagens    CampaignMessage[]
+  leads        Lead[]
+  leadCampaigns LeadCampaign[]
+  eventos      TimelineEvent[]
+
+  @@index([status])
+  @@index([criadoEm])
+}
+
+model LeadCampaign {
+  id String @id @default(cuid())
+
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  campanhaId String
+  campanha   Campaign @relation(fields: [campanhaId], references: [id], onDelete: Cascade)
+
+  criadoEm DateTime @default(now())
+
+  // Momento agendado para a próxima mensagem deste lead nesta campanha.
+  // Definido ao pular manualmente uma mensagem: zera o contador e passa a
+  // contar até o próximo disparo (ou até a recorrência, se não houver mais).
+  proximaMensagemEm DateTime?
+
+  // Marca um reinício de ciclo apenas para este lead (ex.: pular a partir da
+  // última mensagem). Entra no cálculo de dedupe junto de Campaign.reiniciadaEm
+  // para liberar o reenvio da sequência a este lead específico.
+  cicloReiniciadoEm DateTime?
+
+  @@unique([leadId, campanhaId])
+  @@index([campanhaId])
+  @@index([leadId])
+}
+
+model CampaignMessage {
+  id      String @id @default(cuid())
+  dia     Int
+  horario String
+  texto   String
+
+  campanhaId String
+  campanha   Campaign @relation(fields: [campanhaId], references: [id], onDelete: Cascade)
+
+  eventos TimelineEvent[]
+
+  // A sequência é sempre lida na ordem do dia de disparo.
+  @@index([campanhaId, dia])
+}
+
+/// Preferências da engine. Tabela de linha única: `id` é fixo em "default"
+/// para que um upsert simples sirva tanto para criar quanto para atualizar.
+model Settings {
+  id String @id @default("default")
+
+  remetente  String @default("Engine Follow-up")
+  numero     String @default("")
+  assinatura String @default("")
+
+  fuso                String  @default("America/Sao_Paulo")
+  janelaInicio        String  @default("09:00")
+  janelaFim           String  @default("20:00")
+  limiteDiario        Int     @default(300)
+  respeitarJanela     Boolean @default(true)
+  pausarNoFimDeSemana Boolean @default(true)
+  notificarFalhas     Boolean @default(true)
+
+  atualizadoEm DateTime @updatedAt
+}
+
+/// Webhooks de saída configurados na página de Integrações.
+/// O limite de 5 registros é aplicado na camada de serviço.
+model Webhook {
+  id     String  @id @default(cuid())
+  nome   String
+  url    String
+  secret String  @default("")
+  ativo  Boolean @default(true)
+
+  /// Chaves dos eventos assinados (ver lib/webhook-events.ts).
+  /// Guardadas como lista de texto para que novos eventos não exijam migration.
+  eventos String[]
+
+  ultimoEnvioEm     DateTime?
+  ultimoEnvioStatus Int?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@index([criadoEm])
+}
+
+/// Erros e avisos de sistema — Evolution API, banco de dados, actions etc.
+/// Separado de TimelineEvent porque não pertence ao contexto de um lead.
+model AppLog {
+  id      String      @id @default(cuid())
+  nivel   AppLogNivel @default(erro)
+  origem  String      /// Ex: "evolution", "campaigns", "leads", "webhooks"
+  mensagem String
+  detalhes String?    /// Stack trace, resposta HTTP, etc.
+  data    DateTime    @default(now())
+
+  @@index([data])
+  @@index([nivel, data])
+  @@index([origem, data])
+}
+
+model TimelineEvent {
+  id        String    @id @default(cuid())
+  tipo      EventType
+  descricao String
+  detalhes  String?
+  data      DateTime  @default(now())
+  sucesso   Boolean   @default(true)
+
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  campanhaId String?
+  campanha   Campaign? @relation(fields: [campanhaId], references: [id], onDelete: SetNull)
+
+  mensagemId String?
+  mensagem   CampaignMessage? @relation(fields: [mensagemId], references: [id], onDelete: SetNull)
+
+  // O feed e os relatórios varrem por data, tipo e agrupam por lead/campanha.
+  @@index([data])
+  @@index([tipo, data])
+  @@index([leadId, data])
+  @@index([campanhaId])
+  @@index([mensagemId])
+}
+
+/// Token de autenticação para o webhook de entrada (linha única: id="default").
+/// Permite que sistemas externos enviem eventos para este painel via POST.
+model InboundWebhookToken {
+  id    String  @id @default("default")
+  token String  /// Valor gerado: whin_<64 chars hex>
+  ativo Boolean @default(true)
+
+  ultimoUsoEm DateTime?
+  criadoEm    DateTime  @default(now())
+  atualizadoEm DateTime @updatedAt
+}
+
+/// Eventos recebidos pelo webhook de entrada (/api/webhook/entrada).
+/// Armazenados para auditoria e visibilidade na UI.
+model InboundEvent {
+  id      String   @id @default(cuid())
+  evento  String   /// Nome do evento enviado pelo sistema externo.
+  origem  String?  /// IP/host de origem capturado do header x-forwarded-for.
+  payload Json     /// Corpo completo recebido (dados livres).
+  recebidoEm DateTime @default(now())
+
+  @@index([recebidoEm])
+  @@index([evento, recebidoEm])
+}
