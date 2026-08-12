@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { decidirCiclo } from "@/lib/campaign-engine-schedule"
 import { recordAppLog } from "@/services/app-logs"
 import { sendCampaignMessageToLead } from "@/services/evolution"
 import { assignCampaign } from "@/services/leads"
@@ -424,40 +425,6 @@ export async function duplicateCampaign(id: string): Promise<Campaign | null> {
 // Agendamento por lead / pular mensagem
 // ---------------------------------------------------------------------------
 
-/**
- * Calcula o próximo horário previsto de uma mensagem a partir da entrada do
- * lead na campanha. Espelha a lógica exibida na página, mas roda no servidor
- * para servir de fallback quando não há um agendamento manual salvo.
- */
-function calcularProximaMensagemPrevista(
-  entradaCampanhaEm: Date | null,
-  campanha: { recorrenciaDias: number; mensagens: Array<{ dia: number; horario: string }> },
-): Date | null {
-  if (!entradaCampanhaEm) return null
-  const entrada = new Date(entradaCampanhaEm)
-  const agora = Date.now()
-  const ordenadas = [...campanha.mensagens].sort((a, b) => a.dia - b.dia)
-
-  // A recorrência é o tempo de espera DEPOIS que a última mensagem foi enviada,
-  // não o intervalo entre mensagens. Cada ciclo dura, portanto, o dia da última
-  // mensagem (span da sequência) + os dias de recorrência antes de reiniciar.
-  const ultimoDia = ordenadas.length ? ordenadas[ordenadas.length - 1].dia : 0
-  const diasPorCiclo = ultimoDia + campanha.recorrenciaDias
-
-  for (let ciclo = 0; ciclo < 6; ciclo += 1) {
-    const base = new Date(entrada)
-    base.setDate(base.getDate() + ciclo * diasPorCiclo)
-    for (const mensagem of ordenadas) {
-      const prevista = new Date(base)
-      prevista.setDate(prevista.getDate() + mensagem.dia)
-      const [hora, minuto] = mensagem.horario.split(":").map(Number)
-      prevista.setHours(hora || 0, minuto || 0, 0, 0)
-      if (prevista.getTime() > agora) return prevista
-    }
-  }
-  return null
-}
-
 export interface CampaignLeadSchedule {
   /** Momento previsto do próximo disparo (ISO) ou null se indefinido. */
   proximaMensagemEm: string | null
@@ -469,9 +436,9 @@ export interface CampaignLeadSchedule {
 
 /**
  * Devolve, por lead vinculado, o agendamento do próximo disparo desta campanha.
- * Usa o agendamento manual (definido ao pular) quando disponível; senão calcula
- * a partir da entrada do lead e, quando a sequência já terminou, projeta a
- * próxima recorrência.
+ * Usa exatamente o mesmo núcleo (`decidirCiclo`) que a engine de disparo, para
+ * que o cronômetro exibido corresponda ao instante em que a engine realmente
+ * envia a próxima mensagem.
  */
 export async function getCampaignSchedule(campanhaId: string): Promise<Record<string, CampaignLeadSchedule>> {
   const campanha = await prisma.campaign.findUnique({
@@ -479,7 +446,7 @@ export async function getCampaignSchedule(campanhaId: string): Promise<Record<st
     select: {
       recorrenciaDias: true,
       reiniciadaEm: true,
-      mensagens: { select: { id: true, dia: true, horario: true }, orderBy: { dia: "asc" } },
+      mensagens: { select: { id: true, dia: true, horario: true, texto: true }, orderBy: { dia: "asc" } },
     },
   })
   if (!campanha) return {}
@@ -490,7 +457,6 @@ export async function getCampaignSchedule(campanhaId: string): Promise<Record<st
       leadId: true,
       criadoEm: true,
       cicloReiniciadoEm: true,
-      proximaMensagemEm: true,
       lead: { select: { entradaCampanhaEm: true } },
     },
   })
@@ -502,38 +468,48 @@ export async function getCampaignSchedule(campanhaId: string): Promise<Record<st
   })
 
   const temMensagens = campanha.mensagens.length > 0
+  const agora = new Date()
   const resultado: Record<string, CampaignLeadSchedule> = {}
 
   for (const vinculo of vinculos) {
-    const marcos = [campanha.reiniciadaEm, vinculo.criadoEm, vinculo.cicloReiniciadoEm].filter(Boolean) as Date[]
-    const corte = marcos.length ? new Date(Math.max(...marcos.map((d) => d.getTime()))) : null
+    const marcos = [
+      campanha.reiniciadaEm,
+      vinculo.criadoEm,
+      vinculo.cicloReiniciadoEm,
+      vinculo.lead.entradaCampanhaEm,
+    ].filter(Boolean) as Date[]
+    const cycleAnchor = marcos.length
+      ? new Date(Math.max(...marcos.map((d) => d.getTime())))
+      : vinculo.criadoEm
 
-    const enviadosDoLead = new Set(
+    const enviadosIds = new Set(
       enviados
         .filter(
-          (e) =>
-            e.leadId === vinculo.leadId && e.mensagemId && (!corte || e.data.getTime() >= corte.getTime()),
+          (e) => e.leadId === vinculo.leadId && e.mensagemId && e.data.getTime() >= cycleAnchor.getTime(),
         )
         .map((e) => e.mensagemId as string),
     )
-    const pendentes = campanha.mensagens.filter((m) => !enviadosDoLead.has(m.id))
-    const aguardandoRecorrencia = temMensagens && pendentes.length === 0
 
     let proxima: Date | null = null
-    if (vinculo.proximaMensagemEm && vinculo.proximaMensagemEm.getTime() > Date.now()) {
-      proxima = vinculo.proximaMensagemEm
-    } else if (aguardandoRecorrencia) {
-      // Toda a sequência já foi percorrida. O reinício acontece a recorrência de
-      // dias DEPOIS da última mensagem (dia máximo da sequência a partir do
-      // início do ciclo), e não a partir do início do ciclo em si.
-      const ultimoDia = campanha.mensagens.length
-        ? campanha.mensagens[campanha.mensagens.length - 1].dia
-        : 0
-      const base = corte ?? new Date()
-      proxima = new Date(base)
-      proxima.setDate(proxima.getDate() + ultimoDia + campanha.recorrenciaDias)
-    } else {
-      proxima = calcularProximaMensagemPrevista(vinculo.lead.entradaCampanhaEm, campanha)
+    let aguardandoRecorrencia = false
+
+    if (temMensagens) {
+      const decisao = decidirCiclo(
+        { cycleAnchor, mensagens: campanha.mensagens, enviadosIds, recorrenciaDias: campanha.recorrenciaDias },
+        agora,
+      )
+      if (decisao.tipo === "enviar") {
+        // Alvo já vencido: a engine envia no próximo tick — mostramos "agora".
+        proxima = agora
+        aguardandoRecorrencia = decisao.aguardandoRecorrencia
+      } else if (decisao.tipo === "aguardar") {
+        proxima = decisao.proximaEm
+        aguardandoRecorrencia = decisao.aguardandoRecorrencia
+      } else {
+        // reiniciar: o novo ciclo começa agora (dia 0 sai no próximo tick).
+        proxima = agora
+        aguardandoRecorrencia = false
+      }
     }
 
     resultado[vinculo.leadId] = {

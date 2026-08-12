@@ -39,7 +39,9 @@ type LeadRecord = {
   campanhaId: string | null
   entradaCampanhaEm: Date | null
   criadoEm: Date
-  campanhas: Array<{ campanhaId: string; campanha?: { nome: string } | null }>
+  // Opcional: `createLead`/`updateLead` retornam o registro sem este relacionamento.
+  // `toLead` não o utiliza; as listagens que precisam dele usam `leadRowSelect`.
+  campanhas?: Array<{ campanhaId: string; campanha?: { nome: string } | null }>
 }
 
 function toLead(record: LeadRecord): Lead {

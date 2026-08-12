@@ -53,7 +53,7 @@ async function getEvolutionInstanceStatus() {
 
   try {
     const response = await fetch(`${apiUrl}/instance/connectionState/${instanceName}`, {
-      headers: { apikey: apiKey },
+      headers: { apikey: apiKey ?? "" },
       next: { revalidate: 15 },
     })
 
