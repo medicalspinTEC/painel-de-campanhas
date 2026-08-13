@@ -1,30 +1,40 @@
-import { format, formatDistanceToNow } from "date-fns"
+import { formatDistanceToNow } from "date-fns"
+import { formatInTimeZone, toZonedTime } from "date-fns-tz"
 import { ptBR } from "date-fns/locale"
 
+/**
+ * Fuso fixo da aplicação. Todas as datas são exibidas em horário do Brasil,
+ * independentemente do fuso do servidor (que costuma ser UTC em produção).
+ * As datas no banco são guardadas em UTC; aqui convertemos para São Paulo na
+ * hora de exibir, então o resultado é sempre o mesmo em localhost e no servidor.
+ */
+const TZ = "America/Sao_Paulo"
+
 export function formatDate(value: string | Date) {
-  return format(new Date(value), "dd/MM/yyyy", { locale: ptBR })
+  return formatInTimeZone(new Date(value), TZ, "dd/MM/yyyy", { locale: ptBR })
 }
 
 export function formatDateTime(value: string | Date) {
-  return format(new Date(value), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
+  return formatInTimeZone(new Date(value), TZ, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
 }
 
 export function formatTime(value: string | Date) {
-  return format(new Date(value), "HH:mm", { locale: ptBR })
+  return formatInTimeZone(new Date(value), TZ, "HH:mm", { locale: ptBR })
 }
 
 export function formatDayMonth(value: string | Date) {
-  return format(new Date(value), "dd 'de' MMM", { locale: ptBR })
+  return formatInTimeZone(new Date(value), TZ, "dd 'de' MMM", { locale: ptBR })
 }
 
 export function formatDayLabel(value: string | Date) {
-  const data = new Date(value)
-  const hoje = new Date()
-  const ontem = new Date()
+  // Compara os dias já no fuso do Brasil para "Hoje"/"Ontem" ficarem corretos.
+  const data = toZonedTime(new Date(value), TZ)
+  const hoje = toZonedTime(new Date(), TZ)
+  const ontem = new Date(hoje)
   ontem.setDate(hoje.getDate() - 1)
   if (data.toDateString() === hoje.toDateString()) return "Hoje"
   if (data.toDateString() === ontem.toDateString()) return "Ontem"
-  return format(data, "EEEE, dd 'de' MMMM", { locale: ptBR })
+  return formatInTimeZone(new Date(value), TZ, "EEEE, dd 'de' MMMM", { locale: ptBR })
 }
 
 export function formatRelative(value: string | Date) {

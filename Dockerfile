@@ -3,7 +3,12 @@
 # ================= BASE =================
 FROM node:22-alpine AS base
 
-RUN apk add --no-cache libc6-compat openssl
+# `tzdata` instala o banco de fusos (/usr/share/zoneinfo); sem ele o Alpine
+# ignora a variável TZ. Fixamos o fuso do Brasil para que datas e agendamentos
+# fiquem iguais ao localhost, independente do fuso do host (normalmente UTC).
+RUN apk add --no-cache libc6-compat openssl tzdata
+ENV TZ=America/Sao_Paulo
+
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app

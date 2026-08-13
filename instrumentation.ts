@@ -7,6 +7,16 @@
  * externo. Para escalar em múltiplas instâncias, desative este timer
  * (CAMPAIGN_ENGINE_DISABLED=1) e acione `POST /api/cron` por um agendador único.
  */
+// Fixa o fuso do processo em horário do Brasil já no carregamento do módulo
+// (roda antes de qualquer renderização ou tick da engine). Isso garante que
+// `new Date()`, `setHours`, `getHours` e as formatações de data usem sempre o
+// horário de São Paulo, mesmo quando o servidor está em UTC. O ideal é que o
+// TZ já venha do ambiente (Dockerfile/compose); aqui é a rede de segurança para
+// qualquer plataforma que não o defina.
+if (!process.env.TZ) {
+  process.env.TZ = "America/Sao_Paulo"
+}
+
 export async function register() {
   // Só roda no runtime Node (não no Edge) e uma única vez por processo.
   if (process.env.NEXT_RUNTIME !== "nodejs") return
