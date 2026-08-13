@@ -12,9 +12,10 @@ import { emitWebhookEvent } from "@/services/webhooks"
  *   2. extrai o telefone do `remoteJid` (formato "55DDNUMERO@s.whatsapp.net");
  *   3. localiza o lead correspondente;
  *   4. se o lead estiver em mais de uma campanha, escolhe aquela que enviou a
- *      última mensagem;
+ *      última mensagem (é ela quem "qualifica" o lead);
  *   5. registra a resposta na timeline (visível no feed de eventos);
- *   6. marca o lead como qualificado e o remove daquela campanha.
+ *   6. marca o lead como qualificado, atribuindo a qualificação à campanha da
+ *      última mensagem, e o remove de TODAS as campanhas em que estava.
  */
 
 export interface RespostaLeadResultado {
@@ -189,40 +190,39 @@ export async function processarRespostaLead(payload: unknown): Promise<RespostaL
     },
   })
 
-  // 6. Marca como qualificado e registra o evento correspondente.
+  // 6. Marca como qualificado e registra o evento correspondente. Mesmo que o
+  //    lead esteja em várias campanhas, a qualificação é atribuída à campanha
+  //    que enviou a última mensagem (campanhaAlvo) e ele sai de todas.
   await prisma.timelineEvent.create({
     data: {
       leadId: lead.id,
       campanhaId: campanhaAlvo?.id ?? null,
       tipo: "qualificado",
-      descricao: "Lead qualificado após responder à campanha.",
-      detalhes: campanhaAlvo ? `Removido da campanha ${campanhaAlvo.nome}.` : null,
+      descricao: campanhaAlvo
+        ? `Lead qualificado pela campanha ${campanhaAlvo.nome}.`
+        : "Lead qualificado após responder no WhatsApp.",
+      detalhes:
+        campanhaIds.length > 1
+          ? `Removido de ${campanhaIds.length} campanhas após qualificação.`
+          : campanhaAlvo
+            ? `Removido da campanha ${campanhaAlvo.nome}.`
+            : null,
       data: agora,
       sucesso: true,
     },
   })
 
-  // 7. Remove o lead da campanha-alvo e recalcula a campanha principal.
-  if (campanhaAlvo) {
-    await prisma.leadCampaign.deleteMany({ where: { leadId: lead.id, campanhaId: campanhaAlvo.id } })
-  }
-  const restantes = await prisma.leadCampaign.findMany({
-    where: { leadId: lead.id },
-    orderBy: { criadoEm: "desc" },
-    select: { campanhaId: true },
-  })
-  const novaCampanhaPrincipal =
-    lead.campanhaId && lead.campanhaId !== campanhaAlvo?.id
-      ? lead.campanhaId
-      : restantes[0]?.campanhaId ?? null
+  // 7. Remove o lead de TODAS as campanhas em que estava vinculado e zera a
+  //    campanha principal, já que ele deixou de participar de qualquer uma.
+  await prisma.leadCampaign.deleteMany({ where: { leadId: lead.id } })
 
   const statusAnterior = lead.status
   const leadAtualizado = await prisma.lead.update({
     where: { id: lead.id },
     data: {
       status: "qualificado",
-      campanhaId: novaCampanhaPrincipal,
-      entradaCampanhaEm: novaCampanhaPrincipal ? undefined : null,
+      campanhaId: null,
+      entradaCampanhaEm: null,
     },
     select: {
       id: true,
