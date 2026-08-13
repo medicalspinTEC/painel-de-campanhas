@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { ArrowLeft, CalendarClock, MessageSquare, Send, Users } from "lucide-react"
 
 import { CampaignLeadsTable, type CampaignLeadItem } from "@/components/features/campaigns/campaign-leads-table"
+import { CampaignResponses } from "@/components/features/campaigns/campaign-responses"
 import { KpiCard } from "@/components/shared/kpi-card"
 import { LinkButton } from "@/components/shared/link-button"
 import { PageHeader } from "@/components/shared/page-header"
@@ -10,12 +11,17 @@ import { CampaignStatusBadge } from "@/components/shared/status-badges"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatDate, formatNumber, formatPercent, renderTemplate } from "@/lib/format"
-import { getCampaign, getCampaignSchedule } from "@/services/campaigns"
+import { getCampaign, getCampaignResponses, getCampaignSchedule } from "@/services/campaigns"
 import { listLeads } from "@/services/leads"
 
 export default async function CampanhaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [campanha, leads, agenda] = await Promise.all([getCampaign(id), listLeads(), getCampaignSchedule(id)])
+  const [campanha, leads, agenda, respostas] = await Promise.all([
+    getCampaign(id),
+    listLeads(),
+    getCampaignSchedule(id),
+    getCampaignResponses(id),
+  ])
   if (!campanha) notFound()
 
   const leadsDaCampanha = leads.filter((l) => l.campanhasIds.includes(campanha.id))
@@ -130,6 +136,20 @@ export default async function CampanhaPage({ params }: { params: Promise<{ id: s
         </CardHeader>
         <CardContent>
           <CampaignLeadsTable campanhaId={campanha.id} leads={itensLeads} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Respostas recebidas</CardTitle>
+          <CardDescription>
+            {respostas.length === 0
+              ? "Leads que responderem às mensagens desta campanha aparecem aqui."
+              : `${formatNumber(respostas.length)} ${respostas.length === 1 ? "resposta registrada" : "respostas registradas"} nesta campanha.`}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <CampaignResponses respostas={respostas} />
         </CardContent>
       </Card>
     </div>

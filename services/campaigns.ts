@@ -4,7 +4,7 @@ import { recordAppLog } from "@/services/app-logs"
 import { sendCampaignMessageToLead } from "@/services/evolution"
 import { assignCampaign } from "@/services/leads"
 import { emitWebhookEvent } from "@/services/webhooks"
-import type { Campaign, CampaignMessage, CampaignStatus } from "@/types"
+import type { Campaign, CampaignMessage, CampaignStatus, LeadStatus } from "@/types"
 
 export interface CampaignWithStats extends Campaign {
   totalLeads: number
@@ -649,6 +649,48 @@ export async function skipToNextMessage(leadId: string, campanhaId: string): Pro
     aguardandoRecorrencia,
     proximaMensagemEm: proxima.toISOString(),
   }
+}
+
+export interface CampaignResponse {
+  /** Id do evento de timeline (tipo "resposta"). */
+  id: string
+  leadId: string
+  leadNome: string
+  leadTelefone: string
+  leadStatus: LeadStatus
+  /** Texto/observação da resposta, quando a engine informa o conteúdo. */
+  detalhes: string | null
+  data: string
+}
+
+/**
+ * Leads que responderam às mensagens desta campanha. Cada resposta é um
+ * `TimelineEvent` do tipo "resposta" gravado por `recordMessageEvent`. Retorna
+ * um item por resposta (o mesmo lead pode responder mais de uma vez), do mais
+ * recente para o mais antigo.
+ */
+export async function getCampaignResponses(campanhaId: string): Promise<CampaignResponse[]> {
+  const respostas = await prisma.timelineEvent.findMany({
+    where: { campanhaId, tipo: "resposta" },
+    orderBy: { data: "desc" },
+    select: {
+      id: true,
+      leadId: true,
+      detalhes: true,
+      data: true,
+      lead: { select: { nome: true, telefone: true, status: true } },
+    },
+  })
+
+  return respostas.map((r) => ({
+    id: r.id,
+    leadId: r.leadId,
+    leadNome: r.lead?.nome ?? "Lead removido",
+    leadTelefone: r.lead?.telefone ?? "",
+    leadStatus: (r.lead?.status ?? "novo") as LeadStatus,
+    detalhes: r.detalhes ?? null,
+    data: r.data.toISOString(),
+  }))
 }
 
 export async function deleteCampaign(id: string): Promise<void> {
