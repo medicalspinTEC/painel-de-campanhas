@@ -1,5 +1,7 @@
 import { randomBytes } from "node:crypto"
 import { prisma } from "@/lib/prisma"
+import { recordAppLog } from "@/services/app-logs"
+import { processarRespostaLead } from "@/services/lead-response"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = prisma as any
@@ -85,6 +87,24 @@ export async function receberEvento(
       data: { ultimoUsoEm: new Date() },
     }),
   ])
+
+  /*
+   * Eventos com efeito de negócio são processados após serem persistidos. A
+   * falha no processamento não invalida o recebimento (o evento já foi gravado
+   * para auditoria), então o erro é apenas registrado nos logs.
+   */
+  if (evento === "RespostaLead") {
+    try {
+      await processarRespostaLead(payload)
+    } catch (error) {
+      await recordAppLog({
+        nivel: "erro",
+        origem: "inbound-webhook",
+        mensagem: "Falha ao processar evento RespostaLead.",
+        detalhes: error,
+      })
+    }
+  }
 
   return true
 }
