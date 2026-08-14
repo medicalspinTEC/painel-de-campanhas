@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import {
   BarChart3,
   LayoutDashboard,
+  LogOut,
   MessageSquareText,
   Plug,
   Radio,
@@ -13,6 +14,8 @@ import {
   Users,
   Zap,
 } from "lucide-react"
+
+import { logoutAction } from "@/app/actions/auth"
 
 import {
   Sidebar,
@@ -211,6 +214,21 @@ export function AppSidebar({ instanceName, instanceState, profileImageUrl }: App
               : `Aguardando conexão da instância ${process.env.EVOLUTION_INSTANCE_NAME}.`}
           </p>
         </div>
+
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <form action={logoutAction} className="w-full">
+              <SidebarMenuButton
+                type="submit"
+                title="Sair"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="size-4" />
+                <span>Sair</span>
+              </SidebarMenuButton>
+            </form>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
