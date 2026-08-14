@@ -376,9 +376,8 @@ function EndpointCard({ endpoint, baseUrl, apiToken }: { endpoint: EndpointView;
               {doc.headers?.length ? <FieldTable titulo="Headers" campos={doc.headers} /> : null}
               {doc.bodyFields?.length ? <FieldTable titulo="Corpo (JSON)" campos={doc.bodyFields} /> : null}
 
-              <Tabs defaultValue="testar">
+              <Tabs defaultValue="curl">
                 <TabsList>
-                  <TabsTrigger value="testar">Testar</TabsTrigger>
                   {doc.requestExample ? <TabsTrigger value="requisicao">Requisição</TabsTrigger> : null}
                   <TabsTrigger value="resposta">Respostas</TabsTrigger>
                   <TabsTrigger value="curl">curl</TabsTrigger>
