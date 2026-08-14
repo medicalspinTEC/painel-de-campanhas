@@ -1,8 +1,11 @@
+import { headers } from "next/headers"
 import { notFound } from "next/navigation"
 import { Braces, Lock, Radio } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { RouteExplorer, type EndpointView } from "@/components/rotas-secretas/route-explorer"
+import { TokenPanel } from "@/components/rotas-secretas/token-panel"
+import { getConfiguredApiToken } from "@/lib/api-auth"
 import { getEndpointDoc } from "@/lib/api-docs"
 import { listApiRoutes } from "@/lib/api-routes"
 
@@ -45,6 +48,14 @@ export default async function RotasSecretasPage({
     const { token } = await searchParams
     if (token !== esperado) notFound()
   }
+
+  // Deriva a URL base a partir dos headers da requisição para montar os
+  // exemplos de curl e o painel de testes já com o host correto.
+  const h = await headers()
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? ""
+  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https")
+  const baseUrl = host ? `${proto}://${host}` : ""
+  const apiToken = getConfiguredApiToken()
 
   const rotas = await listApiRoutes()
 
@@ -107,12 +118,14 @@ export default async function RotasSecretasPage({
         </div>
       </header>
 
+      <TokenPanel apiToken={apiToken} baseUrl={baseUrl} className="mb-8" />
+
       {endpoints.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           Nenhuma rota de API encontrada no diretório <code className="font-mono text-xs">app/</code>.
         </p>
       ) : (
-        <RouteExplorer grupos={grupos} />
+        <RouteExplorer grupos={grupos} baseUrl={baseUrl} apiToken={apiToken} />
       )}
     </main>
   )

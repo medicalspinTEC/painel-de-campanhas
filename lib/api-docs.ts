@@ -56,7 +56,8 @@ export const ENUMS = {
   messageKind: ["enviada", "falha", "resposta", "agendada"],
 } as const
 
-const SESSAO = "Requer sessão. O proxy.ts redireciona para /login sem o cookie `campanhas_session` válido."
+const SESSAO =
+  "Requer autenticação. Aceita o cookie de sessão `campanhas_session` (painel) ou o token estático `API_TOKEN` via header `Authorization: Bearer <token>` (ou `x-api-token`). Sem credencial válida, retorna 401."
 
 export const API_DOCS: Record<string, EndpointDoc> = {
   // ---------------------------------------------------------------- LEADS
