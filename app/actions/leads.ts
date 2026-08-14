@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 
-import { assignCampaign, createLead, deleteLead, setLeadStatus, updateLead, type LeadInput } from "@/services/leads"
+import { assignCampaign, createLead, deleteLead, setLeadStatus, updateLead, updateLeadNotes, type LeadInput } from "@/services/leads"
 import { recordAppLog } from "@/services/app-logs"
 import { MARCAS, PERSONAS, PRODUTOS, REGIOES, type LeadStatus } from "@/types"
 
@@ -112,6 +112,21 @@ export async function setLeadStatusAction(id: string, status: LeadStatus) {
   revalidarLeads()
   revalidatePath(`/leads/${id}`)
   return { ok: true, message: "Status atualizado." }
+}
+
+export async function updateLeadNotesAction(id: string, notas: string) {
+  if (notas.length > 5000) {
+    return { ok: false, message: "As notas são muito longas (máximo de 5000 caracteres)." }
+  }
+  try {
+    const atualizado = await updateLeadNotes(id, notas)
+    if (!atualizado) return { ok: false, message: "Lead não encontrado." }
+  } catch (error) {
+    await recordAppLog({ origem: "leads", mensagem: `Falha ao atualizar notas do lead id=${id}.`, detalhes: error })
+    return { ok: false, message: "Não foi possível salvar as notas. Verifique a conexão com o banco." }
+  }
+  revalidatePath(`/leads/${id}`)
+  return { ok: true, message: "Notas salvas." }
 }
 
 export async function assignCampaignAction(leadIds: string[], campanhaId: string | null) {

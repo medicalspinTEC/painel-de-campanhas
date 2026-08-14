@@ -56,6 +56,10 @@ model Lead {
 
   status LeadStatus @default(novo)
 
+  // Anotações livres da equipe sobre o lead. Opcionais e editáveis a qualquer
+  // momento pela página de detalhe do lead.
+  notas String?
+
   campanhaId String?
   campanha   Campaign? @relation(fields: [campanhaId], references: [id], onDelete: SetNull)
 

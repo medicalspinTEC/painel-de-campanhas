@@ -36,6 +36,7 @@ type LeadRecord = {
   persona: string
   regiao: string
   status: LeadStatus
+  notas: string | null
   campanhaId: string | null
   entradaCampanhaEm: Date | null
   criadoEm: Date
@@ -54,6 +55,7 @@ function toLead(record: LeadRecord): Lead {
     persona: record.persona as Lead["persona"],
     regiao: record.regiao as Lead["regiao"],
     status: record.status,
+    notas: record.notas ?? null,
     campanhaId: record.campanhaId,
     criadoEm: record.criadoEm.toISOString(),
     entradaCampanhaEm: record.entradaCampanhaEm?.toISOString() ?? null,
@@ -74,6 +76,7 @@ const leadRowSelect = {
   persona: true,
   regiao: true,
   status: true,
+  notas: true,
   campanhaId: true,
   entradaCampanhaEm: true,
   criadoEm: true,
@@ -411,6 +414,24 @@ export async function setLeadStatus(id: string, status: LeadStatus): Promise<Lea
   await emitirStatus(resultado, lead.status)
 
   return resultado
+}
+
+/**
+ * Atualiza as anotações livres do lead. Notas são opcionais: uma string vazia
+ * limpa o campo (guardado como `null`). Não gera evento nem webhook — é uma
+ * informação interna da equipe, sem reflexo na engine de follow-up.
+ */
+export async function updateLeadNotes(id: string, notas: string): Promise<Lead | null> {
+  const existe = await prisma.lead.findUnique({ where: { id }, select: { id: true } })
+  if (!existe) return null
+
+  const limpo = notas.trim()
+  const lead = await prisma.lead.update({
+    where: { id },
+    data: { notas: limpo.length > 0 ? limpo : null },
+  })
+
+  return toLead(lead)
 }
 
 export async function deleteLead(id: string): Promise<void> {

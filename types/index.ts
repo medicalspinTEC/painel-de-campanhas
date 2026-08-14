@@ -28,6 +28,7 @@ export interface Lead {
   regiao: Regiao
   campanhaId: string | null
   status: LeadStatus
+  notas: string | null
   criadoEm: string
   entradaCampanhaEm: string | null
 }

@@ -1214,6 +1214,7 @@ export const LeadScalarFieldEnum = {
   persona: 'persona',
   regiao: 'regiao',
   status: 'status',
+  notas: 'notas',
   campanhaId: 'campanhaId',
   entradaCampanhaEm: 'entradaCampanhaEm',
   criadoEm: 'criadoEm',

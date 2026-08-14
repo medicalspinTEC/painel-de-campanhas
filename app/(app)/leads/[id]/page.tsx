@@ -1,7 +1,8 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, MessageCircleReply, Send, Sparkles } from "lucide-react"
+import { ArrowLeft, MessageCircleReply, NotebookPen, Send, Sparkles } from "lucide-react"
 
+import { LeadNotes } from "@/components/features/leads/lead-notes"
 import { LeadTimeline } from "@/components/features/leads/lead-timeline"
 import { LinkButton } from "@/components/shared/link-button"
 import { LeadStatusBadge } from "@/components/shared/status-badges"
@@ -100,20 +101,37 @@ export default async function LeadDetalhePage({ params }: { params: Promise<{ id
           </CardContent>
         </Card>
 
-        <Card className="flex-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="size-4 text-primary" />
-              Histórico de follow-up
-            </CardTitle>
-            <CardDescription>
-              Todos os envios automáticos, respostas e mudanças de estágio do lead.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <LeadTimeline eventos={eventos} />
-          </CardContent>
-        </Card>
+        <div className="flex flex-1 flex-col gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <NotebookPen className="size-4 text-primary" />
+                Notas
+              </CardTitle>
+              <CardDescription>
+                Anotações internas da equipe. Opcionais e editáveis a qualquer momento.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <LeadNotes leadId={lead.id} notas={lead.notas} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="size-4 text-primary" />
+                Histórico de follow-up
+              </CardTitle>
+              <CardDescription>
+                Todos os envios automáticos, respostas e mudanças de estágio do lead.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <LeadTimeline eventos={eventos} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
