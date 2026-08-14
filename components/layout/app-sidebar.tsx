@@ -106,11 +106,11 @@ export function AppSidebar({ instanceName, instanceState, profileImageUrl }: App
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center gap-2.5 px-2 py-1.5 group-data-[collapsible=icon]:px-0">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Zap className="size-4" />
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg text-primary-foreground">
+            <img src="/icon-light-32x32.png" alt="" />
           </div>
           <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
-            <span className="truncate text-sm font-semibold leading-tight">Engine</span>
+            <span className="truncate text-sm font-semibold leading-tight">Medical Spin</span>
             <span className="truncate text-xs text-muted-foreground leading-tight">Follow-up WhatsApp</span>
           </div>
         </div>

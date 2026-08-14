@@ -18,11 +18,11 @@ export default async function LoginPage() {
     <main className="flex min-h-svh items-center justify-center bg-background p-4">
       <div className="flex w-full max-w-sm flex-col gap-6">
         <div className="flex flex-col items-center gap-3 text-center">
-          <div className="flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Zap className="size-5" />
+          <div className="flex size-11 items-center justify-center rounded-xl text-primary-foreground">
+            <img src="/icon-light-32x32.png" alt="Logo" />
           </div>
           <div className="flex flex-col gap-1">
-            <h1 className="text-lg font-semibold leading-tight">Engine de Follow-up</h1>
+            <h1 className="text-lg font-semibold leading-tight">Campanhas Medical Spin</h1>
             <p className="text-sm text-muted-foreground text-balance">
               Painel de campanhas automáticas no WhatsApp
             </p>
