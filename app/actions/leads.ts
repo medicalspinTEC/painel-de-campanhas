@@ -18,10 +18,12 @@ function parseLead(formData: FormData) {
   const errors: Record<string, string> = {}
   const nome = String(formData.get("nome") ?? "").trim()
   const telefone = String(formData.get("telefone") ?? "").trim()
-  const produto = String(formData.get("produto") ?? "")
-  const marca = String(formData.get("marca") ?? "")
-  const persona = String(formData.get("persona") ?? "")
-  const regiao = String(formData.get("regiao") ?? "")
+  // Segmentação é opcional: só validamos os campos que vierem preenchidos.
+  const produto = String(formData.get("produto") ?? "").trim()
+  const marca = String(formData.get("marca") ?? "").trim()
+  const persona = String(formData.get("persona") ?? "").trim()
+  const regiao = String(formData.get("regiao") ?? "").trim()
+  const notas = formData.has("notas") ? String(formData.get("notas") ?? "") : null
   const status = String(formData.get("status") ?? "novo")
   const campanhasIdsRaw = String(formData.get("campanhasIds") ?? "")
   const campanhasIds = campanhasIdsRaw
@@ -29,12 +31,14 @@ function parseLead(formData: FormData) {
     .map((id) => id.trim())
     .filter(Boolean)
 
+  // Apenas nome e telefone são obrigatórios.
   if (nome.length < 3) errors.nome = "Informe o nome completo do lead."
   if (telefone.replace(/\D/g, "").length < 10) errors.telefone = "Telefone precisa ter DDD e número."
-  if (!PRODUTOS.includes(produto as never)) errors.produto = "Selecione um produto."
-  if (!MARCAS.includes(marca as never)) errors.marca = "Selecione uma marca."
-  if (!PERSONAS.includes(persona as never)) errors.persona = "Selecione uma persona."
-  if (!REGIOES.includes(regiao as never)) errors.regiao = "Selecione uma região."
+  if (produto && !PRODUTOS.includes(produto as never)) errors.produto = "Selecione um produto válido."
+  if (marca && !MARCAS.includes(marca as never)) errors.marca = "Selecione uma marca válida."
+  if (persona && !PERSONAS.includes(persona as never)) errors.persona = "Selecione uma persona válida."
+  if (regiao && !REGIOES.includes(regiao as never)) errors.regiao = "Selecione uma região válida."
+  if (notas != null && notas.length > 5000) errors.notas = "As notas são muito longas (máximo de 5000 caracteres)."
 
   const input: LeadInput = {
     nome,
@@ -43,6 +47,7 @@ function parseLead(formData: FormData) {
     marca: marca as LeadInput["marca"],
     persona: persona as LeadInput["persona"],
     regiao: regiao as LeadInput["regiao"],
+    notas,
     status: (STATUS_VALIDOS.includes(status as LeadStatus) ? status : "novo") as LeadStatus,
     campanhaId: campanhasIds[0] ?? null,
     campanhasIds,

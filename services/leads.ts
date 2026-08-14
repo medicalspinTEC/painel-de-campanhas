@@ -174,9 +174,25 @@ export async function getLeadTimeline(id: string): Promise<TimelineEvent[]> {
   }))
 }
 
-export type LeadInput = Pick<Lead, "nome" | "telefone" | "produto" | "marca" | "persona" | "regiao" | "status"> & {
+export type LeadInput = Pick<Lead, "nome" | "telefone" | "status"> & {
+  // Apenas `nome` e `telefone` são obrigatórios. As dimensões de segmentação
+  // são opcionais: quando omitidas, gravamos string vazia (a coluna não é
+  // nullable no schema).
+  produto?: Lead["produto"] | ""
+  marca?: Lead["marca"] | ""
+  persona?: Lead["persona"] | ""
+  regiao?: Lead["regiao"] | ""
+  // Anotação livre exibida nos detalhes do lead. `null`/"" limpam o campo.
+  notas?: string | null
   campanhaId: string | null
   campanhasIds?: string[]
+}
+
+/** Normaliza a nota recebida: vazio vira `null`. */
+function normalizarNotas(notas: string | null | undefined): string | null {
+  if (notas == null) return null
+  const limpo = notas.trim()
+  return limpo.length > 0 ? limpo : null
 }
 
 export async function createLead(input: LeadInput): Promise<Lead> {
@@ -189,11 +205,12 @@ export async function createLead(input: LeadInput): Promise<Lead> {
     data: {
       nome: input.nome,
       telefone: input.telefone,
-      produto: input.produto,
-      marca: input.marca,
-      persona: input.persona,
-      regiao: input.regiao,
+      produto: input.produto ?? "",
+      marca: input.marca ?? "",
+      persona: input.persona ?? "",
+      regiao: input.regiao ?? "",
       status: input.status,
+      notas: normalizarNotas(input.notas),
       campanhaId: input.campanhaId,
       entradaCampanhaEm: input.campanhaId ? agora : null,
       campanhas: {
@@ -255,12 +272,15 @@ export async function updateLead(id: string, input: LeadInput): Promise<Lead | n
     data: {
       nome: input.nome,
       telefone: input.telefone,
-      produto: input.produto,
-      marca: input.marca,
-      persona: input.persona,
-      regiao: input.regiao,
       status: input.status,
       campanhaId: input.campanhaId,
+      // Dimensões de segmentação são opcionais: só sobrescrevem quando enviadas.
+      ...(input.produto !== undefined ? { produto: input.produto } : {}),
+      ...(input.marca !== undefined ? { marca: input.marca } : {}),
+      ...(input.persona !== undefined ? { persona: input.persona } : {}),
+      ...(input.regiao !== undefined ? { regiao: input.regiao } : {}),
+      // Nota também é opcional: só atualiza quando a chave veio no corpo.
+      ...(input.notas !== undefined ? { notas: normalizarNotas(input.notas) } : {}),
       ...(trocouCampanha ? { entradaCampanhaEm: input.campanhaId ? agora : null } : {}),
       ...(trocouCampanha && input.campanhaId
         ? {

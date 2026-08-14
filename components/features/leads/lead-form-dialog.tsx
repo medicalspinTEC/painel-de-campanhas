@@ -18,6 +18,7 @@ import {
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import { Textarea } from "@/components/ui/textarea"
 import {
   LEAD_STATUS_LABEL,
   MARCAS,
@@ -62,6 +63,7 @@ export function LeadFormDialog({
   const [persona, setPersona] = useState(lead?.persona ?? "")
   const [regiao, setRegiao] = useState(lead?.regiao ?? "")
   const [status, setStatus] = useState<string>(lead?.status ?? "novo")
+  const [notas, setNotas] = useState(lead?.notas ?? "")
   const [campanhasSelecionadas, setCampanhasSelecionadas] = useState<string[]>(() => (lead ? [lead.campanhaId].filter(Boolean) as string[] : []))
 
   useEffect(() => {
@@ -70,6 +72,7 @@ export function LeadFormDialog({
     setPersona(lead?.persona ?? "")
     setRegiao(lead?.regiao ?? "")
     setStatus(lead?.status ?? "novo")
+    setNotas(lead?.notas ?? "")
     setCampanhasSelecionadas(lead ? [lead.campanhaId].filter(Boolean) as string[] : [])
   }, [lead])
 
@@ -198,6 +201,21 @@ export function LeadFormDialog({
                 opcoes={OPCOES_STATUS}
                 className="w-full"
               />
+            </Field>
+
+            <Field className="sm:col-span-2" data-invalid={Boolean(erros.notas)}>
+              <FieldLabel htmlFor="notas">Notas</FieldLabel>
+              <Textarea
+                id="notas"
+                name="notas"
+                value={notas}
+                onChange={(event) => setNotas(event.target.value)}
+                placeholder="Observações que aparecem nos detalhes do lead (opcional)."
+                rows={3}
+                maxLength={5000}
+                aria-invalid={Boolean(erros.notas)}
+              />
+              {erros.notas ? <FieldError>{erros.notas}</FieldError> : null}
             </Field>
 
             <Field className="sm:col-span-2">

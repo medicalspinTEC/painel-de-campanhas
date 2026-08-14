@@ -104,28 +104,24 @@ export const API_DOCS: Record<string, EndpointDoc> = {
   "POST /api/leads": {
     resumo: "Cria um novo lead.",
     descricao:
-      "Valida os campos obrigatórios (nome, telefone e os enums de produto/marca/persona/região) e cria o lead. Em caso de erro de validação, retorna 400 com um mapa `errors` por campo.",
+      "Exige apenas `nome` e `telefone`. Os campos de segmentação (produto/marca/persona/região) são opcionais e só validados quando enviados. Aceita também `notas`, uma anotação livre exibida nos detalhes do lead. Em caso de erro de validação, retorna 400 com um mapa `errors` por campo.",
     auth: SESSAO,
     headers: [{ nome: "Content-Type", tipo: "string", obrigatorio: true, descricao: "application/json" }],
     bodyFields: [
       { nome: "nome", tipo: "string", obrigatorio: true, descricao: "Nome completo (mínimo 3 caracteres)." },
       { nome: "telefone", tipo: "string", obrigatorio: true, descricao: "Com DDD; mínimo 10 dígitos numéricos." },
-      { nome: "produto", tipo: "enum", obrigatorio: true, descricao: `Um de: ${ENUMS.produto.join(", ")}.` },
-      { nome: "marca", tipo: "enum", obrigatorio: true, descricao: `Um de: ${ENUMS.marca.join(", ")}.` },
-      { nome: "persona", tipo: "enum", obrigatorio: true, descricao: `Um de: ${ENUMS.persona.join(", ")}.` },
-      { nome: "regiao", tipo: "enum", obrigatorio: true, descricao: `Um de: ${ENUMS.regiao.join(", ")}.` },
+      { nome: "produto", tipo: "enum", descricao: `Opcional. Se enviado, um de: ${ENUMS.produto.join(", ")}.` },
+      { nome: "marca", tipo: "enum", descricao: `Opcional. Se enviado, um de: ${ENUMS.marca.join(", ")}.` },
+      { nome: "persona", tipo: "enum", descricao: `Opcional. Se enviado, um de: ${ENUMS.persona.join(", ")}.` },
+      { nome: "regiao", tipo: "enum", descricao: `Opcional. Se enviado, um de: ${ENUMS.regiao.join(", ")}.` },
+      { nome: "notas", tipo: "string | null", descricao: "Opcional; anotação livre exibida nos detalhes do lead. Vazio ou null limpa o campo." },
       { nome: "status", tipo: "enum", descricao: `Opcional; padrão "novo". Um de: ${ENUMS.leadStatus.join(", ")}.` },
       { nome: "campanhasIds", tipo: "string[]", descricao: "Opcional; IDs de campanhas a vincular. A primeira vira a campanha principal." },
     ],
     requestExample: `{
   "nome": "Marina Alves",
   "telefone": "(11) 98888-7777",
-  "produto": "Consórcio Imobiliário",
-  "marca": "Ápice",
-  "persona": "Primeira Casa",
-  "regiao": "Sudeste",
-  "status": "novo",
-  "campanhasIds": ["camp_x9y8"]
+  "notas": "Prefere contato à tarde."
 }`,
     responses: [
       {
@@ -161,10 +157,7 @@ export const API_DOCS: Record<string, EndpointDoc> = {
   -d '{
     "nome": "Marina Alves",
     "telefone": "(11) 98888-7777",
-    "produto": "Consórcio Imobiliário",
-    "marca": "Ápice",
-    "persona": "Primeira Casa",
-    "regiao": "Sudeste"
+    "notas": "Prefere contato à tarde."
   }'`,
   },
 
@@ -205,28 +198,27 @@ export const API_DOCS: Record<string, EndpointDoc> = {
   },
 
   "PUT /api/leads/:id": {
-    resumo: "Atualiza um lead por completo.",
-    descricao: "Substitui todos os campos do lead. Mesmas regras de validação do POST. Retorna 404 se o lead não existir.",
+    resumo: "Atualiza um lead.",
+    descricao:
+      "Exige apenas `nome` e `telefone`. Os demais campos são opcionais: só são alterados quando presentes no corpo, preservando os valores atuais quando omitidos. Aceita `notas` para gravar/limpar a anotação livre exibida nos detalhes. Retorna 404 se o lead não existir.",
     auth: SESSAO,
     pathParams: [{ nome: "id", tipo: "string", obrigatorio: true, descricao: "ID do lead." }],
     headers: [{ nome: "Content-Type", tipo: "string", obrigatorio: true, descricao: "application/json" }],
     bodyFields: [
       { nome: "nome", tipo: "string", obrigatorio: true, descricao: "Nome completo (mínimo 3 caracteres)." },
       { nome: "telefone", tipo: "string", obrigatorio: true, descricao: "Com DDD; mínimo 10 dígitos." },
-      { nome: "produto", tipo: "enum", obrigatorio: true, descricao: `Um de: ${ENUMS.produto.join(", ")}.` },
-      { nome: "marca", tipo: "enum", obrigatorio: true, descricao: `Um de: ${ENUMS.marca.join(", ")}.` },
-      { nome: "persona", tipo: "enum", obrigatorio: true, descricao: `Um de: ${ENUMS.persona.join(", ")}.` },
-      { nome: "regiao", tipo: "enum", obrigatorio: true, descricao: `Um de: ${ENUMS.regiao.join(", ")}.` },
+      { nome: "produto", tipo: "enum", descricao: `Opcional. Se enviado, um de: ${ENUMS.produto.join(", ")}.` },
+      { nome: "marca", tipo: "enum", descricao: `Opcional. Se enviado, um de: ${ENUMS.marca.join(", ")}.` },
+      { nome: "persona", tipo: "enum", descricao: `Opcional. Se enviado, um de: ${ENUMS.persona.join(", ")}.` },
+      { nome: "regiao", tipo: "enum", descricao: `Opcional. Se enviado, um de: ${ENUMS.regiao.join(", ")}.` },
+      { nome: "notas", tipo: "string | null", descricao: "Opcional; anotação livre exibida nos detalhes do lead. Vazio ou null limpa o campo." },
       { nome: "status", tipo: "enum", descricao: `Opcional; um de: ${ENUMS.leadStatus.join(", ")}.` },
       { nome: "campanhasIds", tipo: "string[]", descricao: "Opcional; IDs de campanhas vinculadas." },
     ],
     requestExample: `{
   "nome": "Marina Alves de Souza",
   "telefone": "(11) 98888-7777",
-  "produto": "Financiamento",
-  "marca": "Ápice",
-  "persona": "Investidor",
-  "regiao": "Sudeste",
+  "notas": "Retornar após feriado.",
   "status": "qualificado"
 }`,
     responses: [
@@ -236,7 +228,7 @@ export const API_DOCS: Record<string, EndpointDoc> = {
     curl: `curl -s -X PUT "$BASE/api/leads/lead_a1b2c3" \\
   -H "Content-Type: application/json" \\
   -H "Cookie: campanhas_session=SEU_TOKEN" \\
-  -d '{ "nome": "Marina Alves de Souza", "telefone": "(11) 98888-7777", "produto": "Financiamento", "marca": "Ápice", "persona": "Investidor", "regiao": "Sudeste", "status": "qualificado" }'`,
+  -d '{ "nome": "Marina Alves de Souza", "telefone": "(11) 98888-7777", "notas": "Retornar após feriado.", "status": "qualificado" }'`,
   },
 
   "DELETE /api/leads/:id": {

@@ -38,21 +38,24 @@ export async function POST(request: Request) {
 
   const nome = String(dados.nome ?? "").trim()
   const telefone = String(dados.telefone ?? "").trim()
-  const produto = String(dados.produto ?? "")
-  const marca = String(dados.marca ?? "")
-  const persona = String(dados.persona ?? "")
-  const regiao = String(dados.regiao ?? "")
+  // Campos de segmentação são opcionais: só validamos os que vierem preenchidos.
+  const produto = String(dados.produto ?? "").trim()
+  const marca = String(dados.marca ?? "").trim()
+  const persona = String(dados.persona ?? "").trim()
+  const regiao = String(dados.regiao ?? "").trim()
+  const notas = dados.notas != null ? String(dados.notas) : null
   const statusBruto = String(dados.status ?? "novo")
   const campanhasIds = Array.isArray(dados.campanhasIds)
     ? dados.campanhasIds.map((id) => String(id).trim()).filter(Boolean)
     : []
 
+  // Apenas nome e telefone são obrigatórios.
   if (nome.length < 3) errors.nome = "Informe o nome completo do lead."
   if (telefone.replace(/\D/g, "").length < 10) errors.telefone = "Telefone precisa ter DDD e número."
-  if (!PRODUTOS.includes(produto as never)) errors.produto = "Selecione um produto válido."
-  if (!MARCAS.includes(marca as never)) errors.marca = "Selecione uma marca válida."
-  if (!PERSONAS.includes(persona as never)) errors.persona = "Selecione uma persona válida."
-  if (!REGIOES.includes(regiao as never)) errors.regiao = "Selecione uma região válida."
+  if (produto && !PRODUTOS.includes(produto as never)) errors.produto = "Selecione um produto válido."
+  if (marca && !MARCAS.includes(marca as never)) errors.marca = "Selecione uma marca válida."
+  if (persona && !PERSONAS.includes(persona as never)) errors.persona = "Selecione uma persona válida."
+  if (regiao && !REGIOES.includes(regiao as never)) errors.regiao = "Selecione uma região válida."
 
   if (Object.keys(errors).length > 0) {
     return NextResponse.json({ ok: false, erro: "Corrija os campos destacados.", errors }, { status: 400 })
@@ -65,6 +68,7 @@ export async function POST(request: Request) {
     marca: marca as LeadInput["marca"],
     persona: persona as LeadInput["persona"],
     regiao: regiao as LeadInput["regiao"],
+    notas,
     status: (STATUS_VALIDOS.includes(statusBruto as LeadStatus) ? statusBruto : "novo") as LeadStatus,
     campanhaId: campanhasIds[0] ?? null,
     campanhasIds,
