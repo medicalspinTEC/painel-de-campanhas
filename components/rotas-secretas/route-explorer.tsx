@@ -59,7 +59,7 @@ function prepararCurl(curl: string, baseUrl: string, apiToken: string): string {
   let saida = curl
   if (baseUrl) saida = saida.replaceAll("$BASE", baseUrl)
   if (apiToken) {
-    saida = saida.replaceAll("Cookie: campanhas_session=SEU_TOKEN", `Authorization: Bearer ${apiToken}`)
+    saida = saida.replaceAll("Cookie: campanhas_session=SEU_TOKEN", `Authorization: Bearer SEU_TOKEN`)
   }
   return saida
 }
