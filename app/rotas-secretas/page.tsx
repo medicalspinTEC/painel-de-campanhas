@@ -4,7 +4,6 @@ import { Braces, Lock, Radio } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { RouteExplorer, type EndpointView } from "@/components/rotas-secretas/route-explorer"
-import { TokenPanel } from "@/components/rotas-secretas/token-panel"
 import { getConfiguredApiToken } from "@/lib/api-auth"
 import { getEndpointDoc } from "@/lib/api-docs"
 import { listApiRoutes } from "@/lib/api-routes"
@@ -117,8 +116,6 @@ export default async function RotasSecretasPage({
           </Badge>
         </div>
       </header>
-
-      <TokenPanel apiToken={apiToken} baseUrl={baseUrl} className="mb-8" />
 
       {endpoints.length === 0 ? (
         <p className="text-sm text-muted-foreground">
