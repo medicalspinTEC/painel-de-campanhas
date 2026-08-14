@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/shared/page-header"
 import { listEvents } from "@/services/events"
 
 export const metadata = {
-  title: "Eventos",
+  title: "Eventos | Painel de Campanhas WhatsApp",
 }
 
 export default async function EventosPage() {

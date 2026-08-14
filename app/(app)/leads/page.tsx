@@ -4,7 +4,7 @@ import { listCampaigns } from "@/services/campaigns"
 import { listLeads } from "@/services/leads"
 
 export const metadata = {
-  title: "Leads | Engine de Follow-up",
+  title: "Leads | Painel de Campanhas WhatsApp",
   description: "Base de leads segmentada por produto, marca, persona e região.",
 }
 

@@ -16,7 +16,7 @@ import {
 } from "@/services/analytics"
 
 export const metadata = {
-  title: "Relatórios",
+  title: "Relatórios | Painel de Campanhas WhatsApp",
 }
 
 export default async function RelatoriosPage() {

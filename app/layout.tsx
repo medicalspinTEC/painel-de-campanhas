@@ -9,7 +9,7 @@ const _geistSans = Geist({ subsets: ['latin'] })
 const _geistMono = Geist_Mono({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Engine de Follow-up | Painel de Campanhas WhatsApp',
+  title: 'Medical Spin | Painel de Campanhas WhatsApp',
   description:
     'Painel para gestão de campanhas automáticas de follow-up no WhatsApp: leads, sequências de mensagens, eventos e relatórios de conversão.',
   generator: 'v0.app',

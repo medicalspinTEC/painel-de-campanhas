@@ -22,7 +22,7 @@ import { listEvents, listFailures } from "@/services/events"
 import { listAppLogs, type AppLogNivel } from "@/services/app-logs"
 
 export const metadata = {
-  title: "Logs",
+  title: "Logs | Painel de Campanhas WhatsApp",
 }
 
 // ---------------------------------------------------------------------------

@@ -7,7 +7,7 @@ import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTi
 import { listCampaigns } from "@/services/campaigns"
 
 export const metadata = {
-  title: "Campanhas",
+  title: "Campanhas | Painel de Campanhas WhatsApp",
 }
 
 export default async function CampanhasPage() {

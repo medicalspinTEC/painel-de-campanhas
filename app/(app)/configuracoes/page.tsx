@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/shared/page-header"
 import { getSettings } from "@/services/settings"
 
 export const metadata = {
-  title: "Configurações",
+  title: "Configurações | Painel de Campanhas WhatsApp",
 }
 
 export default async function ConfiguracoesPage() {

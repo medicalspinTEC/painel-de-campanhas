@@ -6,7 +6,7 @@ import { getToken, listEventos } from "@/services/inbound-webhook"
 import { listWebhooks } from "@/services/webhooks"
 
 export const metadata = {
-  title: "Integrações",
+  title: "Integrações | Painel de Campanhas WhatsApp",
 }
 
 const EXEMPLO_PAYLOAD = `POST /seu-endpoint
