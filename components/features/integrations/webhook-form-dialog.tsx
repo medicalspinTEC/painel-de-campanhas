@@ -67,15 +67,15 @@ export function WebhookFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[90dvh] flex-col sm:max-w-lg">
+        <DialogHeader className="shrink-0">
           <DialogTitle>{editando ? "Editar webhook" : "Novo webhook"}</DialogTitle>
           <DialogDescription>
             O painel envia um POST em JSON para a URL informada a cada evento assinado.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-1">
           <Field>
             <FieldLabel htmlFor="webhook-nome">Nome</FieldLabel>
             <Input
@@ -113,7 +113,7 @@ export function WebhookFormDialog({
           </Field>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="shrink-0">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
