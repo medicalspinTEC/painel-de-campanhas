@@ -62,6 +62,15 @@ export type LeadCampaign = Prisma.LeadCampaignModel
  */
 export type CampaignMessage = Prisma.CampaignMessageModel
 /**
+ * Model Produto
+ * Produtos cadastrados pela equipe na página de Segmentação.
+ * O nome é a chave de negócio: os leads guardam o produto como texto (o nome),
+ * então esta tabela é apenas o catálogo canônico de opções selecionáveis.
+ * Produtos inativos deixam de aparecer como opção em novos leads, mas não
+ * afetam leads que já usam aquele nome.
+ */
+export type Produto = Prisma.ProdutoModel
+/**
  * Model Settings
  * Preferências da engine. Tabela de linha única: `id` é fixo em "default"
  * para que um upsert simples sirva tanto para criar quanto para atualizar.

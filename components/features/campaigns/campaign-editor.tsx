@@ -6,8 +6,9 @@ import { CalendarClock, GripVertical, Plus, Trash2, Users } from "lucide-react"
 import { toast } from "sonner"
 
 import { createCampaignAction, updateCampaignAction } from "@/app/actions/campaigns"
+import { CreatableSelectField } from "@/components/shared/creatable-select-field"
 import { LinkButton } from "@/components/shared/link-button"
-import { SelectField, opcoesDe } from "@/components/shared/select-field"
+import { SelectField, opcoesComExtras } from "@/components/shared/select-field"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -99,6 +100,37 @@ export function CampaignEditor({ campanha, leads }: { campanha?: Campaign; leads
           (regiao === QUALQUER || l.regiao === regiao),
       ).length,
     [leads, produto, marca, persona, regiao],
+  )
+
+  // Opções derivam dos valores padrão + o que já existe nos leads + o filtro
+  // salvo na campanha, para que itens adicionados manualmente sigam disponíveis.
+  const opcoesProduto = useMemo(
+    () => [
+      { value: QUALQUER, label: "Qualquer produto" },
+      ...opcoesComExtras(PRODUTOS, ...leads.map((l) => l.produto), campanha?.filtros.produto),
+    ],
+    [leads, campanha],
+  )
+  const opcoesMarca = useMemo(
+    () => [
+      { value: QUALQUER, label: "Qualquer marca" },
+      ...opcoesComExtras(MARCAS, ...leads.map((l) => l.marca), campanha?.filtros.marca),
+    ],
+    [leads, campanha],
+  )
+  const opcoesPersona = useMemo(
+    () => [
+      { value: QUALQUER, label: "Qualquer persona" },
+      ...opcoesComExtras(PERSONAS, ...leads.map((l) => l.persona), campanha?.filtros.persona),
+    ],
+    [leads, campanha],
+  )
+  const opcoesRegiao = useMemo(
+    () => [
+      { value: QUALQUER, label: "Qualquer região" },
+      ...opcoesComExtras(REGIOES, ...leads.map((l) => l.regiao), campanha?.filtros.regiao),
+    ],
+    [leads, campanha],
   )
 
   function atualizarMensagem(index: number, patch: Partial<MensagemRascunho>) {
@@ -368,28 +400,32 @@ export function CampaignEditor({ campanha, leads }: { campanha?: Campaign; leads
             <CardDescription>Leads são incluídos automaticamente quando atendem aos filtros.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
-            <SelectField
+            <CreatableSelectField
               value={produto}
               onValueChange={setProduto}
-              opcoes={[{ value: QUALQUER, label: "Qualquer produto" }, ...opcoesDe(PRODUTOS)]}
+              opcoes={opcoesProduto}
+              buscaPlaceholder="Buscar ou adicionar produto..."
               className="w-full"
             />
-            <SelectField
+            <CreatableSelectField
               value={marca}
               onValueChange={setMarca}
-              opcoes={[{ value: QUALQUER, label: "Qualquer marca" }, ...opcoesDe(MARCAS)]}
+              opcoes={opcoesMarca}
+              buscaPlaceholder="Buscar ou adicionar marca..."
               className="w-full"
             />
-            <SelectField
+            <CreatableSelectField
               value={persona}
               onValueChange={setPersona}
-              opcoes={[{ value: QUALQUER, label: "Qualquer persona" }, ...opcoesDe(PERSONAS)]}
+              opcoes={opcoesPersona}
+              buscaPlaceholder="Buscar ou adicionar persona..."
               className="w-full"
             />
-            <SelectField
+            <CreatableSelectField
               value={regiao}
               onValueChange={setRegiao}
-              opcoes={[{ value: QUALQUER, label: "Qualquer região" }, ...opcoesDe(REGIOES)]}
+              opcoes={opcoesRegiao}
+              buscaPlaceholder="Buscar ou adicionar região..."
               className="w-full"
             />
 

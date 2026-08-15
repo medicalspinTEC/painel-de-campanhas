@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 
 import { assignCampaign, createLead, deleteLead, setLeadStatus, updateLead, updateLeadNotes, type LeadInput } from "@/services/leads"
 import { recordAppLog } from "@/services/app-logs"
-import { MARCAS, PERSONAS, PRODUTOS, REGIOES, type LeadStatus } from "@/types"
+import { type LeadStatus } from "@/types"
 
 export interface ActionState {
   ok: boolean
@@ -13,6 +13,9 @@ export interface ActionState {
 }
 
 const STATUS_VALIDOS: LeadStatus[] = ["novo", "em_campanha", "respondeu", "qualificado", "encerrado"]
+
+/** Tamanho máximo para as dimensões de segmentação (texto livre). */
+const MAX_SEGMENTO = 60
 
 function parseLead(formData: FormData) {
   const errors: Record<string, string> = {}
@@ -34,10 +37,12 @@ function parseLead(formData: FormData) {
   // Apenas nome e telefone são obrigatórios.
   if (nome.length < 3) errors.nome = "Informe o nome completo do lead."
   if (telefone.replace(/\D/g, "").length < 10) errors.telefone = "Telefone precisa ter DDD e número."
-  if (produto && !PRODUTOS.includes(produto as never)) errors.produto = "Selecione um produto válido."
-  if (marca && !MARCAS.includes(marca as never)) errors.marca = "Selecione uma marca válida."
-  if (persona && !PERSONAS.includes(persona as never)) errors.persona = "Selecione uma persona válida."
-  if (regiao && !REGIOES.includes(regiao as never)) errors.regiao = "Selecione uma região válida."
+  // Segmentação é texto livre: além dos valores padrão, a equipe pode adicionar
+  // novos itens pelo formulário. Validamos apenas o tamanho máximo.
+  if (produto.length > MAX_SEGMENTO) errors.produto = `Use no máximo ${MAX_SEGMENTO} caracteres.`
+  if (marca.length > MAX_SEGMENTO) errors.marca = `Use no máximo ${MAX_SEGMENTO} caracteres.`
+  if (persona.length > MAX_SEGMENTO) errors.persona = `Use no máximo ${MAX_SEGMENTO} caracteres.`
+  if (regiao.length > MAX_SEGMENTO) errors.regiao = `Use no máximo ${MAX_SEGMENTO} caracteres.`
   if (notas != null && notas.length > 5000) errors.notas = "As notas são muito longas (máximo de 5000 caracteres)."
 
   const input: LeadInput = {

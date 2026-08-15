@@ -401,6 +401,7 @@ export const ModelName = {
   Campaign: 'Campaign',
   LeadCampaign: 'LeadCampaign',
   CampaignMessage: 'CampaignMessage',
+  Produto: 'Produto',
   Settings: 'Settings',
   Webhook: 'Webhook',
   AppLog: 'AppLog',
@@ -422,7 +423,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "lead" | "campaign" | "leadCampaign" | "campaignMessage" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "inboundEvent"
+    modelProps: "lead" | "campaign" | "leadCampaign" | "campaignMessage" | "produto" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "inboundEvent"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -719,6 +720,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.CampaignMessageCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.CampaignMessageCountAggregateOutputType> | number
+        }
+      }
+    }
+    Produto: {
+      payload: Prisma.$ProdutoPayload<ExtArgs>
+      fields: Prisma.ProdutoFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ProdutoFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProdutoPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ProdutoFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProdutoPayload>
+        }
+        findFirst: {
+          args: Prisma.ProdutoFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProdutoPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ProdutoFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProdutoPayload>
+        }
+        findMany: {
+          args: Prisma.ProdutoFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProdutoPayload>[]
+        }
+        create: {
+          args: Prisma.ProdutoCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProdutoPayload>
+        }
+        createMany: {
+          args: Prisma.ProdutoCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ProdutoCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProdutoPayload>[]
+        }
+        delete: {
+          args: Prisma.ProdutoDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProdutoPayload>
+        }
+        update: {
+          args: Prisma.ProdutoUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProdutoPayload>
+        }
+        deleteMany: {
+          args: Prisma.ProdutoDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ProdutoUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ProdutoUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProdutoPayload>[]
+        }
+        upsert: {
+          args: Prisma.ProdutoUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProdutoPayload>
+        }
+        aggregate: {
+          args: Prisma.ProdutoAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProduto>
+        }
+        groupBy: {
+          args: Prisma.ProdutoGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProdutoGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ProdutoCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProdutoCountAggregateOutputType> | number
         }
       }
     }
@@ -1266,6 +1341,18 @@ export const CampaignMessageScalarFieldEnum = {
 export type CampaignMessageScalarFieldEnum = (typeof CampaignMessageScalarFieldEnum)[keyof typeof CampaignMessageScalarFieldEnum]
 
 
+export const ProdutoScalarFieldEnum = {
+  id: 'id',
+  nome: 'nome',
+  descricao: 'descricao',
+  ativo: 'ativo',
+  criadoEm: 'criadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type ProdutoScalarFieldEnum = (typeof ProdutoScalarFieldEnum)[keyof typeof ProdutoScalarFieldEnum]
+
+
 export const SettingsScalarFieldEnum = {
   id: 'id',
   remetente: 'remetente',
@@ -1683,6 +1770,7 @@ export type GlobalOmitConfig = {
   campaign?: Prisma.CampaignOmit
   leadCampaign?: Prisma.LeadCampaignOmit
   campaignMessage?: Prisma.CampaignMessageOmit
+  produto?: Prisma.ProdutoOmit
   settings?: Prisma.SettingsOmit
   webhook?: Prisma.WebhookOmit
   appLog?: Prisma.AppLogOmit

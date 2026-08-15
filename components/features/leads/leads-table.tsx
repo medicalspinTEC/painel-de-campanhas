@@ -16,7 +16,7 @@ import { toast } from "sonner"
 
 import { assignCampaignAction, deleteLeadAction, setLeadStatusAction } from "@/app/actions/leads"
 import { LeadFormDialog, type CampanhaOpcao } from "@/components/features/leads/lead-form-dialog"
-import { SelectField, opcoesDe } from "@/components/shared/select-field"
+import { SelectField, opcoesComExtras } from "@/components/shared/select-field"
 import { LeadStatusBadge } from "@/components/shared/status-badges"
 import {
   AlertDialog,
@@ -55,7 +55,16 @@ const OPCOES_STATUS = [
   ...(Object.keys(LEAD_STATUS_LABEL) as LeadStatus[]).map((s) => ({ value: s, label: LEAD_STATUS_LABEL[s] })),
 ]
 
-export function LeadsTable({ leads, campanhas }: { leads: LeadRow[]; campanhas: CampanhaOpcao[] }) {
+export function LeadsTable({
+  leads,
+  campanhas,
+  produtos = [],
+}: {
+  leads: LeadRow[]
+  campanhas: CampanhaOpcao[]
+  /** Produtos ativos cadastrados na página de Segmentação. */
+  produtos?: string[]
+}) {
   const [busca, setBusca] = useState("")
   const [status, setStatus] = useState(TODOS)
   const [produto, setProduto] = useState(TODOS)
@@ -68,6 +77,18 @@ export function LeadsTable({ leads, campanhas }: { leads: LeadRow[]; campanhas: 
   const [leadEditando, setLeadEditando] = useState<LeadRow | null>(null)
   const [leadExcluindo, setLeadExcluindo] = useState<LeadRow | null>(null)
   const [pending, startTransition] = useTransition()
+
+  const valoresExistentes = useMemo(
+    () => ({
+      // Produtos cadastrados na Segmentação primeiro; em seguida os valores
+      // legados que já aparecem em leads existentes.
+      produtos: [...new Set([...produtos, ...leads.map((l) => l.produto).filter(Boolean)])],
+      marcas: [...new Set(leads.map((l) => l.marca).filter(Boolean))],
+      personas: [...new Set(leads.map((l) => l.persona).filter(Boolean))],
+      regioes: [...new Set(leads.map((l) => l.regiao).filter(Boolean))],
+    }),
+    [leads, produtos],
+  )
 
   const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase()
@@ -172,19 +193,19 @@ export function LeadsTable({ leads, campanhas }: { leads: LeadRow[]; campanhas: 
             <SelectField
               value={produto}
               onValueChange={resetPagina(setProduto)}
-              opcoes={[{ value: TODOS, label: "Todos os produtos" }, ...opcoesDe(PRODUTOS)]}
+              opcoes={[{ value: TODOS, label: "Todos os produtos" }, ...opcoesComExtras(PRODUTOS, ...valoresExistentes.produtos)]}
               className="w-full"
             />
             <SelectField
               value={marca}
               onValueChange={resetPagina(setMarca)}
-              opcoes={[{ value: TODOS, label: "Todas as marcas" }, ...opcoesDe(MARCAS)]}
+              opcoes={[{ value: TODOS, label: "Todas as marcas" }, ...opcoesComExtras(MARCAS, ...valoresExistentes.marcas)]}
               className="w-full"
             />
             <SelectField
               value={regiao}
               onValueChange={resetPagina(setRegiao)}
-              opcoes={[{ value: TODOS, label: "Todas as regiões" }, ...opcoesDe(REGIOES)]}
+              opcoes={[{ value: TODOS, label: "Todas as regiões" }, ...opcoesComExtras(REGIOES, ...valoresExistentes.regioes)]}
               className="w-full"
             />
             <SelectField
@@ -384,6 +405,7 @@ export function LeadsTable({ leads, campanhas }: { leads: LeadRow[]; campanhas: 
         onOpenChange={setFormAberto}
         lead={leadEditando}
         campanhas={campanhas}
+        valoresExistentes={valoresExistentes}
       />
 
       <AlertDialog open={Boolean(leadExcluindo)} onOpenChange={(aberto) => !aberto && setLeadExcluindo(null)}>

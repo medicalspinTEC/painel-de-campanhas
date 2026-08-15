@@ -53,3 +53,20 @@ export function SelectField({
 export function opcoesDe(valores: readonly string[]): OpcaoSelect[] {
   return valores.map((v) => ({ value: v, label: v }))
 }
+
+/**
+ * Mescla os valores padrão com valores já cadastrados (ex.: itens adicionados
+ * manualmente e salvos em leads/campanhas), removendo vazios e duplicados e
+ * preservando a ordem: padrões primeiro, extras em seguida.
+ */
+export function opcoesComExtras(padroes: readonly string[], ...extras: Array<string | null | undefined>): OpcaoSelect[] {
+  const vistos = new Set<string>()
+  const resultado: OpcaoSelect[] = []
+  for (const valor of [...padroes, ...extras]) {
+    const limpo = (valor ?? "").trim()
+    if (!limpo || vistos.has(limpo)) continue
+    vistos.add(limpo)
+    resultado.push({ value: limpo, label: limpo })
+  }
+  return resultado
+}

@@ -4,7 +4,8 @@ import { useActionState, useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 
 import { createLeadAction, updateLeadAction, type ActionState } from "@/app/actions/leads"
-import { SelectField, opcoesDe } from "@/components/shared/select-field"
+import { CreatableSelectField } from "@/components/shared/creatable-select-field"
+import { SelectField, opcoesComExtras } from "@/components/shared/select-field"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -41,16 +42,26 @@ export interface CampanhaOpcao {
   nome: string
 }
 
+/** Valores de segmentação já cadastrados na base, para reaproveitar como opções. */
+export interface ValoresSegmentacao {
+  produtos: string[]
+  marcas: string[]
+  personas: string[]
+  regioes: string[]
+}
+
 export function LeadFormDialog({
   open,
   onOpenChange,
   lead,
   campanhas,
+  valoresExistentes,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   lead?: Lead | null
   campanhas: CampanhaOpcao[]
+  valoresExistentes?: ValoresSegmentacao
 }) {
   const editando = Boolean(lead)
   const [state, formAction, pending] = useActionState(
@@ -88,6 +99,23 @@ export function LeadFormDialog({
 
   const erros = state.errors ?? {}
   const opcoesCampanha = useMemo(() => [{ value: "none", label: "Sem campanha" }, ...campanhas.map((c) => ({ value: c.id, label: c.nome }))], [campanhas])
+
+  const opcoesProduto = useMemo(
+    () => opcoesComExtras(PRODUTOS, ...(valoresExistentes?.produtos ?? []), lead?.produto),
+    [valoresExistentes, lead],
+  )
+  const opcoesMarca = useMemo(
+    () => opcoesComExtras(MARCAS, ...(valoresExistentes?.marcas ?? []), lead?.marca),
+    [valoresExistentes, lead],
+  )
+  const opcoesPersona = useMemo(
+    () => opcoesComExtras(PERSONAS, ...(valoresExistentes?.personas ?? []), lead?.persona),
+    [valoresExistentes, lead],
+  )
+  const opcoesRegiao = useMemo(
+    () => opcoesComExtras(REGIOES, ...(valoresExistentes?.regioes ?? []), lead?.regiao),
+    [valoresExistentes, lead],
+  )
 
   function alternarCampanha(campanhaId: string, checked: boolean) {
     setCampanhasSelecionadas((atual) => (checked ? [...atual, campanhaId] : atual.filter((id) => id !== campanhaId)))
@@ -133,13 +161,14 @@ export function LeadFormDialog({
 
             <Field data-invalid={Boolean(erros.produto)}>
               <FieldLabel htmlFor="produto">Produto</FieldLabel>
-              <SelectField
+              <CreatableSelectField
                 id="produto"
                 name="produto"
                 value={produto}
                 onValueChange={setProduto}
-                opcoes={opcoesDe(PRODUTOS)}
+                opcoes={opcoesProduto}
                 placeholder="Selecione o produto"
+                buscaPlaceholder="Buscar ou adicionar produto..."
                 className="w-full"
                 ariaInvalid={Boolean(erros.produto)}
               />
@@ -148,13 +177,14 @@ export function LeadFormDialog({
 
             <Field data-invalid={Boolean(erros.marca)}>
               <FieldLabel htmlFor="marca">Marca</FieldLabel>
-              <SelectField
+              <CreatableSelectField
                 id="marca"
                 name="marca"
                 value={marca}
                 onValueChange={setMarca}
-                opcoes={opcoesDe(MARCAS)}
+                opcoes={opcoesMarca}
                 placeholder="Selecione a marca"
+                buscaPlaceholder="Buscar ou adicionar marca..."
                 className="w-full"
                 ariaInvalid={Boolean(erros.marca)}
               />
@@ -163,13 +193,14 @@ export function LeadFormDialog({
 
             <Field data-invalid={Boolean(erros.persona)}>
               <FieldLabel htmlFor="persona">Persona</FieldLabel>
-              <SelectField
+              <CreatableSelectField
                 id="persona"
                 name="persona"
                 value={persona}
                 onValueChange={setPersona}
-                opcoes={opcoesDe(PERSONAS)}
+                opcoes={opcoesPersona}
                 placeholder="Selecione a persona"
+                buscaPlaceholder="Buscar ou adicionar persona..."
                 className="w-full"
                 ariaInvalid={Boolean(erros.persona)}
               />
@@ -178,13 +209,14 @@ export function LeadFormDialog({
 
             <Field data-invalid={Boolean(erros.regiao)}>
               <FieldLabel htmlFor="regiao">Região</FieldLabel>
-              <SelectField
+              <CreatableSelectField
                 id="regiao"
                 name="regiao"
                 value={regiao}
                 onValueChange={setRegiao}
-                opcoes={opcoesDe(REGIOES)}
+                opcoes={opcoesRegiao}
                 placeholder="Selecione a região"
+                buscaPlaceholder="Buscar ou adicionar região..."
                 className="w-full"
                 ariaInvalid={Boolean(erros.regiao)}
               />

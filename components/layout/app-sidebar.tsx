@@ -10,6 +10,7 @@ import {
   Plug,
   Radio,
   Settings,
+  Target,
   TriangleAlert,
   Users,
   Zap,
@@ -37,6 +38,7 @@ const navPrincipal = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Leads", url: "/leads", icon: Users },
   { title: "Campanhas", url: "/campanhas", icon: Radio },
+  { title: "Segmentação", url: "/segmentacao", icon: Target },
 ]
 
 const navOperacao = [

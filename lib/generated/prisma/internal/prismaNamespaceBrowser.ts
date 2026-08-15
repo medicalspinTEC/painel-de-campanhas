@@ -55,6 +55,7 @@ export const ModelName = {
   Campaign: 'Campaign',
   LeadCampaign: 'LeadCampaign',
   CampaignMessage: 'CampaignMessage',
+  Produto: 'Produto',
   Settings: 'Settings',
   Webhook: 'Webhook',
   AppLog: 'AppLog',
@@ -138,6 +139,18 @@ export const CampaignMessageScalarFieldEnum = {
 } as const
 
 export type CampaignMessageScalarFieldEnum = (typeof CampaignMessageScalarFieldEnum)[keyof typeof CampaignMessageScalarFieldEnum]
+
+
+export const ProdutoScalarFieldEnum = {
+  id: 'id',
+  nome: 'nome',
+  descricao: 'descricao',
+  ativo: 'ativo',
+  criadoEm: 'criadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type ProdutoScalarFieldEnum = (typeof ProdutoScalarFieldEnum)[keyof typeof ProdutoScalarFieldEnum]
 
 
 export const SettingsScalarFieldEnum = {
