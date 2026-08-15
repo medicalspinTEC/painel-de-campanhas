@@ -47,10 +47,10 @@ export type EndpointDoc = {
 
 /** Valores permitidos, reaproveitados nas descrições. */
 export const ENUMS = {
-  produto: ["Consórcio Imobiliário", "Consórcio de Veículos", "Seguro de Vida", "Financiamento", "Previdência"],
-  marca: ["Ápice", "NovaVida", "Prisma", "Vértice"],
-  persona: ["Investidor", "Primeira Casa", "Empresário", "Família", "Autônomo"],
-  regiao: ["Sudeste", "Sul", "Centro-Oeste", "Nordeste", "Norte"],
+  produto: [],
+  marca: [],
+  persona: [],
+  regiao: [],
   leadStatus: ["novo", "em_campanha", "respondeu", "qualificado", "encerrado"],
   campaignStatus: ["rascunho", "ativa", "pausada", "encerrada"],
   messageKind: ["enviada", "falha", "resposta", "agendada"],

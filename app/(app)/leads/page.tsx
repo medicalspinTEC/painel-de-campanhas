@@ -1,5 +1,6 @@
 import { LeadsTable } from "@/components/features/leads/leads-table"
 import { PageHeader } from "@/components/shared/page-header"
+import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
 import { listCampaigns } from "@/services/campaigns"
 import { listLeads } from "@/services/leads"
 import { listNomesProdutosAtivos } from "@/services/produtos"
@@ -10,10 +11,13 @@ export const metadata = {
 }
 
 export default async function LeadsPage() {
-  const [leads, campanhas, produtos] = await Promise.all([
+  const [leads, campanhas, produtos, marcas, personas, regioes] = await Promise.all([
     listLeads(),
     listCampaigns(),
     listNomesProdutosAtivos(),
+    servicoMarcas.listarNomesAtivos(),
+    servicoPersonas.listarNomesAtivos(),
+    servicoRegioes.listarNomesAtivos(),
   ])
 
   return (
@@ -26,6 +30,9 @@ export default async function LeadsPage() {
         leads={leads}
         campanhas={campanhas.map((c) => ({ id: c.id, nome: c.nome }))}
         produtos={produtos}
+        marcas={marcas}
+        personas={personas}
+        regioes={regioes}
       />
     </div>
   )

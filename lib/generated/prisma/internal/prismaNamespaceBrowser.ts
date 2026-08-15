@@ -56,6 +56,9 @@ export const ModelName = {
   LeadCampaign: 'LeadCampaign',
   CampaignMessage: 'CampaignMessage',
   Produto: 'Produto',
+  Marca: 'Marca',
+  Persona: 'Persona',
+  Regiao: 'Regiao',
   Settings: 'Settings',
   Webhook: 'Webhook',
   AppLog: 'AppLog',
@@ -151,6 +154,42 @@ export const ProdutoScalarFieldEnum = {
 } as const
 
 export type ProdutoScalarFieldEnum = (typeof ProdutoScalarFieldEnum)[keyof typeof ProdutoScalarFieldEnum]
+
+
+export const MarcaScalarFieldEnum = {
+  id: 'id',
+  nome: 'nome',
+  descricao: 'descricao',
+  ativo: 'ativo',
+  criadoEm: 'criadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type MarcaScalarFieldEnum = (typeof MarcaScalarFieldEnum)[keyof typeof MarcaScalarFieldEnum]
+
+
+export const PersonaScalarFieldEnum = {
+  id: 'id',
+  nome: 'nome',
+  descricao: 'descricao',
+  ativo: 'ativo',
+  criadoEm: 'criadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type PersonaScalarFieldEnum = (typeof PersonaScalarFieldEnum)[keyof typeof PersonaScalarFieldEnum]
+
+
+export const RegiaoScalarFieldEnum = {
+  id: 'id',
+  nome: 'nome',
+  descricao: 'descricao',
+  ativo: 'ativo',
+  criadoEm: 'criadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type RegiaoScalarFieldEnum = (typeof RegiaoScalarFieldEnum)[keyof typeof RegiaoScalarFieldEnum]
 
 
 export const SettingsScalarFieldEnum = {

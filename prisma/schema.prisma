@@ -167,6 +167,46 @@ model Produto {
   @@index([ativo, nome])
 }
 
+/// Catálogo de marcas gerenciado na página de Segmentação. Mesma lógica de
+/// Produto: o nome é a chave de negócio e os leads guardam a marca como texto.
+model Marca {
+  id        String  @id @default(cuid())
+  nome      String  @unique
+  descricao String?
+  ativo     Boolean @default(true)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@index([ativo, nome])
+}
+
+/// Catálogo de personas gerenciado na página de Segmentação.
+model Persona {
+  id        String  @id @default(cuid())
+  nome      String  @unique
+  descricao String?
+  ativo     Boolean @default(true)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@index([ativo, nome])
+}
+
+/// Catálogo de regiões gerenciado na página de Segmentação.
+model Regiao {
+  id        String  @id @default(cuid())
+  nome      String  @unique
+  descricao String?
+  ativo     Boolean @default(true)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@index([ativo, nome])
+}
+
 /// Preferências da engine. Tabela de linha única: `id` é fixo em "default"
 /// para que um upsert simples sirva tanto para criar quanto para atualizar.
 model Settings {

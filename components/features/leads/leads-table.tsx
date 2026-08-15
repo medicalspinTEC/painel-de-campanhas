@@ -59,11 +59,17 @@ export function LeadsTable({
   leads,
   campanhas,
   produtos = [],
+  marcas = [],
+  personas = [],
+  regioes = [],
 }: {
   leads: LeadRow[]
   campanhas: CampanhaOpcao[]
-  /** Produtos ativos cadastrados na página de Segmentação. */
+  /** Catálogos ativos cadastrados na página de Segmentação. */
   produtos?: string[]
+  marcas?: string[]
+  personas?: string[]
+  regioes?: string[]
 }) {
   const [busca, setBusca] = useState("")
   const [status, setStatus] = useState(TODOS)
@@ -80,14 +86,14 @@ export function LeadsTable({
 
   const valoresExistentes = useMemo(
     () => ({
-      // Produtos cadastrados na Segmentação primeiro; em seguida os valores
+      // Itens cadastrados na Segmentação primeiro; em seguida os valores
       // legados que já aparecem em leads existentes.
       produtos: [...new Set([...produtos, ...leads.map((l) => l.produto).filter(Boolean)])],
-      marcas: [...new Set(leads.map((l) => l.marca).filter(Boolean))],
-      personas: [...new Set(leads.map((l) => l.persona).filter(Boolean))],
-      regioes: [...new Set(leads.map((l) => l.regiao).filter(Boolean))],
+      marcas: [...new Set([...marcas, ...leads.map((l) => l.marca).filter(Boolean)])],
+      personas: [...new Set([...personas, ...leads.map((l) => l.persona).filter(Boolean)])],
+      regioes: [...new Set([...regioes, ...leads.map((l) => l.regiao).filter(Boolean)])],
     }),
-    [leads, produtos],
+    [leads, produtos, marcas, personas, regioes],
   )
 
   const filtrados = useMemo(() => {

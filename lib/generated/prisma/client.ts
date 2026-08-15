@@ -71,6 +71,22 @@ export type CampaignMessage = Prisma.CampaignMessageModel
  */
 export type Produto = Prisma.ProdutoModel
 /**
+ * Model Marca
+ * Catálogo de marcas gerenciado na página de Segmentação. Mesma lógica de
+ * Produto: o nome é a chave de negócio e os leads guardam a marca como texto.
+ */
+export type Marca = Prisma.MarcaModel
+/**
+ * Model Persona
+ * Catálogo de personas gerenciado na página de Segmentação.
+ */
+export type Persona = Prisma.PersonaModel
+/**
+ * Model Regiao
+ * Catálogo de regiões gerenciado na página de Segmentação.
+ */
+export type Regiao = Prisma.RegiaoModel
+/**
  * Model Settings
  * Preferências da engine. Tabela de linha única: `id` é fixo em "default"
  * para que um upsert simples sirva tanto para criar quanto para atualizar.
