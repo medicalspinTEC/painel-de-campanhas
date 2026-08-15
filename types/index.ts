@@ -10,13 +10,16 @@ export type EventType =
   | "campanha_iniciada"
   | "campanha_encerrada"
 
-export type Produto = "Consórcio Imobiliário" | "Consórcio de Veículos" | "Seguro de Vida" | "Financiamento" | "Previdência"
+// As dimensões de segmentação (produto, marca, persona, região) são criadas
+// pelo usuário na aba de Segmentação e ficam guardadas como texto livre. Por
+// isso são apenas `string` — não há mais valores fixos padrão no código.
+export type Produto = string
 
-export type Marca = "Ápice" | "NovaVida" | "Prisma" | "Vértice"
+export type Marca = string
 
-export type Persona = "Investidor" | "Primeira Casa" | "Empresário" | "Família" | "Autônomo"
+export type Persona = string
 
-export type Regiao = "Sudeste" | "Sul" | "Centro-Oeste" | "Nordeste" | "Norte"
+export type Regiao = string
 
 export interface Lead {
   id: string
@@ -85,20 +88,6 @@ export interface Kpis {
     taxaQualificacao: number
   }
 }
-
-export const PRODUTOS: Produto[] = [
-  "Consórcio Imobiliário",
-  "Consórcio de Veículos",
-  "Seguro de Vida",
-  "Financiamento",
-  "Previdência",
-]
-
-export const MARCAS: Marca[] = ["Ápice", "NovaVida", "Prisma", "Vértice"]
-
-export const PERSONAS: Persona[] = ["Investidor", "Primeira Casa", "Empresário", "Família", "Autônomo"]
-
-export const REGIOES: Regiao[] = ["Sudeste", "Sul", "Centro-Oeste", "Nordeste", "Norte"]
 
 export const LEAD_STATUS_LABEL: Record<LeadStatus, string> = {
   novo: "Novo",

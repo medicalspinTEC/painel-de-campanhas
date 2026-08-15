@@ -21,10 +21,6 @@ import { formatNumber, renderTemplate } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import {
   CAMPAIGN_STATUS_LABEL,
-  MARCAS,
-  PERSONAS,
-  PRODUTOS,
-  REGIOES,
   type Campaign,
   type CampaignStatus,
 } from "@/types"
@@ -61,7 +57,22 @@ function novaMensagem(dia: number): MensagemRascunho {
   return { key: Math.random().toString(36).slice(2), dia, horario: "09:00", texto: "" }
 }
 
-export function CampaignEditor({ campanha, leads }: { campanha?: Campaign; leads: LeadResumo[] }) {
+export function CampaignEditor({
+  campanha,
+  leads,
+  produtos = [],
+  marcas = [],
+  personas = [],
+  regioes = [],
+}: {
+  campanha?: Campaign
+  leads: LeadResumo[]
+  /** Catálogos ativos cadastrados na página de Segmentação. */
+  produtos?: string[]
+  marcas?: string[]
+  personas?: string[]
+  regioes?: string[]
+}) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -102,35 +113,36 @@ export function CampaignEditor({ campanha, leads }: { campanha?: Campaign; leads
     [leads, produto, marca, persona, regiao],
   )
 
-  // Opções derivam dos valores padrão + o que já existe nos leads + o filtro
-  // salvo na campanha, para que itens adicionados manualmente sigam disponíveis.
+  // Opções derivam dos catálogos cadastrados na Segmentação + o que já existe
+  // nos leads + o filtro salvo na campanha, para que itens legados sigam
+  // disponíveis mesmo que não estejam mais no catálogo.
   const opcoesProduto = useMemo(
     () => [
       { value: QUALQUER, label: "Qualquer produto" },
-      ...opcoesComExtras(PRODUTOS, ...leads.map((l) => l.produto), campanha?.filtros.produto),
+      ...opcoesComExtras(produtos, ...leads.map((l) => l.produto), campanha?.filtros.produto),
     ],
-    [leads, campanha],
+    [produtos, leads, campanha],
   )
   const opcoesMarca = useMemo(
     () => [
       { value: QUALQUER, label: "Qualquer marca" },
-      ...opcoesComExtras(MARCAS, ...leads.map((l) => l.marca), campanha?.filtros.marca),
+      ...opcoesComExtras(marcas, ...leads.map((l) => l.marca), campanha?.filtros.marca),
     ],
-    [leads, campanha],
+    [marcas, leads, campanha],
   )
   const opcoesPersona = useMemo(
     () => [
       { value: QUALQUER, label: "Qualquer persona" },
-      ...opcoesComExtras(PERSONAS, ...leads.map((l) => l.persona), campanha?.filtros.persona),
+      ...opcoesComExtras(personas, ...leads.map((l) => l.persona), campanha?.filtros.persona),
     ],
-    [leads, campanha],
+    [personas, leads, campanha],
   )
   const opcoesRegiao = useMemo(
     () => [
       { value: QUALQUER, label: "Qualquer região" },
-      ...opcoesComExtras(REGIOES, ...leads.map((l) => l.regiao), campanha?.filtros.regiao),
+      ...opcoesComExtras(regioes, ...leads.map((l) => l.regiao), campanha?.filtros.regiao),
     ],
-    [leads, campanha],
+    [regioes, leads, campanha],
   )
 
   function atualizarMensagem(index: number, patch: Partial<MensagemRascunho>) {

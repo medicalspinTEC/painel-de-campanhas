@@ -22,10 +22,6 @@ import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import {
   LEAD_STATUS_LABEL,
-  MARCAS,
-  PERSONAS,
-  PRODUTOS,
-  REGIOES,
   type LeadStatus,
   type Lead,
 } from "@/types"
@@ -101,19 +97,19 @@ export function LeadFormDialog({
   const opcoesCampanha = useMemo(() => [{ value: "none", label: "Sem campanha" }, ...campanhas.map((c) => ({ value: c.id, label: c.nome }))], [campanhas])
 
   const opcoesProduto = useMemo(
-    () => opcoesComExtras(PRODUTOS, ...(valoresExistentes?.produtos ?? []), lead?.produto),
+    () => opcoesComExtras(valoresExistentes?.produtos ?? [], lead?.produto),
     [valoresExistentes, lead],
   )
   const opcoesMarca = useMemo(
-    () => opcoesComExtras(MARCAS, ...(valoresExistentes?.marcas ?? []), lead?.marca),
+    () => opcoesComExtras(valoresExistentes?.marcas ?? [], lead?.marca),
     [valoresExistentes, lead],
   )
   const opcoesPersona = useMemo(
-    () => opcoesComExtras(PERSONAS, ...(valoresExistentes?.personas ?? []), lead?.persona),
+    () => opcoesComExtras(valoresExistentes?.personas ?? [], lead?.persona),
     [valoresExistentes, lead],
   )
   const opcoesRegiao = useMemo(
-    () => opcoesComExtras(REGIOES, ...(valoresExistentes?.regioes ?? []), lead?.regiao),
+    () => opcoesComExtras(valoresExistentes?.regioes ?? [], lead?.regiao),
     [valoresExistentes, lead],
   )
 

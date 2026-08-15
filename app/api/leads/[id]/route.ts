@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { deleteLead, getLead, getLeadTimeline, updateLead, type LeadInput } from "@/services/leads"
-import { MARCAS, PERSONAS, PRODUTOS, REGIOES, type LeadStatus } from "@/types"
+import { type LeadStatus } from "@/types"
 
 /**
  * Lead individual.
@@ -53,13 +53,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     ? dados.campanhasIds.map((cid) => String(cid).trim()).filter(Boolean)
     : []
 
-  // Apenas nome e telefone são obrigatórios.
+  // Apenas nome e telefone são obrigatórios. As dimensões de segmentação
+  // (produto, marca, persona, região) são cadastradas pelo usuário na aba de
+  // Segmentação e aceitas como texto livre — não há mais lista fixa a validar.
   if (nome.length < 3) errors.nome = "Informe o nome completo do lead."
   if (telefone.replace(/\D/g, "").length < 10) errors.telefone = "Telefone precisa ter DDD e número."
-  if (produto && !PRODUTOS.includes(produto as never)) errors.produto = "Selecione um produto válido."
-  if (marca && !MARCAS.includes(marca as never)) errors.marca = "Selecione uma marca válida."
-  if (persona && !PERSONAS.includes(persona as never)) errors.persona = "Selecione uma persona válida."
-  if (regiao && !REGIOES.includes(regiao as never)) errors.regiao = "Selecione uma região válida."
 
   if (Object.keys(errors).length > 0) {
     return NextResponse.json({ ok: false, erro: "Corrija os campos destacados.", errors }, { status: 400 })

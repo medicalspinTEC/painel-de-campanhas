@@ -45,7 +45,7 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatNumber, formatRelative } from "@/lib/format"
 import type { LeadRow } from "@/services/leads"
-import { LEAD_STATUS_LABEL, MARCAS, PRODUTOS, REGIOES, type LeadStatus } from "@/types"
+import { LEAD_STATUS_LABEL, type LeadStatus } from "@/types"
 
 const TODOS = "todos"
 const POR_PAGINA = 12
@@ -199,19 +199,19 @@ export function LeadsTable({
             <SelectField
               value={produto}
               onValueChange={resetPagina(setProduto)}
-              opcoes={[{ value: TODOS, label: "Todos os produtos" }, ...opcoesComExtras(PRODUTOS, ...valoresExistentes.produtos)]}
+              opcoes={[{ value: TODOS, label: "Todos os produtos" }, ...opcoesComExtras(valoresExistentes.produtos)]}
               className="w-full"
             />
             <SelectField
               value={marca}
               onValueChange={resetPagina(setMarca)}
-              opcoes={[{ value: TODOS, label: "Todas as marcas" }, ...opcoesComExtras(MARCAS, ...valoresExistentes.marcas)]}
+              opcoes={[{ value: TODOS, label: "Todas as marcas" }, ...opcoesComExtras(valoresExistentes.marcas)]}
               className="w-full"
             />
             <SelectField
               value={regiao}
               onValueChange={resetPagina(setRegiao)}
-              opcoes={[{ value: TODOS, label: "Todas as regiões" }, ...opcoesComExtras(REGIOES, ...valoresExistentes.regioes)]}
+              opcoes={[{ value: TODOS, label: "Todas as regiões" }, ...opcoesComExtras(valoresExistentes.regioes)]}
               className="w-full"
             />
             <SelectField
