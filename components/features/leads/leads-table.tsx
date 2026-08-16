@@ -238,9 +238,12 @@ export function LeadsTable({
               size="sm"
               className="w-56"
             />
+            <Button variant="destructive" size="sm" onClick={() => setLeadExcluindo({ id: selecionados[0], nome: "leads selecionados" } as LeadRow)} disabled={pending}>
+              Excluir
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => setSelecionados([])} disabled={pending}>
               Limpar
-            </Button>
+            </Button>           
           </div>
         </div>
       ) : null}
