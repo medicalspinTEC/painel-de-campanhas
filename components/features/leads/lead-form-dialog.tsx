@@ -4,7 +4,6 @@ import { useActionState, useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 
 import { createLeadAction, updateLeadAction, type ActionState } from "@/app/actions/leads"
-import { CreatableSelectField } from "@/components/shared/creatable-select-field"
 import { SelectField, opcoesComExtras } from "@/components/shared/select-field"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -119,7 +118,7 @@ export function LeadFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="flex max-h-[90svh] flex-col gap-0 overflow-hidden sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{editando ? "Editar lead" : "Novo lead"}</DialogTitle>
           <DialogDescription>
@@ -127,10 +126,10 @@ export function LeadFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form action={formAction} className="flex flex-col gap-4">
+        <form action={formAction} className="flex min-h-0 flex-1 flex-col">
           {lead ? <input type="hidden" name="id" value={lead.id} /> : null}
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto py-4 sm:grid-cols-2">
             <Field data-invalid={Boolean(erros.nome)}>
               <FieldLabel htmlFor="nome">Nome</FieldLabel>
               <Input
@@ -157,14 +156,13 @@ export function LeadFormDialog({
 
             <Field data-invalid={Boolean(erros.produto)}>
               <FieldLabel htmlFor="produto">Produto</FieldLabel>
-              <CreatableSelectField
+              <SelectField
                 id="produto"
                 name="produto"
                 value={produto}
                 onValueChange={setProduto}
                 opcoes={opcoesProduto}
                 placeholder="Selecione o produto"
-                buscaPlaceholder="Buscar ou adicionar produto..."
                 className="w-full"
                 ariaInvalid={Boolean(erros.produto)}
               />
@@ -173,14 +171,13 @@ export function LeadFormDialog({
 
             <Field data-invalid={Boolean(erros.marca)}>
               <FieldLabel htmlFor="marca">Marca</FieldLabel>
-              <CreatableSelectField
+              <SelectField
                 id="marca"
                 name="marca"
                 value={marca}
                 onValueChange={setMarca}
                 opcoes={opcoesMarca}
                 placeholder="Selecione a marca"
-                buscaPlaceholder="Buscar ou adicionar marca..."
                 className="w-full"
                 ariaInvalid={Boolean(erros.marca)}
               />
@@ -189,14 +186,13 @@ export function LeadFormDialog({
 
             <Field data-invalid={Boolean(erros.persona)}>
               <FieldLabel htmlFor="persona">Persona</FieldLabel>
-              <CreatableSelectField
+              <SelectField
                 id="persona"
                 name="persona"
                 value={persona}
                 onValueChange={setPersona}
                 opcoes={opcoesPersona}
                 placeholder="Selecione a persona"
-                buscaPlaceholder="Buscar ou adicionar persona..."
                 className="w-full"
                 ariaInvalid={Boolean(erros.persona)}
               />
@@ -205,14 +201,13 @@ export function LeadFormDialog({
 
             <Field data-invalid={Boolean(erros.regiao)}>
               <FieldLabel htmlFor="regiao">Região</FieldLabel>
-              <CreatableSelectField
+              <SelectField
                 id="regiao"
                 name="regiao"
                 value={regiao}
                 onValueChange={setRegiao}
                 opcoes={opcoesRegiao}
                 placeholder="Selecione a região"
-                buscaPlaceholder="Buscar ou adicionar região..."
                 className="w-full"
                 ariaInvalid={Boolean(erros.regiao)}
               />
@@ -277,7 +272,7 @@ export function LeadFormDialog({
             </Field>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="border-t border-border pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>

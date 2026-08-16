@@ -66,6 +66,7 @@ interface CatalogoDelegate {
   findFirst(args: unknown): Promise<{ id: string } | ItemRow | null>
   create(args: unknown): Promise<ItemRow>
   update(args: unknown): Promise<ItemRow>
+  upsert(args: unknown): Promise<ItemRow>
   delete(args: unknown): Promise<unknown>
 }
 
@@ -75,6 +76,13 @@ export interface ServicoCatalogo {
   criar(input: ItemCatalogoInput): Promise<ItemCatalogo>
   atualizar(id: string, input: ItemCatalogoInput): Promise<ItemCatalogo | null>
   excluir(id: string): Promise<void>
+  /**
+   * Garante que exista um item ativo com este nome, cadastrando-o quando ainda
+   * não existir. Usado pelo cadastro automático das dimensões de segmentação
+   * quando um lead chega com um valor que não está no catálogo. É idempotente:
+   * não gera erro nem duplica se o nome já existir.
+   */
+  garantir(nome: string): Promise<void>
 }
 
 /** Cria um serviço de catálogo apontando para um delegate específico do Prisma. */
@@ -137,7 +145,19 @@ export function criarServicoCatalogo(
     await delegate().delete({ where: { id } })
   }
 
-  return { listar, listarNomesAtivos, criar, atualizar, excluir }
+  async function garantir(nome: string): Promise<void> {
+    const limpo = nome.trim()
+    if (!limpo) return
+    // `nome` é @unique no schema, então o upsert é idempotente: cria quando o
+    // valor ainda não existe e não faz nada quando já está cadastrado.
+    await delegate().upsert({
+      where: { nome: limpo },
+      create: { nome: limpo, ativo: true },
+      update: {},
+    })
+  }
+
+  return { listar, listarNomesAtivos, criar, atualizar, excluir, garantir }
 }
 
 /** Delegates de cada catálogo. Resolvidos sob demanda (o Prisma é um Proxy). */

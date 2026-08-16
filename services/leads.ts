@@ -2,7 +2,44 @@ import { prisma } from "@/lib/prisma"
 import { recordAppLog } from "@/services/app-logs"
 import { sendCampaignMessageToLead } from "@/services/evolution"
 import { emitWebhookEvent } from "@/services/webhooks"
+import { garantirProduto } from "@/services/produtos"
+import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
 import type { Lead, LeadStatus, TimelineEvent } from "@/types"
+
+/**
+ * Cadastra automaticamente no catálogo de segmentação quaisquer valores de
+ * produto, marca, persona ou região que ainda não existam. Chamada ao criar ou
+ * atualizar um lead: como as requisições POST aceitam qualquer valor de texto
+ * nessas dimensões, um valor novo passa a existir como opção sem ação manual.
+ * Cada `garantir` é idempotente (upsert por `nome`), então valores vazios ou já
+ * cadastrados não geram efeito nem erro.
+ */
+async function garantirDimensoesSegmentacao(dimensoes: {
+  produto?: string | null
+  marca?: string | null
+  persona?: string | null
+  regiao?: string | null
+}): Promise<void> {
+  const tarefas: Array<Promise<void>> = []
+  if (dimensoes.produto) tarefas.push(garantirProduto(dimensoes.produto))
+  if (dimensoes.marca) tarefas.push(servicoMarcas.garantir(dimensoes.marca))
+  if (dimensoes.persona) tarefas.push(servicoPersonas.garantir(dimensoes.persona))
+  if (dimensoes.regiao) tarefas.push(servicoRegioes.garantir(dimensoes.regiao))
+  if (tarefas.length === 0) return
+
+  try {
+    await Promise.all(tarefas)
+  } catch (error) {
+    // O cadastro automático é complementar: uma falha aqui não deve impedir a
+    // criação/atualização do lead. Apenas registramos para diagnóstico.
+    await recordAppLog({
+      nivel: "aviso",
+      origem: "leads",
+      mensagem: "Falha ao cadastrar automaticamente dimensões de segmentação do lead.",
+      detalhes: error,
+    })
+  }
+}
 
 function toLeadCampaignIds(campanhas: Array<{ campanhaId: string }> | null | undefined): string[] {
   return (campanhas ?? []).map((item) => item.campanhaId)
@@ -197,6 +234,16 @@ function normalizarNotas(notas: string | null | undefined): string | null {
 
 export async function createLead(input: LeadInput): Promise<Lead> {
   const agora = new Date()
+
+  // Cadastra automaticamente no catálogo qualquer produto/marca/persona/região
+  // que ainda não exista, antes de gravar o lead.
+  await garantirDimensoesSegmentacao({
+    produto: input.produto,
+    marca: input.marca,
+    persona: input.persona,
+    regiao: input.regiao,
+  })
+
   const campanha = input.campanhaId
     ? await prisma.campaign.findUnique({ where: { id: input.campanhaId }, select: { nome: true } })
     : null
@@ -258,6 +305,15 @@ async function emitirStatus(lead: Lead, anterior: LeadStatus | null) {
 export async function updateLead(id: string, input: LeadInput): Promise<Lead | null> {
   const atual = await prisma.lead.findUnique({ where: { id }, select: { campanhaId: true, status: true } })
   if (!atual) return null
+
+  // Cadastra automaticamente no catálogo os valores de segmentação enviados que
+  // ainda não existam (somente as dimensões presentes no corpo da requisição).
+  await garantirDimensoesSegmentacao({
+    produto: input.produto,
+    marca: input.marca,
+    persona: input.persona,
+    regiao: input.regiao,
+  })
 
   const trocouCampanha = atual.campanhaId !== input.campanhaId
   const agora = new Date()

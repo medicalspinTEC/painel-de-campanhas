@@ -101,3 +101,19 @@ export async function updateProduto(id: string, input: ProdutoInput): Promise<Pr
 export async function deleteProduto(id: string): Promise<void> {
   await prisma.produto.delete({ where: { id } })
 }
+
+/**
+ * Garante que exista um produto ativo com este nome, cadastrando-o quando ainda
+ * não existir. Usado pelo cadastro automático de segmentação quando um lead
+ * chega com um produto que não está no catálogo. É idempotente: `nome` é
+ * @unique no schema, então o upsert não duplica nem gera erro se já existir.
+ */
+export async function garantirProduto(nome: string): Promise<void> {
+  const limpo = nome.trim()
+  if (!limpo) return
+  await prisma.produto.upsert({
+    where: { nome: limpo },
+    create: { nome: limpo, ativo: true },
+    update: {},
+  })
+}
