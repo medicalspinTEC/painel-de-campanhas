@@ -128,12 +128,32 @@ export async function dispatchWebhook(id: string, evento: string, dados: unknown
  */
 const DISPAROS_WEBHOOK_URL = process.env.N8N_DISPAROS_WEBHOOK_URL?.trim() || "https://n8n-www4kggggc4c8k8ow4w8g4g0.95.217.164.173.sslip.io/webhook/disparos"
 
+/**
+ * Agenda uma tarefa para depois da resposta usando `after`, mas com fallback.
+ *
+ * `after` só existe dentro de um escopo de requisição (server action, route
+ * handler ou render). A engine de disparo, porém, roda em um timer de background
+ * (`instrumentation.ts`, via setInterval), fora de qualquer requisição — e nesse
+ * caso `after` lança "was called outside a request scope". Quando isso acontece,
+ * executamos a tarefa diretamente em background (fire-and-forget), sem bloquear
+ * o chamador e sem deixar o erro derrubar o envio da mensagem.
+ */
+function agendarEntrega(tarefa: () => Promise<void>): void {
+  try {
+    after(tarefa)
+  } catch {
+    void tarefa().catch((error) => {
+      console.error("[v0] Falha ao executar entrega de webhook em background:", error)
+    })
+  }
+}
+
 export async function emitWebhookEvent(evento: string, dados: unknown): Promise<void> {
   /*
    * A entrega roda depois da resposta: o usuário não deve esperar o tempo de rede
    * de até cinco destinos externos para ver o lead salvo na tela.
    */
-  after(async () => {
+  agendarEntrega(async () => {
     let destinos: Array<{ id: string; url: string; secret: string }> = []
     try {
       destinos = await prisma.webhook.findMany({
@@ -161,7 +181,7 @@ export async function emitWebhookEvent(evento: string, dados: unknown): Promise<
 export async function emitDisparoWebhook(payload: Record<string, unknown>): Promise<void> {
   if (!DISPAROS_WEBHOOK_URL) return
 
-  after(async () => {
+  agendarEntrega(async () => {
     try {
       await fetch(DISPAROS_WEBHOOK_URL, {
         method: "POST",
