@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
-import { createLead, listLeads, type LeadInput } from "@/services/leads"
+import { createLead, LeadValidationError, listLeads, type LeadInput } from "@/services/leads"
+import { validarTelefoneBR } from "@/lib/telefone"
 import { type LeadStatus } from "@/types"
 
 /**
@@ -53,7 +54,10 @@ export async function POST(request: Request) {
   // (produto, marca, persona, região) são cadastradas pelo usuário na aba de
   // Segmentação e aceitas como texto livre — não há mais lista fixa a validar.
   if (nome.length < 3) errors.nome = "Informe o nome completo do lead."
-  if (telefone.replace(/\D/g, "").length < 10) errors.telefone = "Telefone precisa ter DDD e número."
+  // Telefone deve incluir o código do país 55 (ex.: 5551999999999). O DDD 55 do
+  // RS com país vira 5555..., que é válido — a validação usa o total de dígitos.
+  const resultadoTelefone = validarTelefoneBR(telefone)
+  if (!resultadoTelefone.ok) errors.telefone = resultadoTelefone.erro ?? "Telefone inválido."
 
   if (Object.keys(errors).length > 0) {
     return NextResponse.json({ ok: false, erro: "Corrija os campos destacados.", errors }, { status: 400 })
@@ -76,6 +80,12 @@ export async function POST(request: Request) {
     const lead = await createLead(input)
     return NextResponse.json({ ok: true, lead }, { status: 201 })
   } catch (error) {
+    if (error instanceof LeadValidationError) {
+      return NextResponse.json(
+        { ok: false, erro: "Corrija os campos destacados.", errors: error.errors },
+        { status: 409 },
+      )
+    }
     console.error("[v0] POST /api/leads falhou:", error)
     return NextResponse.json({ ok: false, erro: "Não foi possível criar o lead." }, { status: 500 })
   }

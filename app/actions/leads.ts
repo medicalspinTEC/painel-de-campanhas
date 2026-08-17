@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache"
 
-import { assignCampaign, createLead, deleteLead, setLeadStatus, updateLead, updateLeadNotes, type LeadInput } from "@/services/leads"
+import { assignCampaign, createLead, deleteLead, LeadValidationError, setLeadStatus, updateLead, updateLeadNotes, type LeadInput } from "@/services/leads"
 import { recordAppLog } from "@/services/app-logs"
+import { validarTelefoneBR } from "@/lib/telefone"
 import { type LeadStatus } from "@/types"
 
 export interface ActionState {
@@ -36,7 +37,11 @@ function parseLead(formData: FormData) {
 
   // Apenas nome e telefone são obrigatórios.
   if (nome.length < 3) errors.nome = "Informe o nome completo do lead."
-  if (telefone.replace(/\D/g, "").length < 10) errors.telefone = "Telefone precisa ter DDD e número."
+  // Telefone deve incluir o código do país 55 antes do DDD (ex.: 5551999999999).
+  // Cuidado: DDD 55 (RS) COM país fica 5555..., o que é válido — a validação
+  // considera o total de dígitos, não a presença da sequência "55".
+  const resultadoTelefone = validarTelefoneBR(telefone)
+  if (!resultadoTelefone.ok) errors.telefone = resultadoTelefone.erro ?? "Telefone inválido."
   // Segmentação é texto livre: além dos valores padrão, a equipe pode adicionar
   // novos itens pelo formulário. Validamos apenas o tamanho máximo.
   if (produto.length > MAX_SEGMENTO) errors.produto = `Use no máximo ${MAX_SEGMENTO} caracteres.`
@@ -76,6 +81,9 @@ export async function createLeadAction(_prev: ActionState | undefined, formData:
   try {
     await createLead(input)
   } catch (error) {
+    if (error instanceof LeadValidationError) {
+      return { ok: false, message: "Corrija os campos destacados.", errors: error.errors }
+    }
     await recordAppLog({ origem: "leads", mensagem: "Falha ao criar lead.", detalhes: error })
     return { ok: false, message: "Não foi possível salvar o lead. Verifique a conexão com o banco." }
   }
@@ -93,6 +101,9 @@ export async function updateLeadAction(_prev: ActionState | undefined, formData:
     const atualizado = await updateLead(id, input)
     if (!atualizado) return { ok: false, message: "Lead não encontrado." }
   } catch (error) {
+    if (error instanceof LeadValidationError) {
+      return { ok: false, message: "Corrija os campos destacados.", errors: error.errors }
+    }
     await recordAppLog({ origem: "leads", mensagem: `Falha ao atualizar lead id=${id}.`, detalhes: error })
     return { ok: false, message: "Não foi possível atualizar o lead. Verifique a conexão com o banco." }
   }

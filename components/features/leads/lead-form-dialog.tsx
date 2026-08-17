@@ -148,10 +148,14 @@ export function LeadFormDialog({
                 id="telefone"
                 name="telefone"
                 defaultValue={lead?.telefone}
-                placeholder="(11) 98888-7777"
+                placeholder="5511988887777"
                 aria-invalid={Boolean(erros.telefone)}
               />
-              {erros.telefone ? <FieldError>{erros.telefone}</FieldError> : null}
+              {erros.telefone ? (
+                <FieldError>{erros.telefone}</FieldError>
+              ) : (
+                <p className="text-xs text-muted-foreground">Inclua o país 55 antes do DDD (ex.: 5511988887777).</p>
+              )}
             </Field>
 
             <Field data-invalid={Boolean(erros.produto)}>

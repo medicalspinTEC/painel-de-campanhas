@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { validarTelefoneBR, apenasDigitos } from "@/lib/telefone"
 import { recordAppLog } from "@/services/app-logs"
 import { sendCampaignMessageToLead } from "@/services/evolution"
 import { emitWebhookEvent } from "@/services/webhooks"
@@ -232,8 +233,88 @@ function normalizarNotas(notas: string | null | undefined): string | null {
   return limpo.length > 0 ? limpo : null
 }
 
+/**
+ * Erro de validação de lead que carrega os campos com problema. As camadas
+ * chamadoras (server actions e API REST) capturam e convertem em erros de
+ * formulário sem precisar repetir a regra de negócio.
+ */
+export class LeadValidationError extends Error {
+  errors: Record<string, string>
+  constructor(errors: Record<string, string>) {
+    super("Dados do lead inválidos.")
+    this.name = "LeadValidationError"
+    this.errors = errors
+  }
+}
+
+/**
+ * Valida o telefone (formato BR com país 55) e garante que não haja outro lead
+ * com o mesmo nome ou o mesmo telefone. Retorna o telefone já normalizado (só
+ * dígitos) que deve ser gravado. Lança `LeadValidationError` em caso de
+ * conflito ou formato inválido.
+ *
+ * `ignorarId` permite pular o próprio lead na checagem de duplicidade durante
+ * uma atualização (senão o lead colidiria consigo mesmo).
+ */
+async function validarUnicidadeEtelefone(
+  nome: string,
+  telefone: string,
+  ignorarId?: string,
+): Promise<string> {
+  const errors: Record<string, string> = {}
+
+  // 1) Formato do telefone: precisa incluir o código do país 55.
+  const resultadoTelefone = validarTelefoneBR(telefone)
+  if (!resultadoTelefone.ok) {
+    errors.telefone = resultadoTelefone.erro ?? "Telefone inválido."
+  }
+  const telefoneNormalizado = resultadoTelefone.normalizado
+
+  const nomeLimpo = nome.trim()
+
+  // 2) Duplicidade de nome (case-insensitive) e de telefone. Comparamos o
+  // telefone por dígitos removendo máscara de registros antigos que possam ter
+  // sido gravados com formatação.
+  const [leadMesmoNome, candidatosMesmoTelefone] = await Promise.all([
+    prisma.lead.findFirst({
+      where: {
+        nome: { equals: nomeLimpo, mode: "insensitive" },
+        ...(ignorarId ? { id: { not: ignorarId } } : {}),
+      },
+      select: { id: true },
+    }),
+    telefoneNormalizado.length > 0
+      ? prisma.lead.findMany({
+          where: ignorarId ? { id: { not: ignorarId } } : {},
+          select: { id: true, telefone: true },
+        })
+      : Promise.resolve([]),
+  ])
+
+  if (leadMesmoNome) {
+    errors.nome = "Já existe um lead cadastrado com este nome."
+  }
+
+  const telefoneDuplicado = candidatosMesmoTelefone.some(
+    (lead) => apenasDigitos(lead.telefone) === telefoneNormalizado,
+  )
+  if (telefoneDuplicado && !errors.telefone) {
+    errors.telefone = "Já existe um lead cadastrado com este telefone."
+  }
+
+  if (Object.keys(errors).length > 0) {
+    throw new LeadValidationError(errors)
+  }
+
+  return telefoneNormalizado
+}
+
 export async function createLead(input: LeadInput): Promise<Lead> {
   const agora = new Date()
+
+  // Impede telefone sem país 55 e cadastros duplicados de nome/telefone.
+  // Devolve o telefone normalizado (só dígitos) que será gravado.
+  const telefoneNormalizado = await validarUnicidadeEtelefone(input.nome, input.telefone)
 
   // Cadastra automaticamente no catálogo qualquer produto/marca/persona/região
   // que ainda não exista, antes de gravar o lead.
@@ -250,8 +331,8 @@ export async function createLead(input: LeadInput): Promise<Lead> {
 
   const lead = await prisma.lead.create({
     data: {
-      nome: input.nome,
-      telefone: input.telefone,
+      nome: input.nome.trim(),
+      telefone: telefoneNormalizado,
       produto: input.produto ?? "",
       marca: input.marca ?? "",
       persona: input.persona ?? "",
@@ -306,6 +387,9 @@ export async function updateLead(id: string, input: LeadInput): Promise<Lead | n
   const atual = await prisma.lead.findUnique({ where: { id }, select: { campanhaId: true, status: true } })
   if (!atual) return null
 
+  // Mesmas regras da criação, ignorando o próprio lead na checagem de duplicidade.
+  const telefoneNormalizado = await validarUnicidadeEtelefone(input.nome, input.telefone, id)
+
   // Cadastra automaticamente no catálogo os valores de segmentação enviados que
   // ainda não existam (somente as dimensões presentes no corpo da requisição).
   await garantirDimensoesSegmentacao({
@@ -326,8 +410,8 @@ export async function updateLead(id: string, input: LeadInput): Promise<Lead | n
   const lead = await prisma.lead.update({
     where: { id },
     data: {
-      nome: input.nome,
-      telefone: input.telefone,
+      nome: input.nome.trim(),
+      telefone: telefoneNormalizado,
       status: input.status,
       campanhaId: input.campanhaId,
       // Dimensões de segmentação são opcionais: só sobrescrevem quando enviadas.
