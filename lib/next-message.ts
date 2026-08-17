@@ -3,14 +3,17 @@
  *
  * A engine de disparo (externa) usa `entradaCampanhaEm` como marco zero: cada
  * mensagem tem um `dia` de offset e um `horario` fixo. A projeção abaixo
- * espelha essa lógica para que a UI mostre o mesmo instante que a engine vai
- * usar. Por isso ajustar `entradaCampanhaEm` adianta ou atrasa o próximo envio.
+ * espelha essa lógica reaproveitando o núcleo `campaign-engine-schedule`, para
+ * que a UI mostre o mesmo instante que a engine vai usar.
+ *
+ * IMPORTANTE: a recorrência é contada DEPOIS da última mensagem da sequência,
+ * não pela quantidade de mensagens. Se a recorrência for de 1 dia, o ciclo só
+ * reinicia 24h após o horário da última mensagem — e assim por diante.
  */
 
-export interface MensagemAgendada {
-  dia: number
-  horario: string
-}
+import { horarioAgendado, tempoReinicio, type SlotAgendado } from "./campaign-engine-schedule"
+
+export type MensagemAgendada = SlotAgendado
 
 export function calcularProximaMensagem(
   entradaCampanhaEm: string | Date | null,
@@ -18,25 +21,25 @@ export function calcularProximaMensagem(
   agora: Date = new Date(),
 ): Date | null {
   if (!entradaCampanhaEm) return null
+  if (!campanha.mensagens.length) return null
 
   const entrada = new Date(entradaCampanhaEm)
+  if (Number.isNaN(entrada.getTime())) return null
+
+  const recorrencia = campanha.recorrenciaDias > 0 ? campanha.recorrenciaDias : 1
   const mensagensOrdenadas = [...campanha.mensagens].sort((a, b) => a.dia - b.dia)
 
+  // Cada ciclo começa na âncora; o ciclo seguinte só inicia `recorrencia` dias
+  // após o horário da última mensagem (via `tempoReinicio`).
+  let anchor = entrada
   for (let ciclo = 0; ciclo < 6; ciclo += 1) {
-    const baseDoCiclo = new Date(entrada)
-    baseDoCiclo.setDate(baseDoCiclo.getDate() + ciclo * campanha.recorrenciaDias)
-
     for (const mensagem of mensagensOrdenadas) {
-      const prevista = new Date(baseDoCiclo)
-      prevista.setDate(prevista.getDate() + mensagem.dia)
-
-      const [hora, minuto] = mensagem.horario.split(":").map(Number)
-      prevista.setHours(hora || 0, minuto || 0, 0, 0)
-
+      const prevista = horarioAgendado(anchor, mensagem)
       if (prevista.getTime() > agora.getTime()) {
         return prevista
       }
     }
+    anchor = tempoReinicio(anchor, mensagensOrdenadas, recorrencia)
   }
 
   return null

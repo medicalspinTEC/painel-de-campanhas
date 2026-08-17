@@ -125,16 +125,17 @@ export async function processDueMessages(agora: Date = new Date()): Promise<Engi
           vinculo.criadoEm,
         )
 
-        const enviadosIds = new Set(
-          eventos
-            .filter(
-              (e) =>
-                e.leadId === vinculo.leadId &&
-                e.mensagemId &&
-                e.data.getTime() >= cycleAnchor.getTime(),
-            )
-            .map((e) => e.mensagemId as string),
+        const eventosDoCiclo = eventos.filter(
+          (e) =>
+            e.leadId === vinculo.leadId &&
+            e.mensagemId &&
+            e.data.getTime() >= cycleAnchor.getTime(),
         )
+        const enviadosIds = new Set(eventosDoCiclo.map((e) => e.mensagemId as string))
+        // Momento real do último envio deste ciclo — base para a recorrência.
+        const ultimoEnvioEm = eventosDoCiclo.length
+          ? new Date(Math.max(...eventosDoCiclo.map((e) => e.data.getTime())))
+          : null
 
         const decisao: LeadCycleDecision = decidirCiclo(
           {
@@ -142,6 +143,7 @@ export async function processDueMessages(agora: Date = new Date()): Promise<Engi
             mensagens: campanha.mensagens,
             enviadosIds,
             recorrenciaDias: campanha.recorrenciaDias,
+            ultimoEnvioEm,
           },
           agora,
         )

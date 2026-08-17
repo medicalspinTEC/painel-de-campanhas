@@ -11,11 +11,17 @@
  * Uma ocorrência no passado que ainda não foi enviada (posterior ao último
  * contato) é considerada VENCIDA e reportada como "agora", em vez de ser
  * ignorada — assim o operador enxerga mensagens prontas para disparar.
+ *
+ * A recorrência é contada DEPOIS da última mensagem da sequência (reaproveitando
+ * o núcleo `campaign-engine-schedule`), e não pela quantidade de mensagens. Com
+ * recorrência de 1 dia, o ciclo só reinicia 24h após a última mensagem.
  */
+
+import { horarioAgendado, tempoReinicio, type SlotAgendado } from "./campaign-engine-schedule"
 
 export interface ScheduleCampaign {
   recorrenciaDias: number
-  mensagens: Array<{ dia: number; horario: string }>
+  mensagens: Array<SlotAgendado>
 }
 
 export interface ProximaMensagem {
@@ -40,17 +46,12 @@ export function calcularProximaMensagem(
   const recorrencia = campanha.recorrenciaDias > 0 ? campanha.recorrenciaDias : 1
   const mensagensOrdenadas = [...campanha.mensagens].sort((a, b) => a.dia - b.dia)
 
+  // Cada ciclo começa na âncora; o próximo ciclo só inicia `recorrencia` dias
+  // após o horário da última mensagem (via `tempoReinicio`).
+  let anchor = entrada
   for (let ciclo = 0; ciclo < 8; ciclo += 1) {
-    const baseDoCiclo = new Date(entrada)
-    baseDoCiclo.setDate(baseDoCiclo.getDate() + ciclo * recorrencia)
-
     for (const mensagem of mensagensOrdenadas) {
-      const prevista = new Date(baseDoCiclo)
-      prevista.setDate(prevista.getDate() + mensagem.dia)
-
-      const [hora, minuto] = mensagem.horario.split(":").map(Number)
-      prevista.setHours(hora || 0, minuto || 0, 0, 0)
-
+      const prevista = horarioAgendado(anchor, mensagem)
       const tempo = prevista.getTime()
 
       if (tempo > agora) {
@@ -64,6 +65,8 @@ export function calcularProximaMensagem(
       }
       // Caso contrário já foi enviada; segue procurando a próxima.
     }
+
+    anchor = tempoReinicio(anchor, mensagensOrdenadas, recorrencia)
   }
 
   return null

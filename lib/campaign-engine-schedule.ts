@@ -26,6 +26,15 @@ export interface EngineMessage {
   texto: string
 }
 
+/**
+ * Forma mínima necessária para projetar o horário de uma mensagem no ciclo.
+ * Tanto a engine (`EngineMessage`) quanto as projeções da UI usam este núcleo.
+ */
+export interface SlotAgendado {
+  dia: number
+  horario: string
+}
+
 export interface LeadCycleInput {
   /** Início do ciclo atual do lead nesta campanha. */
   cycleAnchor: Date
@@ -35,6 +44,13 @@ export interface LeadCycleInput {
   enviadosIds: Set<string>
   /** Dias de espera após a última mensagem até reiniciar o ciclo. */
   recorrenciaDias: number
+  /**
+   * Momento REAL em que a última mensagem deste ciclo foi enviada. A recorrência
+   * é contada a partir daqui — se for 1 dia, o ciclo reinicia 24h após este
+   * instante, independentemente do `dia` teórico da última mensagem. Quando
+   * ausente, cai no slot teórico (`tempoReinicio`).
+   */
+  ultimoEnvioEm?: Date | null
 }
 
 export type LeadCycleDecision =
@@ -50,12 +66,19 @@ export type LeadCycleDecision =
   | { tipo: "aguardar"; proximaEm: Date; aguardandoRecorrencia: boolean }
   | { tipo: "reiniciar"; novoAnchor: Date }
 
-function ordenar(mensagens: EngineMessage[]): EngineMessage[] {
+function ordenar<T extends SlotAgendado>(mensagens: T[]): T[] {
   return [...mensagens].sort((a, b) => a.dia - b.dia)
 }
 
+/** Soma `dias` (mínimo 1) a uma data, preservando o horário. */
+function somarDias(base: Date, dias: number): Date {
+  const resultado = new Date(base)
+  resultado.setDate(resultado.getDate() + Math.max(1, dias))
+  return resultado
+}
+
 /** Horário previsto de disparo de uma mensagem dentro do ciclo. */
-export function horarioAgendado(cycleAnchor: Date, mensagem: EngineMessage): Date {
+export function horarioAgendado(cycleAnchor: Date, mensagem: SlotAgendado): Date {
   // Dia 0 dispara na própria âncora (entrada), sem esperar o horário do dia.
   if (mensagem.dia <= 0) return new Date(cycleAnchor)
 
@@ -67,7 +90,7 @@ export function horarioAgendado(cycleAnchor: Date, mensagem: EngineMessage): Dat
 }
 
 /** Momento em que o ciclo reinicia: recorrência após a última mensagem. */
-export function tempoReinicio(cycleAnchor: Date, mensagens: EngineMessage[], recorrenciaDias: number): Date {
+export function tempoReinicio(cycleAnchor: Date, mensagens: SlotAgendado[], recorrenciaDias: number): Date {
   const ordenadas = ordenar(mensagens)
   const ultima = ordenadas[ordenadas.length - 1]
   const ultimaEm = horarioAgendado(cycleAnchor, ultima)
@@ -84,20 +107,26 @@ export function decidirCiclo(input: LeadCycleInput, agora: Date = new Date()): L
     const alvo = pendentes[0]
     const alvoEm = horarioAgendado(input.cycleAnchor, alvo)
     const seguinte = pendentes[1]
-    const proximaEm = seguinte
-      ? horarioAgendado(input.cycleAnchor, seguinte)
-      : tempoReinicio(input.cycleAnchor, ordenadas, input.recorrenciaDias)
     const aguardandoRecorrencia = !seguinte
 
     if (alvoEm.getTime() <= agora.getTime()) {
+      // Vai enviar agora. Se este é o último da sequência, a recorrência passa a
+      // contar a partir DESTE envio (agora), não do slot teórico.
+      const proximaEm = seguinte
+        ? horarioAgendado(input.cycleAnchor, seguinte)
+        : somarDias(agora, input.recorrenciaDias)
       return { tipo: "enviar", mensagem: alvo, alvoEm, proximaEm, aguardandoRecorrencia }
     }
-    // Ainda no futuro: a contagem corre até este alvo.
+    // Ainda no futuro: a contagem corre até este alvo (envio pendente).
     return { tipo: "aguardar", proximaEm: alvoEm, aguardandoRecorrencia: false }
   }
 
-  // Toda a sequência já foi enviada neste ciclo: aguarda a recorrência.
-  const reinicio = tempoReinicio(input.cycleAnchor, ordenadas, input.recorrenciaDias)
+  // Toda a sequência já foi enviada neste ciclo: aguarda a recorrência contada a
+  // partir do ÚLTIMO ENVIO REAL. Sem esse dado, usa o slot teórico da última
+  // mensagem como fallback.
+  const reinicio = input.ultimoEnvioEm
+    ? somarDias(input.ultimoEnvioEm, input.recorrenciaDias)
+    : tempoReinicio(input.cycleAnchor, ordenadas, input.recorrenciaDias)
   if (agora.getTime() >= reinicio.getTime()) {
     return { tipo: "reiniciar", novoAnchor: reinicio }
   }

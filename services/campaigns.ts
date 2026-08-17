@@ -482,20 +482,27 @@ export async function getCampaignSchedule(campanhaId: string): Promise<Record<st
       ? new Date(Math.max(...marcos.map((d) => d.getTime())))
       : vinculo.criadoEm
 
-    const enviadosIds = new Set(
-      enviados
-        .filter(
-          (e) => e.leadId === vinculo.leadId && e.mensagemId && e.data.getTime() >= cycleAnchor.getTime(),
-        )
-        .map((e) => e.mensagemId as string),
+    const eventosDoCiclo = enviados.filter(
+      (e) => e.leadId === vinculo.leadId && e.mensagemId && e.data.getTime() >= cycleAnchor.getTime(),
     )
+    const enviadosIds = new Set(eventosDoCiclo.map((e) => e.mensagemId as string))
+    // Momento real do último envio deste ciclo — base para contar a recorrência.
+    const ultimoEnvioEm = eventosDoCiclo.length
+      ? new Date(Math.max(...eventosDoCiclo.map((e) => e.data.getTime())))
+      : null
 
     let proxima: Date | null = null
     let aguardandoRecorrencia = false
 
     if (temMensagens) {
       const decisao = decidirCiclo(
-        { cycleAnchor, mensagens: campanha.mensagens, enviadosIds, recorrenciaDias: campanha.recorrenciaDias },
+        {
+          cycleAnchor,
+          mensagens: campanha.mensagens,
+          enviadosIds,
+          recorrenciaDias: campanha.recorrenciaDias,
+          ultimoEnvioEm,
+        },
         agora,
       )
       if (decisao.tipo === "enviar") {
