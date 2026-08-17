@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { renderTemplate } from "@/lib/format"
 import { recordAppLog } from "@/services/app-logs"
 import { recordMessageEvent } from "@/services/message-events"
 
@@ -103,6 +104,15 @@ export async function sendCampaignMessageToLead(input: {
     return { ok: true }
   }
 
+  // Personaliza o texto para este lead (ex.: {{primeiro_nome}}) no momento do
+  // envio, usando a MESMA resolução do preview do editor (`renderTemplate`), para
+  // que todas as origens (engine, "Pular" e envio manual) fiquem consistentes.
+  const lead = await prisma.lead.findUnique({
+    where: { id: input.leadId },
+    select: { nome: true },
+  })
+  const texto = renderTemplate(input.texto, lead?.nome?.trim() || "")
+
   try {
     const response = await fetch(`${apiUrl}/message/sendText/${encodeURIComponent(instanceName)}`, {
       method: "POST",
@@ -112,7 +122,7 @@ export async function sendCampaignMessageToLead(input: {
       },
       body: JSON.stringify({
         number: telefone,
-        text: input.texto,
+        text: texto,
       }),
     })
 
