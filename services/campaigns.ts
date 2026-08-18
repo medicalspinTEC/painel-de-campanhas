@@ -267,6 +267,36 @@ async function dispararMensagemInicialParaLeads(campanhaId: string, leadIds: str
   }
 }
 
+/**
+ * Retorna os IDs de todos os leads que atendem aos filtros de público da
+ * campanha. Um filtro nulo ("qualquer") não restringe a dimensão; quando todos
+ * os filtros são nulos, todos os leads passam a ser compatíveis.
+ */
+async function leadsQueAtendemAosFiltros(filtros: Campaign["filtros"]): Promise<string[]> {
+  const where: { produto?: string; marca?: string; persona?: string; regiao?: string } = {}
+  if (filtros.produto) where.produto = filtros.produto
+  if (filtros.marca) where.marca = filtros.marca
+  if (filtros.persona) where.persona = filtros.persona
+  if (filtros.regiao) where.regiao = filtros.regiao
+
+  const leads = await prisma.lead.findMany({ where, select: { id: true } })
+  return leads.map((lead) => lead.id)
+}
+
+/**
+ * Une os leads selecionados manualmente com os que são compatíveis com os
+ * filtros da campanha. É a lista final de leads que devem ficar vinculados:
+ * qualquer lead que atende aos filtros entra automaticamente, mesmo sem seleção
+ * manual, e quando todos os filtros são "qualquer" toda a base é incluída.
+ */
+async function leadsFinaisDaCampanha(
+  filtros: Campaign["filtros"],
+  leadIdsManuais: string[] | undefined,
+): Promise<string[]> {
+  const compativeis = await leadsQueAtendemAosFiltros(filtros)
+  return [...new Set([...(leadIdsManuais ?? []).filter(Boolean), ...compativeis])]
+}
+
 async function sincronizarLeadsDaCampanha(campanhaId: string, leadIds: string[] | undefined, campanhaAtualId?: string) {
   const selecionados = new Set((leadIds ?? []).filter(Boolean))
   const atuais = await prisma.leadCampaign.findMany({
@@ -308,10 +338,11 @@ export async function createCampaign(input: CampaignInput): Promise<Campaign> {
   const criada = toCampaign(campanha)
   await emitWebhookEvent("campanha.criada", { campanha: criada })
   await emitirStatusCampanha(criada, null)
-  if (input.leadIds?.length) {
-    await sincronizarLeadsDaCampanha(criada.id, input.leadIds)
+  const leadIdsFinais = await leadsFinaisDaCampanha(criada.filtros, input.leadIds)
+  if (leadIdsFinais.length) {
+    await sincronizarLeadsDaCampanha(criada.id, leadIdsFinais)
     if (criada.status === "ativa") {
-      await dispararMensagemInicialParaLeads(criada.id, input.leadIds)
+      await dispararMensagemInicialParaLeads(criada.id, leadIdsFinais)
     }
   }
 
@@ -358,9 +389,10 @@ export async function updateCampaign(id: string, input: CampaignInput): Promise<
   const atualizada = toCampaign(campanha)
   await emitWebhookEvent("campanha.atualizada", { campanha: atualizada })
   await emitirStatusCampanha(atualizada, existe.status)
-  await sincronizarLeadsDaCampanha(atualizada.id, input.leadIds, id)
+  const leadIdsFinais = await leadsFinaisDaCampanha(atualizada.filtros, input.leadIds)
+  await sincronizarLeadsDaCampanha(atualizada.id, leadIdsFinais, id)
   if (input.status === "ativa") {
-    await dispararMensagemInicialParaLeads(atualizada.id, input.leadIds)
+    await dispararMensagemInicialParaLeads(atualizada.id, leadIdsFinais)
   }
 
   return atualizada

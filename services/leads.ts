@@ -370,6 +370,16 @@ export async function createLead(input: LeadInput): Promise<Lead> {
   }
   await emitirStatus(criado, "novo")
 
+  // Vincula o lead recém-criado a qualquer campanha ativa/pausada/rascunho cujos
+  // filtros ele já atenda, sem depender de seleção manual na campanha.
+  await vincularLeadACampanhasCompativeis({
+    id: criado.id,
+    produto: criado.produto,
+    marca: criado.marca,
+    persona: criado.persona,
+    regiao: criado.regiao,
+  })
+
   return criado
 }
 
@@ -462,6 +472,17 @@ export async function updateLead(id: string, input: LeadInput): Promise<Lead | n
   }
   await emitirStatus(atualizado, atual.status)
 
+  // Como as dimensões de segmentação podem ter mudado, revalida a vinculação
+  // automática: o lead entra em qualquer campanha não encerrada cujos filtros
+  // ele passou a atender.
+  await vincularLeadACampanhasCompativeis({
+    id: atualizado.id,
+    produto: lead.produto,
+    marca: lead.marca,
+    persona: lead.persona,
+    regiao: lead.regiao,
+  })
+
   return atualizado
 }
 
@@ -494,6 +515,49 @@ async function dispararMensagemInicialDaCampanha(leadId: string, campanhaId: str
       mensagem: `Exceção inesperada ao disparar mensagem inicial para lead ${leadId} na campanha ${campanhaId}.`,
       detalhes: error,
     })
+  }
+}
+
+/**
+ * Vincula automaticamente o lead a todas as campanhas ainda não encerradas cujos
+ * filtros de público ele atende. Um filtro nulo na campanha ("qualquer") não
+ * restringe a dimensão — uma campanha com todos os filtros "qualquer" captura
+ * qualquer lead. As campanhas ativas recém-vinculadas disparam a mensagem
+ * inicial (a dedupe do envio evita reenvios). O vínculo é idempotente, então
+ * campanhas já vinculadas ao lead não geram efeito.
+ */
+async function vincularLeadACampanhasCompativeis(lead: {
+  id: string
+  produto: string
+  marca: string
+  persona: string
+  regiao: string
+}): Promise<void> {
+  const campanhas = await prisma.campaign.findMany({
+    where: {
+      status: { not: "encerrada" },
+      AND: [
+        { OR: [{ filtroProduto: null }, { filtroProduto: lead.produto }] },
+        { OR: [{ filtroMarca: null }, { filtroMarca: lead.marca }] },
+        { OR: [{ filtroPersona: null }, { filtroPersona: lead.persona }] },
+        { OR: [{ filtroRegiao: null }, { filtroRegiao: lead.regiao }] },
+      ],
+    },
+    select: { id: true, status: true },
+  })
+  if (campanhas.length === 0) return
+
+  for (const campanha of campanhas) {
+    const jaVinculado = await prisma.leadCampaign.findUnique({
+      where: { leadId_campanhaId: { leadId: lead.id, campanhaId: campanha.id } },
+      select: { id: true },
+    })
+    if (!jaVinculado) {
+      await prisma.leadCampaign.create({ data: { leadId: lead.id, campanhaId: campanha.id } })
+    }
+    if (campanha.status === "ativa") {
+      await dispararMensagemInicialDaCampanha(lead.id, campanha.id)
+    }
   }
 }
 
