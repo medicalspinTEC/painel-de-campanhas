@@ -7,6 +7,7 @@ import {
 import { recordAppLog } from "@/services/app-logs"
 import { encerrarCampanhasExpiradas } from "@/services/campaigns"
 import { sendCampaignMessageToLead } from "@/services/evolution"
+import { getSettings } from "@/services/settings"
 
 /**
  * Engine de disparo das campanhas.
@@ -76,6 +77,9 @@ export async function processDueMessages(agora: Date = new Date()): Promise<Engi
     // Encerra campanhas com data limite vencida ANTES de disparar qualquer coisa.
     const encerradas = await encerrarCampanhasExpiradas()
 
+    // Configuração global: quando ativa, nenhum disparo cai no fim de semana.
+    const { pausarNoFimDeSemana } = await getSettings()
+
     const campanhas = await prisma.campaign.findMany({
       where: { status: "ativa" },
       select: {
@@ -142,11 +146,12 @@ export async function processDueMessages(agora: Date = new Date()): Promise<Engi
             cycleAnchor,
             mensagens: campanha.mensagens,
             enviadosIds,
-            recorrenciaDias: campanha.recorrenciaDias,
-            ultimoEnvioEm,
-          },
-          agora,
-        )
+          recorrenciaDias: campanha.recorrenciaDias,
+          ultimoEnvioEm,
+          pausarNoFimDeSemana,
+        },
+        agora,
+      )
 
         if (decisao.tipo === "reiniciar") {
           // Não reinicia um ciclo que já começaria depois da data limite.

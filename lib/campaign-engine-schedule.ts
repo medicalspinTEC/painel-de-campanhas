@@ -51,6 +51,11 @@ export interface LeadCycleInput {
    * ausente, cai no slot teórico (`tempoReinicio`).
    */
   ultimoEnvioEm?: Date | null
+  /**
+   * Quando `true`, nenhum disparo cai em sábado ou domingo: o horário previsto é
+   * empurrado para a próxima segunda-feira, preservando a hora do dia.
+   */
+  pausarNoFimDeSemana?: boolean
 }
 
 export type LeadCycleDecision =
@@ -77,35 +82,62 @@ function somarDias(base: Date, dias: number): Date {
   return resultado
 }
 
+/**
+ * Se `data` cair em um fim de semana, empurra para a próxima segunda-feira,
+ * preservando o horário. Sábado (6) avança 2 dias; domingo (0) avança 1 dia.
+ * Fora do fim de semana devolve a própria data.
+ */
+export function ajustarFimDeSemana(data: Date): Date {
+  const diaDaSemana = data.getDay() // 0 = domingo, 6 = sábado
+  if (diaDaSemana === 6) return somarDias(data, 2)
+  if (diaDaSemana === 0) return somarDias(data, 1)
+  return data
+}
+
+/** Aplica o deslocamento de fim de semana apenas quando a opção está ativa. */
+function aplicarPausaFimDeSemana(data: Date, pausarNoFimDeSemana?: boolean): Date {
+  return pausarNoFimDeSemana ? ajustarFimDeSemana(data) : data
+}
+
 /** Horário previsto de disparo de uma mensagem dentro do ciclo. */
-export function horarioAgendado(cycleAnchor: Date, mensagem: SlotAgendado): Date {
+export function horarioAgendado(
+  cycleAnchor: Date,
+  mensagem: SlotAgendado,
+  pausarNoFimDeSemana?: boolean,
+): Date {
   // Dia 0 dispara na própria âncora (entrada), sem esperar o horário do dia.
-  if (mensagem.dia <= 0) return new Date(cycleAnchor)
+  if (mensagem.dia <= 0) return aplicarPausaFimDeSemana(new Date(cycleAnchor), pausarNoFimDeSemana)
 
   const previsto = new Date(cycleAnchor)
   previsto.setDate(previsto.getDate() + mensagem.dia)
   const [hora, minuto] = mensagem.horario.split(":").map(Number)
   previsto.setHours(hora || 0, minuto || 0, 0, 0)
-  return previsto
+  return aplicarPausaFimDeSemana(previsto, pausarNoFimDeSemana)
 }
 
 /** Momento em que o ciclo reinicia: recorrência após a última mensagem. */
-export function tempoReinicio(cycleAnchor: Date, mensagens: SlotAgendado[], recorrenciaDias: number): Date {
+export function tempoReinicio(
+  cycleAnchor: Date,
+  mensagens: SlotAgendado[],
+  recorrenciaDias: number,
+  pausarNoFimDeSemana?: boolean,
+): Date {
   const ordenadas = ordenar(mensagens)
   const ultima = ordenadas[ordenadas.length - 1]
-  const ultimaEm = horarioAgendado(cycleAnchor, ultima)
+  const ultimaEm = horarioAgendado(cycleAnchor, ultima, pausarNoFimDeSemana)
   const reinicio = new Date(ultimaEm)
   reinicio.setDate(reinicio.getDate() + Math.max(1, recorrenciaDias))
-  return reinicio
+  return aplicarPausaFimDeSemana(reinicio, pausarNoFimDeSemana)
 }
 
 export function decidirCiclo(input: LeadCycleInput, agora: Date = new Date()): LeadCycleDecision {
+  const pausar = input.pausarNoFimDeSemana
   const ordenadas = ordenar(input.mensagens)
   const pendentes = ordenadas.filter((m) => !input.enviadosIds.has(m.id))
 
   if (pendentes.length > 0) {
     const alvo = pendentes[0]
-    const alvoEm = horarioAgendado(input.cycleAnchor, alvo)
+    const alvoEm = horarioAgendado(input.cycleAnchor, alvo, pausar)
     const seguinte = pendentes[1]
     const aguardandoRecorrencia = !seguinte
 
@@ -113,8 +145,8 @@ export function decidirCiclo(input: LeadCycleInput, agora: Date = new Date()): L
       // Vai enviar agora. Se este é o último da sequência, a recorrência passa a
       // contar a partir DESTE envio (agora), não do slot teórico.
       const proximaEm = seguinte
-        ? horarioAgendado(input.cycleAnchor, seguinte)
-        : somarDias(agora, input.recorrenciaDias)
+        ? horarioAgendado(input.cycleAnchor, seguinte, pausar)
+        : aplicarPausaFimDeSemana(somarDias(agora, input.recorrenciaDias), pausar)
       return { tipo: "enviar", mensagem: alvo, alvoEm, proximaEm, aguardandoRecorrencia }
     }
     // Ainda no futuro: a contagem corre até este alvo (envio pendente).
@@ -125,8 +157,8 @@ export function decidirCiclo(input: LeadCycleInput, agora: Date = new Date()): L
   // partir do ÚLTIMO ENVIO REAL. Sem esse dado, usa o slot teórico da última
   // mensagem como fallback.
   const reinicio = input.ultimoEnvioEm
-    ? somarDias(input.ultimoEnvioEm, input.recorrenciaDias)
-    : tempoReinicio(input.cycleAnchor, ordenadas, input.recorrenciaDias)
+    ? aplicarPausaFimDeSemana(somarDias(input.ultimoEnvioEm, input.recorrenciaDias), pausar)
+    : tempoReinicio(input.cycleAnchor, ordenadas, input.recorrenciaDias, pausar)
   if (agora.getTime() >= reinicio.getTime()) {
     return { tipo: "reiniciar", novoAnchor: reinicio }
   }

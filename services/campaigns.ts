@@ -3,6 +3,7 @@ import { decidirCiclo } from "@/lib/campaign-engine-schedule"
 import { recordAppLog } from "@/services/app-logs"
 import { sendCampaignMessageToLead } from "@/services/evolution"
 import { assignCampaign } from "@/services/leads"
+import { getSettings } from "@/services/settings"
 import { emitWebhookEvent } from "@/services/webhooks"
 import type { Campaign, CampaignMessage, CampaignStatus, LeadStatus } from "@/types"
 
@@ -494,6 +495,8 @@ export async function getCampaignSchedule(campanhaId: string): Promise<Record<st
   })
   if (vinculos.length === 0) return {}
 
+  const { pausarNoFimDeSemana } = await getSettings()
+
   const enviados = await prisma.timelineEvent.findMany({
     where: { campanhaId, leadId: { in: vinculos.map((v) => v.leadId) }, tipo: "mensagem_enviada" },
     select: { leadId: true, mensagemId: true, data: true },
@@ -534,6 +537,7 @@ export async function getCampaignSchedule(campanhaId: string): Promise<Record<st
           enviadosIds,
           recorrenciaDias: campanha.recorrenciaDias,
           ultimoEnvioEm,
+          pausarNoFimDeSemana,
         },
         agora,
       )
