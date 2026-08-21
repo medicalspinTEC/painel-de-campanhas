@@ -218,7 +218,7 @@ export interface MensagemPerformance {
 }
 
 export async function getPerformancePorMensagem(): Promise<MensagemPerformance[]> {
-  const [mensagens, eventos] = await Promise.all([
+  const [mensagens, enviadasPorMensagem, respostasPorMensagem] = await Promise.all([
     prisma.campaignMessage.findMany({
       select: {
         id: true,
@@ -228,19 +228,48 @@ export async function getPerformancePorMensagem(): Promise<MensagemPerformance[]
         campanha: { select: { nome: true } },
       },
     }),
+    // Envios são atribuídos diretamente à mensagem disparada (o evento carrega o mensagemId).
     prisma.timelineEvent.groupBy({
-      by: ["mensagemId", "tipo"],
-      where: { mensagemId: { not: null }, tipo: { in: ["mensagem_enviada", "resposta"] } },
+      by: ["mensagemId"],
+      where: { mensagemId: { not: null }, tipo: "mensagem_enviada" },
       _count: { _all: true },
     }),
+    /*
+     * Atribui cada resposta à última mensagem que o lead recebeu até o momento
+     * da resposta, em vez de depender do `mensagemId` gravado no próprio evento
+     * de resposta. Isso espelha como o relatório por campanha contabiliza (a
+     * resposta conta para quem originou o contato) e corrige também respostas
+     * antigas que foram registradas sem vínculo de mensagem.
+     */
+    prisma.$queryRaw<Array<{ mensagemId: string; total: bigint }>>`
+      SELECT enviada.mensagem_id AS "mensagemId", COUNT(*) AS total
+      FROM "TimelineEvent" r
+      JOIN LATERAL (
+        SELECT s."mensagemId" AS mensagem_id
+        FROM "TimelineEvent" s
+        WHERE s."leadId" = r."leadId"
+          AND s."tipo"::text = 'mensagem_enviada'
+          AND s."mensagemId" IS NOT NULL
+          AND s."data" <= r."data"
+        ORDER BY s."data" DESC
+        LIMIT 1
+      ) enviada ON true
+      WHERE r."tipo"::text = 'resposta'
+      GROUP BY 1
+    `,
   ])
 
   const contagem = new Map<string, { enviadas: number; respostas: number }>()
-  for (const row of eventos) {
+  for (const row of enviadasPorMensagem) {
     if (!row.mensagemId) continue
     const atual = contagem.get(row.mensagemId) ?? { enviadas: 0, respostas: 0 }
-    if (row.tipo === "mensagem_enviada") atual.enviadas += row._count._all
-    if (row.tipo === "resposta") atual.respostas += row._count._all
+    atual.enviadas += row._count._all
+    contagem.set(row.mensagemId, atual)
+  }
+  for (const row of respostasPorMensagem) {
+    if (!row.mensagemId) continue
+    const atual = contagem.get(row.mensagemId) ?? { enviadas: 0, respostas: 0 }
+    atual.respostas += Number(row.total)
     contagem.set(row.mensagemId, atual)
   }
 

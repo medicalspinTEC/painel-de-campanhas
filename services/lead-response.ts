@@ -173,15 +173,35 @@ export async function processarRespostaLead(payload: unknown): Promise<RespostaL
     ? await prisma.campaign.findUnique({ where: { id: campanhaAlvoId }, select: { id: true, nome: true } })
     : null
 
+  /*
+   * Descobre a última mensagem efetivamente enviada ao lead para atribuir a ela
+   * esta resposta. Sem isso, o evento `resposta` fica sem `mensagemId` e o
+   * relatório "Mensagens com melhor retorno" (que agrupa respostas por mensagem)
+   * conta zero para todas, exibindo sempre 0,0% de taxa de resposta.
+   */
+  const ultimaMensagemEnviada = await prisma.timelineEvent.findFirst({
+    where: {
+      leadId: lead.id,
+      tipo: "mensagem_enviada",
+      mensagemId: { not: null },
+      ...(campanhaAlvo?.id ? { campanhaId: campanhaAlvo.id } : {}),
+    },
+    orderBy: { data: "desc" },
+    select: { mensagemId: true },
+  })
+  const mensagemRespondidaId = ultimaMensagemEnviada?.mensagemId ?? null
+
   const textoResposta = msg.texto.trim() || "(mensagem sem texto)"
   const agora = new Date()
 
   // 5. Registra a resposta na timeline (aparece no feed de eventos com o texto,
-  //    o lead e a campanha vinculada).
+  //    o lead e a campanha vinculada). Vincula à mensagem que originou a
+  //    resposta para alimentar o relatório de retorno por mensagem.
   await prisma.timelineEvent.create({
     data: {
       leadId: lead.id,
       campanhaId: campanhaAlvo?.id ?? null,
+      mensagemId: mensagemRespondidaId,
       tipo: "resposta",
       descricao: `${lead.nome} respondeu no WhatsApp.`,
       detalhes: `Resposta: "${textoResposta}"`,
