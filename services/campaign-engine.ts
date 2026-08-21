@@ -77,8 +77,10 @@ export async function processDueMessages(agora: Date = new Date()): Promise<Engi
     // Encerra campanhas com data limite vencida ANTES de disparar qualquer coisa.
     const encerradas = await encerrarCampanhasExpiradas()
 
-    // Configuração global: quando ativa, nenhum disparo cai no fim de semana.
-    const { pausarNoFimDeSemana } = await getSettings()
+    // Configuração global: quando ativa, nenhum disparo cai no fim de semana e
+    // os disparos respeitam a janela de horário permitida.
+    const { pausarNoFimDeSemana, respeitarJanela, janelaInicio, janelaFim } = await getSettings()
+    const janela = { ativa: respeitarJanela, inicio: janelaInicio, fim: janelaFim }
 
     const campanhas = await prisma.campaign.findMany({
       where: { status: "ativa" },
@@ -149,6 +151,7 @@ export async function processDueMessages(agora: Date = new Date()): Promise<Engi
           recorrenciaDias: campanha.recorrenciaDias,
           ultimoEnvioEm,
           pausarNoFimDeSemana,
+          janela,
         },
         agora,
       )

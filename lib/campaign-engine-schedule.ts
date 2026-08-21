@@ -56,6 +56,29 @@ export interface LeadCycleInput {
    * empurrado para a próxima segunda-feira, preservando a hora do dia.
    */
   pausarNoFimDeSemana?: boolean
+  /**
+   * Janela de horário permitida para os disparos. Quando ativa, qualquer horário
+   * fora do intervalo [inicio, fim] é empurrado para a próxima abertura da
+   * janela (início do mesmo dia se ainda for cedo, ou início do dia seguinte se
+   * já passou do fim).
+   */
+  janela?: JanelaHorario | null
+}
+
+/**
+ * Janela de horário em que os disparos são permitidos. `inicio` e `fim` no
+ * formato "HH:MM". Quando `ativa` é `false` a janela é ignorada.
+ */
+export interface JanelaHorario {
+  ativa: boolean
+  inicio: string
+  fim: string
+}
+
+/** Opções de ajuste aplicadas a um horário previsto. */
+export interface AjusteHorario {
+  pausarNoFimDeSemana?: boolean
+  janela?: JanelaHorario | null
 }
 
 export type LeadCycleDecision =
@@ -94,25 +117,73 @@ export function ajustarFimDeSemana(data: Date): Date {
   return data
 }
 
-/** Aplica o deslocamento de fim de semana apenas quando a opção está ativa. */
-function aplicarPausaFimDeSemana(data: Date, pausarNoFimDeSemana?: boolean): Date {
-  return pausarNoFimDeSemana ? ajustarFimDeSemana(data) : data
+/** Converte "HH:MM" em minutos desde a meia-noite. Inválido devolve `null`. */
+function minutosDoDia(horario: string): number | null {
+  const [hora, minuto] = (horario ?? "").split(":").map(Number)
+  if (Number.isNaN(hora) || Number.isNaN(minuto)) return null
+  return hora * 60 + minuto
+}
+
+/**
+ * Empurra `data` para dentro da janela de horário permitida. Se o horário for
+ * anterior ao início da janela, avança para o início no MESMO dia; se for
+ * posterior ao fim, avança para o início do dia SEGUINTE. Dentro da janela,
+ * devolve a própria data.
+ */
+export function ajustarJanela(data: Date, janela: JanelaHorario): Date {
+  const inicio = minutosDoDia(janela.inicio)
+  const fim = minutosDoDia(janela.fim)
+  if (inicio === null || fim === null || inicio >= fim) return data
+
+  const minutosAtuais = data.getHours() * 60 + data.getMinutes()
+
+  if (minutosAtuais < inicio) {
+    const ajustada = new Date(data)
+    ajustada.setHours(Math.floor(inicio / 60), inicio % 60, 0, 0)
+    return ajustada
+  }
+
+  if (minutosAtuais > fim) {
+    const ajustada = new Date(data)
+    ajustada.setDate(ajustada.getDate() + 1)
+    ajustada.setHours(Math.floor(inicio / 60), inicio % 60, 0, 0)
+    return ajustada
+  }
+
+  return data
+}
+
+/**
+ * Aplica os ajustes de disparo na ordem correta: primeiro a janela de horário
+ * (que pode empurrar para o dia seguinte) e depois a pausa de fim de semana
+ * (que empurra para segunda preservando a hora, já dentro da janela).
+ */
+function aplicarAjustes(data: Date, ajuste?: AjusteHorario): Date {
+  let resultado = data
+  if (ajuste?.janela?.ativa) {
+    resultado = ajustarJanela(resultado, ajuste.janela)
+  }
+  if (ajuste?.pausarNoFimDeSemana) {
+    resultado = ajustarFimDeSemana(resultado)
+  }
+  return resultado
 }
 
 /** Horário previsto de disparo de uma mensagem dentro do ciclo. */
 export function horarioAgendado(
   cycleAnchor: Date,
   mensagem: SlotAgendado,
-  pausarNoFimDeSemana?: boolean,
+  ajuste?: AjusteHorario,
 ): Date {
-  // Dia 0 dispara na própria âncora (entrada), sem esperar o horário do dia.
-  if (mensagem.dia <= 0) return aplicarPausaFimDeSemana(new Date(cycleAnchor), pausarNoFimDeSemana)
+  // Dia 0 dispara na própria âncora (entrada). Mesmo assim respeita a janela de
+  // horário: se a entrada acontecer fora da janela, o disparo espera a abertura.
+  if (mensagem.dia <= 0) return aplicarAjustes(new Date(cycleAnchor), ajuste)
 
   const previsto = new Date(cycleAnchor)
   previsto.setDate(previsto.getDate() + mensagem.dia)
   const [hora, minuto] = mensagem.horario.split(":").map(Number)
   previsto.setHours(hora || 0, minuto || 0, 0, 0)
-  return aplicarPausaFimDeSemana(previsto, pausarNoFimDeSemana)
+  return aplicarAjustes(previsto, ajuste)
 }
 
 /** Momento em que o ciclo reinicia: recorrência após a última mensagem. */
@@ -120,24 +191,27 @@ export function tempoReinicio(
   cycleAnchor: Date,
   mensagens: SlotAgendado[],
   recorrenciaDias: number,
-  pausarNoFimDeSemana?: boolean,
+  ajuste?: AjusteHorario,
 ): Date {
   const ordenadas = ordenar(mensagens)
   const ultima = ordenadas[ordenadas.length - 1]
-  const ultimaEm = horarioAgendado(cycleAnchor, ultima, pausarNoFimDeSemana)
+  const ultimaEm = horarioAgendado(cycleAnchor, ultima, ajuste)
   const reinicio = new Date(ultimaEm)
   reinicio.setDate(reinicio.getDate() + Math.max(1, recorrenciaDias))
-  return aplicarPausaFimDeSemana(reinicio, pausarNoFimDeSemana)
+  return aplicarAjustes(reinicio, ajuste)
 }
 
 export function decidirCiclo(input: LeadCycleInput, agora: Date = new Date()): LeadCycleDecision {
-  const pausar = input.pausarNoFimDeSemana
+  const ajuste: AjusteHorario = {
+    pausarNoFimDeSemana: input.pausarNoFimDeSemana,
+    janela: input.janela,
+  }
   const ordenadas = ordenar(input.mensagens)
   const pendentes = ordenadas.filter((m) => !input.enviadosIds.has(m.id))
 
   if (pendentes.length > 0) {
     const alvo = pendentes[0]
-    const alvoEm = horarioAgendado(input.cycleAnchor, alvo, pausar)
+    const alvoEm = horarioAgendado(input.cycleAnchor, alvo, ajuste)
     const seguinte = pendentes[1]
     const aguardandoRecorrencia = !seguinte
 
@@ -145,11 +219,12 @@ export function decidirCiclo(input: LeadCycleInput, agora: Date = new Date()): L
       // Vai enviar agora. Se este é o último da sequência, a recorrência passa a
       // contar a partir DESTE envio (agora), não do slot teórico.
       const proximaEm = seguinte
-        ? horarioAgendado(input.cycleAnchor, seguinte, pausar)
-        : aplicarPausaFimDeSemana(somarDias(agora, input.recorrenciaDias), pausar)
+        ? horarioAgendado(input.cycleAnchor, seguinte, ajuste)
+        : aplicarAjustes(somarDias(agora, input.recorrenciaDias), ajuste)
       return { tipo: "enviar", mensagem: alvo, alvoEm, proximaEm, aguardandoRecorrencia }
     }
-    // Ainda no futuro: a contagem corre até este alvo (envio pendente).
+    // Ainda no futuro (ou fora da janela de horário): a contagem corre até este
+    // alvo, que já reflete a próxima abertura da janela quando aplicável.
     return { tipo: "aguardar", proximaEm: alvoEm, aguardandoRecorrencia: false }
   }
 
@@ -157,8 +232,8 @@ export function decidirCiclo(input: LeadCycleInput, agora: Date = new Date()): L
   // partir do ÚLTIMO ENVIO REAL. Sem esse dado, usa o slot teórico da última
   // mensagem como fallback.
   const reinicio = input.ultimoEnvioEm
-    ? aplicarPausaFimDeSemana(somarDias(input.ultimoEnvioEm, input.recorrenciaDias), pausar)
-    : tempoReinicio(input.cycleAnchor, ordenadas, input.recorrenciaDias, pausar)
+    ? aplicarAjustes(somarDias(input.ultimoEnvioEm, input.recorrenciaDias), ajuste)
+    : tempoReinicio(input.cycleAnchor, ordenadas, input.recorrenciaDias, ajuste)
   if (agora.getTime() >= reinicio.getTime()) {
     return { tipo: "reiniciar", novoAnchor: reinicio }
   }

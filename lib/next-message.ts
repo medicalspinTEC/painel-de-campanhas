@@ -11,7 +11,12 @@
  * reinicia 24h após o horário da última mensagem — e assim por diante.
  */
 
-import { horarioAgendado, tempoReinicio, type SlotAgendado } from "./campaign-engine-schedule"
+import {
+  horarioAgendado,
+  tempoReinicio,
+  type AjusteHorario,
+  type SlotAgendado,
+} from "./campaign-engine-schedule"
 
 export type MensagemAgendada = SlotAgendado
 
@@ -19,6 +24,7 @@ export function calcularProximaMensagem(
   entradaCampanhaEm: string | Date | null,
   campanha: { recorrenciaDias: number; mensagens: MensagemAgendada[] },
   agora: Date = new Date(),
+  ajuste?: AjusteHorario,
 ): Date | null {
   if (!entradaCampanhaEm) return null
   if (!campanha.mensagens.length) return null
@@ -34,12 +40,12 @@ export function calcularProximaMensagem(
   let anchor = entrada
   for (let ciclo = 0; ciclo < 6; ciclo += 1) {
     for (const mensagem of mensagensOrdenadas) {
-      const prevista = horarioAgendado(anchor, mensagem)
+      const prevista = horarioAgendado(anchor, mensagem, ajuste)
       if (prevista.getTime() > agora.getTime()) {
         return prevista
       }
     }
-    anchor = tempoReinicio(anchor, mensagensOrdenadas, recorrencia)
+    anchor = tempoReinicio(anchor, mensagensOrdenadas, recorrencia, ajuste)
   }
 
   return null

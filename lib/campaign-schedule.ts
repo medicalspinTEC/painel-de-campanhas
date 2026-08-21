@@ -17,7 +17,12 @@
  * recorrência de 1 dia, o ciclo só reinicia 24h após a última mensagem.
  */
 
-import { horarioAgendado, tempoReinicio, type SlotAgendado } from "./campaign-engine-schedule"
+import {
+  horarioAgendado,
+  tempoReinicio,
+  type AjusteHorario,
+  type SlotAgendado,
+} from "./campaign-engine-schedule"
 
 export interface ScheduleCampaign {
   recorrenciaDias: number
@@ -34,6 +39,7 @@ export function calcularProximaMensagem(
   entradaCampanhaEm: string | Date | null,
   ultimoContato: string | Date | null,
   campanha: ScheduleCampaign,
+  ajuste?: AjusteHorario,
 ): ProximaMensagem | null {
   if (!entradaCampanhaEm) return null
   if (!campanha.mensagens.length) return null
@@ -51,7 +57,7 @@ export function calcularProximaMensagem(
   let anchor = entrada
   for (let ciclo = 0; ciclo < 8; ciclo += 1) {
     for (const mensagem of mensagensOrdenadas) {
-      const prevista = horarioAgendado(anchor, mensagem)
+      const prevista = horarioAgendado(anchor, mensagem, ajuste)
       const tempo = prevista.getTime()
 
       if (tempo > agora) {
@@ -66,7 +72,7 @@ export function calcularProximaMensagem(
       // Caso contrário já foi enviada; segue procurando a próxima.
     }
 
-    anchor = tempoReinicio(anchor, mensagensOrdenadas, recorrencia)
+    anchor = tempoReinicio(anchor, mensagensOrdenadas, recorrencia, ajuste)
   }
 
   return null
