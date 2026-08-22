@@ -57,16 +57,17 @@ export function SettingsForm({ inicial }: { inicial: Settings }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Identidade do remetente</CardTitle>
-          <CardDescription>Usada nos disparos quando o WhatsApp for integrado.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          {/*
+      {/*
+        <Card>
+          <CardHeader>
+            <CardTitle>Identidade do remetente</CardTitle>
+            <CardDescription>Usada nos disparos quando o WhatsApp for integrado.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+          
             Não afirmamos que existe sessão ativa: nenhuma API de WhatsApp está
             conectada ainda, então o aviso é informativo e não um status falso.
-          */}
+          
           <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-sm">
             <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             <span className="text-muted-foreground">
@@ -90,19 +91,19 @@ export function SettingsForm({ inicial }: { inicial: Settings }) {
             <FieldDescription>Anexada ao final de cada mensagem enviada.</FieldDescription>
           </Field>
         </CardContent>
-      </Card>
+      </Card>*/}
 
       <Card>
-        <CardHeader>
+        {/*<CardHeader>
           <CardTitle>Janela de envio</CardTitle>
           <CardDescription>Controle quando a engine pode disparar mensagens.</CardDescription>
-        </CardHeader>
+        </CardHeader>*/}
         <CardContent className="flex flex-col gap-4">
           <Field>
             <FieldLabel htmlFor="fuso">Fuso horário</FieldLabel>
             <SelectField id="fuso" value={fuso} onValueChange={setFuso} opcoes={FUSOS} className="w-full sm:w-72" />
           </Field>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {/*<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Field>
               <FieldLabel htmlFor="inicio">Início</FieldLabel>
               <Input id="inicio" type="time" value={inicio} onChange={(e) => setInicio(e.target.value)} />
@@ -116,17 +117,17 @@ export function SettingsForm({ inicial }: { inicial: Settings }) {
               <Input id="limite" type="number" min={1} value={limite} onChange={(e) => setLimite(e.target.value)} />
               <FieldDescription>Mensagens por dia.</FieldDescription>
             </Field>
-          </div>
+          </div>*/}
 
           <Separator />
 
-          <Opcao
+          {/*<Opcao
             id="respeitar-janela"
             titulo="Respeitar janela de horário"
             descricao="Mensagens agendadas fora da janela são reprogramadas para o próximo horário válido."
             checked={respeitarJanela}
             onCheckedChange={setRespeitarJanela}
-          />
+          />&*/}
           <Opcao
             id="pausar-fds"
             titulo="Pausar em fins de semana"
