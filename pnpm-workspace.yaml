@@ -20,6 +20,8 @@ overrides:
   next: 16.3.0
 
 allowBuilds:
-  '@prisma/engines': set this to true or false
-  msw: set this to true or false
-  prisma: set this to true or false
+  '@prisma/engines': true
+  prisma: true
+  msw: true
+  sharp: true
+  esbuild: true
