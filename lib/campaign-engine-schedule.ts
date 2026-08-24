@@ -52,6 +52,14 @@ export interface LeadCycleInput {
    */
   ultimoEnvioEm?: Date | null
   /**
+   * `true` quando `cycleAnchor` já é o início de um ciclo REINICIADO pela
+   * recorrência (e não a entrada original do lead). Nesse caso a sequência é
+   * normalizada para começar no `dia 0`, de forma que a recorrência dispare a
+   * primeira mensagem exatamente quando o contador vence — sem re-somar o offset
+   * inicial (ex.: dia 1) a cada reinício.
+   */
+  cicloReiniciado?: boolean
+  /**
    * Quando `true`, nenhum disparo cai em sábado ou domingo: o horário previsto é
    * empurrado para a próxima segunda-feira, preservando a hora do dia.
    */
@@ -96,6 +104,27 @@ export type LeadCycleDecision =
 
 function ordenar<T extends SlotAgendado>(mensagens: T[]): T[] {
   return [...mensagens].sort((a, b) => a.dia - b.dia)
+}
+
+/** Menor `dia` da sequência (nunca negativo). É o offset do primeiro disparo. */
+export function diaMinimoCiclo<T extends SlotAgendado>(mensagens: T[]): number {
+  if (!mensagens.length) return 0
+  return Math.max(0, Math.min(...mensagens.map((m) => m.dia)))
+}
+
+/**
+ * Normaliza a sequência para um ciclo de RECORRÊNCIA: subtrai o `dia` do
+ * primeiro disparo de todos os `dia`, de modo que a primeira mensagem passe a
+ * ser `dia 0` (dispara na própria âncora). Assim, ao reiniciar, o ciclo NÃO
+ * volta a "contar" o offset inicial (ex.: dia 1) — ele apenas repete a sequência
+ * a partir do instante em que a recorrência venceu, preservando o espaçamento
+ * relativo entre as mensagens. Para sequências que já começam no dia 0, é um
+ * no-op.
+ */
+export function normalizarCiclo<T extends SlotAgendado>(mensagens: T[]): T[] {
+  const base = diaMinimoCiclo(mensagens)
+  if (base === 0) return [...mensagens]
+  return mensagens.map((m) => ({ ...m, dia: m.dia - base }))
 }
 
 /** Soma `dias` (mínimo 1) a uma data, preservando o horário. */
@@ -206,7 +235,11 @@ export function decidirCiclo(input: LeadCycleInput, agora: Date = new Date()): L
     pausarNoFimDeSemana: input.pausarNoFimDeSemana,
     janela: input.janela,
   }
-  const ordenadas = ordenar(input.mensagens)
+  // Em um ciclo reiniciado pela recorrência, a sequência é ancorada no dia 0
+  // para que a primeira mensagem dispare no exato instante em que o contador
+  // venceu — e não `recorrência + dia inicial` depois.
+  const base = input.cicloReiniciado ? normalizarCiclo(input.mensagens) : input.mensagens
+  const ordenadas = ordenar(base)
   const pendentes = ordenadas.filter((m) => !input.enviadosIds.has(m.id))
 
   if (pendentes.length > 0) {

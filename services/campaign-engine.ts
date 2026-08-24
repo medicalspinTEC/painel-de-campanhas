@@ -131,6 +131,14 @@ export async function processDueMessages(agora: Date = new Date()): Promise<Engi
           vinculo.criadoEm,
         )
 
+        // O ciclo é "reiniciado" quando a âncora vigente é o marco de recorrência
+        // deste lead (`cicloReiniciadoEm`), e não a entrada original. Nesse caso
+        // a sequência é ancorada no dia 0 para que a primeira mensagem dispare
+        // no instante em que a recorrência venceu — sem re-somar o offset inicial.
+        const cicloReiniciado =
+          vinculo.cicloReiniciadoEm != null &&
+          cycleAnchor.getTime() === vinculo.cicloReiniciadoEm.getTime()
+
         const eventosDoCiclo = eventos.filter(
           (e) =>
             e.leadId === vinculo.leadId &&
@@ -150,6 +158,7 @@ export async function processDueMessages(agora: Date = new Date()): Promise<Engi
             enviadosIds,
           recorrenciaDias: campanha.recorrenciaDias,
           ultimoEnvioEm,
+          cicloReiniciado,
           pausarNoFimDeSemana,
           janela,
         },

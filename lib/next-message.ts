@@ -13,6 +13,7 @@
 
 import {
   horarioAgendado,
+  normalizarCiclo,
   tempoReinicio,
   type AjusteHorario,
   type SlotAgendado,
@@ -34,18 +35,24 @@ export function calcularProximaMensagem(
 
   const recorrencia = campanha.recorrenciaDias > 0 ? campanha.recorrenciaDias : 1
   const mensagensOrdenadas = [...campanha.mensagens].sort((a, b) => a.dia - b.dia)
+  // Nos ciclos de recorrência a sequência é normalizada para começar no dia 0:
+  // a primeira mensagem dispara no instante em que a recorrência vence, sem
+  // re-somar o offset inicial (ex.: dia 1) a cada reinício.
+  const mensagensReinicio = normalizarCiclo(mensagensOrdenadas)
 
-  // Cada ciclo começa na âncora; o ciclo seguinte só inicia `recorrencia` dias
-  // após o horário da última mensagem (via `tempoReinicio`).
+  // O 1º ciclo parte da entrada com os dias originais; os seguintes partem do
+  // marco de recorrência com a sequência normalizada.
   let anchor = entrada
+  let mensagensCiclo = mensagensOrdenadas
   for (let ciclo = 0; ciclo < 6; ciclo += 1) {
-    for (const mensagem of mensagensOrdenadas) {
+    for (const mensagem of mensagensCiclo) {
       const prevista = horarioAgendado(anchor, mensagem, ajuste)
       if (prevista.getTime() > agora.getTime()) {
         return prevista
       }
     }
-    anchor = tempoReinicio(anchor, mensagensOrdenadas, recorrencia, ajuste)
+    anchor = tempoReinicio(anchor, mensagensCiclo, recorrencia, ajuste)
+    mensagensCiclo = mensagensReinicio
   }
 
   return null

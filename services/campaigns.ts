@@ -517,6 +517,11 @@ export async function getCampaignSchedule(campanhaId: string): Promise<Record<st
       ? new Date(Math.max(...marcos.map((d) => d.getTime())))
       : vinculo.criadoEm
 
+    // Ciclo reiniciado: a âncora vigente é o marco de recorrência deste lead.
+    const cicloReiniciado =
+      vinculo.cicloReiniciadoEm != null &&
+      cycleAnchor.getTime() === vinculo.cicloReiniciadoEm.getTime()
+
     const eventosDoCiclo = enviados.filter(
       (e) => e.leadId === vinculo.leadId && e.mensagemId && e.data.getTime() >= cycleAnchor.getTime(),
     )
@@ -537,6 +542,7 @@ export async function getCampaignSchedule(campanhaId: string): Promise<Record<st
           enviadosIds,
           recorrenciaDias: campanha.recorrenciaDias,
           ultimoEnvioEm,
+          cicloReiniciado,
           pausarNoFimDeSemana,
         },
         agora,
