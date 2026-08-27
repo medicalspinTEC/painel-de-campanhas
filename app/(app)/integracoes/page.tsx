@@ -11,11 +11,11 @@ export const metadata = {
 
 const EXEMPLO_PAYLOAD = `POST /seu-endpoint
 Content-Type: application/json
-X-Webhook-Event: lead.qualificado
+X-Webhook-Event: lead.atualizado
 X-Webhook-Signature: sha256=<hmac do corpo com o secret>
 
 {
-  "evento": "lead.qualificado",
+  "evento": "lead.atualizado",
   "enviadoEm": "2026-07-29T13:40:12.000Z",
   "dados": { "leadId": "clx...", "nome": "Ana Paula Souza" }
 }`
@@ -25,7 +25,7 @@ Content-Type: application/json
 x-ingest-token: <INGEST_TOKEN>
 
 {
-  "kind": "enviada",        // enviada | falha | resposta | agendada
+  "kind": "enviada",        // enviada | falha | resposta
   "leadId": "clx...",
   "mensagemId": "clx...",
   "detalhes": "Texto da mensagem disparada."

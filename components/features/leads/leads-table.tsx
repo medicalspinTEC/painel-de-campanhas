@@ -140,13 +140,6 @@ export function LeadsTable({
     })
   }
 
-  function qualificar(lead: LeadRow) {
-    startTransition(async () => {
-      await setLeadStatusAction(lead.id, "qualificado")
-      toast.success(`${lead.nome} marcado como qualificado.`)
-    })
-  }
-
   function excluir() {
     if (!leadExcluindo) return
     const alvo = leadExcluindo
@@ -347,10 +340,6 @@ export function LeadsTable({
                         >
                           <Pencil className="size-4" />
                           Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => qualificar(lead)} disabled={lead.status === "qualificado"}>
-                          <UserRoundCheck className="size-4" />
-                          Marcar como qualificado
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem variant="destructive" onClick={() => setLeadExcluindo(lead)}>

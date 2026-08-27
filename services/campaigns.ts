@@ -9,7 +9,6 @@ import type { Campaign, CampaignMessage, CampaignStatus, LeadStatus } from "@/ty
 
 export interface CampaignWithStats extends Campaign {
   totalLeads: number
-  leadsQualificados: number
   mensagensEnviadas: number
   respostas: number
   taxaResposta: number
@@ -65,7 +64,7 @@ const campaignInclude = {
  */
 async function loadStats(campaignIds: string[]) {
   if (campaignIds.length === 0) {
-    return { eventos: new Map<string, { enviadas: number; respostas: number }>(), leads: new Map<string, { total: number; qualificados: number }>() }
+    return { eventos: new Map<string, { enviadas: number; respostas: number }>(), leads: new Map<string, { total: number; respostas: number }>() }
   }
 
   const [porTipo, porCampanha, leadsVinculados] = await Promise.all([
@@ -94,11 +93,11 @@ async function loadStats(campaignIds: string[]) {
     eventos.set(row.campanhaId, atual)
   }
 
-  const leads = new Map<string, { total: number; qualificados: number }>()
+  const leads = new Map<string, { total: number; respostas: number }>()
   for (const row of porCampanha) {
     const campanhaId = row.campanhaId
     if (!campanhaId) continue
-    const atual = leads.get(campanhaId) ?? { total: 0, qualificados: 0 }
+    const atual = leads.get(campanhaId) ?? { total: 0, respostas: 0 }
     atual.total += row._count._all
     leads.set(campanhaId, atual)
   }
@@ -106,8 +105,8 @@ async function loadStats(campaignIds: string[]) {
   for (const item of leadsVinculados) {
     const campanhaId = item.campanhaId
     if (!campanhaId) continue
-    const atual = leads.get(campanhaId) ?? { total: 0, qualificados: 0 }
-    if (item.lead.status === "qualificado") atual.qualificados += 1
+    const atual = leads.get(campanhaId) ?? { total: 0, respostas: 0 }
+    if (item.lead.status === "respondeu") atual.respostas += 1
     leads.set(campanhaId, atual)
   }
 
@@ -117,16 +116,15 @@ async function loadStats(campaignIds: string[]) {
 function withStats(
   campaign: Campaign,
   eventos: { enviadas: number; respostas: number },
-  leads: { total: number; qualificados: number },
+  leads: { total: number; respostas: number },
 ): CampaignWithStats {
   return {
     ...campaign,
     totalLeads: leads.total,
-    leadsQualificados: leads.qualificados,
     mensagensEnviadas: eventos.enviadas,
     respostas: eventos.respostas,
     taxaResposta: eventos.enviadas ? (eventos.respostas / eventos.enviadas) * 100 : 0,
-    taxaConversao: leads.total ? (leads.qualificados / leads.total) * 100 : 0,
+    taxaConversao: leads.total ? (leads.respostas / leads.total) * 100 : 0,
   }
 }
 
@@ -167,7 +165,7 @@ export async function listCampaigns(): Promise<CampaignWithStats[]> {
     withStats(
       toCampaign(c),
       eventos.get(c.id) ?? { enviadas: 0, respostas: 0 },
-      leads.get(c.id) ?? { total: 0, qualificados: 0 },
+      leads.get(c.id) ?? { total: 0, respostas: 0 },
     ),
   )
 }
@@ -180,7 +178,7 @@ export async function getCampaign(id: string): Promise<CampaignWithStats | null>
   return withStats(
     toCampaign(campanha),
     eventos.get(id) ?? { enviadas: 0, respostas: 0 },
-    leads.get(id) ?? { total: 0, qualificados: 0 },
+    leads.get(id) ?? { total: 0, respostas: 0 },
   )
 }
 

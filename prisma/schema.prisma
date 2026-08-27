@@ -14,7 +14,6 @@ enum LeadStatus {
   novo
   em_campanha
   respondeu
-  qualificado
   encerrado
 }
 
@@ -29,7 +28,6 @@ enum EventType {
   mensagem_enviada
   falha
   resposta
-  qualificado
   campanha_iniciada
   campanha_encerrada
 }

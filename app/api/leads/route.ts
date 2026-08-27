@@ -14,7 +14,7 @@ import { type LeadStatus } from "@/types"
  * mesma forma que as páginas do painel.
  */
 
-const STATUS_VALIDOS: LeadStatus[] = ["novo", "em_campanha", "respondeu", "qualificado", "encerrado"]
+const STATUS_VALIDOS: LeadStatus[] = ["novo", "em_campanha", "respondeu", "encerrado"]
 
 export async function GET() {
   try {

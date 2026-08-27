@@ -13,7 +13,7 @@ export interface ActionState {
   errors?: Record<string, string>
 }
 
-const STATUS_VALIDOS: LeadStatus[] = ["novo", "em_campanha", "respondeu", "qualificado", "encerrado"]
+const STATUS_VALIDOS: LeadStatus[] = ["novo", "em_campanha", "respondeu", "encerrado"]
 
 /** Tamanho máximo para as dimensões de segmentação (texto livre). */
 const MAX_SEGMENTO = 60

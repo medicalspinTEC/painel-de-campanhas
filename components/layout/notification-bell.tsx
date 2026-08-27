@@ -22,7 +22,6 @@ import { EVENT_TYPE_LABEL, type EventType } from "@/types"
 const ICONES: Record<EventType, React.ReactNode> = {
   mensagem_enviada: <Send className="size-4" />,
   resposta: <MessageCircleReply className="size-4" />,
-  qualificado: <Award className="size-4" />,
   falha: <AlertTriangle className="size-4" />,
   campanha_iniciada: <PlayCircle className="size-4" />,
   campanha_encerrada: <StopCircle className="size-4" />,
@@ -31,7 +30,6 @@ const ICONES: Record<EventType, React.ReactNode> = {
 const CORES: Record<EventType, string> = {
   mensagem_enviada: "bg-muted text-muted-foreground",
   resposta: "bg-chart-2/15 text-chart-2",
-  qualificado: "bg-primary/15 text-primary",
   falha: "bg-destructive/12 text-destructive",
   campanha_iniciada: "bg-chart-3/18 text-chart-3",
   campanha_encerrada: "bg-muted text-muted-foreground",

@@ -24,7 +24,6 @@ const leadStyles: Record<LeadStatus, string> = {
   novo: "border-border bg-muted text-muted-foreground",
   em_campanha: "border-chart-2/30 bg-chart-2/12 text-chart-2",
   respondeu: "border-chart-3/35 bg-chart-3/15 text-chart-3",
-  qualificado: "border-primary/30 bg-primary/12 text-primary",
   encerrado: "border-border bg-secondary text-secondary-foreground",
 }
 
@@ -57,7 +56,6 @@ export const eventMeta: Record<EventType, { icon: ComponentType<{ className?: st
   mensagem_enviada: { icon: Send, classes: "border-chart-2/30 bg-chart-2/12 text-chart-2" },
   falha: { icon: TriangleAlert, classes: "border-destructive/30 bg-destructive/10 text-destructive" },
   resposta: { icon: MessageCircleReply, classes: "border-chart-3/35 bg-chart-3/15 text-chart-3" },
-  qualificado: { icon: CheckCircle2, classes: "border-primary/30 bg-primary/12 text-primary" },
   campanha_iniciada: { icon: Flag, classes: "border-border bg-muted text-muted-foreground" },
   campanha_encerrada: { icon: PauseCircle, classes: "border-border bg-secondary text-secondary-foreground" },
 }

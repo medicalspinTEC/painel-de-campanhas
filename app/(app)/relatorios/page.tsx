@@ -43,7 +43,7 @@ export default async function RelatoriosPage() {
         <Card>
           <CardHeader>
             <CardTitle>Funil de conversão</CardTitle>
-            <CardDescription>Do cadastro do lead até a qualificação.</CardDescription>
+            <CardDescription>Do cadastro do lead até a resposta.</CardDescription>
           </CardHeader>
           <CardContent>
             <FunilChart dados={funil} />
@@ -75,7 +75,7 @@ export default async function RelatoriosPage() {
       <Card>
         <CardHeader>
           <CardTitle>Conversão por segmento</CardTitle>
-          <CardDescription>Percentual de leads qualificados em cada dimensão.</CardDescription>
+          <CardDescription>Percentual de leads que respondem em cada dimensão.</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="produto">
@@ -105,7 +105,7 @@ export default async function RelatoriosPage() {
         <Card>
           <CardHeader>
             <CardTitle>Desempenho por campanha</CardTitle>
-            <CardDescription>Ordenado pela taxa de conversão em qualificados.</CardDescription>
+            <CardDescription>Ordenado pela taxa de conversão em respostas.</CardDescription>
           </CardHeader>
           <CardContent className="overflow-x-auto">
             <Table>

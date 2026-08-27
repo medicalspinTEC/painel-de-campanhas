@@ -13,7 +13,7 @@ export default async function EventosPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         titulo="Eventos"
-        descricao="Linha do tempo unificada de envios, respostas e qualificações."
+        descricao="Linha do tempo unificada de envios e respostas."
       />
       <EventsFeed eventos={eventos} />
     </div>

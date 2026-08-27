@@ -51,7 +51,7 @@ export const ENUMS = {
   marca: ["Ápice", "NovaVida", "Prisma", "Vértice"],
   persona: ["Investidor", "Primeira Casa", "Empresário", "Família", "Autônomo"],
   regiao: ["Sudeste", "Sul", "Centro-Oeste", "Nordeste", "Norte"],
-  leadStatus: ["novo", "em_campanha", "respondeu", "qualificado", "encerrado"],
+  leadStatus: ["novo", "em_campanha", "respondeu", "encerrado"],
   campaignStatus: ["rascunho", "ativa", "pausada", "encerrada"],
   messageKind: ["enviada", "falha", "resposta", "agendada"],
 } as const
@@ -163,7 +163,7 @@ export const API_DOCS: Record<string, EndpointDoc> = {
 
   "GET /api/leads/:id": {
     resumo: "Detalha um lead e sua timeline.",
-    descricao: "Retorna o lead e a lista cronológica de eventos (mensagens enviadas, respostas, qualificações, etc.).",
+    descricao: "Retorna o lead e a lista cronológica de eventos (mensagens enviadas, respostas, etc.).",
     auth: SESSAO,
     pathParams: [{ nome: "id", tipo: "string", obrigatorio: true, descricao: "ID do lead, ex.: lead_a1b2c3." }],
     responses: [
@@ -219,16 +219,16 @@ export const API_DOCS: Record<string, EndpointDoc> = {
   "nome": "Marina Alves de Souza",
   "telefone": "(11) 98888-7777",
   "notas": "Retornar após feriado.",
-  "status": "qualificado"
+  "status": "respondeu"
 }`,
     responses: [
-      { status: 200, descricao: "Lead atualizado.", exemplo: `{ "ok": true, "lead": { "id": "lead_a1b2c3", "status": "qualificado" } }` },
+      { status: 200, descricao: "Lead atualizado.", exemplo: `{ "ok": true, "lead": { "id": "lead_a1b2c3", "status": "respondeu" } }` },
       { status: 404, descricao: "Lead inexistente.", exemplo: `{ "ok": false, "erro": "Lead não encontrado." }` },
     ],
     curl: `curl -s -X PUT "$BASE/api/leads/lead_a1b2c3" \\
   -H "Content-Type: application/json" \\
   -H "Cookie: campanhas_session=SEU_TOKEN" \\
-  -d '{ "nome": "Marina Alves de Souza", "telefone": "(11) 98888-7777", "notas": "Retornar após feriado.", "status": "qualificado" }'`,
+  -d '{ "nome": "Marina Alves de Souza", "telefone": "(11) 98888-7777", "notas": "Retornar após feriado.", "status": "respondeu" }'`,
   },
 
   "DELETE /api/leads/:id": {

@@ -14,9 +14,6 @@ import { emitWebhookEvent } from "@/services/webhooks"
  *   4. se o lead estiver em mais de uma campanha, escolhe aquela que enviou a
  *      última mensagem (é ela quem "qualifica" o lead);
  *   5. registra a resposta na timeline (visível no feed de eventos);
- *   6. marca o lead como qualificado, atribuindo a qualificação à campanha da
- *      última mensagem, e o remove de TODAS as campanhas em que estava.
- */
 
 export interface RespostaLeadResultado {
   ok: boolean
@@ -210,20 +207,20 @@ export async function processarRespostaLead(payload: unknown): Promise<RespostaL
     },
   })
 
-  // 6. Marca como qualificado e registra o evento correspondente. Mesmo que o
-  //    lead esteja em várias campanhas, a qualificação é atribuída à campanha
+  // 6. Marca como respondeu e registra o evento correspondente. Mesmo que o
+  //    lead esteja em várias campanhas, a resposta é atribuída à campanha
   //    que enviou a última mensagem (campanhaAlvo) e ele sai de todas.
   await prisma.timelineEvent.create({
     data: {
       leadId: lead.id,
       campanhaId: campanhaAlvo?.id ?? null,
-      tipo: "qualificado",
+      tipo: "resposta",
       descricao: campanhaAlvo
-        ? `Lead qualificado pela campanha ${campanhaAlvo.nome}.`
-        : "Lead qualificado após responder no WhatsApp.",
+        ? `Lead respondeu pela campanha ${campanhaAlvo.nome}.`
+        : "Lead respondeu após responder no WhatsApp.",
       detalhes:
         campanhaIds.length > 1
-          ? `Removido de ${campanhaIds.length} campanhas após qualificação.`
+          ? `Removido de ${campanhaIds.length} campanhas após resposta.`
           : campanhaAlvo
             ? `Removido da campanha ${campanhaAlvo.nome}.`
             : null,
@@ -240,7 +237,7 @@ export async function processarRespostaLead(payload: unknown): Promise<RespostaL
   const leadAtualizado = await prisma.lead.update({
     where: { id: lead.id },
     data: {
-      status: "qualificado",
+      status: "respondeu",
       campanhaId: null,
       entradaCampanhaEm: null,
     },
@@ -280,9 +277,9 @@ export async function processarRespostaLead(payload: unknown): Promise<RespostaL
     resposta: textoResposta,
     origem: "whatsapp",
   })
-  if (statusAnterior !== "qualificado") {
+  if (statusAnterior !== "respondeu") {
     await emitWebhookEvent("lead.status_alterado", { lead: leadPayload, statusAnterior })
-    await emitWebhookEvent("lead.qualificado", { lead: leadPayload })
+    await emitWebhookEvent("lead.status_alterado", { lead: leadPayload })
   }
 
   return { ok: true, leadId: lead.id, campanhaId: campanhaAlvo?.id ?? null }

@@ -32,22 +32,10 @@ async function KpiGrid() {
         icon={Send}
       />
       <KpiCard
-        titulo="Leads qualificados"
-        valor={formatNumber(kpis.leadsQualificados)}
-        variacao={kpis.variacao.leadsQualificados}
-        icon={CheckCircle2}
-      />
-      <KpiCard
         titulo="Taxa de resposta"
         valor={formatPercent(kpis.taxaResposta)}
         variacao={kpis.variacao.taxaResposta}
         icon={MessageCircleReply}
-      />
-      <KpiCard
-        titulo="Taxa de qualificação"
-        valor={formatPercent(kpis.taxaQualificacao)}
-        variacao={kpis.variacao.taxaQualificacao}
-        icon={Target}
       />
     </div>
   )
@@ -70,7 +58,7 @@ async function Graficos() {
       <Card>
         <CardHeader>
           <CardTitle>Campanhas mais eficientes</CardTitle>
-          <CardDescription>Taxa de conversão em leads qualificados.</CardDescription>
+          <CardDescription>Taxa de conversão em respostas de leads.</CardDescription>
         </CardHeader>
         <CardContent>
           <TopCampaignsChart dados={campanhas.filter((c) => c.leads > 0)} />
@@ -87,7 +75,7 @@ async function FunilCard() {
     <Card>
       <CardHeader>
         <CardTitle>Funil de follow-up</CardTitle>
-        <CardDescription>Da entrada do lead até a qualificação.</CardDescription>
+        <CardDescription>Da entrada do lead até a resposta.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {funil.map((etapa) => (
@@ -133,7 +121,7 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-4">
       <PageHeader
         titulo="Dashboard"
-        descricao="Visão geral da engine de follow-up: volume de mensagens, respostas e qualificação de leads."
+        descricao="Visão geral da engine de follow-up: volume de mensagens e respostas de leads."
       >
         <LinkButton variant="outline" size="sm" href="/relatorios">
           Relatórios

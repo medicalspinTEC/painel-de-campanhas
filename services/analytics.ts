@@ -24,7 +24,6 @@ export async function getKpis(): Promise<Kpis> {
     mensagensOntem,
     totalEnviadas,
     totalRespostas,
-    qualificados,
     totalLeads,
   ] = await Promise.all([
     prisma.lead.count({ where: { campanhaId: { not: null }, status: { not: "encerrado" } } }),
@@ -35,7 +34,7 @@ export async function getKpis(): Promise<Kpis> {
     }),
     prisma.timelineEvent.count({ where: { tipo: "mensagem_enviada" } }),
     prisma.timelineEvent.count({ where: { tipo: "resposta" } }),
-    prisma.lead.count({ where: { status: "qualificado" } }),
+    prisma.lead.count({ where: { status: "respondeu" } }),
     prisma.lead.count(),
   ])
 
@@ -49,15 +48,13 @@ export async function getKpis(): Promise<Kpis> {
       : 0
 
   const taxaResposta = totalEnviadas ? (totalRespostas / totalEnviadas) * 100 : 0
-  const taxaQualificacao = totalLeads ? (qualificados / totalLeads) * 100 : 0
+
 
   return {
     leadsAtivos,
     campanhasAtivas,
     mensagensHoje,
-    leadsQualificados: qualificados,
     taxaResposta,
-    taxaQualificacao,
     /*
      * Só a variação de mensagens é comparável hoje: as demais exigiriam
      * snapshots históricos que o schema ainda não guarda. Zero faz a UI
@@ -67,9 +64,7 @@ export async function getKpis(): Promise<Kpis> {
       leadsAtivos: 0,
       campanhasAtivas: 0,
       mensagensHoje: variacaoMensagens,
-      leadsQualificados: 0,
       taxaResposta: 0,
-      taxaQualificacao: 0,
     },
   }
 }
@@ -79,7 +74,6 @@ export interface SeriePonto {
   label: string
   enviadas: number
   respostas: number
-  qualificados: number
 }
 
 /** Chave `YYYY-MM-DD` no fuso local, usada para casar as linhas agregadas. */
@@ -101,18 +95,17 @@ export async function getSerieDiaria(dias = 30): Promise<SeriePonto[]> {
     SELECT date_trunc('day', "data") AS dia, "tipo"::text AS tipo, COUNT(*) AS total
     FROM "TimelineEvent"
     WHERE "data" >= ${inicio}
-      AND "tipo" IN ('mensagem_enviada', 'resposta', 'qualificado')
+      AND "tipo" IN ('mensagem_enviada', 'resposta')
     GROUP BY 1, 2
   `
 
-  const porDia = new Map<string, { enviadas: number; respostas: number; qualificados: number }>()
+  const porDia = new Map<string, { enviadas: number; respostas: number; }>()
   for (const linha of linhas) {
     const chave = chaveDia(new Date(linha.dia))
-    const atual = porDia.get(chave) ?? { enviadas: 0, respostas: 0, qualificados: 0 }
+    const atual = porDia.get(chave) ?? { enviadas: 0, respostas: 0 }
     const total = Number(linha.total)
     if (linha.tipo === "mensagem_enviada") atual.enviadas += total
     if (linha.tipo === "resposta") atual.respostas += total
-    if (linha.tipo === "qualificado") atual.qualificados += total
     porDia.set(chave, atual)
   }
 
@@ -120,7 +113,7 @@ export async function getSerieDiaria(dias = 30): Promise<SeriePonto[]> {
   const pontos: SeriePonto[] = []
   for (let i = 0; i < dias; i++) {
     const d = new Date(inicio.getTime() + i * DAY)
-    const valores = porDia.get(chaveDia(d)) ?? { enviadas: 0, respostas: 0, qualificados: 0 }
+    const valores = porDia.get(chaveDia(d)) ?? { enviadas: 0, respostas: 0 }
     pontos.push({
       data: d.toISOString(),
       label: d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
@@ -136,10 +129,9 @@ export interface CampanhaPerformance {
   leads: number
   enviadas: number
   respostas: number
-  qualificados: number
   taxaResposta: number
   taxaConversao: number
-  tempoMedioQualificacaoDias: number
+  tempoMedioRespostaDias: number
 }
 
 export async function getPerformancePorCampanha(): Promise<CampanhaPerformance[]> {
@@ -149,7 +141,7 @@ export async function getPerformancePorCampanha(): Promise<CampanhaPerformance[]
   const [eventos, leadsPorCampanha, temposMedios] = await Promise.all([
     prisma.timelineEvent.groupBy({
       by: ["campanhaId", "tipo"],
-      where: { campanhaId: { not: null }, tipo: { in: ["mensagem_enviada", "resposta", "qualificado"] } },
+      where: { campanhaId: { not: null }, tipo: { in: ["mensagem_enviada", "resposta"] } },
       _count: { _all: true },
     }),
     prisma.lead.groupBy({
@@ -158,15 +150,15 @@ export async function getPerformancePorCampanha(): Promise<CampanhaPerformance[]
       _count: { _all: true },
     }),
     /*
-     * Tempo médio até a qualificação, em dias, calculado no banco. Fazer isso em
-     * JS exigiria carregar cada evento de qualificação e cruzar com seu lead.
+     * Tempo médio até a resposta, em dias, calculado no banco. Fazer isso em
+     * JS exigiria carregar cada evento de resposta e cruzar com seu lead.
      */
     prisma.$queryRaw<Array<{ campanhaId: string; dias: number | null }>>`
       SELECT e."campanhaId" AS "campanhaId",
              AVG(EXTRACT(EPOCH FROM (e."data" - l."entradaCampanhaEm")) / 86400) AS dias
       FROM "TimelineEvent" e
       JOIN "Lead" l ON l."id" = e."leadId"
-      WHERE e."tipo" = 'qualificado'
+      WHERE e."tipo" = 'resposta'
         AND e."campanhaId" IS NOT NULL
         AND l."entradaCampanhaEm" IS NOT NULL
         AND e."data" >= l."entradaCampanhaEm"
@@ -174,13 +166,12 @@ export async function getPerformancePorCampanha(): Promise<CampanhaPerformance[]
     `,
   ])
 
-  const contagem = new Map<string, { enviadas: number; respostas: number; qualificados: number }>()
+  const contagem = new Map<string, { enviadas: number; respostas: number }>()
   for (const row of eventos) {
     if (!row.campanhaId) continue
-    const atual = contagem.get(row.campanhaId) ?? { enviadas: 0, respostas: 0, qualificados: 0 }
+    const atual = contagem.get(row.campanhaId) ?? { enviadas: 0, respostas: 0 }
     if (row.tipo === "mensagem_enviada") atual.enviadas += row._count._all
     if (row.tipo === "resposta") atual.respostas += row._count._all
-    if (row.tipo === "qualificado") atual.qualificados += row._count._all
     contagem.set(row.campanhaId, atual)
   }
 
@@ -189,8 +180,8 @@ export async function getPerformancePorCampanha(): Promise<CampanhaPerformance[]
 
   return campanhas
     .map((c) => {
-      const { enviadas, respostas, qualificados } =
-        contagem.get(c.id) ?? { enviadas: 0, respostas: 0, qualificados: 0 }
+      const { enviadas, respostas } =
+        contagem.get(c.id) ?? { enviadas: 0, respostas: 0 }
       const leads = leadsMap.get(c.id) ?? 0
       return {
         id: c.id,
@@ -198,10 +189,9 @@ export async function getPerformancePorCampanha(): Promise<CampanhaPerformance[]
         leads,
         enviadas,
         respostas,
-        qualificados,
         taxaResposta: enviadas ? (respostas / enviadas) * 100 : 0,
-        taxaConversao: leads ? (qualificados / leads) * 100 : 0,
-        tempoMedioQualificacaoDias: temposMap.get(c.id) ?? 0,
+        taxaConversao: leads ? (respostas / leads) * 100 : 0,
+        tempoMedioRespostaDias: temposMap.get(c.id) ?? 0,
       }
     })
     .sort((a, b) => b.taxaConversao - a.taxaConversao)
@@ -294,7 +284,7 @@ export async function getPerformancePorMensagem(): Promise<MensagemPerformance[]
 export interface DimensaoPerformance {
   chave: string
   leads: number
-  qualificados: number
+  respostas: number
   taxaConversao: number
 }
 
@@ -306,12 +296,12 @@ export async function getConversaoPorDimensao(
     _count: { _all: true },
   })
 
-  const mapa = new Map<string, { leads: number; qualificados: number }>()
+  const mapa = new Map<string, { leads: number; respostas: number }>()
   for (const linha of linhas) {
     const chave = linha[dimensao] as string
-    const atual = mapa.get(chave) ?? { leads: 0, qualificados: 0 }
+    const atual = mapa.get(chave) ?? { leads: 0, respostas: 0 }
     atual.leads += linha._count._all
-    if (linha.status === "qualificado") atual.qualificados += linha._count._all
+    if (linha.status === "respondeu") atual.respostas += linha._count._all
     mapa.set(chave, atual)
   }
 
@@ -319,8 +309,8 @@ export async function getConversaoPorDimensao(
     .map(([chave, v]) => ({
       chave,
       leads: v.leads,
-      qualificados: v.qualificados,
-      taxaConversao: v.leads ? (v.qualificados / v.leads) * 100 : 0,
+      respostas: v.respostas,
+      taxaConversao: v.leads ? (v.respostas / v.leads) * 100 : 0,
     }))
     .sort((a, b) => b.taxaConversao - a.taxaConversao)
 }
@@ -407,14 +397,14 @@ export async function getFunil(): Promise<FunilPonto[]> {
    * "Contatados" e "Responderam" contam leads distintos, não eventos: um lead
    * que recebeu cinco mensagens é uma pessoa contatada, não cinco.
    */
-  const [total, comCampanha, contatados, responderam, qualificados] = await Promise.all([
+  const [total, comCampanha, contatados, responderam] = await Promise.all([
     prisma.lead.count(),
     prisma.lead.count({ where: { campanhaId: { not: null } } }),
     prisma.timelineEvent
       .groupBy({ by: ["leadId"], where: { tipo: "mensagem_enviada" } })
       .then((rows) => rows.length),
     prisma.timelineEvent.groupBy({ by: ["leadId"], where: { tipo: "resposta" } }).then((rows) => rows.length),
-    prisma.lead.count({ where: { status: "qualificado" } }),
+    prisma.lead.count({ where: { status: "respondeu" } }),
   ])
 
   return [
@@ -422,6 +412,5 @@ export async function getFunil(): Promise<FunilPonto[]> {
     { etapa: "Em campanha", total: comCampanha },
     { etapa: "Contatados", total: contatados },
     { etapa: "Responderam", total: responderam },
-    { etapa: "Qualificados", total: qualificados },
   ]
 }

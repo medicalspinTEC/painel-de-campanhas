@@ -14,7 +14,7 @@ import { type LeadStatus } from "@/types"
  * Protegidas por sessão via proxy.ts. No Next 16 os `params` são assíncronos.
  */
 
-const STATUS_VALIDOS: LeadStatus[] = ["novo", "em_campanha", "respondeu", "qualificado", "encerrado"]
+const STATUS_VALIDOS: LeadStatus[] = ["novo", "em_campanha", "respondeu", "encerrado"]
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

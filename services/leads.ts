@@ -390,7 +390,7 @@ export async function createLead(input: LeadInput): Promise<Lead> {
 async function emitirStatus(lead: Lead, anterior: LeadStatus | null) {
   if (anterior === lead.status) return
   await emitWebhookEvent("lead.status_alterado", { lead, statusAnterior: anterior })
-  if (lead.status === "qualificado") await emitWebhookEvent("lead.qualificado", { lead })
+  if (lead.status === "respondeu") await emitWebhookEvent("lead.status_alterado", { lead })
 }
 
 export async function updateLead(id: string, input: LeadInput): Promise<Lead | null> {
@@ -618,13 +618,13 @@ export async function setLeadStatus(id: string, status: LeadStatus): Promise<Lea
     where: { id },
     data: {
       status,
-      ...(status === "qualificado"
+      ...(status === "respondeu"
         ? {
             eventos: {
               create: {
                 campanhaId: lead.campanhaId,
-                tipo: "qualificado" as const,
-                descricao: "Lead marcado como qualificado pela equipe.",
+                tipo: "resposta" as const,
+                descricao: "Lead respondeu.",
                 data: new Date(),
                 sucesso: true,
               },

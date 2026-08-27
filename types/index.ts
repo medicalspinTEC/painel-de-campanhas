@@ -1,4 +1,4 @@
-export type LeadStatus = "novo" | "em_campanha" | "respondeu" | "qualificado" | "encerrado"
+export type LeadStatus = "novo" | "em_campanha" | "respondeu" | "encerrado"
 
 export type CampaignStatus = "ativa" | "pausada" | "encerrada" | "rascunho"
 
@@ -6,7 +6,6 @@ export type EventType =
   | "mensagem_enviada"
   | "falha"
   | "resposta"
-  | "qualificado"
   | "campanha_iniciada"
   | "campanha_encerrada"
 
@@ -76,16 +75,13 @@ export interface Kpis {
   leadsAtivos: number
   campanhasAtivas: number
   mensagensHoje: number
-  leadsQualificados: number
   taxaResposta: number
   taxaQualificacao: number
   variacao: {
     leadsAtivos: number
     campanhasAtivas: number
     mensagensHoje: number
-    leadsQualificados: number
     taxaResposta: number
-    taxaQualificacao: number
   }
 }
 
@@ -93,7 +89,6 @@ export const LEAD_STATUS_LABEL: Record<LeadStatus, string> = {
   novo: "Novo",
   em_campanha: "Em campanha",
   respondeu: "Respondeu",
-  qualificado: "Qualificado",
   encerrado: "Encerrado",
 }
 
@@ -108,7 +103,6 @@ export const EVENT_TYPE_LABEL: Record<EventType, string> = {
   mensagem_enviada: "Mensagem enviada",
   falha: "Falha no envio",
   resposta: "Resposta recebida",
-  qualificado: "Lead qualificado",
   campanha_iniciada: "Campanha iniciada",
   campanha_encerrada: "Campanha encerrada",
 }

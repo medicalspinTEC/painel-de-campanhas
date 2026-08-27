@@ -13,7 +13,6 @@ export const LeadStatus = {
   novo: 'novo',
   em_campanha: 'em_campanha',
   respondeu: 'respondeu',
-  qualificado: 'qualificado',
   encerrado: 'encerrado'
 } as const
 
@@ -34,7 +33,6 @@ export const EventType = {
   mensagem_enviada: 'mensagem_enviada',
   falha: 'falha',
   resposta: 'resposta',
-  qualificado: 'qualificado',
   campanha_iniciada: 'campanha_iniciada',
   campanha_encerrada: 'campanha_encerrada'
 } as const

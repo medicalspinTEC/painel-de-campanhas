@@ -2,13 +2,13 @@
 CREATE SCHEMA IF NOT EXISTS "public";
 
 -- CreateEnum
-CREATE TYPE "LeadStatus" AS ENUM ('novo', 'em_campanha', 'respondeu', 'qualificado', 'encerrado');
+CREATE TYPE "LeadStatus" AS ENUM ('novo', 'em_campanha', 'respondeu', 'encerrado');
 
 -- CreateEnum
 CREATE TYPE "CampaignStatus" AS ENUM ('ativa', 'pausada', 'encerrada', 'rascunho');
 
 -- CreateEnum
-CREATE TYPE "EventType" AS ENUM ('mensagem_enviada', 'falha', 'resposta', 'qualificado', 'campanha_iniciada', 'campanha_encerrada');
+CREATE TYPE "EventType" AS ENUM ('mensagem_enviada', 'falha', 'resposta', 'campanha_iniciada', 'campanha_encerrada');
 
 -- CreateTable
 CREATE TABLE "Lead" (

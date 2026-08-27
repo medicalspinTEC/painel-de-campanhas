@@ -33,12 +33,6 @@ export const WEBHOOK_EVENTS: WebhookEventDef[] = [
     grupo: "Leads",
   },
   {
-    key: "lead.qualificado",
-    label: "Lead qualificado",
-    descricao: "O lead atingiu o status de qualificado.",
-    grupo: "Leads",
-  },
-  {
     key: "lead.entrou_em_campanha",
     label: "Lead entrou em campanha",
     descricao: "O lead passou a receber uma sequência.",
