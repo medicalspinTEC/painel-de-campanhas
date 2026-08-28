@@ -6,6 +6,7 @@ export type EventType =
   | "mensagem_enviada"
   | "falha"
   | "resposta"
+  | "removido_campanha"
   | "campanha_iniciada"
   | "campanha_encerrada"
 
@@ -103,6 +104,7 @@ export const EVENT_TYPE_LABEL: Record<EventType, string> = {
   mensagem_enviada: "Mensagem enviada",
   falha: "Falha no envio",
   resposta: "Resposta recebida",
+  removido_campanha: "Removido da campanha",
   campanha_iniciada: "Campanha iniciada",
   campanha_encerrada: "Campanha encerrada",
 }

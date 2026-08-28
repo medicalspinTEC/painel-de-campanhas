@@ -3,6 +3,7 @@ import {
   CircleDot,
   Flag,
   MessageCircleReply,
+  Megaphone,
   PauseCircle,
   Send,
   TriangleAlert,
@@ -56,6 +57,7 @@ export const eventMeta: Record<EventType, { icon: ComponentType<{ className?: st
   mensagem_enviada: { icon: Send, classes: "border-chart-2/30 bg-chart-2/12 text-chart-2" },
   falha: { icon: TriangleAlert, classes: "border-destructive/30 bg-destructive/10 text-destructive" },
   resposta: { icon: MessageCircleReply, classes: "border-chart-3/35 bg-chart-3/15 text-chart-3" },
+  removido_campanha: { icon: Megaphone, classes: "border-border bg-muted text-muted-foreground" },
   campanha_iniciada: { icon: Flag, classes: "border-border bg-muted text-muted-foreground" },
   campanha_encerrada: { icon: PauseCircle, classes: "border-border bg-secondary text-secondary-foreground" },
 }

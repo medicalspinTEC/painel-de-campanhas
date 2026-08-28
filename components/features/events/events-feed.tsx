@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
-import { AlertTriangle, Award, MessageCircleReply, PlayCircle, Search, Send, StopCircle } from "lucide-react"
+import { Megaphone, AlertTriangle, Award, MessageCircleReply, PlayCircle, Search, Send, StopCircle } from "lucide-react"
 
 import { SelectField } from "@/components/shared/select-field"
 import { Badge } from "@/components/ui/badge"
@@ -17,6 +17,7 @@ import { EVENT_TYPE_LABEL, type EventType } from "@/types"
 const ICONES: Record<EventType, React.ReactNode> = {
   mensagem_enviada: <Send className="size-4" />,
   resposta: <MessageCircleReply className="size-4" />,
+  removido_campanha: <Megaphone className="size-4" />,
   falha: <AlertTriangle className="size-4" />,
   campanha_iniciada: <PlayCircle className="size-4" />,
   campanha_encerrada: <StopCircle className="size-4" />,
@@ -25,6 +26,7 @@ const ICONES: Record<EventType, React.ReactNode> = {
 const CORES: Record<EventType, string> = {
   mensagem_enviada: "bg-muted text-muted-foreground",
   resposta: "bg-chart-2/15 text-chart-2",
+  removido_campanha: "bg-muted text-muted-foreground",
   falha: "bg-destructive/12 text-destructive",
   campanha_iniciada: "bg-chart-3/18 text-chart-3",
   campanha_encerrada: "bg-muted text-muted-foreground",

@@ -6,9 +6,9 @@ import {
   BarChart3,
   LayoutDashboard,
   LogOut,
-  MessageSquareText,
+  CalendarRange,
   Plug,
-  Radio,
+  Megaphone,
   Settings,
   Target,
   TriangleAlert,
@@ -37,12 +37,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 const navPrincipal = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Leads", url: "/leads", icon: Users },
-  { title: "Campanhas", url: "/campanhas", icon: Radio },
+  { title: "Campanhas", url: "/campanhas", icon: Megaphone },
   { title: "Segmentação", url: "/segmentacao", icon: Target },
 ]
 
 const navOperacao = [
-  { title: "Eventos", url: "/eventos", icon: MessageSquareText },
+  { title: "Eventos", url: "/eventos", icon: CalendarRange },
   { title: "Logs", url: "/logs", icon: TriangleAlert },
   { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
 ]

@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { MessageCircleReply } from "lucide-react"
+import { Megaphone } from "lucide-react"
 
 import { LeadStatusBadge } from "@/components/shared/status-badges"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
@@ -12,7 +12,7 @@ export function CampaignResponses({ respostas }: { respostas: CampaignResponse[]
       <Empty className="border-0">
         <EmptyHeader>
           <EmptyMedia variant="icon">
-            <MessageCircleReply />
+            <Megaphone />
           </EmptyMedia>
           <EmptyTitle>Nenhuma resposta ainda</EmptyTitle>
           <EmptyDescription>

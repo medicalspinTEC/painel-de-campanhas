@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import { CheckCircle2, MessageCircleReply, Radio, Send, Target, Users } from "lucide-react"
+import { CheckCircle2,Megaphone, MessageCircleReply, Radio, Send, Target, Users } from "lucide-react"
 
 import { KpiCard } from "@/components/shared/kpi-card"
 import { LinkButton } from "@/components/shared/link-button"
@@ -23,7 +23,7 @@ async function KpiGrid() {
         titulo="Campanhas ativas"
         valor={formatNumber(kpis.campanhasAtivas)}
         variacao={kpis.variacao.campanhasAtivas}
-        icon={Radio}
+        icon={Megaphone}
       />
       <KpiCard
         titulo="Mensagens hoje"
