@@ -10,12 +10,14 @@ import {
   Plus,
   Search,
   Trash2,
+  Upload,
   UserRoundCheck,
 } from "lucide-react"
 import { toast } from "sonner"
 
 import { assignCampaignAction, deleteLeadAction, setLeadStatusAction } from "@/app/actions/leads"
 import { LeadFormDialog, type CampanhaOpcao } from "@/components/features/leads/lead-form-dialog"
+import { LeadsImportDialog } from "@/components/features/leads/leads-import-dialog"
 import { SelectField, opcoesComExtras } from "@/components/shared/select-field"
 import { LeadStatusBadge } from "@/components/shared/status-badges"
 import {
@@ -80,6 +82,7 @@ export function LeadsTable({
   const [pagina, setPagina] = useState(1)
   const [selecionados, setSelecionados] = useState<string[]>([])
   const [formAberto, setFormAberto] = useState(false)
+  const [importarAberto, setImportarAberto] = useState(false)
   const [leadEditando, setLeadEditando] = useState<LeadRow | null>(null)
   const [leadExcluindo, setLeadExcluindo] = useState<LeadRow | null>(null)
   const [pending, startTransition] = useTransition()
@@ -176,10 +179,16 @@ export function LeadsTable({
                 aria-label="Buscar leads"
               />
             </div>
-            <Button onClick={() => { setLeadEditando(null); setFormAberto(true) }} className="sm:w-auto">
-              <Plus className="size-4" />
-              Novo lead
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setImportarAberto(true)} className="flex-1 sm:flex-none">
+                <Upload className="size-4" />
+                Importar Excel
+              </Button>
+              <Button onClick={() => { setLeadEditando(null); setFormAberto(true) }} className="flex-1 sm:flex-none">
+                <Plus className="size-4" />
+                Novo lead
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-5">
@@ -405,6 +414,8 @@ export function LeadsTable({
         campanhas={campanhas}
         valoresExistentes={valoresExistentes}
       />
+
+      <LeadsImportDialog open={importarAberto} onOpenChange={setImportarAberto} />
 
       <AlertDialog open={Boolean(leadExcluindo)} onOpenChange={(aberto) => !aberto && setLeadExcluindo(null)}>
         <AlertDialogContent>
