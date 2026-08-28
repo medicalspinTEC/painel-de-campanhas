@@ -489,10 +489,17 @@ export async function updateLead(id: string, input: LeadInput): Promise<Lead | n
 async function dispararMensagemInicialDaCampanha(leadId: string, campanhaId: string) {
   const campanha = await prisma.campaign.findUnique({
     where: { id: campanhaId },
-    select: { mensagens: { orderBy: { dia: "asc" }, select: { id: true, dia: true, texto: true } } },
+    select: { status: true, mensagens: { orderBy: { dia: "asc" }, select: { id: true, dia: true, texto: true } } },
   })
 
-  if (!campanha?.mensagens?.length) return
+  if (!campanha) return
+
+  // Regra central: só disparamos mensagem quando a campanha está ativa. O lead
+  // pode ser vinculado normalmente a campanhas em rascunho, pausadas ou
+  // encerradas — o disparo fica retido até a campanha ser ativada.
+  if (campanha.status !== "ativa") return
+
+  if (!campanha.mensagens?.length) return
 
   const mensagemInicial = campanha.mensagens.find((mensagem) => mensagem.dia === 0)
   if (!mensagemInicial) return
