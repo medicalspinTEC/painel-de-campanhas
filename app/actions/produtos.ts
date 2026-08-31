@@ -7,6 +7,7 @@ import {
   createProduto,
   deleteProduto,
   ProdutoDuplicadoError,
+  ProdutoIdImportacaoDuplicadoError,
   updateProduto,
   type ProdutoInput,
 } from "@/services/produtos"
@@ -20,18 +21,22 @@ export interface ProdutoActionResult {
 /** Tamanho máximo do nome, alinhado ao limite dos campos de segmentação. */
 const MAX_NOME = 60
 const MAX_DESCRICAO = 280
+const MAX_ID_IMPORTACAO = 60
 
 function validar(input: ProdutoInput): { erros: Record<string, string> } | { dados: ProdutoInput } {
   const erros: Record<string, string> = {}
   const nome = input.nome.trim()
   const descricao = (input.descricao ?? "").trim()
+  const idImportacao = (input.idImportacao ?? "").trim()
 
   if (nome.length < 2) erros.nome = "Informe um nome com pelo menos 2 caracteres."
   else if (nome.length > MAX_NOME) erros.nome = `Use no máximo ${MAX_NOME} caracteres.`
   if (descricao.length > MAX_DESCRICAO) erros.descricao = `Use no máximo ${MAX_DESCRICAO} caracteres.`
+  if (idImportacao.length > MAX_ID_IMPORTACAO)
+    erros.idImportacao = `Use no máximo ${MAX_ID_IMPORTACAO} caracteres.`
 
   if (Object.keys(erros).length > 0) return { erros }
-  return { dados: { nome, descricao: descricao || null, ativo: input.ativo } }
+  return { dados: { nome, descricao: descricao || null, ativo: input.ativo, idImportacao: idImportacao || null } }
 }
 
 function revalidar() {
@@ -49,6 +54,9 @@ export async function createProdutoAction(input: ProdutoInput): Promise<ProdutoA
   } catch (error) {
     if (error instanceof ProdutoDuplicadoError) {
       return { ok: false, message: error.message, errors: { nome: error.message } }
+    }
+    if (error instanceof ProdutoIdImportacaoDuplicadoError) {
+      return { ok: false, message: error.message, errors: { idImportacao: error.message } }
     }
     await recordAppLog({ origem: "produtos", mensagem: "Falha ao criar produto.", detalhes: error })
     return { ok: false, message: "Não foi possível salvar o produto. Verifique a conexão com o banco." }
@@ -68,6 +76,9 @@ export async function updateProdutoAction(id: string, input: ProdutoInput): Prom
   } catch (error) {
     if (error instanceof ProdutoDuplicadoError) {
       return { ok: false, message: error.message, errors: { nome: error.message } }
+    }
+    if (error instanceof ProdutoIdImportacaoDuplicadoError) {
+      return { ok: false, message: error.message, errors: { idImportacao: error.message } }
     }
     await recordAppLog({ origem: "produtos", mensagem: `Falha ao atualizar produto id=${id}.`, detalhes: error })
     return { ok: false, message: "Não foi possível atualizar o produto. Verifique a conexão com o banco." }

@@ -30,6 +30,7 @@ export type MarcaMinAggregateOutputType = {
   nome: string | null
   descricao: string | null
   ativo: boolean | null
+  idImportacao: string | null
   criadoEm: Date | null
   atualizadoEm: Date | null
 }
@@ -39,6 +40,7 @@ export type MarcaMaxAggregateOutputType = {
   nome: string | null
   descricao: string | null
   ativo: boolean | null
+  idImportacao: string | null
   criadoEm: Date | null
   atualizadoEm: Date | null
 }
@@ -48,6 +50,7 @@ export type MarcaCountAggregateOutputType = {
   nome: number
   descricao: number
   ativo: number
+  idImportacao: number
   criadoEm: number
   atualizadoEm: number
   _all: number
@@ -59,6 +62,7 @@ export type MarcaMinAggregateInputType = {
   nome?: true
   descricao?: true
   ativo?: true
+  idImportacao?: true
   criadoEm?: true
   atualizadoEm?: true
 }
@@ -68,6 +72,7 @@ export type MarcaMaxAggregateInputType = {
   nome?: true
   descricao?: true
   ativo?: true
+  idImportacao?: true
   criadoEm?: true
   atualizadoEm?: true
 }
@@ -77,6 +82,7 @@ export type MarcaCountAggregateInputType = {
   nome?: true
   descricao?: true
   ativo?: true
+  idImportacao?: true
   criadoEm?: true
   atualizadoEm?: true
   _all?: true
@@ -159,6 +165,7 @@ export type MarcaGroupByOutputType = {
   nome: string
   descricao: string | null
   ativo: boolean
+  idImportacao: string | null
   criadoEm: Date
   atualizadoEm: Date
   _count: MarcaCountAggregateOutputType | null
@@ -189,6 +196,7 @@ export type MarcaWhereInput = {
   nome?: Prisma.StringFilter<"Marca"> | string
   descricao?: Prisma.StringNullableFilter<"Marca"> | string | null
   ativo?: Prisma.BoolFilter<"Marca"> | boolean
+  idImportacao?: Prisma.StringNullableFilter<"Marca"> | string | null
   criadoEm?: Prisma.DateTimeFilter<"Marca"> | Date | string
   atualizadoEm?: Prisma.DateTimeFilter<"Marca"> | Date | string
 }
@@ -198,6 +206,7 @@ export type MarcaOrderByWithRelationInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrderInput | Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrderInput | Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -205,6 +214,7 @@ export type MarcaOrderByWithRelationInput = {
 export type MarcaWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   nome?: string
+  idImportacao?: string
   AND?: Prisma.MarcaWhereInput | Prisma.MarcaWhereInput[]
   OR?: Prisma.MarcaWhereInput[]
   NOT?: Prisma.MarcaWhereInput | Prisma.MarcaWhereInput[]
@@ -212,13 +222,14 @@ export type MarcaWhereUniqueInput = Prisma.AtLeast<{
   ativo?: Prisma.BoolFilter<"Marca"> | boolean
   criadoEm?: Prisma.DateTimeFilter<"Marca"> | Date | string
   atualizadoEm?: Prisma.DateTimeFilter<"Marca"> | Date | string
-}, "id" | "nome">
+}, "id" | "nome" | "idImportacao">
 
 export type MarcaOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrderInput | Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrderInput | Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
   _count?: Prisma.MarcaCountOrderByAggregateInput
@@ -234,6 +245,7 @@ export type MarcaScalarWhereWithAggregatesInput = {
   nome?: Prisma.StringWithAggregatesFilter<"Marca"> | string
   descricao?: Prisma.StringNullableWithAggregatesFilter<"Marca"> | string | null
   ativo?: Prisma.BoolWithAggregatesFilter<"Marca"> | boolean
+  idImportacao?: Prisma.StringNullableWithAggregatesFilter<"Marca"> | string | null
   criadoEm?: Prisma.DateTimeWithAggregatesFilter<"Marca"> | Date | string
   atualizadoEm?: Prisma.DateTimeWithAggregatesFilter<"Marca"> | Date | string
 }
@@ -243,6 +255,7 @@ export type MarcaCreateInput = {
   nome: string
   descricao?: string | null
   ativo?: boolean
+  idImportacao?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
 }
@@ -252,6 +265,7 @@ export type MarcaUncheckedCreateInput = {
   nome: string
   descricao?: string | null
   ativo?: boolean
+  idImportacao?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
 }
@@ -261,6 +275,7 @@ export type MarcaUpdateInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  idImportacao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -270,6 +285,7 @@ export type MarcaUncheckedUpdateInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  idImportacao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -279,6 +295,7 @@ export type MarcaCreateManyInput = {
   nome: string
   descricao?: string | null
   ativo?: boolean
+  idImportacao?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
 }
@@ -288,6 +305,7 @@ export type MarcaUpdateManyMutationInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  idImportacao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -297,6 +315,7 @@ export type MarcaUncheckedUpdateManyInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  idImportacao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -306,6 +325,7 @@ export type MarcaCountOrderByAggregateInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -315,6 +335,7 @@ export type MarcaMaxOrderByAggregateInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -324,6 +345,7 @@ export type MarcaMinOrderByAggregateInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -335,6 +357,7 @@ export type MarcaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   nome?: boolean
   descricao?: boolean
   ativo?: boolean
+  idImportacao?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }, ExtArgs["result"]["marca"]>
@@ -344,6 +367,7 @@ export type MarcaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   nome?: boolean
   descricao?: boolean
   ativo?: boolean
+  idImportacao?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }, ExtArgs["result"]["marca"]>
@@ -353,6 +377,7 @@ export type MarcaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   nome?: boolean
   descricao?: boolean
   ativo?: boolean
+  idImportacao?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }, ExtArgs["result"]["marca"]>
@@ -362,11 +387,12 @@ export type MarcaSelectScalar = {
   nome?: boolean
   descricao?: boolean
   ativo?: boolean
+  idImportacao?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }
 
-export type MarcaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nome" | "descricao" | "ativo" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["marca"]>
+export type MarcaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nome" | "descricao" | "ativo" | "idImportacao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["marca"]>
 
 export type $MarcaPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Marca"
@@ -376,6 +402,10 @@ export type $MarcaPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     nome: string
     descricao: string | null
     ativo: boolean
+    /**
+     * Identificador opcional para importação por planilha (ver Produto).
+     */
+    idImportacao: string | null
     criadoEm: Date
     atualizadoEm: Date
   }, ExtArgs["result"]["marca"]>
@@ -805,6 +835,7 @@ export interface MarcaFieldRefs {
   readonly nome: Prisma.FieldRef<"Marca", 'String'>
   readonly descricao: Prisma.FieldRef<"Marca", 'String'>
   readonly ativo: Prisma.FieldRef<"Marca", 'Boolean'>
+  readonly idImportacao: Prisma.FieldRef<"Marca", 'String'>
   readonly criadoEm: Prisma.FieldRef<"Marca", 'DateTime'>
   readonly atualizadoEm: Prisma.FieldRef<"Marca", 'DateTime'>
 }

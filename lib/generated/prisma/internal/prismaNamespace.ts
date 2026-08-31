@@ -1571,6 +1571,7 @@ export const ProdutoScalarFieldEnum = {
   nome: 'nome',
   descricao: 'descricao',
   ativo: 'ativo',
+  idImportacao: 'idImportacao',
   criadoEm: 'criadoEm',
   atualizadoEm: 'atualizadoEm'
 } as const
@@ -1583,6 +1584,7 @@ export const MarcaScalarFieldEnum = {
   nome: 'nome',
   descricao: 'descricao',
   ativo: 'ativo',
+  idImportacao: 'idImportacao',
   criadoEm: 'criadoEm',
   atualizadoEm: 'atualizadoEm'
 } as const
@@ -1595,6 +1597,7 @@ export const PersonaScalarFieldEnum = {
   nome: 'nome',
   descricao: 'descricao',
   ativo: 'ativo',
+  idImportacao: 'idImportacao',
   criadoEm: 'criadoEm',
   atualizadoEm: 'atualizadoEm'
 } as const
@@ -1607,6 +1610,7 @@ export const RegiaoScalarFieldEnum = {
   nome: 'nome',
   descricao: 'descricao',
   ativo: 'ativo',
+  idImportacao: 'idImportacao',
   criadoEm: 'criadoEm',
   atualizadoEm: 'atualizadoEm'
 } as const

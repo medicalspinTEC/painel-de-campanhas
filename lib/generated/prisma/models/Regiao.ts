@@ -29,6 +29,7 @@ export type RegiaoMinAggregateOutputType = {
   nome: string | null
   descricao: string | null
   ativo: boolean | null
+  idImportacao: string | null
   criadoEm: Date | null
   atualizadoEm: Date | null
 }
@@ -38,6 +39,7 @@ export type RegiaoMaxAggregateOutputType = {
   nome: string | null
   descricao: string | null
   ativo: boolean | null
+  idImportacao: string | null
   criadoEm: Date | null
   atualizadoEm: Date | null
 }
@@ -47,6 +49,7 @@ export type RegiaoCountAggregateOutputType = {
   nome: number
   descricao: number
   ativo: number
+  idImportacao: number
   criadoEm: number
   atualizadoEm: number
   _all: number
@@ -58,6 +61,7 @@ export type RegiaoMinAggregateInputType = {
   nome?: true
   descricao?: true
   ativo?: true
+  idImportacao?: true
   criadoEm?: true
   atualizadoEm?: true
 }
@@ -67,6 +71,7 @@ export type RegiaoMaxAggregateInputType = {
   nome?: true
   descricao?: true
   ativo?: true
+  idImportacao?: true
   criadoEm?: true
   atualizadoEm?: true
 }
@@ -76,6 +81,7 @@ export type RegiaoCountAggregateInputType = {
   nome?: true
   descricao?: true
   ativo?: true
+  idImportacao?: true
   criadoEm?: true
   atualizadoEm?: true
   _all?: true
@@ -158,6 +164,7 @@ export type RegiaoGroupByOutputType = {
   nome: string
   descricao: string | null
   ativo: boolean
+  idImportacao: string | null
   criadoEm: Date
   atualizadoEm: Date
   _count: RegiaoCountAggregateOutputType | null
@@ -188,6 +195,7 @@ export type RegiaoWhereInput = {
   nome?: Prisma.StringFilter<"Regiao"> | string
   descricao?: Prisma.StringNullableFilter<"Regiao"> | string | null
   ativo?: Prisma.BoolFilter<"Regiao"> | boolean
+  idImportacao?: Prisma.StringNullableFilter<"Regiao"> | string | null
   criadoEm?: Prisma.DateTimeFilter<"Regiao"> | Date | string
   atualizadoEm?: Prisma.DateTimeFilter<"Regiao"> | Date | string
 }
@@ -197,6 +205,7 @@ export type RegiaoOrderByWithRelationInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrderInput | Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrderInput | Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -204,6 +213,7 @@ export type RegiaoOrderByWithRelationInput = {
 export type RegiaoWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   nome?: string
+  idImportacao?: string
   AND?: Prisma.RegiaoWhereInput | Prisma.RegiaoWhereInput[]
   OR?: Prisma.RegiaoWhereInput[]
   NOT?: Prisma.RegiaoWhereInput | Prisma.RegiaoWhereInput[]
@@ -211,13 +221,14 @@ export type RegiaoWhereUniqueInput = Prisma.AtLeast<{
   ativo?: Prisma.BoolFilter<"Regiao"> | boolean
   criadoEm?: Prisma.DateTimeFilter<"Regiao"> | Date | string
   atualizadoEm?: Prisma.DateTimeFilter<"Regiao"> | Date | string
-}, "id" | "nome">
+}, "id" | "nome" | "idImportacao">
 
 export type RegiaoOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrderInput | Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrderInput | Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
   _count?: Prisma.RegiaoCountOrderByAggregateInput
@@ -233,6 +244,7 @@ export type RegiaoScalarWhereWithAggregatesInput = {
   nome?: Prisma.StringWithAggregatesFilter<"Regiao"> | string
   descricao?: Prisma.StringNullableWithAggregatesFilter<"Regiao"> | string | null
   ativo?: Prisma.BoolWithAggregatesFilter<"Regiao"> | boolean
+  idImportacao?: Prisma.StringNullableWithAggregatesFilter<"Regiao"> | string | null
   criadoEm?: Prisma.DateTimeWithAggregatesFilter<"Regiao"> | Date | string
   atualizadoEm?: Prisma.DateTimeWithAggregatesFilter<"Regiao"> | Date | string
 }
@@ -242,6 +254,7 @@ export type RegiaoCreateInput = {
   nome: string
   descricao?: string | null
   ativo?: boolean
+  idImportacao?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
 }
@@ -251,6 +264,7 @@ export type RegiaoUncheckedCreateInput = {
   nome: string
   descricao?: string | null
   ativo?: boolean
+  idImportacao?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
 }
@@ -260,6 +274,7 @@ export type RegiaoUpdateInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  idImportacao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -269,6 +284,7 @@ export type RegiaoUncheckedUpdateInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  idImportacao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -278,6 +294,7 @@ export type RegiaoCreateManyInput = {
   nome: string
   descricao?: string | null
   ativo?: boolean
+  idImportacao?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
 }
@@ -287,6 +304,7 @@ export type RegiaoUpdateManyMutationInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  idImportacao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -296,6 +314,7 @@ export type RegiaoUncheckedUpdateManyInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  idImportacao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -305,6 +324,7 @@ export type RegiaoCountOrderByAggregateInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -314,6 +334,7 @@ export type RegiaoMaxOrderByAggregateInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -323,6 +344,7 @@ export type RegiaoMinOrderByAggregateInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -334,6 +356,7 @@ export type RegiaoSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   nome?: boolean
   descricao?: boolean
   ativo?: boolean
+  idImportacao?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }, ExtArgs["result"]["regiao"]>
@@ -343,6 +366,7 @@ export type RegiaoSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   nome?: boolean
   descricao?: boolean
   ativo?: boolean
+  idImportacao?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }, ExtArgs["result"]["regiao"]>
@@ -352,6 +376,7 @@ export type RegiaoSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   nome?: boolean
   descricao?: boolean
   ativo?: boolean
+  idImportacao?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }, ExtArgs["result"]["regiao"]>
@@ -361,11 +386,12 @@ export type RegiaoSelectScalar = {
   nome?: boolean
   descricao?: boolean
   ativo?: boolean
+  idImportacao?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }
 
-export type RegiaoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nome" | "descricao" | "ativo" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["regiao"]>
+export type RegiaoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nome" | "descricao" | "ativo" | "idImportacao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["regiao"]>
 
 export type $RegiaoPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Regiao"
@@ -375,6 +401,10 @@ export type $RegiaoPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     nome: string
     descricao: string | null
     ativo: boolean
+    /**
+     * Identificador opcional para importação por planilha (ver Produto).
+     */
+    idImportacao: string | null
     criadoEm: Date
     atualizadoEm: Date
   }, ExtArgs["result"]["regiao"]>
@@ -804,6 +834,7 @@ export interface RegiaoFieldRefs {
   readonly nome: Prisma.FieldRef<"Regiao", 'String'>
   readonly descricao: Prisma.FieldRef<"Regiao", 'String'>
   readonly ativo: Prisma.FieldRef<"Regiao", 'Boolean'>
+  readonly idImportacao: Prisma.FieldRef<"Regiao", 'String'>
   readonly criadoEm: Prisma.FieldRef<"Regiao", 'DateTime'>
   readonly atualizadoEm: Prisma.FieldRef<"Regiao", 'DateTime'>
 }

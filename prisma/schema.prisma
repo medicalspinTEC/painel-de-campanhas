@@ -159,6 +159,11 @@ model Produto {
   descricao String?
   ativo     Boolean @default(true)
 
+  /// Identificador opcional para importação por planilha. Quando preenchido, o
+  /// arquivo pode trazer este ID na coluna "produto" em vez do nome exato,
+  /// evitando cadastrar uma segmentação nova e sem uso. É único quando definido.
+  idImportacao String? @unique
+
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
@@ -173,6 +178,9 @@ model Marca {
   descricao String?
   ativo     Boolean @default(true)
 
+  /// Identificador opcional para importação por planilha (ver Produto).
+  idImportacao String? @unique
+
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
@@ -186,6 +194,9 @@ model Persona {
   descricao String?
   ativo     Boolean @default(true)
 
+  /// Identificador opcional para importação por planilha (ver Produto).
+  idImportacao String? @unique
+
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
@@ -198,6 +209,9 @@ model Regiao {
   nome      String  @unique
   descricao String?
   ativo     Boolean @default(true)
+
+  /// Identificador opcional para importação por planilha (ver Produto).
+  idImportacao String? @unique
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt

@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache"
 
 import { assignCampaign, createLead, deleteLead, LeadValidationError, setLeadStatus, updateLead, updateLeadNotes, type LeadInput } from "@/services/leads"
 import { listCampaigns } from "@/services/campaigns"
+import { mapProdutosPorIdImportacao } from "@/services/produtos"
+import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
 import { recordAppLog } from "@/services/app-logs"
 import { validarTelefoneBR } from "@/lib/telefone"
 import { type LeadStatus } from "@/types"
@@ -215,6 +217,21 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
     }
   }
 
+  // Mapas de "ID de importação" (normalizado) -> nome para cada dimensão de
+  // segmentação. Assim a planilha pode trazer o ID cadastrado no catálogo em
+  // vez do nome exato: quando o valor casa com um ID, usamos a segmentação já
+  // existente em vez de criar uma nova e sem uso. Carregados uma vez por lote.
+  const [mapaProdutos, mapaMarcas, mapaPersonas, mapaRegioes] = await Promise.all([
+    mapProdutosPorIdImportacao().catch(() => new Map<string, string>()),
+    servicoMarcas.mapaPorIdImportacao().catch(() => new Map<string, string>()),
+    servicoPersonas.mapaPorIdImportacao().catch(() => new Map<string, string>()),
+    servicoRegioes.mapaPorIdImportacao().catch(() => new Map<string, string>()),
+  ])
+
+  /** Resolve o valor da planilha por ID de importação; se não casar, mantém o texto original. */
+  const resolver = (valor: string, mapa: Map<string, string>) =>
+    mapa.get(valor.trim().toLowerCase()) ?? valor
+
   const erros: ImportLeadsResult["erros"] = []
   let criados = 0
 
@@ -225,10 +242,11 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
     const bruto = linhas[i] ?? {}
     const nome = String(bruto.nome ?? "").trim()
     const telefone = String(bruto.telefone ?? "").trim()
-    const produto = String(bruto.produto ?? "").trim()
-    const marca = String(bruto.marca ?? "").trim()
-    const persona = String(bruto.persona ?? "").trim()
-    const regiao = String(bruto.regiao ?? "").trim()
+    // Aceita tanto o nome exato quanto o ID de importação cadastrado no catálogo.
+    const produto = resolver(String(bruto.produto ?? "").trim(), mapaProdutos)
+    const marca = resolver(String(bruto.marca ?? "").trim(), mapaMarcas)
+    const persona = resolver(String(bruto.persona ?? "").trim(), mapaPersonas)
+    const regiao = resolver(String(bruto.regiao ?? "").trim(), mapaRegioes)
     const notasBruta = String(bruto.notas ?? "").trim()
     const statusBruto = String(bruto.status ?? "").trim()
     const campanhaBruta = String(bruto.campanha ?? "").trim()

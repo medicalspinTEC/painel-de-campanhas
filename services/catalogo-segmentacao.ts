@@ -13,6 +13,7 @@ export interface ItemCatalogo {
   nome: string
   descricao: string | null
   ativo: boolean
+  idImportacao: string | null
   criadoEm: string
   atualizadoEm: string
 }
@@ -21,6 +22,7 @@ export interface ItemCatalogoInput {
   nome: string
   descricao?: string | null
   ativo?: boolean
+  idImportacao?: string | null
 }
 
 type ItemRow = {
@@ -28,6 +30,7 @@ type ItemRow = {
   nome: string
   descricao: string | null
   ativo: boolean
+  idImportacao: string | null
   criadoEm: Date
   atualizadoEm: Date
 }
@@ -37,6 +40,14 @@ export class ItemCatalogoDuplicadoError extends Error {
   constructor(rotulo: string) {
     super(`Já existe ${rotulo} com esse nome.`)
     this.name = "ItemCatalogoDuplicadoError"
+  }
+}
+
+/** Erro de ID de importação duplicado, tratado na action. */
+export class ItemCatalogoIdImportacaoDuplicadoError extends Error {
+  constructor(rotulo: string) {
+    super(`Já existe ${rotulo} com esse ID de importação.`)
+    this.name = "ItemCatalogoIdImportacaoDuplicadoError"
   }
 }
 
@@ -50,6 +61,7 @@ function serializar(row: ItemRow): ItemCatalogo {
     nome: row.nome,
     descricao: row.descricao ?? null,
     ativo: row.ativo,
+    idImportacao: row.idImportacao ?? null,
     criadoEm: row.criadoEm.toISOString(),
     atualizadoEm: row.atualizadoEm.toISOString(),
   }
@@ -83,6 +95,11 @@ export interface ServicoCatalogo {
    * não gera erro nem duplica se o nome já existir.
    */
   garantir(nome: string): Promise<void>
+  /**
+   * Mapa de `idImportacao` normalizado (minúsculo) → nome. Usado na importação
+   * de leads para resolver o valor da planilha por ID em vez do nome exato.
+   */
+  mapaPorIdImportacao(): Promise<Map<string, string>>
 }
 
 /** Cria um serviço de catálogo apontando para um delegate específico do Prisma. */
@@ -109,11 +126,18 @@ export function criarServicoCatalogo(
     const existente = await delegate().findUnique({ where: { nome: input.nome }, select: { id: true } })
     if (existente) throw new ItemCatalogoDuplicadoError(rotulo)
 
+    const idImportacao = input.idImportacao?.trim() || null
+    if (idImportacao) {
+      const colisaoId = await delegate().findUnique({ where: { idImportacao }, select: { id: true } })
+      if (colisaoId) throw new ItemCatalogoIdImportacaoDuplicadoError(rotulo)
+    }
+
     const row = (await delegate().create({
       data: {
         nome: input.nome,
         descricao: input.descricao?.trim() || null,
         ativo: input.ativo ?? true,
+        idImportacao,
       },
     })) as ItemRow
     return serializar(row)
@@ -130,12 +154,22 @@ export function criarServicoCatalogo(
     })
     if (colisao) throw new ItemCatalogoDuplicadoError(rotulo)
 
+    const idImportacao = input.idImportacao?.trim() || null
+    if (idImportacao) {
+      const colisaoId = await delegate().findFirst({
+        where: { idImportacao, id: { not: id } },
+        select: { id: true },
+      })
+      if (colisaoId) throw new ItemCatalogoIdImportacaoDuplicadoError(rotulo)
+    }
+
     const row = (await delegate().update({
       where: { id },
       data: {
         nome: input.nome,
         descricao: input.descricao?.trim() || null,
         ...(input.ativo !== undefined ? { ativo: input.ativo } : {}),
+        ...(input.idImportacao !== undefined ? { idImportacao } : {}),
       },
     })) as ItemRow
     return serializar(row)
@@ -157,7 +191,19 @@ export function criarServicoCatalogo(
     })
   }
 
-  return { listar, listarNomesAtivos, criar, atualizar, excluir, garantir }
+  async function mapaPorIdImportacao(): Promise<Map<string, string>> {
+    const rows = (await delegate().findMany({
+      where: { idImportacao: { not: null } },
+      select: { nome: true, idImportacao: true },
+    })) as Array<{ nome: string; idImportacao: string | null }>
+    const mapa = new Map<string, string>()
+    for (const r of rows) {
+      if (r.idImportacao) mapa.set(r.idImportacao.trim().toLowerCase(), r.nome)
+    }
+    return mapa
+  }
+
+  return { listar, listarNomesAtivos, criar, atualizar, excluir, garantir, mapaPorIdImportacao }
 }
 
 /** Delegates de cada catálogo. Resolvidos sob demanda (o Prisma é um Proxy). */

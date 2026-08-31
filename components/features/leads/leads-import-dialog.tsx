@@ -154,7 +154,8 @@ export function LeadsImportDialog({
             <p className="text-muted-foreground">
               <strong className="text-foreground">nome</strong> e{" "}
               <strong className="text-foreground">telefone</strong> são obrigatórios. Opcionais: produto, marca,
-              persona, regiao, status, notas e campanha. A campanha deve ter o nome exato de uma campanha
+              persona, regiao, status, notas e campanha. Nos campos de segmentação você pode informar o nome ou o
+              ID de importação cadastrado na aba Segmentação. A campanha deve ter o nome exato de uma campanha
               existente. O telefone deve incluir o país 55 (ex.: 5511988887777).
             </p>
             <div>

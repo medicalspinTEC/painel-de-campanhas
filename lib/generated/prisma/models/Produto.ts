@@ -33,6 +33,7 @@ export type ProdutoMinAggregateOutputType = {
   nome: string | null
   descricao: string | null
   ativo: boolean | null
+  idImportacao: string | null
   criadoEm: Date | null
   atualizadoEm: Date | null
 }
@@ -42,6 +43,7 @@ export type ProdutoMaxAggregateOutputType = {
   nome: string | null
   descricao: string | null
   ativo: boolean | null
+  idImportacao: string | null
   criadoEm: Date | null
   atualizadoEm: Date | null
 }
@@ -51,6 +53,7 @@ export type ProdutoCountAggregateOutputType = {
   nome: number
   descricao: number
   ativo: number
+  idImportacao: number
   criadoEm: number
   atualizadoEm: number
   _all: number
@@ -62,6 +65,7 @@ export type ProdutoMinAggregateInputType = {
   nome?: true
   descricao?: true
   ativo?: true
+  idImportacao?: true
   criadoEm?: true
   atualizadoEm?: true
 }
@@ -71,6 +75,7 @@ export type ProdutoMaxAggregateInputType = {
   nome?: true
   descricao?: true
   ativo?: true
+  idImportacao?: true
   criadoEm?: true
   atualizadoEm?: true
 }
@@ -80,6 +85,7 @@ export type ProdutoCountAggregateInputType = {
   nome?: true
   descricao?: true
   ativo?: true
+  idImportacao?: true
   criadoEm?: true
   atualizadoEm?: true
   _all?: true
@@ -162,6 +168,7 @@ export type ProdutoGroupByOutputType = {
   nome: string
   descricao: string | null
   ativo: boolean
+  idImportacao: string | null
   criadoEm: Date
   atualizadoEm: Date
   _count: ProdutoCountAggregateOutputType | null
@@ -192,6 +199,7 @@ export type ProdutoWhereInput = {
   nome?: Prisma.StringFilter<"Produto"> | string
   descricao?: Prisma.StringNullableFilter<"Produto"> | string | null
   ativo?: Prisma.BoolFilter<"Produto"> | boolean
+  idImportacao?: Prisma.StringNullableFilter<"Produto"> | string | null
   criadoEm?: Prisma.DateTimeFilter<"Produto"> | Date | string
   atualizadoEm?: Prisma.DateTimeFilter<"Produto"> | Date | string
 }
@@ -201,6 +209,7 @@ export type ProdutoOrderByWithRelationInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrderInput | Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrderInput | Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -208,6 +217,7 @@ export type ProdutoOrderByWithRelationInput = {
 export type ProdutoWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   nome?: string
+  idImportacao?: string
   AND?: Prisma.ProdutoWhereInput | Prisma.ProdutoWhereInput[]
   OR?: Prisma.ProdutoWhereInput[]
   NOT?: Prisma.ProdutoWhereInput | Prisma.ProdutoWhereInput[]
@@ -215,13 +225,14 @@ export type ProdutoWhereUniqueInput = Prisma.AtLeast<{
   ativo?: Prisma.BoolFilter<"Produto"> | boolean
   criadoEm?: Prisma.DateTimeFilter<"Produto"> | Date | string
   atualizadoEm?: Prisma.DateTimeFilter<"Produto"> | Date | string
-}, "id" | "nome">
+}, "id" | "nome" | "idImportacao">
 
 export type ProdutoOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrderInput | Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrderInput | Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
   _count?: Prisma.ProdutoCountOrderByAggregateInput
@@ -237,6 +248,7 @@ export type ProdutoScalarWhereWithAggregatesInput = {
   nome?: Prisma.StringWithAggregatesFilter<"Produto"> | string
   descricao?: Prisma.StringNullableWithAggregatesFilter<"Produto"> | string | null
   ativo?: Prisma.BoolWithAggregatesFilter<"Produto"> | boolean
+  idImportacao?: Prisma.StringNullableWithAggregatesFilter<"Produto"> | string | null
   criadoEm?: Prisma.DateTimeWithAggregatesFilter<"Produto"> | Date | string
   atualizadoEm?: Prisma.DateTimeWithAggregatesFilter<"Produto"> | Date | string
 }
@@ -246,6 +258,7 @@ export type ProdutoCreateInput = {
   nome: string
   descricao?: string | null
   ativo?: boolean
+  idImportacao?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
 }
@@ -255,6 +268,7 @@ export type ProdutoUncheckedCreateInput = {
   nome: string
   descricao?: string | null
   ativo?: boolean
+  idImportacao?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
 }
@@ -264,6 +278,7 @@ export type ProdutoUpdateInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  idImportacao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -273,6 +288,7 @@ export type ProdutoUncheckedUpdateInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  idImportacao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -282,6 +298,7 @@ export type ProdutoCreateManyInput = {
   nome: string
   descricao?: string | null
   ativo?: boolean
+  idImportacao?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
 }
@@ -291,6 +308,7 @@ export type ProdutoUpdateManyMutationInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  idImportacao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -300,6 +318,7 @@ export type ProdutoUncheckedUpdateManyInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  idImportacao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -309,6 +328,7 @@ export type ProdutoCountOrderByAggregateInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -318,6 +338,7 @@ export type ProdutoMaxOrderByAggregateInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -327,6 +348,7 @@ export type ProdutoMinOrderByAggregateInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -342,6 +364,7 @@ export type ProdutoSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   nome?: boolean
   descricao?: boolean
   ativo?: boolean
+  idImportacao?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }, ExtArgs["result"]["produto"]>
@@ -351,6 +374,7 @@ export type ProdutoSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   nome?: boolean
   descricao?: boolean
   ativo?: boolean
+  idImportacao?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }, ExtArgs["result"]["produto"]>
@@ -360,6 +384,7 @@ export type ProdutoSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   nome?: boolean
   descricao?: boolean
   ativo?: boolean
+  idImportacao?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }, ExtArgs["result"]["produto"]>
@@ -369,11 +394,12 @@ export type ProdutoSelectScalar = {
   nome?: boolean
   descricao?: boolean
   ativo?: boolean
+  idImportacao?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }
 
-export type ProdutoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nome" | "descricao" | "ativo" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["produto"]>
+export type ProdutoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nome" | "descricao" | "ativo" | "idImportacao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["produto"]>
 
 export type $ProdutoPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Produto"
@@ -383,6 +409,12 @@ export type $ProdutoPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     nome: string
     descricao: string | null
     ativo: boolean
+    /**
+     * Identificador opcional para importação por planilha. Quando preenchido, o
+     * arquivo pode trazer este ID na coluna "produto" em vez do nome exato,
+     * evitando cadastrar uma segmentação nova e sem uso. É único quando definido.
+     */
+    idImportacao: string | null
     criadoEm: Date
     atualizadoEm: Date
   }, ExtArgs["result"]["produto"]>
@@ -812,6 +844,7 @@ export interface ProdutoFieldRefs {
   readonly nome: Prisma.FieldRef<"Produto", 'String'>
   readonly descricao: Prisma.FieldRef<"Produto", 'String'>
   readonly ativo: Prisma.FieldRef<"Produto", 'Boolean'>
+  readonly idImportacao: Prisma.FieldRef<"Produto", 'String'>
   readonly criadoEm: Prisma.FieldRef<"Produto", 'DateTime'>
   readonly atualizadoEm: Prisma.FieldRef<"Produto", 'DateTime'>
 }

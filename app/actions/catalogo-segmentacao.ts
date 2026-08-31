@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache"
 import { recordAppLog } from "@/services/app-logs"
 import {
   ItemCatalogoDuplicadoError,
+  ItemCatalogoIdImportacaoDuplicadoError,
   servicoMarcas,
   servicoPersonas,
   servicoRegioes,
@@ -21,6 +22,7 @@ export interface CatalogoActionResult {
 /** Tamanho máximo do nome, alinhado ao limite dos campos de segmentação. */
 const MAX_NOME = 60
 const MAX_DESCRICAO = 280
+const MAX_ID_IMPORTACAO = 60
 
 function validar(
   input: ItemCatalogoInput,
@@ -29,13 +31,16 @@ function validar(
   const erros: Record<string, string> = {}
   const nome = input.nome.trim()
   const descricao = (input.descricao ?? "").trim()
+  const idImportacao = (input.idImportacao ?? "").trim()
 
   if (nome.length < 2) erros.nome = `Informe ${rotulo} com pelo menos 2 caracteres.`
   else if (nome.length > MAX_NOME) erros.nome = `Use no máximo ${MAX_NOME} caracteres.`
   if (descricao.length > MAX_DESCRICAO) erros.descricao = `Use no máximo ${MAX_DESCRICAO} caracteres.`
+  if (idImportacao.length > MAX_ID_IMPORTACAO)
+    erros.idImportacao = `Use no máximo ${MAX_ID_IMPORTACAO} caracteres.`
 
   if (Object.keys(erros).length > 0) return { erros }
-  return { dados: { nome, descricao: descricao || null, ativo: input.ativo } }
+  return { dados: { nome, descricao: descricao || null, ativo: input.ativo, idImportacao: idImportacao || null } }
 }
 
 function revalidar() {
@@ -67,6 +72,9 @@ function criarActionsCatalogo(
       if (error instanceof ItemCatalogoDuplicadoError) {
         return { ok: false, message: error.message, errors: { nome: error.message } }
       }
+      if (error instanceof ItemCatalogoIdImportacaoDuplicadoError) {
+        return { ok: false, message: error.message, errors: { idImportacao: error.message } }
+      }
       await recordAppLog({ origem, mensagem: `Falha ao criar ${rotuloIndefinido}.`, detalhes: error })
       return { ok: false, message: "Não foi possível salvar. Verifique a conexão com o banco." }
     }
@@ -85,6 +93,9 @@ function criarActionsCatalogo(
     } catch (error) {
       if (error instanceof ItemCatalogoDuplicadoError) {
         return { ok: false, message: error.message, errors: { nome: error.message } }
+      }
+      if (error instanceof ItemCatalogoIdImportacaoDuplicadoError) {
+        return { ok: false, message: error.message, errors: { idImportacao: error.message } }
       }
       await recordAppLog({ origem, mensagem: `Falha ao atualizar ${rotuloIndefinido} id=${id}.`, detalhes: error })
       return { ok: false, message: "Não foi possível atualizar. Verifique a conexão com o banco." }

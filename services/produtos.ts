@@ -5,6 +5,7 @@ export interface Produto {
   nome: string
   descricao: string | null
   ativo: boolean
+  idImportacao: string | null
   criadoEm: string
   atualizadoEm: string
 }
@@ -13,6 +14,7 @@ export interface ProdutoInput {
   nome: string
   descricao?: string | null
   ativo?: boolean
+  idImportacao?: string | null
 }
 
 type ProdutoRow = {
@@ -20,6 +22,7 @@ type ProdutoRow = {
   nome: string
   descricao: string | null
   ativo: boolean
+  idImportacao: string | null
   criadoEm: Date
   atualizadoEm: Date
 }
@@ -34,6 +37,7 @@ function serializar(row: ProdutoRow): Produto {
     nome: row.nome,
     descricao: row.descricao ?? null,
     ativo: row.ativo,
+    idImportacao: row.idImportacao ?? null,
     criadoEm: row.criadoEm.toISOString(),
     atualizadoEm: row.atualizadoEm.toISOString(),
   }
@@ -44,6 +48,14 @@ export class ProdutoDuplicadoError extends Error {
   constructor() {
     super("Já existe um produto com esse nome.")
     this.name = "ProdutoDuplicadoError"
+  }
+}
+
+/** Erro de ID de importação duplicado, tratado na action. */
+export class ProdutoIdImportacaoDuplicadoError extends Error {
+  constructor() {
+    super("Já existe um produto com esse ID de importação.")
+    this.name = "ProdutoIdImportacaoDuplicadoError"
   }
 }
 
@@ -62,15 +74,40 @@ export async function listNomesProdutosAtivos(): Promise<string[]> {
   return rows.map((r) => r.nome)
 }
 
+/**
+ * Mapa de `idImportacao` normalizado (minúsculo) → nome do produto. Usado na
+ * importação de leads para resolver o valor da planilha: se ele bater com um ID
+ * de importação existente, aproveitamos o produto já cadastrado em vez de criar
+ * uma segmentação nova.
+ */
+export async function mapProdutosPorIdImportacao(): Promise<Map<string, string>> {
+  const rows = await prisma.produto.findMany({
+    where: { idImportacao: { not: null } },
+    select: { nome: true, idImportacao: true },
+  })
+  const mapa = new Map<string, string>()
+  for (const r of rows) {
+    if (r.idImportacao) mapa.set(r.idImportacao.trim().toLowerCase(), r.nome)
+  }
+  return mapa
+}
+
 export async function createProduto(input: ProdutoInput): Promise<Produto> {
   const existente = await prisma.produto.findUnique({ where: { nome: input.nome }, select: { id: true } })
   if (existente) throw new ProdutoDuplicadoError()
+
+  const idImportacao = input.idImportacao?.trim() || null
+  if (idImportacao) {
+    const colisaoId = await prisma.produto.findUnique({ where: { idImportacao }, select: { id: true } })
+    if (colisaoId) throw new ProdutoIdImportacaoDuplicadoError()
+  }
 
   const row = await prisma.produto.create({
     data: {
       nome: input.nome,
       descricao: input.descricao?.trim() || null,
       ativo: input.ativo ?? true,
+      idImportacao,
     },
   })
   return serializar(row)
@@ -87,12 +124,22 @@ export async function updateProduto(id: string, input: ProdutoInput): Promise<Pr
   })
   if (colisao) throw new ProdutoDuplicadoError()
 
+  const idImportacao = input.idImportacao?.trim() || null
+  if (idImportacao) {
+    const colisaoId = await prisma.produto.findFirst({
+      where: { idImportacao, id: { not: id } },
+      select: { id: true },
+    })
+    if (colisaoId) throw new ProdutoIdImportacaoDuplicadoError()
+  }
+
   const row = await prisma.produto.update({
     where: { id },
     data: {
       nome: input.nome,
       descricao: input.descricao?.trim() || null,
       ...(input.ativo !== undefined ? { ativo: input.ativo } : {}),
+      ...(input.idImportacao !== undefined ? { idImportacao } : {}),
     },
   })
   return serializar(row)

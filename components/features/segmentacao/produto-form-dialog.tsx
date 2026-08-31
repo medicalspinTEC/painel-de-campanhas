@@ -34,6 +34,7 @@ export function ProdutoFormDialog({
 
   const [nome, setNome] = useState("")
   const [descricao, setDescricao] = useState("")
+  const [idImportacao, setIdImportacao] = useState("")
   const [ativo, setAtivo] = useState(true)
   const [erros, setErros] = useState<Record<string, string>>({})
 
@@ -42,13 +43,14 @@ export function ProdutoFormDialog({
     if (!open) return
     setNome(produto?.nome ?? "")
     setDescricao(produto?.descricao ?? "")
+    setIdImportacao(produto?.idImportacao ?? "")
     setAtivo(produto?.ativo ?? true)
     setErros({})
   }, [open, produto])
 
   function salvar() {
     startTransition(async () => {
-      const payload = { nome, descricao, ativo }
+      const payload = { nome, descricao, ativo, idImportacao }
       const resultado = produto
         ? await updateProdutoAction(produto.id, payload)
         : await createProdutoAction(payload)
@@ -98,6 +100,21 @@ export function ProdutoFormDialog({
               aria-invalid={Boolean(erros.descricao)}
             />
             {erros.descricao ? <FieldError>{erros.descricao}</FieldError> : null}
+          </Field>
+
+          <Field data-invalid={Boolean(erros.idImportacao)}>
+            <FieldLabel htmlFor="produto-id-importacao">ID de importação (opcional)</FieldLabel>
+            <Input
+              id="produto-id-importacao"
+              value={idImportacao}
+              onChange={(e) => setIdImportacao(e.target.value.slice(0, 60))}
+              placeholder="Ex.: PROD-01"
+              aria-invalid={Boolean(erros.idImportacao)}
+            />
+            <FieldDescription>
+              Use este código na planilha para identificar o produto sem precisar digitar o nome exato.
+            </FieldDescription>
+            {erros.idImportacao ? <FieldError>{erros.idImportacao}</FieldError> : null}
           </Field>
 
           <div className="flex items-start justify-between gap-4">

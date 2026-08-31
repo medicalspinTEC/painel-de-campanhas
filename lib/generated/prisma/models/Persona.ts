@@ -29,6 +29,7 @@ export type PersonaMinAggregateOutputType = {
   nome: string | null
   descricao: string | null
   ativo: boolean | null
+  idImportacao: string | null
   criadoEm: Date | null
   atualizadoEm: Date | null
 }
@@ -38,6 +39,7 @@ export type PersonaMaxAggregateOutputType = {
   nome: string | null
   descricao: string | null
   ativo: boolean | null
+  idImportacao: string | null
   criadoEm: Date | null
   atualizadoEm: Date | null
 }
@@ -47,6 +49,7 @@ export type PersonaCountAggregateOutputType = {
   nome: number
   descricao: number
   ativo: number
+  idImportacao: number
   criadoEm: number
   atualizadoEm: number
   _all: number
@@ -58,6 +61,7 @@ export type PersonaMinAggregateInputType = {
   nome?: true
   descricao?: true
   ativo?: true
+  idImportacao?: true
   criadoEm?: true
   atualizadoEm?: true
 }
@@ -67,6 +71,7 @@ export type PersonaMaxAggregateInputType = {
   nome?: true
   descricao?: true
   ativo?: true
+  idImportacao?: true
   criadoEm?: true
   atualizadoEm?: true
 }
@@ -76,6 +81,7 @@ export type PersonaCountAggregateInputType = {
   nome?: true
   descricao?: true
   ativo?: true
+  idImportacao?: true
   criadoEm?: true
   atualizadoEm?: true
   _all?: true
@@ -158,6 +164,7 @@ export type PersonaGroupByOutputType = {
   nome: string
   descricao: string | null
   ativo: boolean
+  idImportacao: string | null
   criadoEm: Date
   atualizadoEm: Date
   _count: PersonaCountAggregateOutputType | null
@@ -188,6 +195,7 @@ export type PersonaWhereInput = {
   nome?: Prisma.StringFilter<"Persona"> | string
   descricao?: Prisma.StringNullableFilter<"Persona"> | string | null
   ativo?: Prisma.BoolFilter<"Persona"> | boolean
+  idImportacao?: Prisma.StringNullableFilter<"Persona"> | string | null
   criadoEm?: Prisma.DateTimeFilter<"Persona"> | Date | string
   atualizadoEm?: Prisma.DateTimeFilter<"Persona"> | Date | string
 }
@@ -197,6 +205,7 @@ export type PersonaOrderByWithRelationInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrderInput | Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrderInput | Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -204,6 +213,7 @@ export type PersonaOrderByWithRelationInput = {
 export type PersonaWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   nome?: string
+  idImportacao?: string
   AND?: Prisma.PersonaWhereInput | Prisma.PersonaWhereInput[]
   OR?: Prisma.PersonaWhereInput[]
   NOT?: Prisma.PersonaWhereInput | Prisma.PersonaWhereInput[]
@@ -211,13 +221,14 @@ export type PersonaWhereUniqueInput = Prisma.AtLeast<{
   ativo?: Prisma.BoolFilter<"Persona"> | boolean
   criadoEm?: Prisma.DateTimeFilter<"Persona"> | Date | string
   atualizadoEm?: Prisma.DateTimeFilter<"Persona"> | Date | string
-}, "id" | "nome">
+}, "id" | "nome" | "idImportacao">
 
 export type PersonaOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrderInput | Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrderInput | Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
   _count?: Prisma.PersonaCountOrderByAggregateInput
@@ -233,6 +244,7 @@ export type PersonaScalarWhereWithAggregatesInput = {
   nome?: Prisma.StringWithAggregatesFilter<"Persona"> | string
   descricao?: Prisma.StringNullableWithAggregatesFilter<"Persona"> | string | null
   ativo?: Prisma.BoolWithAggregatesFilter<"Persona"> | boolean
+  idImportacao?: Prisma.StringNullableWithAggregatesFilter<"Persona"> | string | null
   criadoEm?: Prisma.DateTimeWithAggregatesFilter<"Persona"> | Date | string
   atualizadoEm?: Prisma.DateTimeWithAggregatesFilter<"Persona"> | Date | string
 }
@@ -242,6 +254,7 @@ export type PersonaCreateInput = {
   nome: string
   descricao?: string | null
   ativo?: boolean
+  idImportacao?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
 }
@@ -251,6 +264,7 @@ export type PersonaUncheckedCreateInput = {
   nome: string
   descricao?: string | null
   ativo?: boolean
+  idImportacao?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
 }
@@ -260,6 +274,7 @@ export type PersonaUpdateInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  idImportacao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -269,6 +284,7 @@ export type PersonaUncheckedUpdateInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  idImportacao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -278,6 +294,7 @@ export type PersonaCreateManyInput = {
   nome: string
   descricao?: string | null
   ativo?: boolean
+  idImportacao?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
 }
@@ -287,6 +304,7 @@ export type PersonaUpdateManyMutationInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  idImportacao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -296,6 +314,7 @@ export type PersonaUncheckedUpdateManyInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  idImportacao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -305,6 +324,7 @@ export type PersonaCountOrderByAggregateInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -314,6 +334,7 @@ export type PersonaMaxOrderByAggregateInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -323,6 +344,7 @@ export type PersonaMinOrderByAggregateInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrder
   ativo?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -334,6 +356,7 @@ export type PersonaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   nome?: boolean
   descricao?: boolean
   ativo?: boolean
+  idImportacao?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }, ExtArgs["result"]["persona"]>
@@ -343,6 +366,7 @@ export type PersonaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   nome?: boolean
   descricao?: boolean
   ativo?: boolean
+  idImportacao?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }, ExtArgs["result"]["persona"]>
@@ -352,6 +376,7 @@ export type PersonaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   nome?: boolean
   descricao?: boolean
   ativo?: boolean
+  idImportacao?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }, ExtArgs["result"]["persona"]>
@@ -361,11 +386,12 @@ export type PersonaSelectScalar = {
   nome?: boolean
   descricao?: boolean
   ativo?: boolean
+  idImportacao?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }
 
-export type PersonaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nome" | "descricao" | "ativo" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["persona"]>
+export type PersonaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nome" | "descricao" | "ativo" | "idImportacao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["persona"]>
 
 export type $PersonaPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Persona"
@@ -375,6 +401,10 @@ export type $PersonaPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     nome: string
     descricao: string | null
     ativo: boolean
+    /**
+     * Identificador opcional para importação por planilha (ver Produto).
+     */
+    idImportacao: string | null
     criadoEm: Date
     atualizadoEm: Date
   }, ExtArgs["result"]["persona"]>
@@ -804,6 +834,7 @@ export interface PersonaFieldRefs {
   readonly nome: Prisma.FieldRef<"Persona", 'String'>
   readonly descricao: Prisma.FieldRef<"Persona", 'String'>
   readonly ativo: Prisma.FieldRef<"Persona", 'Boolean'>
+  readonly idImportacao: Prisma.FieldRef<"Persona", 'String'>
   readonly criadoEm: Prisma.FieldRef<"Persona", 'DateTime'>
   readonly atualizadoEm: Prisma.FieldRef<"Persona", 'DateTime'>
 }
