@@ -232,6 +232,14 @@ model Settings {
   janelaInicio        String  @default("09:00")
   janelaFim           String  @default("20:00")
   limiteDiario        Int     @default(300)
+
+  /// Máximo de mensagens enviadas em cada lote (por período de espera).
+  maxEnviosPorPeriodo Int @default(50)
+  /// Tempo de espera entre um lote e o próximo: valor numérico + unidade.
+  periodoEsperaValor   Int    @default(1)
+  /// Unidade do período de espera: "minutos" ou "horas".
+  periodoEsperaUnidade String @default("horas")
+
   respeitarJanela     Boolean @default(true)
   pausarNoFimDeSemana Boolean @default(true)
   notificarFalhas     Boolean @default(true)

@@ -22,6 +22,15 @@ export async function saveSettingsAction(input: Settings): Promise<SettingsActio
   if (!Number.isInteger(input.limiteDiario) || input.limiteDiario < 1) {
     return { ok: false, message: "O limite diário deve ser um número maior que zero." }
   }
+  if (!Number.isInteger(input.maxEnviosPorPeriodo) || input.maxEnviosPorPeriodo < 1) {
+    return { ok: false, message: "O máximo de envios por período deve ser um número maior que zero." }
+  }
+  if (!Number.isInteger(input.periodoEsperaValor) || input.periodoEsperaValor < 1) {
+    return { ok: false, message: "O tempo de espera deve ser um número maior que zero." }
+  }
+  if (input.periodoEsperaUnidade !== "minutos" && input.periodoEsperaUnidade !== "horas") {
+    return { ok: false, message: "Selecione uma unidade válida para o tempo de espera." }
+  }
 
   try {
     await saveSettings({

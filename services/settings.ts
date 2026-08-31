@@ -9,6 +9,9 @@ export type Settings = {
   janelaInicio: string
   janelaFim: string
   limiteDiario: number
+  maxEnviosPorPeriodo: number
+  periodoEsperaValor: number
+  periodoEsperaUnidade: string
   respeitarJanela: boolean
   pausarNoFimDeSemana: boolean
   notificarFalhas: boolean
@@ -25,6 +28,9 @@ export const SETTINGS_PADRAO: Settings = {
   janelaInicio: "09:00",
   janelaFim: "20:00",
   limiteDiario: 300,
+  maxEnviosPorPeriodo: 50,
+  periodoEsperaValor: 1,
+  periodoEsperaUnidade: "horas",
   respeitarJanela: true,
   pausarNoFimDeSemana: true,
   notificarFalhas: true,
@@ -42,6 +48,9 @@ export async function getSettings(): Promise<Settings> {
     janelaInicio: row.janelaInicio,
     janelaFim: row.janelaFim,
     limiteDiario: row.limiteDiario,
+    maxEnviosPorPeriodo: row.maxEnviosPorPeriodo,
+    periodoEsperaValor: row.periodoEsperaValor,
+    periodoEsperaUnidade: row.periodoEsperaUnidade,
     respeitarJanela: row.respeitarJanela,
     pausarNoFimDeSemana: row.pausarNoFimDeSemana,
     notificarFalhas: row.notificarFalhas,
@@ -65,6 +74,9 @@ export async function saveSettings(input: Settings): Promise<Settings> {
     janelaInicio: row.janelaInicio,
     janelaFim: row.janelaFim,
     limiteDiario: row.limiteDiario,
+    maxEnviosPorPeriodo: row.maxEnviosPorPeriodo,
+    periodoEsperaValor: row.periodoEsperaValor,
+    periodoEsperaUnidade: row.periodoEsperaUnidade,
     respeitarJanela: row.respeitarJanela,
     pausarNoFimDeSemana: row.pausarNoFimDeSemana,
     notificarFalhas: row.notificarFalhas,

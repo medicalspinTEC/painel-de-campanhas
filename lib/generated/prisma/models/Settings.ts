@@ -29,10 +29,14 @@ export type AggregateSettings = {
 
 export type SettingsAvgAggregateOutputType = {
   limiteDiario: number | null
+  maxEnviosPorPeriodo: number | null
+  periodoEsperaValor: number | null
 }
 
 export type SettingsSumAggregateOutputType = {
   limiteDiario: number | null
+  maxEnviosPorPeriodo: number | null
+  periodoEsperaValor: number | null
 }
 
 export type SettingsMinAggregateOutputType = {
@@ -44,6 +48,9 @@ export type SettingsMinAggregateOutputType = {
   janelaInicio: string | null
   janelaFim: string | null
   limiteDiario: number | null
+  maxEnviosPorPeriodo: number | null
+  periodoEsperaValor: number | null
+  periodoEsperaUnidade: string | null
   respeitarJanela: boolean | null
   pausarNoFimDeSemana: boolean | null
   notificarFalhas: boolean | null
@@ -59,6 +66,9 @@ export type SettingsMaxAggregateOutputType = {
   janelaInicio: string | null
   janelaFim: string | null
   limiteDiario: number | null
+  maxEnviosPorPeriodo: number | null
+  periodoEsperaValor: number | null
+  periodoEsperaUnidade: string | null
   respeitarJanela: boolean | null
   pausarNoFimDeSemana: boolean | null
   notificarFalhas: boolean | null
@@ -74,6 +84,9 @@ export type SettingsCountAggregateOutputType = {
   janelaInicio: number
   janelaFim: number
   limiteDiario: number
+  maxEnviosPorPeriodo: number
+  periodoEsperaValor: number
+  periodoEsperaUnidade: number
   respeitarJanela: number
   pausarNoFimDeSemana: number
   notificarFalhas: number
@@ -84,10 +97,14 @@ export type SettingsCountAggregateOutputType = {
 
 export type SettingsAvgAggregateInputType = {
   limiteDiario?: true
+  maxEnviosPorPeriodo?: true
+  periodoEsperaValor?: true
 }
 
 export type SettingsSumAggregateInputType = {
   limiteDiario?: true
+  maxEnviosPorPeriodo?: true
+  periodoEsperaValor?: true
 }
 
 export type SettingsMinAggregateInputType = {
@@ -99,6 +116,9 @@ export type SettingsMinAggregateInputType = {
   janelaInicio?: true
   janelaFim?: true
   limiteDiario?: true
+  maxEnviosPorPeriodo?: true
+  periodoEsperaValor?: true
+  periodoEsperaUnidade?: true
   respeitarJanela?: true
   pausarNoFimDeSemana?: true
   notificarFalhas?: true
@@ -114,6 +134,9 @@ export type SettingsMaxAggregateInputType = {
   janelaInicio?: true
   janelaFim?: true
   limiteDiario?: true
+  maxEnviosPorPeriodo?: true
+  periodoEsperaValor?: true
+  periodoEsperaUnidade?: true
   respeitarJanela?: true
   pausarNoFimDeSemana?: true
   notificarFalhas?: true
@@ -129,6 +152,9 @@ export type SettingsCountAggregateInputType = {
   janelaInicio?: true
   janelaFim?: true
   limiteDiario?: true
+  maxEnviosPorPeriodo?: true
+  periodoEsperaValor?: true
+  periodoEsperaUnidade?: true
   respeitarJanela?: true
   pausarNoFimDeSemana?: true
   notificarFalhas?: true
@@ -231,6 +257,9 @@ export type SettingsGroupByOutputType = {
   janelaInicio: string
   janelaFim: string
   limiteDiario: number
+  maxEnviosPorPeriodo: number
+  periodoEsperaValor: number
+  periodoEsperaUnidade: string
   respeitarJanela: boolean
   pausarNoFimDeSemana: boolean
   notificarFalhas: boolean
@@ -269,6 +298,9 @@ export type SettingsWhereInput = {
   janelaInicio?: Prisma.StringFilter<"Settings"> | string
   janelaFim?: Prisma.StringFilter<"Settings"> | string
   limiteDiario?: Prisma.IntFilter<"Settings"> | number
+  maxEnviosPorPeriodo?: Prisma.IntFilter<"Settings"> | number
+  periodoEsperaValor?: Prisma.IntFilter<"Settings"> | number
+  periodoEsperaUnidade?: Prisma.StringFilter<"Settings"> | string
   respeitarJanela?: Prisma.BoolFilter<"Settings"> | boolean
   pausarNoFimDeSemana?: Prisma.BoolFilter<"Settings"> | boolean
   notificarFalhas?: Prisma.BoolFilter<"Settings"> | boolean
@@ -284,6 +316,9 @@ export type SettingsOrderByWithRelationInput = {
   janelaInicio?: Prisma.SortOrder
   janelaFim?: Prisma.SortOrder
   limiteDiario?: Prisma.SortOrder
+  maxEnviosPorPeriodo?: Prisma.SortOrder
+  periodoEsperaValor?: Prisma.SortOrder
+  periodoEsperaUnidade?: Prisma.SortOrder
   respeitarJanela?: Prisma.SortOrder
   pausarNoFimDeSemana?: Prisma.SortOrder
   notificarFalhas?: Prisma.SortOrder
@@ -302,6 +337,9 @@ export type SettingsWhereUniqueInput = Prisma.AtLeast<{
   janelaInicio?: Prisma.StringFilter<"Settings"> | string
   janelaFim?: Prisma.StringFilter<"Settings"> | string
   limiteDiario?: Prisma.IntFilter<"Settings"> | number
+  maxEnviosPorPeriodo?: Prisma.IntFilter<"Settings"> | number
+  periodoEsperaValor?: Prisma.IntFilter<"Settings"> | number
+  periodoEsperaUnidade?: Prisma.StringFilter<"Settings"> | string
   respeitarJanela?: Prisma.BoolFilter<"Settings"> | boolean
   pausarNoFimDeSemana?: Prisma.BoolFilter<"Settings"> | boolean
   notificarFalhas?: Prisma.BoolFilter<"Settings"> | boolean
@@ -317,6 +355,9 @@ export type SettingsOrderByWithAggregationInput = {
   janelaInicio?: Prisma.SortOrder
   janelaFim?: Prisma.SortOrder
   limiteDiario?: Prisma.SortOrder
+  maxEnviosPorPeriodo?: Prisma.SortOrder
+  periodoEsperaValor?: Prisma.SortOrder
+  periodoEsperaUnidade?: Prisma.SortOrder
   respeitarJanela?: Prisma.SortOrder
   pausarNoFimDeSemana?: Prisma.SortOrder
   notificarFalhas?: Prisma.SortOrder
@@ -340,6 +381,9 @@ export type SettingsScalarWhereWithAggregatesInput = {
   janelaInicio?: Prisma.StringWithAggregatesFilter<"Settings"> | string
   janelaFim?: Prisma.StringWithAggregatesFilter<"Settings"> | string
   limiteDiario?: Prisma.IntWithAggregatesFilter<"Settings"> | number
+  maxEnviosPorPeriodo?: Prisma.IntWithAggregatesFilter<"Settings"> | number
+  periodoEsperaValor?: Prisma.IntWithAggregatesFilter<"Settings"> | number
+  periodoEsperaUnidade?: Prisma.StringWithAggregatesFilter<"Settings"> | string
   respeitarJanela?: Prisma.BoolWithAggregatesFilter<"Settings"> | boolean
   pausarNoFimDeSemana?: Prisma.BoolWithAggregatesFilter<"Settings"> | boolean
   notificarFalhas?: Prisma.BoolWithAggregatesFilter<"Settings"> | boolean
@@ -355,6 +399,9 @@ export type SettingsCreateInput = {
   janelaInicio?: string
   janelaFim?: string
   limiteDiario?: number
+  maxEnviosPorPeriodo?: number
+  periodoEsperaValor?: number
+  periodoEsperaUnidade?: string
   respeitarJanela?: boolean
   pausarNoFimDeSemana?: boolean
   notificarFalhas?: boolean
@@ -370,6 +417,9 @@ export type SettingsUncheckedCreateInput = {
   janelaInicio?: string
   janelaFim?: string
   limiteDiario?: number
+  maxEnviosPorPeriodo?: number
+  periodoEsperaValor?: number
+  periodoEsperaUnidade?: string
   respeitarJanela?: boolean
   pausarNoFimDeSemana?: boolean
   notificarFalhas?: boolean
@@ -385,6 +435,9 @@ export type SettingsUpdateInput = {
   janelaInicio?: Prisma.StringFieldUpdateOperationsInput | string
   janelaFim?: Prisma.StringFieldUpdateOperationsInput | string
   limiteDiario?: Prisma.IntFieldUpdateOperationsInput | number
+  maxEnviosPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
+  periodoEsperaValor?: Prisma.IntFieldUpdateOperationsInput | number
+  periodoEsperaUnidade?: Prisma.StringFieldUpdateOperationsInput | string
   respeitarJanela?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pausarNoFimDeSemana?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notificarFalhas?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -400,6 +453,9 @@ export type SettingsUncheckedUpdateInput = {
   janelaInicio?: Prisma.StringFieldUpdateOperationsInput | string
   janelaFim?: Prisma.StringFieldUpdateOperationsInput | string
   limiteDiario?: Prisma.IntFieldUpdateOperationsInput | number
+  maxEnviosPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
+  periodoEsperaValor?: Prisma.IntFieldUpdateOperationsInput | number
+  periodoEsperaUnidade?: Prisma.StringFieldUpdateOperationsInput | string
   respeitarJanela?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pausarNoFimDeSemana?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notificarFalhas?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -415,6 +471,9 @@ export type SettingsCreateManyInput = {
   janelaInicio?: string
   janelaFim?: string
   limiteDiario?: number
+  maxEnviosPorPeriodo?: number
+  periodoEsperaValor?: number
+  periodoEsperaUnidade?: string
   respeitarJanela?: boolean
   pausarNoFimDeSemana?: boolean
   notificarFalhas?: boolean
@@ -430,6 +489,9 @@ export type SettingsUpdateManyMutationInput = {
   janelaInicio?: Prisma.StringFieldUpdateOperationsInput | string
   janelaFim?: Prisma.StringFieldUpdateOperationsInput | string
   limiteDiario?: Prisma.IntFieldUpdateOperationsInput | number
+  maxEnviosPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
+  periodoEsperaValor?: Prisma.IntFieldUpdateOperationsInput | number
+  periodoEsperaUnidade?: Prisma.StringFieldUpdateOperationsInput | string
   respeitarJanela?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pausarNoFimDeSemana?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notificarFalhas?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -445,6 +507,9 @@ export type SettingsUncheckedUpdateManyInput = {
   janelaInicio?: Prisma.StringFieldUpdateOperationsInput | string
   janelaFim?: Prisma.StringFieldUpdateOperationsInput | string
   limiteDiario?: Prisma.IntFieldUpdateOperationsInput | number
+  maxEnviosPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
+  periodoEsperaValor?: Prisma.IntFieldUpdateOperationsInput | number
+  periodoEsperaUnidade?: Prisma.StringFieldUpdateOperationsInput | string
   respeitarJanela?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pausarNoFimDeSemana?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notificarFalhas?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -460,6 +525,9 @@ export type SettingsCountOrderByAggregateInput = {
   janelaInicio?: Prisma.SortOrder
   janelaFim?: Prisma.SortOrder
   limiteDiario?: Prisma.SortOrder
+  maxEnviosPorPeriodo?: Prisma.SortOrder
+  periodoEsperaValor?: Prisma.SortOrder
+  periodoEsperaUnidade?: Prisma.SortOrder
   respeitarJanela?: Prisma.SortOrder
   pausarNoFimDeSemana?: Prisma.SortOrder
   notificarFalhas?: Prisma.SortOrder
@@ -468,6 +536,8 @@ export type SettingsCountOrderByAggregateInput = {
 
 export type SettingsAvgOrderByAggregateInput = {
   limiteDiario?: Prisma.SortOrder
+  maxEnviosPorPeriodo?: Prisma.SortOrder
+  periodoEsperaValor?: Prisma.SortOrder
 }
 
 export type SettingsMaxOrderByAggregateInput = {
@@ -479,6 +549,9 @@ export type SettingsMaxOrderByAggregateInput = {
   janelaInicio?: Prisma.SortOrder
   janelaFim?: Prisma.SortOrder
   limiteDiario?: Prisma.SortOrder
+  maxEnviosPorPeriodo?: Prisma.SortOrder
+  periodoEsperaValor?: Prisma.SortOrder
+  periodoEsperaUnidade?: Prisma.SortOrder
   respeitarJanela?: Prisma.SortOrder
   pausarNoFimDeSemana?: Prisma.SortOrder
   notificarFalhas?: Prisma.SortOrder
@@ -494,6 +567,9 @@ export type SettingsMinOrderByAggregateInput = {
   janelaInicio?: Prisma.SortOrder
   janelaFim?: Prisma.SortOrder
   limiteDiario?: Prisma.SortOrder
+  maxEnviosPorPeriodo?: Prisma.SortOrder
+  periodoEsperaValor?: Prisma.SortOrder
+  periodoEsperaUnidade?: Prisma.SortOrder
   respeitarJanela?: Prisma.SortOrder
   pausarNoFimDeSemana?: Prisma.SortOrder
   notificarFalhas?: Prisma.SortOrder
@@ -502,6 +578,8 @@ export type SettingsMinOrderByAggregateInput = {
 
 export type SettingsSumOrderByAggregateInput = {
   limiteDiario?: Prisma.SortOrder
+  maxEnviosPorPeriodo?: Prisma.SortOrder
+  periodoEsperaValor?: Prisma.SortOrder
 }
 
 
@@ -515,6 +593,9 @@ export type SettingsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   janelaInicio?: boolean
   janelaFim?: boolean
   limiteDiario?: boolean
+  maxEnviosPorPeriodo?: boolean
+  periodoEsperaValor?: boolean
+  periodoEsperaUnidade?: boolean
   respeitarJanela?: boolean
   pausarNoFimDeSemana?: boolean
   notificarFalhas?: boolean
@@ -530,6 +611,9 @@ export type SettingsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   janelaInicio?: boolean
   janelaFim?: boolean
   limiteDiario?: boolean
+  maxEnviosPorPeriodo?: boolean
+  periodoEsperaValor?: boolean
+  periodoEsperaUnidade?: boolean
   respeitarJanela?: boolean
   pausarNoFimDeSemana?: boolean
   notificarFalhas?: boolean
@@ -545,6 +629,9 @@ export type SettingsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   janelaInicio?: boolean
   janelaFim?: boolean
   limiteDiario?: boolean
+  maxEnviosPorPeriodo?: boolean
+  periodoEsperaValor?: boolean
+  periodoEsperaUnidade?: boolean
   respeitarJanela?: boolean
   pausarNoFimDeSemana?: boolean
   notificarFalhas?: boolean
@@ -560,13 +647,16 @@ export type SettingsSelectScalar = {
   janelaInicio?: boolean
   janelaFim?: boolean
   limiteDiario?: boolean
+  maxEnviosPorPeriodo?: boolean
+  periodoEsperaValor?: boolean
+  periodoEsperaUnidade?: boolean
   respeitarJanela?: boolean
   pausarNoFimDeSemana?: boolean
   notificarFalhas?: boolean
   atualizadoEm?: boolean
 }
 
-export type SettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "atualizadoEm", ExtArgs["result"]["settings"]>
+export type SettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "atualizadoEm", ExtArgs["result"]["settings"]>
 
 export type $SettingsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Settings"
@@ -580,6 +670,18 @@ export type $SettingsPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     janelaInicio: string
     janelaFim: string
     limiteDiario: number
+    /**
+     * Máximo de mensagens enviadas em cada lote (por período de espera).
+     */
+    maxEnviosPorPeriodo: number
+    /**
+     * Tempo de espera entre um lote e o próximo: valor numérico + unidade.
+     */
+    periodoEsperaValor: number
+    /**
+     * Unidade do período de espera: "minutos" ou "horas".
+     */
+    periodoEsperaUnidade: string
     respeitarJanela: boolean
     pausarNoFimDeSemana: boolean
     notificarFalhas: boolean
@@ -1015,6 +1117,9 @@ export interface SettingsFieldRefs {
   readonly janelaInicio: Prisma.FieldRef<"Settings", 'String'>
   readonly janelaFim: Prisma.FieldRef<"Settings", 'String'>
   readonly limiteDiario: Prisma.FieldRef<"Settings", 'Int'>
+  readonly maxEnviosPorPeriodo: Prisma.FieldRef<"Settings", 'Int'>
+  readonly periodoEsperaValor: Prisma.FieldRef<"Settings", 'Int'>
+  readonly periodoEsperaUnidade: Prisma.FieldRef<"Settings", 'String'>
   readonly respeitarJanela: Prisma.FieldRef<"Settings", 'Boolean'>
   readonly pausarNoFimDeSemana: Prisma.FieldRef<"Settings", 'Boolean'>
   readonly notificarFalhas: Prisma.FieldRef<"Settings", 'Boolean'>

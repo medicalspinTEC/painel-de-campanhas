@@ -22,6 +22,11 @@ const FUSOS = [
   { value: "America/Rio_Branco", label: "Rio Branco (GMT-5)" },
 ]
 
+const UNIDADES_ESPERA = [
+  { value: "minutos", label: "Minutos" },
+  { value: "horas", label: "Horas" },
+]
+
 export function SettingsForm({ inicial }: { inicial: Settings }) {
   const [pending, startTransition] = useTransition()
   const [remetente, setRemetente] = useState(inicial.remetente)
@@ -30,6 +35,9 @@ export function SettingsForm({ inicial }: { inicial: Settings }) {
   const [inicio, setInicio] = useState(inicial.janelaInicio)
   const [fim, setFim] = useState(inicial.janelaFim)
   const [limite, setLimite] = useState(String(inicial.limiteDiario))
+  const [maxPorPeriodo, setMaxPorPeriodo] = useState(String(inicial.maxEnviosPorPeriodo))
+  const [esperaValor, setEsperaValor] = useState(String(inicial.periodoEsperaValor))
+  const [esperaUnidade, setEsperaUnidade] = useState(inicial.periodoEsperaUnidade)
   const [assinatura, setAssinatura] = useState(inicial.assinatura)
   const [respeitarJanela, setRespeitarJanela] = useState(inicial.respeitarJanela)
   const [pausarNoFimDeSemana, setPausarNoFimDeSemana] = useState(inicial.pausarNoFimDeSemana)
@@ -46,6 +54,9 @@ export function SettingsForm({ inicial }: { inicial: Settings }) {
         janelaFim: fim,
         // O input numérico devolve string; `NaN` é barrado na validação da action.
         limiteDiario: Number.parseInt(limite, 10),
+        maxEnviosPorPeriodo: Number.parseInt(maxPorPeriodo, 10),
+        periodoEsperaValor: Number.parseInt(esperaValor, 10),
+        periodoEsperaUnidade: esperaUnidade,
         respeitarJanela,
         pausarNoFimDeSemana,
         notificarFalhas,
@@ -102,6 +113,56 @@ export function SettingsForm({ inicial }: { inicial: Settings }) {
           <Field>
             <FieldLabel htmlFor="fuso">Fuso horário</FieldLabel>
             <SelectField id="fuso" value={fuso} onValueChange={setFuso} opcoes={FUSOS} className="w-full sm:w-72" />
+          </Field>
+
+          <Separator />
+
+          <div className="flex flex-col gap-1">
+            <h3 className="text-sm font-medium">Ritmo de envio</h3>
+            <p className="text-sm text-muted-foreground">
+              Controle quantas mensagens saem por lote, o intervalo entre lotes e o teto diário.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="max-periodo">Máximo de envios por período</FieldLabel>
+              <Input
+                id="max-periodo"
+                type="number"
+                min={1}
+                value={maxPorPeriodo}
+                onChange={(e) => setMaxPorPeriodo(e.target.value)}
+              />
+              <FieldDescription>Ex.: 50 envios a cada intervalo definido abaixo.</FieldDescription>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="limite">Máximo de envios por dia</FieldLabel>
+              <Input id="limite" type="number" min={1} value={limite} onChange={(e) => setLimite(e.target.value)} />
+              <FieldDescription>
+                Ao bater este limite, as próximas mensagens só saem na próxima janela de envio.
+              </FieldDescription>
+            </Field>
+          </div>
+          <Field>
+            <FieldLabel htmlFor="espera-valor">Tempo de espera entre lotes</FieldLabel>
+            <div className="flex items-start gap-2">
+              <Input
+                id="espera-valor"
+                type="number"
+                min={1}
+                value={esperaValor}
+                onChange={(e) => setEsperaValor(e.target.value)}
+                className="w-28"
+              />
+              <SelectField
+                id="espera-unidade"
+                value={esperaUnidade}
+                onValueChange={setEsperaUnidade}
+                opcoes={UNIDADES_ESPERA}
+                className="w-40"
+              />
+            </div>
+            <FieldDescription>Intervalo aguardado antes de disparar o próximo lote de mensagens.</FieldDescription>
           </Field>
           {/*<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Field>
