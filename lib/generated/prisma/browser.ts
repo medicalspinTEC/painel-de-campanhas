@@ -97,3 +97,11 @@ export type InboundWebhookToken = Prisma.InboundWebhookTokenModel
  * Armazenados para auditoria e visibilidade na UI.
  */
 export type InboundEvent = Prisma.InboundEventModel
+/**
+ * Model Instance
+ * Instâncias de WhatsApp criadas por este painel.
+ * A Evolution API pode hospedar instâncias de outros sistemas; guardamos aqui
+ * apenas o `nome` (chave de negócio, igual ao instanceName na Evolution) das
+ * que foram criadas por aqui, para que a listagem mostre somente essas.
+ */
+export type Instance = Prisma.InstanceModel

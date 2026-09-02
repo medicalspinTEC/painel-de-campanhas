@@ -410,7 +410,8 @@ export const ModelName = {
   AppLog: 'AppLog',
   TimelineEvent: 'TimelineEvent',
   InboundWebhookToken: 'InboundWebhookToken',
-  InboundEvent: 'InboundEvent'
+  InboundEvent: 'InboundEvent',
+  Instance: 'Instance'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -426,7 +427,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "lead" | "campaign" | "leadCampaign" | "campaignMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "inboundEvent"
+    modelProps: "lead" | "campaign" | "leadCampaign" | "campaignMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "inboundEvent" | "instance"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1466,6 +1467,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Instance: {
+      payload: Prisma.$InstancePayload<ExtArgs>
+      fields: Prisma.InstanceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InstanceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstancePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InstanceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstancePayload>
+        }
+        findFirst: {
+          args: Prisma.InstanceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstancePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InstanceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstancePayload>
+        }
+        findMany: {
+          args: Prisma.InstanceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstancePayload>[]
+        }
+        create: {
+          args: Prisma.InstanceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstancePayload>
+        }
+        createMany: {
+          args: Prisma.InstanceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InstanceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstancePayload>[]
+        }
+        delete: {
+          args: Prisma.InstanceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstancePayload>
+        }
+        update: {
+          args: Prisma.InstanceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstancePayload>
+        }
+        deleteMany: {
+          args: Prisma.InstanceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InstanceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InstanceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstancePayload>[]
+        }
+        upsert: {
+          args: Prisma.InstanceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstancePayload>
+        }
+        aggregate: {
+          args: Prisma.InstanceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInstance>
+        }
+        groupBy: {
+          args: Prisma.InstanceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InstanceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InstanceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InstanceCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1703,6 +1778,17 @@ export const InboundEventScalarFieldEnum = {
 } as const
 
 export type InboundEventScalarFieldEnum = (typeof InboundEventScalarFieldEnum)[keyof typeof InboundEventScalarFieldEnum]
+
+
+export const InstanceScalarFieldEnum = {
+  id: 'id',
+  nome: 'nome',
+  numero: 'numero',
+  criadoEm: 'criadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type InstanceScalarFieldEnum = (typeof InstanceScalarFieldEnum)[keyof typeof InstanceScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2048,6 +2134,7 @@ export type GlobalOmitConfig = {
   timelineEvent?: Prisma.TimelineEventOmit
   inboundWebhookToken?: Prisma.InboundWebhookTokenOmit
   inboundEvent?: Prisma.InboundEventOmit
+  instance?: Prisma.InstanceOmit
 }
 
 /* Types for Logging */

@@ -15,7 +15,11 @@ import {
   Trash2,
 } from "lucide-react"
 
-import { criarInstanciaAction } from "@/app/actions/instancias"
+import {
+  criarInstanciaAction,
+  desconectarInstanciaAction,
+  removerInstanciaAction,
+} from "@/app/actions/instancias"
 import { ConnectInstanceDialog } from "@/components/features/instancias/connect-instance-dialog"
 import { InstanceFormDialog } from "@/components/features/instancias/instance-form-dialog"
 import { Badge } from "@/components/ui/badge"
@@ -126,17 +130,45 @@ export function InstanciasManager({ instanciasIniciais }: { instanciasIniciais: 
   }
 
   function alternarConexao(instancia: Instance) {
+    // Desconectado (ou conectando): abre o diálogo de pareamento por QR Code.
+    if (instancia.estado !== "conectado") {
+      setConectando(instancia)
+      return
+    }
+
+    // Conectado: faz o logout real na Evolution API.
     setInstancias((atuais) =>
-      atuais.map((i) =>
-        i.id === instancia.id
-          ? { ...i, estado: i.estado === "conectado" ? "desconectado" : "conectado" }
-          : i,
-      ),
+      atuais.map((i) => (i.id === instancia.id ? { ...i, estado: "desconectado" } : i)),
     )
+    iniciarAtualizacao(async () => {
+      const resultado = await desconectarInstanciaAction(instancia.nome)
+      if (!resultado.ok) {
+        toast.error(resultado.message)
+        // Reverte o estado otimista em caso de falha.
+        setInstancias((atuais) =>
+          atuais.map((i) => (i.id === instancia.id ? { ...i, estado: "conectado" } : i)),
+        )
+        return
+      }
+      toast.success(resultado.message)
+      router.refresh()
+    })
   }
 
-  function removerInstancia(id: string) {
-    setInstancias((atuais) => atuais.filter((i) => i.id !== id))
+  function removerInstancia(instancia: Instance) {
+    const anteriores = instancias
+    // Remoção otimista da UI; revertemos caso a API falhe.
+    setInstancias((atuais) => atuais.filter((i) => i.id !== instancia.id))
+    iniciarAtualizacao(async () => {
+      const resultado = await removerInstanciaAction(instancia.nome)
+      if (!resultado.ok) {
+        toast.error(resultado.message)
+        setInstancias(anteriores)
+        return
+      }
+      toast.success(resultado.message)
+      router.refresh()
+    })
   }
 
   return (
@@ -221,10 +253,10 @@ export function InstanciasManager({ instanciasIniciais }: { instanciasIniciais: 
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => alternarConexao(instancia)}>
                           <Power className="size-4" />
-                          {instancia.estado === "conectado" ? "Desconectar" : "Marcar conectado"}
+                          {instancia.estado === "conectado" ? "Desconectar" : "Conectar"}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem variant="destructive" onClick={() => removerInstancia(instancia.id)}>
+                        <DropdownMenuItem variant="destructive" onClick={() => removerInstancia(instancia)}>
                           <Trash2 className="size-4" />
                           Remover
                         </DropdownMenuItem>
@@ -292,7 +324,8 @@ export function InstanciasManager({ instanciasIniciais }: { instanciasIniciais: 
           setInstancias((atuais) =>
             atuais.map((i) => (i.id === id ? { ...i, estado: "conectado" } : i)),
           )
-          setConectando(null)
+          // Sincroniza número/perfil vindos da Evolution após o pareamento.
+          router.refresh()
         }}
       />
     </div>

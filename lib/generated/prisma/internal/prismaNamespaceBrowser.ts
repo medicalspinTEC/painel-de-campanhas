@@ -64,7 +64,8 @@ export const ModelName = {
   AppLog: 'AppLog',
   TimelineEvent: 'TimelineEvent',
   InboundWebhookToken: 'InboundWebhookToken',
-  InboundEvent: 'InboundEvent'
+  InboundEvent: 'InboundEvent',
+  Instance: 'Instance'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -281,6 +282,17 @@ export const InboundEventScalarFieldEnum = {
 } as const
 
 export type InboundEventScalarFieldEnum = (typeof InboundEventScalarFieldEnum)[keyof typeof InboundEventScalarFieldEnum]
+
+
+export const InstanceScalarFieldEnum = {
+  id: 'id',
+  nome: 'nome',
+  numero: 'numero',
+  criadoEm: 'criadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type InstanceScalarFieldEnum = (typeof InstanceScalarFieldEnum)[keyof typeof InstanceScalarFieldEnum]
 
 
 export const SortOrder = {

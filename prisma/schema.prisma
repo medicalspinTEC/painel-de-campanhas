@@ -333,3 +333,18 @@ model InboundEvent {
   @@index([recebidoEm])
   @@index([evento, recebidoEm])
 }
+
+/// Instâncias de WhatsApp criadas por este painel.
+/// A Evolution API pode hospedar instâncias de outros sistemas; guardamos aqui
+/// apenas o `nome` (chave de negócio, igual ao instanceName na Evolution) das
+/// que foram criadas por aqui, para que a listagem mostre somente essas.
+model Instance {
+  id       String  @id @default(cuid())
+  nome     String  @unique
+  numero   String?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@index([criadoEm])
+}

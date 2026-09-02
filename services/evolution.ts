@@ -49,6 +49,24 @@ export async function fetchEvolutionInstances(): Promise<EvolutionInstance[]> {
   const { apiUrl, apiKey } = getEvolutionCredentials()
   if (!apiKey) return []
 
+  // Nomes das instâncias criadas por este painel. Só essas serão exibidas.
+  let nomesDoApp: Set<string>
+  try {
+    const registradas = await prisma.instance.findMany({ select: { nome: true } })
+    nomesDoApp = new Set(registradas.map((i) => i.nome))
+  } catch (error) {
+    await recordAppLog({
+      nivel: "erro",
+      origem: "evolution",
+      mensagem: "Falha ao consultar as instâncias registradas no banco do painel.",
+      detalhes: error,
+    })
+    return []
+  }
+
+  // Sem instâncias registradas, não há o que buscar na Evolution.
+  if (nomesDoApp.size === 0) return []
+
   try {
     const response = await fetch(`${apiUrl}/instance/fetchInstances`, {
       headers: { apikey: apiKey },
@@ -62,22 +80,27 @@ export async function fetchEvolutionInstances(): Promise<EvolutionInstance[]> {
     const payload = (await response.json()) as unknown
     const lista = Array.isArray(payload) ? payload : []
 
-    return lista.map((entrada) => {
-      // Dependendo da versão, o objeto vem "achatado" ou dentro de `instance`.
-      const item = (entrada as { instance?: Record<string, unknown> }).instance ?? (entrada as Record<string, unknown>)
-      const numeroBruto = (item.ownerJid ?? item.number) as string | undefined
-      const profileName = item.profileName as string | undefined
-      const contagem = (item._count as { Message?: number } | undefined)?.Message
+    return lista
+      .map((entrada) => {
+        // Dependendo da versão, o objeto vem "achatado" ou dentro de `instance`.
+        const item =
+          (entrada as { instance?: Record<string, unknown> }).instance ?? (entrada as Record<string, unknown>)
+        const numeroBruto = (item.ownerJid ?? item.number) as string | undefined
+        const profileName = item.profileName as string | undefined
+        const contagem = (item._count as { Message?: number } | undefined)?.Message
+        const nome = String(item.name ?? item.instanceName ?? "instância")
 
-      return {
-        id: String(item.id ?? item.name ?? item.instanceName ?? Math.random().toString(36).slice(2)),
-        nome: String(item.name ?? item.instanceName ?? "instância"),
-        numero: numeroBruto ? String(numeroBruto).split("@")[0] : undefined,
-        descricao: profileName ? `Perfil: ${profileName}` : undefined,
-        estado: mapConnectionStatus((item.connectionStatus ?? item.state) as string | undefined),
-        mensagensHoje: Number(contagem ?? 0),
-      }
-    })
+        return {
+          id: String(item.id ?? item.name ?? item.instanceName ?? Math.random().toString(36).slice(2)),
+          nome,
+          numero: numeroBruto ? String(numeroBruto).split("@")[0] : undefined,
+          descricao: profileName ? `Perfil: ${profileName}` : undefined,
+          estado: mapConnectionStatus((item.connectionStatus ?? item.state) as string | undefined),
+          mensagensHoje: Number(contagem ?? 0),
+        }
+      })
+      // Mantém somente as instâncias criadas por este painel.
+      .filter((instancia) => nomesDoApp.has(instancia.nome))
   } catch (error) {
     await recordAppLog({
       nivel: "erro",
@@ -140,6 +163,23 @@ export async function createEvolutionInstance(input: {
 
     const inst = payload?.instance ?? {}
 
+    // Registra a instância no banco para que a listagem mostre apenas as que
+    // foram criadas por este painel (a Evolution pode hospedar outras).
+    try {
+      await prisma.instance.upsert({
+        where: { nome },
+        update: { numero: numero ?? null },
+        create: { nome, numero: numero ?? null },
+      })
+    } catch (error) {
+      await recordAppLog({
+        nivel: "aviso",
+        origem: "evolution",
+        mensagem: `Instância "${nome}" criada na Evolution, mas não registrada no banco do painel.`,
+        detalhes: error,
+      })
+    }
+
     await recordAppLog({
       nivel: "info",
       origem: "evolution",
@@ -164,6 +204,220 @@ export async function createEvolutionInstance(input: {
       mensagem: "Exceção ao criar instância na Evolution API.",
       detalhes: error,
     })
+    return { ok: false, erro: mensagem }
+  }
+}
+
+export interface EvolutionConnectResult {
+  ok: boolean
+  erro?: string
+  /** QR Code já pronto para uso em <img src=...> (com prefixo data:image). */
+  qrCode?: string
+  /** Código de pareamento por número (quando a instância foi criada com `number`). */
+  pairingCode?: string
+  /** Código textual do QR (fallback). */
+  code?: string
+  /** Quando a instância já está conectada, a Evolution não devolve QR. */
+  jaConectada?: boolean
+}
+
+/**
+ * Inicia o pareamento de uma instância (GET /instance/connect/{nome}).
+ * Devolve o QR Code em base64 (e/ou o pairing code) para exibir ao usuário.
+ * Quando a instância já está conectada, a Evolution normalmente responde sem
+ * QR — nesse caso sinalizamos `jaConectada` para o cliente fechar o diálogo.
+ */
+export async function connectEvolutionInstance(nome: string): Promise<EvolutionConnectResult> {
+  const { apiUrl, apiKey } = getEvolutionCredentials()
+  if (!apiKey) return { ok: false, erro: "EVOLUTION_API_KEY não configurada no ambiente." }
+
+  const instancia = nome.trim()
+  if (!instancia) return { ok: false, erro: "Nome da instância ausente." }
+
+  try {
+    const response = await fetch(`${apiUrl}/instance/connect/${encodeURIComponent(instancia)}`, {
+      headers: { apikey: apiKey },
+      cache: "no-store",
+    })
+
+    const payload = (await response.json().catch(() => null)) as
+      | {
+          base64?: string
+          code?: string
+          pairingCode?: string
+          count?: number
+          instance?: { state?: string }
+          message?: unknown
+          response?: { message?: unknown }
+        }
+      | null
+
+    if (!response.ok) {
+      const detalhe =
+        payload?.response?.message ?? payload?.message ?? `Evolution respondeu com status ${response.status}`
+      const mensagem = Array.isArray(detalhe) ? detalhe.join(", ") : String(detalhe)
+      await recordAppLog({
+        nivel: "erro",
+        origem: "evolution",
+        mensagem: `Falha ao conectar instância "${instancia}".`,
+        detalhes: mensagem,
+      })
+      return { ok: false, erro: mensagem }
+    }
+
+    const base64 = payload?.base64
+    if (!base64 && !payload?.pairingCode && !payload?.code) {
+      // Sem QR e sem código costuma indicar instância já conectada.
+      return { ok: true, jaConectada: true }
+    }
+
+    // A Evolution ora devolve o base64 puro, ora já com o prefixo data URI.
+    const qrCode = base64
+      ? base64.startsWith("data:")
+        ? base64
+        : `data:image/png;base64,${base64}`
+      : undefined
+
+    return {
+      ok: true,
+      qrCode,
+      pairingCode: payload?.pairingCode,
+      code: payload?.code,
+    }
+  } catch (error) {
+    const mensagem = error instanceof Error ? error.message : String(error)
+    await recordAppLog({
+      nivel: "erro",
+      origem: "evolution",
+      mensagem: `Exceção ao conectar instância "${instancia}".`,
+      detalhes: error,
+    })
+    return { ok: false, erro: mensagem }
+  }
+}
+
+/**
+ * Consulta o estado atual da conexão (GET /instance/connectionState/{nome}).
+ * Usado no polling do diálogo de QR Code para detectar quando o WhatsApp foi
+ * pareado (estado "open").
+ */
+export async function getEvolutionConnectionState(
+  nome: string,
+): Promise<{ ok: boolean; erro?: string; estado?: EvolutionInstanceState }> {
+  const { apiUrl, apiKey } = getEvolutionCredentials()
+  if (!apiKey) return { ok: false, erro: "EVOLUTION_API_KEY não configurada no ambiente." }
+
+  const instancia = nome.trim()
+  if (!instancia) return { ok: false, erro: "Nome da instância ausente." }
+
+  try {
+    const response = await fetch(`${apiUrl}/instance/connectionState/${encodeURIComponent(instancia)}`, {
+      headers: { apikey: apiKey },
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      return { ok: false, erro: `Evolution respondeu com status ${response.status}` }
+    }
+
+    const payload = (await response.json().catch(() => null)) as
+      | { instance?: { state?: string }; state?: string }
+      | null
+
+    const state = payload?.instance?.state ?? payload?.state
+    return { ok: true, estado: mapConnectionStatus(state) }
+  } catch (error) {
+    const mensagem = error instanceof Error ? error.message : String(error)
+    return { ok: false, erro: mensagem }
+  }
+}
+
+/** Desconecta o WhatsApp da instância (DELETE /instance/logout/{nome}). */
+export async function logoutEvolutionInstance(nome: string): Promise<{ ok: boolean; erro?: string }> {
+  const { apiUrl, apiKey } = getEvolutionCredentials()
+  if (!apiKey) return { ok: false, erro: "EVOLUTION_API_KEY não configurada no ambiente." }
+
+  const instancia = nome.trim()
+  if (!instancia) return { ok: false, erro: "Nome da instância ausente." }
+
+  try {
+    const response = await fetch(`${apiUrl}/instance/logout/${encodeURIComponent(instancia)}`, {
+      method: "DELETE",
+      headers: { apikey: apiKey },
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      const detalhe = await response.text()
+      const mensagem = detalhe || `Evolution respondeu com status ${response.status}`
+      await recordAppLog({
+        nivel: "erro",
+        origem: "evolution",
+        mensagem: `Falha ao desconectar instância "${instancia}".`,
+        detalhes: mensagem,
+      })
+      return { ok: false, erro: mensagem }
+    }
+
+    await recordAppLog({
+      nivel: "info",
+      origem: "evolution",
+      mensagem: `Instância "${instancia}" desconectada.`,
+    })
+    return { ok: true }
+  } catch (error) {
+    const mensagem = error instanceof Error ? error.message : String(error)
+    return { ok: false, erro: mensagem }
+  }
+}
+
+/** Remove a instância por completo (DELETE /instance/delete/{nome}). */
+export async function deleteEvolutionInstance(nome: string): Promise<{ ok: boolean; erro?: string }> {
+  const { apiUrl, apiKey } = getEvolutionCredentials()
+  if (!apiKey) return { ok: false, erro: "EVOLUTION_API_KEY não configurada no ambiente." }
+
+  const instancia = nome.trim()
+  if (!instancia) return { ok: false, erro: "Nome da instância ausente." }
+
+  try {
+    const response = await fetch(`${apiUrl}/instance/delete/${encodeURIComponent(instancia)}`, {
+      method: "DELETE",
+      headers: { apikey: apiKey },
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      const detalhe = await response.text()
+      const mensagem = detalhe || `Evolution respondeu com status ${response.status}`
+      await recordAppLog({
+        nivel: "erro",
+        origem: "evolution",
+        mensagem: `Falha ao remover instância "${instancia}".`,
+        detalhes: mensagem,
+      })
+      return { ok: false, erro: mensagem }
+    }
+
+    // Remove também o registro no banco do painel para deixar de listá-la.
+    try {
+      await prisma.instance.deleteMany({ where: { nome: instancia } })
+    } catch (error) {
+      await recordAppLog({
+        nivel: "aviso",
+        origem: "evolution",
+        mensagem: `Instância "${instancia}" removida da Evolution, mas o registro no banco do painel não pôde ser apagado.`,
+        detalhes: error,
+      })
+    }
+
+    await recordAppLog({
+      nivel: "info",
+      origem: "evolution",
+      mensagem: `Instância "${instancia}" removida da Evolution API.`,
+    })
+    return { ok: true }
+  } catch (error) {
+    const mensagem = error instanceof Error ? error.message : String(error)
     return { ok: false, erro: mensagem }
   }
 }
