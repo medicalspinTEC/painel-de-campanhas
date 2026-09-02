@@ -176,7 +176,6 @@ export function InstanciasManager({ instanciasIniciais }: { instanciasIniciais: 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <ResumoCard icon={Smartphone} label="Instâncias" valor={totais.total} />
         <ResumoCard icon={Signal} label="Conectadas" valor={totais.conectadas} />
-        <ResumoCard icon={MessageSquare} label="Mensagens hoje" valor={totais.mensagens} />
       </div>
 
       <div className="flex items-center justify-between gap-3">
@@ -273,9 +272,6 @@ export function InstanciasManager({ instanciasIniciais }: { instanciasIniciais: 
                       <span className={cn("size-1.5 rounded-full", meta.dot)} aria-hidden />
                       {meta.label}
                     </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {instancia.mensagensHoje} msg hoje
-                    </span>
                   </div>
 
                   <div className="flex items-center gap-2">

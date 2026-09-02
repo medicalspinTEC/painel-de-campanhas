@@ -26,12 +26,6 @@ async function KpiGrid() {
         icon={Megaphone}
       />
       <KpiCard
-        titulo="Mensagens hoje"
-        valor={formatNumber(kpis.mensagensHoje)}
-        variacao={kpis.variacao.mensagensHoje}
-        icon={Send}
-      />
-      <KpiCard
         titulo="Taxa de resposta"
         valor={formatPercent(kpis.taxaResposta)}
         variacao={kpis.variacao.taxaResposta}
