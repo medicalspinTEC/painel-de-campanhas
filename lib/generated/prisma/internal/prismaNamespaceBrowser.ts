@@ -110,6 +110,7 @@ export const CampaignScalarFieldEnum = {
   status: 'status',
   recorrenciaDias: 'recorrenciaDias',
   dataFinal: 'dataFinal',
+  instanciaNome: 'instanciaNome',
   reiniciadaEm: 'reiniciadaEm',
   filtroProduto: 'filtroProduto',
   filtroMarca: 'filtroMarca',

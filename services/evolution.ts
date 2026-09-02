@@ -112,6 +112,40 @@ export async function fetchEvolutionInstances(): Promise<EvolutionInstance[]> {
   }
 }
 
+export interface InstanceOption {
+  nome: string
+  estado: EvolutionInstanceState
+}
+
+/**
+ * Lista as instâncias criadas por este painel para uso em seletores (ex.: ao
+ * escolher qual instância envia as mensagens de uma campanha). Tenta enriquecer
+ * com o estado de conexão vindo da Evolution; se a API estiver indisponível,
+ * ainda devolve os nomes registrados no banco marcados como "desconectado".
+ */
+export async function listInstanceOptions(): Promise<InstanceOption[]> {
+  let nomesRegistrados: string[]
+  try {
+    const registradas = await prisma.instance.findMany({
+      select: { nome: true },
+      orderBy: { criadoEm: "asc" },
+    })
+    nomesRegistrados = registradas.map((i) => i.nome)
+  } catch {
+    return []
+  }
+
+  if (nomesRegistrados.length === 0) return []
+
+  const doEvolution = await fetchEvolutionInstances()
+  const estadoPorNome = new Map(doEvolution.map((i) => [i.nome, i.estado]))
+
+  return nomesRegistrados.map((nome) => ({
+    nome,
+    estado: estadoPorNome.get(nome) ?? "desconectado",
+  }))
+}
+
 /**
  * Cria uma nova instância na Evolution API (POST /instance/create) usando a
  * integração padrão WHATSAPP-BAILEYS. A conexão (QR Code) é feita em um passo
@@ -479,6 +513,12 @@ export async function sendCampaignMessageToLead(input: {
   mensagemId: string
   texto: string
   telefone: string
+  /**
+   * Instância da Evolution que deve enviar a mensagem. Quando ausente (ou vazia)
+   * caímos na instância padrão do ambiente (EVOLUTION_INSTANCE_NAME), mantendo o
+   * comportamento antigo para campanhas que não escolheram uma instância.
+   */
+  instanciaNome?: string | null
   /** Descrição registrada na timeline em caso de sucesso. */
   descricaoSucesso?: string
   /** Descrição registrada na timeline em caso de falha. */
@@ -488,10 +528,13 @@ export async function sendCampaignMessageToLead(input: {
   const descricaoFalha = input.descricaoFalha ?? "Falha ao enviar mensagem da campanha via Evolution."
   const apiUrl = (process.env.EVOLUTION_API_URL ?? "https://evo-j0o08ok8sgwc4cog04w0owok.95.217.164.173.sslip.io").replace(/\/$/, "")
   const apiKey = process.env.EVOLUTION_API_KEY?.trim()
-  const instanceName = process.env.EVOLUTION_INSTANCE_NAME?.trim()
+  // Prioriza a instância escolhida na campanha; se não houver, usa a padrão do
+  // ambiente. Assim campanhas antigas (sem instância) seguem funcionando.
+  const instanceName = input.instanciaNome?.trim() || process.env.EVOLUTION_INSTANCE_NAME?.trim()
 
   if (!instanceName || !apiKey) {
-    const mensagem = "Credenciais da Evolution não configuradas (EVOLUTION_API_KEY ou EVOLUTION_INSTANCE_NAME ausentes)."
+    const mensagem =
+      "Credenciais da Evolution não configuradas (EVOLUTION_API_KEY ausente, ou nenhuma instância definida na campanha e EVOLUTION_INSTANCE_NAME também ausente)."
     await recordAppLog({
       nivel: "critico",
       origem: "evolution",

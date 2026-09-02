@@ -62,6 +62,7 @@ async function enviarMensagem(
   campanhaId: string,
   mensagem: EngineMessage,
   reiniciouCiclo: boolean,
+  instanciaNome: string | null,
 ): Promise<boolean> {
   try {
     const envio = await sendCampaignMessageToLead({
@@ -70,6 +71,7 @@ async function enviarMensagem(
       mensagemId: mensagem.id,
       texto: mensagem.texto,
       telefone: vinculo.lead.telefone,
+      instanciaNome,
       descricaoSucesso: reiniciouCiclo
         ? "Ciclo reiniciado: primeira mensagem reenviada pela engine."
         : mensagem.dia === 0
@@ -109,6 +111,7 @@ export async function processDueMessages(agora: Date = new Date()): Promise<Engi
         recorrenciaDias: true,
         dataFinal: true,
         reiniciadaEm: true,
+        instanciaNome: true,
         mensagens: {
           select: { id: true, dia: true, horario: true, texto: true },
           orderBy: { dia: "asc" },
@@ -272,7 +275,7 @@ export async function processDueMessages(agora: Date = new Date()): Promise<Engi
         }
 
         if (decisao.tipo === "enviar") {
-          const ok = await enviarMensagem(vinculo, campanha.id, decisao.mensagem, false)
+          const ok = await enviarMensagem(vinculo, campanha.id, decisao.mensagem, false, campanha.instanciaNome)
           if (ok) {
             enviados += 1
             await prisma.leadCampaign.update({

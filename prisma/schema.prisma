@@ -84,6 +84,12 @@ model Campaign {
   recorrenciaDias Int       @default(7)
   dataFinal       DateTime?
 
+  // Instância da Evolution que envia as mensagens desta campanha (igual ao
+  // `nome` em Instance / instanceName na Evolution). Nulo = usa a instância
+  // padrão do ambiente (EVOLUTION_INSTANCE_NAME), mantendo compatibilidade
+  // com campanhas criadas antes deste recurso.
+  instanciaNome String?
+
   // Marca o momento do último (re)início da campanha. A dedupe de envio só
   // considera mensagens disparadas a partir daqui, então reiniciar a campanha
   // permite reenviar a mensagem inicial aos leads.

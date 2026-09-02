@@ -13,3 +13,7 @@ CREATE TABLE "Instance" (
 CREATE UNIQUE INDEX "Instance_nome_key" ON "Instance"("nome");
 
 CREATE INDEX "Instance_criadoEm_idx" ON "Instance"("criadoEm");
+
+-- Instância escolhida na campanha para o envio das mensagens. Quando nula, o
+-- envio cai na instância padrão do ambiente (EVOLUTION_INSTANCE_NAME).
+ALTER TABLE "Campaign" ADD COLUMN "instanciaNome" TEXT;

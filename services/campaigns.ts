@@ -22,6 +22,7 @@ type CampaignRecord = {
   status: CampaignStatus
   recorrenciaDias: number
   dataFinal: Date | null
+  instanciaNome: string | null
   filtroProduto: string | null
   filtroMarca: string | null
   filtroPersona: string | null
@@ -38,6 +39,7 @@ function toCampaign(record: CampaignRecord): Campaign {
     status: record.status,
     recorrenciaDias: record.recorrenciaDias,
     dataFinal: record.dataFinal?.toISOString() ?? null,
+    instanciaNome: record.instanciaNome ?? null,
     criadoEm: record.criadoEm.toISOString(),
     filtros: {
       produto: record.filtroProduto as Campaign["filtros"]["produto"],
@@ -188,6 +190,8 @@ export interface CampaignInput {
   status: CampaignStatus
   recorrenciaDias: number
   dataFinal: string | null
+  /** Instância que envia as mensagens. Nulo/ausente = padrão do ambiente. */
+  instanciaNome?: string | null
   filtros: Campaign["filtros"]
   leadIds?: string[]
   mensagens: Array<Omit<CampaignMessage, "id"> & { id?: string }>
@@ -200,6 +204,7 @@ function toCampaignData(input: CampaignInput) {
     status: input.status,
     recorrenciaDias: input.recorrenciaDias,
     dataFinal: input.dataFinal ? new Date(input.dataFinal) : null,
+    instanciaNome: input.instanciaNome?.trim() || null,
     filtroProduto: input.filtros.produto ?? null,
     filtroMarca: input.filtros.marca ?? null,
     filtroPersona: input.filtros.persona ?? null,
@@ -230,6 +235,7 @@ async function dispararMensagemInicialParaLeads(campanhaId: string, leadIds: str
     where: { id: campanhaId },
     select: {
       dataFinal: true,
+      instanciaNome: true,
       mensagens: { orderBy: { dia: "asc" }, select: { id: true, dia: true, texto: true } },
     },
   })
@@ -254,6 +260,7 @@ async function dispararMensagemInicialParaLeads(campanhaId: string, leadIds: str
         mensagemId: mensagemInicial.id,
         texto: mensagemInicial.texto,
         telefone: lead.telefone,
+        instanciaNome: campanha.instanciaNome,
       })
     } catch (error) {
       await recordAppLog({
@@ -435,6 +442,7 @@ export async function duplicateCampaign(id: string): Promise<Campaign | null> {
       status: "rascunho",
       recorrenciaDias: original.recorrenciaDias,
       dataFinal: original.dataFinal,
+      instanciaNome: original.instanciaNome,
       filtroProduto: original.filtroProduto,
       filtroMarca: original.filtroMarca,
       filtroPersona: original.filtroPersona,
@@ -593,6 +601,7 @@ export async function skipToNextMessage(leadId: string, campanhaId: string): Pro
         recorrenciaDias: true,
         reiniciadaEm: true,
         dataFinal: true,
+        instanciaNome: true,
         mensagens: { select: { id: true, dia: true, horario: true, texto: true }, orderBy: { dia: "asc" } },
       },
     }),
@@ -642,6 +651,7 @@ export async function skipToNextMessage(leadId: string, campanhaId: string): Pro
     mensagemId: alvo.id,
     texto: alvo.texto,
     telefone: lead.telefone,
+    instanciaNome: campanha.instanciaNome,
     descricaoSucesso: reiniciouCiclo
       ? "Ciclo reiniciado manualmente: primeira mensagem reenviada."
       : "Mensagem antecipada manualmente (pular) na campanha.",

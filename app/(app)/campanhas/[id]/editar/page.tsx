@@ -4,18 +4,20 @@ import { CampaignEditor } from "@/components/features/campaigns/campaign-editor"
 import { PageHeader } from "@/components/shared/page-header"
 import { getCampaign } from "@/services/campaigns"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
+import { listInstanceOptions } from "@/services/evolution"
 import { listLeads } from "@/services/leads"
 import { listNomesProdutosAtivos } from "@/services/produtos"
 
 export default async function EditarCampanhaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [campanha, leads, produtos, marcas, personas, regioes] = await Promise.all([
+  const [campanha, leads, produtos, marcas, personas, regioes, instancias] = await Promise.all([
     getCampaign(id),
     listLeads(),
     listNomesProdutosAtivos(),
     servicoMarcas.listarNomesAtivos(),
     servicoPersonas.listarNomesAtivos(),
     servicoRegioes.listarNomesAtivos(),
+    listInstanceOptions(),
   ])
   if (!campanha) notFound()
 
@@ -28,6 +30,7 @@ export default async function EditarCampanhaPage({ params }: { params: Promise<{
         marcas={marcas}
         personas={personas}
         regioes={regioes}
+        instancias={instancias}
         leads={leads.map((l) => ({
           id: l.id,
           nome: l.nome,

@@ -46,6 +46,7 @@ export async function POST(request: Request) {
       status: body.status,
       recorrenciaDias: body.recorrenciaDias ?? 0,
       dataFinal: body.dataFinal ?? null,
+      instanciaNome: body.instanciaNome ?? null,
       filtros: body.filtros ?? { produto: null, marca: null, persona: null, regiao: null },
       leadIds: body.leadIds,
       mensagens: body.mensagens,

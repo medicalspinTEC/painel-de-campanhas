@@ -57,6 +57,19 @@ function novaMensagem(dia: number): MensagemRascunho {
   return { key: Math.random().toString(36).slice(2), dia, horario: "09:00", texto: "" }
 }
 
+export interface InstanciaOpcao {
+  nome: string
+  estado: "conectado" | "conectando" | "desconectado"
+}
+
+const INSTANCIA_PADRAO = "__padrao__"
+
+const ESTADO_INSTANCIA_LABEL: Record<InstanciaOpcao["estado"], string> = {
+  conectado: "conectada",
+  conectando: "conectando",
+  desconectado: "desconectada",
+}
+
 export function CampaignEditor({
   campanha,
   leads,
@@ -64,6 +77,7 @@ export function CampaignEditor({
   marcas = [],
   personas = [],
   regioes = [],
+  instancias = [],
 }: {
   campanha?: Campaign
   leads: LeadResumo[]
@@ -72,6 +86,8 @@ export function CampaignEditor({
   marcas?: string[]
   personas?: string[]
   regioes?: string[]
+  /** Instâncias de WhatsApp disponíveis para envio (página Instâncias). */
+  instancias?: InstanciaOpcao[]
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -82,6 +98,7 @@ export function CampaignEditor({
   const [status, setStatus] = useState<string>(campanha?.status ?? "rascunho")
   const [recorrencia, setRecorrencia] = useState(String(campanha?.recorrenciaDias ?? 30))
   const [dataFinal, setDataFinal] = useState(campanha?.dataFinal ? campanha.dataFinal.slice(0, 10) : "")
+  const [instancia, setInstancia] = useState<string>(campanha?.instanciaNome ?? INSTANCIA_PADRAO)
   const [produto, setProduto] = useState(campanha?.filtros.produto ?? QUALQUER)
   const [marca, setMarca] = useState(campanha?.filtros.marca ?? QUALQUER)
   const [persona, setPersona] = useState(campanha?.filtros.persona ?? QUALQUER)
@@ -145,6 +162,23 @@ export function CampaignEditor({
     [regioes, leads, campanha],
   )
 
+  // Opções do seletor de instância: a opção "padrão" (usa EVOLUTION_INSTANCE_NAME)
+  // mais cada instância registrada. Se a campanha aponta para uma instância que
+  // não está mais na lista (ex.: removida), mantemos a opção para não perder o valor.
+  const opcoesInstancia = useMemo(() => {
+    const base = [
+      { value: INSTANCIA_PADRAO, label: "Padrão do ambiente" },
+      ...instancias.map((i) => ({
+        value: i.nome,
+        label: `${i.nome} · ${ESTADO_INSTANCIA_LABEL[i.estado]}`,
+      })),
+    ]
+    if (campanha?.instanciaNome && !instancias.some((i) => i.nome === campanha.instanciaNome)) {
+      base.push({ value: campanha.instanciaNome, label: `${campanha.instanciaNome} · indisponível` })
+    }
+    return base
+  }, [instancias, campanha?.instanciaNome])
+
   function atualizarMensagem(index: number, patch: Partial<MensagemRascunho>) {
     setMensagens((atual) => atual.map((m, i) => (i === index ? { ...m, ...patch } : m)))
   }
@@ -182,6 +216,7 @@ export function CampaignEditor({
       // salvamento: usar horário local converteria 23:59 para o dia seguinte em
       // UTC (fusos negativos), e ao reler o `slice(0, 10)` mostraria +1 dia.
       dataFinal: dataFinal ? `${dataFinal}T23:59:59.999Z` : null,
+      instanciaNome: instancia === INSTANCIA_PADRAO ? null : instancia,
       filtros: {
         produto: produto === QUALQUER ? null : (produto as Campaign["filtros"]["produto"]),
         marca: marca === QUALQUER ? null : (marca as Campaign["filtros"]["marca"]),
@@ -273,6 +308,22 @@ export function CampaignEditor({
                 <FieldDescription>Opcional. Encerra os envios.</FieldDescription>
               </Field>
             </div>
+
+            <Field>
+              <FieldLabel htmlFor="instancia">Instância de envio</FieldLabel>
+              <SelectField
+                id="instancia"
+                value={instancia}
+                onValueChange={setInstancia}
+                opcoes={opcoesInstancia}
+                className="w-full"
+              />
+              <FieldDescription>
+                {instancias.length === 0
+                  ? "Nenhuma instância criada. Crie uma na página Instâncias ou use a padrão do ambiente."
+                  : "WhatsApp que dispara as mensagens desta campanha."}
+              </FieldDescription>
+            </Field>
           </CardContent>
         </Card>
 

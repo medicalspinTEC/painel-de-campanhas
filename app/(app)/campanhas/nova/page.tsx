@@ -1,6 +1,7 @@
 import { CampaignEditor } from "@/components/features/campaigns/campaign-editor"
 import { PageHeader } from "@/components/shared/page-header"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
+import { listInstanceOptions } from "@/services/evolution"
 import { listLeads } from "@/services/leads"
 import { listNomesProdutosAtivos } from "@/services/produtos"
 
@@ -9,12 +10,13 @@ export const metadata = {
 }
 
 export default async function NovaCampanhaPage() {
-  const [leads, produtos, marcas, personas, regioes] = await Promise.all([
+  const [leads, produtos, marcas, personas, regioes, instancias] = await Promise.all([
     listLeads(),
     listNomesProdutosAtivos(),
     servicoMarcas.listarNomesAtivos(),
     servicoPersonas.listarNomesAtivos(),
     servicoRegioes.listarNomesAtivos(),
+    listInstanceOptions(),
   ])
 
   return (
@@ -28,6 +30,7 @@ export default async function NovaCampanhaPage() {
         marcas={marcas}
         personas={personas}
         regioes={regioes}
+        instancias={instancias}
         leads={leads.map((l) => ({
           id: l.id,
           nome: l.nome,

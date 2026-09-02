@@ -189,36 +189,6 @@ export function AppSidebar({ instanceName, instanceState, profileImageUrl }: App
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="flex flex-col gap-2 rounded-lg border border-sidebar-border bg-sidebar-accent/50 p-3 group-data-[collapsible=icon]:hidden">
-          <div className="flex items-start gap-2.5">
-            <Avatar size="sm" className="shrink-0">
-              {profileImageUrl ? (
-                <AvatarImage src={profileImageUrl} alt={displayName} />
-              ) : (
-                <AvatarFallback className="text-[10px] font-semibold">{initials}</AvatarFallback>
-              )}
-            </Avatar>
-
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between gap-2">
-                <span className="truncate text-xs font-medium">{displayName}</span>
-                <Badge variant="outline" className={statusMeta.className}>
-                  {statusMeta.label}
-                </Badge>
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                Instância Evolution • status {instanceState ?? "indefinido"}
-              </p>
-            </div>
-          </div>
-
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            {instanceState?.toLowerCase() === "open"
-              ? "A instância está conectada e pronta para disparos."
-              : `Aguardando conexão da instância ${process.env.EVOLUTION_INSTANCE_NAME}.`}
-          </p>
-        </div>
-
         <SidebarMenu>
           <SidebarMenuItem>
             <form action={logoutAction} className="w-full">

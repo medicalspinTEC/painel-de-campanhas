@@ -489,7 +489,11 @@ export async function updateLead(id: string, input: LeadInput): Promise<Lead | n
 async function dispararMensagemInicialDaCampanha(leadId: string, campanhaId: string) {
   const campanha = await prisma.campaign.findUnique({
     where: { id: campanhaId },
-    select: { status: true, mensagens: { orderBy: { dia: "asc" }, select: { id: true, dia: true, texto: true } } },
+    select: {
+      status: true,
+      instanciaNome: true,
+      mensagens: { orderBy: { dia: "asc" }, select: { id: true, dia: true, texto: true } },
+    },
   })
 
   if (!campanha) return
@@ -514,6 +518,7 @@ async function dispararMensagemInicialDaCampanha(leadId: string, campanhaId: str
       mensagemId: mensagemInicial.id,
       texto: mensagemInicial.texto,
       telefone: lead.telefone,
+      instanciaNome: campanha.instanciaNome,
     })
   } catch (error) {
     await recordAppLog({

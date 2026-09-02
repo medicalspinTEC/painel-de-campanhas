@@ -50,6 +50,8 @@ export interface Campaign {
   status: CampaignStatus
   recorrenciaDias: number
   dataFinal: string | null
+  /** Instância da Evolution que envia as mensagens. Nulo = padrão do ambiente. */
+  instanciaNome: string | null
   criadoEm: string
   filtros: {
     produto?: Produto | null
