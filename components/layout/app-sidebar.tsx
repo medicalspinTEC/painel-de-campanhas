@@ -10,6 +10,7 @@ import {
   Plug,
   Megaphone,
   Settings,
+  Smartphone,
   Target,
   TriangleAlert,
   Users,
@@ -48,6 +49,7 @@ const navOperacao = [
 ]
 
 const navSistema = [
+  { title: "Instâncias", url: "/instancias", icon: Smartphone },
   { title: "Integrações", url: "/integracoes", icon: Plug },
   { title: "Configurações", url: "/configuracoes", icon: Settings },
 ]

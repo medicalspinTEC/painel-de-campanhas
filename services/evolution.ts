@@ -8,6 +8,166 @@ export interface EvolutionSendResult {
   erro?: string
 }
 
+export type EvolutionInstanceState = "conectado" | "conectando" | "desconectado"
+
+export interface EvolutionInstance {
+  id: string
+  nome: string
+  numero?: string
+  descricao?: string
+  estado: EvolutionInstanceState
+  mensagensHoje: number
+}
+
+/** Lê a URL base e a apikey global da Evolution a partir do ambiente. */
+function getEvolutionCredentials() {
+  const apiUrl = (
+    process.env.EVOLUTION_API_URL ?? "https://evo-j0o08ok8sgwc4cog04w0owok.95.217.164.173.sslip.io"
+  ).replace(/\/$/, "")
+  const apiKey = process.env.EVOLUTION_API_KEY?.trim()
+  return { apiUrl, apiKey }
+}
+
+/** Traduz o status de conexão da Evolution para o vocabulário do painel. */
+function mapConnectionStatus(status?: string): EvolutionInstanceState {
+  switch (status) {
+    case "open":
+      return "conectado"
+    case "connecting":
+      return "conectando"
+    default:
+      return "desconectado"
+  }
+}
+
+/**
+ * Lista as instâncias existentes na Evolution API (GET /instance/fetchInstances).
+ * Devolve lista vazia quando as credenciais não estão configuradas ou a chamada
+ * falha, para que a página continue renderizando sem quebrar.
+ */
+export async function fetchEvolutionInstances(): Promise<EvolutionInstance[]> {
+  const { apiUrl, apiKey } = getEvolutionCredentials()
+  if (!apiKey) return []
+
+  try {
+    const response = await fetch(`${apiUrl}/instance/fetchInstances`, {
+      headers: { apikey: apiKey },
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      throw new Error(`fetchInstances respondeu com status ${response.status}`)
+    }
+
+    const payload = (await response.json()) as unknown
+    const lista = Array.isArray(payload) ? payload : []
+
+    return lista.map((entrada) => {
+      // Dependendo da versão, o objeto vem "achatado" ou dentro de `instance`.
+      const item = (entrada as { instance?: Record<string, unknown> }).instance ?? (entrada as Record<string, unknown>)
+      const numeroBruto = (item.ownerJid ?? item.number) as string | undefined
+      const profileName = item.profileName as string | undefined
+      const contagem = (item._count as { Message?: number } | undefined)?.Message
+
+      return {
+        id: String(item.id ?? item.name ?? item.instanceName ?? Math.random().toString(36).slice(2)),
+        nome: String(item.name ?? item.instanceName ?? "instância"),
+        numero: numeroBruto ? String(numeroBruto).split("@")[0] : undefined,
+        descricao: profileName ? `Perfil: ${profileName}` : undefined,
+        estado: mapConnectionStatus((item.connectionStatus ?? item.state) as string | undefined),
+        mensagensHoje: Number(contagem ?? 0),
+      }
+    })
+  } catch (error) {
+    await recordAppLog({
+      nivel: "erro",
+      origem: "evolution",
+      mensagem: "Falha ao listar instâncias na Evolution API.",
+      detalhes: error,
+    })
+    return []
+  }
+}
+
+/**
+ * Cria uma nova instância na Evolution API (POST /instance/create) usando a
+ * integração padrão WHATSAPP-BAILEYS. A conexão (QR Code) é feita em um passo
+ * posterior; aqui apenas registramos a instância no servidor.
+ */
+export async function createEvolutionInstance(input: {
+  nome: string
+  numero?: string
+}): Promise<{ ok: boolean; erro?: string; instancia?: EvolutionInstance }> {
+  const { apiUrl, apiKey } = getEvolutionCredentials()
+  if (!apiKey) {
+    return { ok: false, erro: "EVOLUTION_API_KEY não configurada no ambiente." }
+  }
+
+  const nome = input.nome.trim()
+  if (!nome) return { ok: false, erro: "Informe um nome para a instância." }
+
+  const numero = input.numero?.replace(/\D/g, "") || undefined
+
+  try {
+    const response = await fetch(`${apiUrl}/instance/create`, {
+      method: "POST",
+      headers: { "content-type": "application/json", apikey: apiKey },
+      body: JSON.stringify({
+        instanceName: nome,
+        qrcode: true,
+        integration: "WHATSAPP-BAILEYS",
+        ...(numero ? { number: numero } : {}),
+      }),
+    })
+
+    const payload = (await response.json().catch(() => null)) as
+      | { instance?: Record<string, unknown>; message?: unknown; response?: { message?: unknown } }
+      | null
+
+    if (!response.ok) {
+      const detalhe = payload?.response?.message ?? payload?.message ?? `Evolution respondeu com status ${response.status}`
+      const mensagem = Array.isArray(detalhe) ? detalhe.join(", ") : String(detalhe)
+
+      await recordAppLog({
+        nivel: "erro",
+        origem: "evolution",
+        mensagem: `Falha ao criar instância "${nome}" na Evolution API.`,
+        detalhes: mensagem,
+      })
+
+      return { ok: false, erro: mensagem }
+    }
+
+    const inst = payload?.instance ?? {}
+
+    await recordAppLog({
+      nivel: "info",
+      origem: "evolution",
+      mensagem: `Instância "${nome}" criada na Evolution API.`,
+    })
+
+    return {
+      ok: true,
+      instancia: {
+        id: String(inst.instanceId ?? inst.instanceName ?? nome),
+        nome: String(inst.instanceName ?? nome),
+        numero,
+        estado: mapConnectionStatus((inst.status as string | undefined) ?? "connecting"),
+        mensagensHoje: 0,
+      },
+    }
+  } catch (error) {
+    const mensagem = error instanceof Error ? error.message : String(error)
+    await recordAppLog({
+      nivel: "erro",
+      origem: "evolution",
+      mensagem: "Exceção ao criar instância na Evolution API.",
+      detalhes: error,
+    })
+    return { ok: false, erro: mensagem }
+  }
+}
+
 function normalizePhoneForEvolution(value: string): string {
   const telefone = value.trim()
   if (!telefone) return ""
