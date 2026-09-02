@@ -57,6 +57,57 @@ function calcularAncora(marcos: Array<Date | null | undefined>, fallback: Date):
   return validos.length ? new Date(Math.max(...validos.map((d) => d.getTime()))) : fallback
 }
 
+/** Converte o período de espera entre lotes (valor + unidade) em milissegundos. */
+function calcularPeriodoEsperaMs(valor: number, unidade: string): number {
+  const base = unidade === "minutos" ? 60_000 : 3_600_000
+  return Math.max(0, valor) * base
+}
+
+/**
+ * Orçamento de envios permitido NESTE tick, aplicando o "Ritmo de envio"
+ * configurado globalmente:
+ *
+ *   - `limiteDiario`: teto de mensagens enviadas por dia. Ao ser atingido,
+ *     nada mais é disparado até a virada do dia.
+ *   - `maxEnviosPorPeriodo`: tamanho máximo de cada lote.
+ *   - período de espera: intervalo mínimo entre um lote e o próximo.
+ *
+ * O lote atual é inferido a partir dos horários reais de envio (timeline):
+ * envios consecutivos separados por menos que o período pertencem ao mesmo
+ * lote. Quando o lote enche, o cálculo naturalmente zera o orçamento até que o
+ * período de espera decorra desde o último envio — momento em que um novo lote
+ * pode começar. Como a base é durável (eventos no banco), o ritmo é respeitado
+ * mesmo entre reinícios do processo.
+ */
+function calcularOrcamentoRitmo(
+  enviosRecentesDesc: Array<{ data: Date }>,
+  agora: Date,
+  limiteDiario: number,
+  maxEnviosPorPeriodo: number,
+  periodoEsperaMs: number,
+): number {
+  const enviadosHoje = enviosRecentesDesc.length
+  const restanteDia = Math.max(0, limiteDiario - enviadosHoje)
+  if (restanteDia <= 0) return 0
+
+  // Conta quantos envios pertencem ao lote atual: caminha do mais recente para
+  // trás enquanto a distância entre envios consecutivos for menor que o período.
+  // Se o último envio já ficou além do período, o loop para em 0 => novo lote.
+  let loteAtual = 0
+  let anterior = agora.getTime()
+  for (const envio of enviosRecentesDesc) {
+    if (anterior - envio.data.getTime() < periodoEsperaMs) {
+      loteAtual += 1
+      anterior = envio.data.getTime()
+    } else {
+      break
+    }
+  }
+
+  const restanteLote = Math.max(0, maxEnviosPorPeriodo - loteAtual)
+  return Math.min(restanteDia, restanteLote)
+}
+
 async function enviarMensagem(
   vinculo: { leadId: string; lead: { telefone: string } },
   campanhaId: string,
@@ -101,8 +152,37 @@ export async function processDueMessages(agora: Date = new Date()): Promise<Engi
 
     // Configuração global: quando ativa, nenhum disparo cai no fim de semana e
     // os disparos respeitam a janela de horário permitida.
-    const { pausarNoFimDeSemana, respeitarJanela, janelaInicio, janelaFim } = await getSettings()
+    const {
+      pausarNoFimDeSemana,
+      respeitarJanela,
+      janelaInicio,
+      janelaFim,
+      limiteDiario,
+      maxEnviosPorPeriodo,
+      periodoEsperaValor,
+      periodoEsperaUnidade,
+    } = await getSettings()
     const janela = { ativa: respeitarJanela, inicio: janelaInicio, fim: janelaFim }
+
+    // Ritmo de envio: teto diário, tamanho do lote e intervalo entre lotes.
+    // O orçamento é GLOBAL (soma de todas as campanhas) e é decrementado a cada
+    // envio bem-sucedido dentro deste tick. Contamos os envios já feitos hoje a
+    // partir da timeline (base durável, sobrevive a reinícios do processo).
+    const periodoEsperaMs = calcularPeriodoEsperaMs(periodoEsperaValor, periodoEsperaUnidade)
+    const inicioDoDia = new Date(agora)
+    inicioDoDia.setHours(0, 0, 0, 0)
+    const enviosDeHoje = await prisma.timelineEvent.findMany({
+      where: { tipo: "mensagem_enviada", data: { gte: inicioDoDia } },
+      select: { data: true },
+      orderBy: { data: "desc" },
+    })
+    let orcamento = calcularOrcamentoRitmo(
+      enviosDeHoje,
+      agora,
+      limiteDiario,
+      maxEnviosPorPeriodo,
+      periodoEsperaMs,
+    )
 
     const campanhas = await prisma.campaign.findMany({
       where: { status: "ativa" },
@@ -275,9 +355,16 @@ export async function processDueMessages(agora: Date = new Date()): Promise<Engi
         }
 
         if (decisao.tipo === "enviar") {
+          // Ritmo de envio esgotado neste tick (teto diário atingido ou lote
+          // cheio aguardando o intervalo entre lotes). Não dispara agora: a
+          // mensagem continua pendente e será tentada no próximo tick, quando o
+          // orçamento for recalculado.
+          if (orcamento <= 0) continue
+
           const ok = await enviarMensagem(vinculo, campanha.id, decisao.mensagem, false, campanha.instanciaNome)
           if (ok) {
             enviados += 1
+            orcamento -= 1
             await prisma.leadCampaign.update({
               where: { id: vinculo.id },
               data: { proximaMensagemEm: decisao.proximaEm },
