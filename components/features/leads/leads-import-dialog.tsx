@@ -26,7 +26,6 @@ const MAPA_COLUNAS: Record<keyof LeadImportRow, string[]> = {
   marca: ["marca"],
   persona: ["persona"],
   regiao: ["regiao", "região", "regiao/uf", "uf"],
-  status: ["status", "situacao", "situação"],
   notas: ["notas", "observacoes", "observações", "obs"],
   campanha: ["campanha", "campaign"],
 }
@@ -54,7 +53,7 @@ function mapearLinha(linha: Record<string, unknown>): LeadImportRow {
   return resultado
 }
 
-const COLUNAS_MODELO = ["nome", "telefone", "produto", "marca", "persona", "regiao", "status", "notas", "campanha"]
+const COLUNAS_MODELO = ["nome", "telefone", "produto", "marca", "persona", "regiao", "notas", "campanha"]
 
 export function LeadsImportDialog({
   open,
@@ -154,7 +153,7 @@ export function LeadsImportDialog({
             <p className="text-muted-foreground">
               <strong className="text-foreground">nome</strong> e{" "}
               <strong className="text-foreground">telefone</strong> são obrigatórios. Opcionais: produto, marca,
-              persona, regiao, status, notas e campanha. Nos campos de segmentação você pode informar o nome ou o
+              persona, regiao, notas e campanha. Nos campos de segmentação você pode informar o nome ou o
               ID de importação cadastrado na aba Segmentação. Na coluna campanha use o{" "}
               <strong className="text-foreground">ID de importação</strong> da campanha (o número mostrado na
               página Campanhas) ou o nome exato dela. O telefone deve incluir o país 55 (ex.: 5511988887777).
@@ -220,7 +219,6 @@ export function LeadsImportDialog({
                       <TableHead className="hidden sm:table-cell">Marca</TableHead>
                       <TableHead className="hidden md:table-cell">Persona</TableHead>
                       <TableHead className="hidden md:table-cell">Região</TableHead>
-                      <TableHead className="hidden md:table-cell">Status</TableHead>
                       <TableHead className="hidden lg:table-cell">Notas</TableHead>
                       <TableHead className="hidden lg:table-cell">Campanha</TableHead>
                     </TableRow>
@@ -234,7 +232,6 @@ export function LeadsImportDialog({
                         <TableCell className="hidden sm:table-cell">{linha.marca || "—"}</TableCell>
                         <TableCell className="hidden md:table-cell">{linha.persona || "—"}</TableCell>
                         <TableCell className="hidden md:table-cell">{linha.regiao || "—"}</TableCell>
-                        <TableCell className="hidden md:table-cell">{linha.status || "—"}</TableCell>
                         <TableCell className="hidden lg:table-cell">{linha.notas || "—"}</TableCell>
                         <TableCell className="hidden lg:table-cell">{linha.campanha || "—"}</TableCell>
                       </TableRow>
