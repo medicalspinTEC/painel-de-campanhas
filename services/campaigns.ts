@@ -131,6 +131,52 @@ function withStats(
 }
 
 /**
+ * Ao encerrar uma campanha, os leads que continuam vinculados a ela não
+ * responderam — quem responde é removido de todas as campanhas e marcado como
+ * `respondeu` (ver `services/lead-response.ts`). Portanto, para cada campanha
+ * encerrada, esses leads remanescentes recebem o status `encerrado` e são
+ * desvinculados da campanha.
+ *
+ * Um lead pode estar em MAIS DE UMA campanha ao mesmo tempo. Só marcamos como
+ * `encerrado` quem ficou sem NENHUM outro vínculo depois de sair desta; quem
+ * ainda participa de outra campanha ativa apenas perde o vínculo com esta.
+ * Quem já respondeu nunca é rebaixado.
+ */
+async function encerrarLeadsDaCampanha(campanhaId: string) {
+  const vinculos = await prisma.leadCampaign.findMany({
+    where: { campanhaId },
+    select: { leadId: true },
+  })
+  if (vinculos.length === 0) return
+  const leadIds = vinculos.map((v) => v.leadId)
+
+  // 1. Desvincula os leads desta campanha encerrada.
+  await prisma.leadCampaign.deleteMany({ where: { campanhaId } })
+
+  // 2. Descobre quem ainda participa de outra campanha; só encerra quem ficou
+  //    sem qualquer vínculo.
+  const aindaVinculados = await prisma.leadCampaign.findMany({
+    where: { leadId: { in: leadIds } },
+    select: { leadId: true },
+  })
+  const comOutraCampanha = new Set(aindaVinculados.map((v) => v.leadId))
+  const paraEncerrar = leadIds.filter((id) => !comOutraCampanha.has(id))
+
+  if (paraEncerrar.length > 0) {
+    await prisma.lead.updateMany({
+      where: { id: { in: paraEncerrar }, status: { not: "respondeu" } },
+      data: { status: "encerrado" },
+    })
+  }
+
+  // 3. Limpa o vínculo legado Lead.campanhaId quando aponta para esta campanha.
+  await prisma.lead.updateMany({
+    where: { id: { in: leadIds }, campanhaId },
+    data: { campanhaId: null, entradaCampanhaEm: null },
+  })
+}
+
+/**
  * Encerra automaticamente campanhas cuja data limite já passou. Como não há
  * cron, esta varredura é chamada de forma preguiçosa nas leituras: assim uma
  * campanha ativa/pausada com `dataFinal` vencida já aparece — e passa a operar —
@@ -150,6 +196,8 @@ export async function encerrarCampanhasExpiradas(): Promise<string[]> {
   })
 
   for (const c of expiradas) {
+    // Leads remanescentes (não responderam) saem da campanha como "encerrado".
+    await encerrarLeadsDaCampanha(c.id)
     await emitirStatusCampanha({ ...toCampaign(c), status: "encerrada" }, c.status)
   }
   return expiradas.map((c) => c.id)
@@ -400,6 +448,13 @@ export async function updateCampaign(id: string, input: CampaignInput): Promise<
     await dispararMensagemInicialParaLeads(atualizada.id, leadIdsFinais)
   }
 
+  // Encerramento manual pela edição: rodado APÓS a sincronização de leads para
+  // que os remanescentes (que não responderam) saiam da campanha já como
+  // "encerrado", sem serem reinseridos pelos filtros.
+  if (input.status === "encerrada" && existe.status !== "encerrada") {
+    await encerrarLeadsDaCampanha(atualizada.id)
+  }
+
   return atualizada
 }
 
@@ -424,6 +479,12 @@ export async function setCampaignStatus(id: string, status: CampaignStatus): Pro
     })
     const leadIds = leadsVinculados.map((item) => item.leadId)
     await dispararMensagemInicialParaLeads(id, leadIds)
+  }
+
+  // Encerramento manual: os leads remanescentes (que não responderam) são
+  // marcados como "encerrado" e removidos da campanha.
+  if (status === "encerrada" && existe.status !== "encerrada") {
+    await encerrarLeadsDaCampanha(id)
   }
 
   return atualizada

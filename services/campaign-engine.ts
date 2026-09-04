@@ -48,9 +48,39 @@ export interface EngineResult {
   ignorado?: boolean
 }
 
-// Evita que duas execuções (timer + chamada manual) rodem ao mesmo tempo no
-// mesmo processo e disparem a mesma mensagem duas vezes.
-let emAndamento = false
+/**
+ * Trava de concorrência da engine.
+ *
+ * A engine tem VÁRIOS pontos de entrada (timer interno em `instrumentation.ts`,
+ * `POST /api/cron`, ativação de campanha e vínculo/importação de leads). Quase
+ * todos usam `import("@/services/campaign-engine")` dinâmico e, no bundle do
+ * Next, cada contexto pode receber uma CÓPIA diferente deste módulo — cada uma
+ * com seu próprio `let`. Uma trava de módulo, portanto, NÃO impede duas
+ * execuções simultâneas: era exatamente isso que fazia a mesma mensagem sair
+ * duas vezes (dois runs passavam pela dedupe antes de o evento `mensagem_enviada`
+ * ser gravado, ao importar muitos leads).
+ *
+ * A trava vive em `globalThis`, que é único por PROCESSO e compartilhado por
+ * todas as cópias do módulo. Assim só existe uma varredura por vez. Quando uma
+ * nova chamada chega durante uma varredura em andamento, ela NÃO inicia outra em
+ * paralelo: apenas marca `rerunSolicitado`. Ao terminar, a varredura atual roda
+ * exatamente mais uma vez para capturar o que mudou nesse meio-tempo (ex.: leads
+ * recém-importados) — sem concorrência e sem perder disparos.
+ *
+ * Obs.: para escalar em MÚLTIPLAS instâncias, siga a orientação do
+ * `instrumentation.ts` (desative o timer e acione `POST /api/cron` por um
+ * agendador único), pois esta trava é por processo.
+ */
+interface EngineLock {
+  emAndamento: boolean
+  rerunSolicitado: boolean
+}
+
+const globalRef = globalThis as typeof globalThis & { __campaignEngineLock?: EngineLock }
+const engineLock: EngineLock = (globalRef.__campaignEngineLock ??= {
+  emAndamento: false,
+  rerunSolicitado: false,
+})
 
 function calcularAncora(marcos: Array<Date | null | undefined>, fallback: Date): Date {
   const validos = marcos.filter(Boolean) as Date[]
@@ -143,12 +173,37 @@ async function enviarMensagem(
 }
 
 export async function processDueMessages(agora: Date = new Date()): Promise<EngineResult> {
-  if (emAndamento) return { processados: 0, enviados: 0, reiniciados: 0, encerrados: 0, ignorado: true }
-  emAndamento = true
+  // Já existe uma varredura em andamento neste processo: não inicia outra em
+  // paralelo (isso duplicaria os envios). Apenas registra que uma nova varredura
+  // é necessária; a execução atual fará um único rerun ao terminar.
+  if (engineLock.emAndamento) {
+    engineLock.rerunSolicitado = true
+    return { processados: 0, enviados: 0, reiniciados: 0, encerrados: 0, ignorado: true }
+  }
 
+  engineLock.emAndamento = true
   try {
-    // Encerra campanhas com data limite vencida ANTES de disparar qualquer coisa.
-    const encerradas = await encerrarCampanhasExpiradas()
+    // Primeira varredura usa o `agora` recebido (permite testes determinísticos).
+    let resultado = await executarVarredura(agora)
+
+    // Consome os pedidos de rerun acumulados durante a varredura anterior. O
+    // flag é zerado ANTES de rodar, então apenas chamadas NOVAS (feitas durante
+    // este rerun) o marcam de novo — o laço se auto-limita ao ritmo real de
+    // mudanças e sempre roda com o horário atual.
+    while (engineLock.rerunSolicitado) {
+      engineLock.rerunSolicitado = false
+      resultado = await executarVarredura(new Date())
+    }
+
+    return resultado
+  } finally {
+    engineLock.emAndamento = false
+  }
+}
+
+async function executarVarredura(agora: Date): Promise<EngineResult> {
+  // Encerra campanhas com data limite vencida ANTES de disparar qualquer coisa.
+  const encerradas = await encerrarCampanhasExpiradas()
 
     // Configuração global: quando ativa, nenhum disparo cai no fim de semana e
     // os disparos respeitam a janela de horário permitida.
@@ -381,8 +436,5 @@ export async function processDueMessages(agora: Date = new Date()): Promise<Engi
       }
     }
 
-    return { processados, enviados, reiniciados, encerrados: encerradas.length }
-  } finally {
-    emAndamento = false
-  }
+  return { processados, enviados, reiniciados, encerrados: encerradas.length }
 }
