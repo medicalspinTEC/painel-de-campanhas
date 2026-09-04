@@ -228,6 +228,26 @@ async function emitirStatusCampanha(campanha: Campaign, anterior: CampaignStatus
   if (evento) await emitWebhookEvent(evento, { campanha, statusAnterior: anterior })
 }
 
+/**
+ * Aciona a engine de disparo para enviar imediatamente as mensagens devidas
+ * (inclusive as de `dia 0`) respeitando o RITMO DE ENVIO configurado: limite
+ * diário, tamanho do lote e intervalo entre lotes. Usa import dinâmico para
+ * evitar o ciclo de dependência com `campaign-engine`, que importa deste módulo.
+ */
+async function acionarEngineDeDisparo() {
+  try {
+    const { processDueMessages } = await import("@/services/campaign-engine")
+    await processDueMessages()
+  } catch (error) {
+    await recordAppLog({
+      nivel: "erro",
+      origem: "campaigns",
+      mensagem: "Falha ao acionar a engine para disparar as mensagens iniciais das campanhas.",
+      detalhes: error,
+    })
+  }
+}
+
 async function dispararMensagemInicialParaLeads(campanhaId: string, leadIds: string[] | undefined) {
   if (!leadIds?.length) return
 
@@ -235,8 +255,7 @@ async function dispararMensagemInicialParaLeads(campanhaId: string, leadIds: str
     where: { id: campanhaId },
     select: {
       dataFinal: true,
-      instanciaNome: true,
-      mensagens: { orderBy: { dia: "asc" }, select: { id: true, dia: true, texto: true } },
+      mensagens: { where: { dia: 0 }, select: { id: true } },
     },
   })
 
@@ -244,33 +263,13 @@ async function dispararMensagemInicialParaLeads(campanhaId: string, leadIds: str
   // Data limite atingida: não dispara nada e deixa a varredura encerrar a campanha.
   if (campanha.dataFinal && campanha.dataFinal.getTime() < Date.now()) return
 
-  const mensagemInicial = campanha.mensagens.find((mensagem) => mensagem.dia === 0)
-  if (!mensagemInicial) return
-
-  const leads = await prisma.lead.findMany({
-    where: { id: { in: leadIds } },
-    select: { id: true, telefone: true },
-  })
-
-  for (const lead of leads) {
-    try {
-      await sendCampaignMessageToLead({
-        leadId: lead.id,
-        campanhaId,
-        mensagemId: mensagemInicial.id,
-        texto: mensagemInicial.texto,
-        telefone: lead.telefone,
-        instanciaNome: campanha.instanciaNome,
-      })
-    } catch (error) {
-      await recordAppLog({
-        nivel: "erro",
-        origem: "evolution",
-        mensagem: `Exceção inesperada ao disparar mensagem inicial para lead ${lead.id} na campanha ${campanhaId}.`,
-        detalhes: error,
-      })
-    }
-  }
+  // A mensagem de `dia 0` é "imediata", mas precisa respeitar o mesmo ritmo de
+  // envio das demais mensagens. Antes ela era disparada direto aqui, em loop,
+  // furando o orçamento global (limite diário / lote / intervalo). Como os leads
+  // já foram vinculados à campanha (sincronizados antes desta chamada), basta
+  // acionar a engine: ela envia a mensagem devida dentro do orçamento e adia o
+  // excedente para os próximos ticks — exatamente como as mensagens agendadas.
+  await acionarEngineDeDisparo()
 }
 
 /**

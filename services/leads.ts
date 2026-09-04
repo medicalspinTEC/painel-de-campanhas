@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { validarTelefoneBR, apenasDigitos } from "@/lib/telefone"
 import { recordAppLog } from "@/services/app-logs"
-import { sendCampaignMessageToLead } from "@/services/evolution"
 import { emitWebhookEvent } from "@/services/webhooks"
 import { garantirProduto } from "@/services/produtos"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
@@ -491,8 +490,7 @@ async function dispararMensagemInicialDaCampanha(leadId: string, campanhaId: str
     where: { id: campanhaId },
     select: {
       status: true,
-      instanciaNome: true,
-      mensagens: { orderBy: { dia: "asc" }, select: { id: true, dia: true, texto: true } },
+      mensagens: { where: { dia: 0 }, select: { id: true } },
     },
   })
 
@@ -503,28 +501,23 @@ async function dispararMensagemInicialDaCampanha(leadId: string, campanhaId: str
   // encerradas — o disparo fica retido até a campanha ser ativada.
   if (campanha.status !== "ativa") return
 
+  // Sem mensagem de `dia 0` não há nada imediato para disparar.
   if (!campanha.mensagens?.length) return
 
-  const mensagemInicial = campanha.mensagens.find((mensagem) => mensagem.dia === 0)
-  if (!mensagemInicial) return
-
-  const lead = await prisma.lead.findUnique({ where: { id: leadId }, select: { telefone: true } })
-  if (!lead) return
-
+  // A mensagem de `dia 0` é imediata, mas precisa respeitar o mesmo ritmo de
+  // envio (limite diário / lote / intervalo) das mensagens agendadas. Em vez de
+  // enviá-la direto aqui — o que furava o orçamento global — acionamos a engine.
+  // O lead já está vinculado à campanha neste ponto, então a engine seleciona a
+  // mensagem devida e a envia dentro do orçamento, adiando o excedente para os
+  // próximos ticks.
   try {
-    await sendCampaignMessageToLead({
-      leadId,
-      campanhaId,
-      mensagemId: mensagemInicial.id,
-      texto: mensagemInicial.texto,
-      telefone: lead.telefone,
-      instanciaNome: campanha.instanciaNome,
-    })
+    const { processDueMessages } = await import("@/services/campaign-engine")
+    await processDueMessages()
   } catch (error) {
     await recordAppLog({
       nivel: "erro",
-      origem: "evolution",
-      mensagem: `Exceção inesperada ao disparar mensagem inicial para lead ${leadId} na campanha ${campanhaId}.`,
+      origem: "campaigns",
+      mensagem: `Exceção inesperada ao acionar a engine para a mensagem inicial do lead ${leadId} na campanha ${campanhaId}.`,
       detalhes: error,
     })
   }
