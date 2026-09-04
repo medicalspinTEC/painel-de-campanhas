@@ -118,7 +118,7 @@ export function LeadsImportDialog({
   function baixarModelo() {
     const worksheet = XLSX.utils.aoa_to_sheet([
       COLUNAS_MODELO,
-      ["Ana Paula Souza", "5511988887777", "Plano Premium", "Acme", "Decisor", "Sudeste", "novo", "Lead vindo de feira", "1"],
+      ["Lead de Teste", "5511988887777", "ID", "ID", "ID", "ID", "ID", "ID"],
     ])
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, "Leads")
