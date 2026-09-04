@@ -48,6 +48,11 @@ export interface Campaign {
   nome: string
   descricao?: string
   status: CampaignStatus
+  /**
+   * Identificador sequencial e imutável usado na importação por planilha.
+   * Gerado automaticamente a partir de 1; o usuário não pode alterar.
+   */
+  idImportacao: number
   recorrenciaDias: number
   dataFinal: string | null
   /** Instância da Evolution que envia as mensagens. Nulo = padrão do ambiente. */

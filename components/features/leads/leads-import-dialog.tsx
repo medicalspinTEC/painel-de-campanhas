@@ -119,7 +119,7 @@ export function LeadsImportDialog({
   function baixarModelo() {
     const worksheet = XLSX.utils.aoa_to_sheet([
       COLUNAS_MODELO,
-      ["Ana Paula Souza", "5511988887777", "Plano Premium", "Acme", "Decisor", "Sudeste", "novo", "Lead vindo de feira", ""],
+      ["Ana Paula Souza", "5511988887777", "Plano Premium", "Acme", "Decisor", "Sudeste", "novo", "Lead vindo de feira", "1"],
     ])
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, "Leads")
@@ -155,8 +155,9 @@ export function LeadsImportDialog({
               <strong className="text-foreground">nome</strong> e{" "}
               <strong className="text-foreground">telefone</strong> são obrigatórios. Opcionais: produto, marca,
               persona, regiao, status, notas e campanha. Nos campos de segmentação você pode informar o nome ou o
-              ID de importação cadastrado na aba Segmentação. A campanha deve ter o nome exato de uma campanha
-              existente. O telefone deve incluir o país 55 (ex.: 5511988887777).
+              ID de importação cadastrado na aba Segmentação. Na coluna campanha use o{" "}
+              <strong className="text-foreground">ID de importação</strong> da campanha (o número mostrado na
+              página Campanhas) ou o nome exato dela. O telefone deve incluir o país 55 (ex.: 5511988887777).
             </p>
             <div>
               <Button type="button" variant="outline" size="sm" onClick={baixarModelo}>

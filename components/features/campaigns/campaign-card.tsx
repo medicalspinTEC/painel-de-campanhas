@@ -77,7 +77,15 @@ export function CampaignCard({ campanha }: { campanha: CampaignWithStats }) {
         <CardHeader>
           <div className="flex items-start justify-between gap-2">
             <div className="flex flex-col gap-1.5">
-              <CampaignStatusBadge status={campanha.status} />
+              <div className="flex items-center gap-2">
+                <CampaignStatusBadge status={campanha.status} />
+                <span
+                  className="rounded-md bg-muted px-1.5 py-0.5 text-[0.6875rem] font-medium tabular-nums text-muted-foreground"
+                  title="ID de importação (use na planilha de leads)"
+                >
+                  ID {campanha.idImportacao}
+                </span>
+              </div>
               <CardTitle className="text-base leading-snug">
                 <Link href={`/campanhas/${campanha.id}`} className="hover:underline">
                   {campanha.nome}

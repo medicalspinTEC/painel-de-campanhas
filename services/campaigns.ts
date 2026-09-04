@@ -19,6 +19,7 @@ type CampaignRecord = {
   id: string
   nome: string
   descricao: string | null
+  idImportacao: number
   status: CampaignStatus
   recorrenciaDias: number
   dataFinal: Date | null
@@ -36,6 +37,7 @@ function toCampaign(record: CampaignRecord): Campaign {
     id: record.id,
     nome: record.nome,
     descricao: record.descricao ?? undefined,
+    idImportacao: record.idImportacao,
     status: record.status,
     recorrenciaDias: record.recorrenciaDias,
     dataFinal: record.dataFinal?.toISOString() ?? null,

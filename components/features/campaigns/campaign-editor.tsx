@@ -251,17 +251,30 @@ export function CampaignEditor({
             <CardDescription>Defina identidade, recorrência e data limite dos disparos.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <Field data-invalid={Boolean(errors.nome)}>
-              <FieldLabel htmlFor="nome">Nome da campanha</FieldLabel>
-              <Input
-                id="nome"
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-                placeholder="Reativação Consórcio Imobiliário"
-                aria-invalid={Boolean(errors.nome)}
-              />
-              {errors.nome ? <FieldError>{errors.nome}</FieldError> : null}
-            </Field>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-[7rem_1fr]">
+              <Field>
+                <FieldLabel htmlFor="idImportacao">ID de importação</FieldLabel>
+                <Input
+                  id="idImportacao"
+                  value={campanha ? String(campanha.idImportacao) : "Gerado ao salvar"}
+                  readOnly
+                  disabled
+                  className="tabular-nums"
+                />
+                <FieldDescription>Fixo. Use na planilha.</FieldDescription>
+              </Field>
+              <Field data-invalid={Boolean(errors.nome)}>
+                <FieldLabel htmlFor="nome">Nome da campanha</FieldLabel>
+                <Input
+                  id="nome"
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  placeholder="Reativação Consórcio Imobiliário"
+                  aria-invalid={Boolean(errors.nome)}
+                />
+                {errors.nome ? <FieldError>{errors.nome}</FieldError> : null}
+              </Field>
+            </div>
 
             <Field>
               <FieldLabel htmlFor="descricao">Descrição</FieldLabel>

@@ -105,6 +105,12 @@ export default async function CampanhaPage({ params }: { params: Promise<{ id: s
             <Detalhe rotulo="Status">
               <CampaignStatusBadge status={campanha.status} />
             </Detalhe>
+            <Detalhe rotulo="ID de importação">
+              <span className="tabular-nums">{campanha.idImportacao}</span>
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                Use na coluna “campanha” da planilha
+              </span>
+            </Detalhe>
             <Detalhe rotulo="Recorrência">{campanha.recorrenciaDias} dias</Detalhe>
             <Detalhe rotulo="Criada em">{formatDate(campanha.criadoEm)}</Detalhe>
             <Detalhe rotulo="Data limite">

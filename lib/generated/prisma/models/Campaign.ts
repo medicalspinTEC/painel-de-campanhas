@@ -27,10 +27,12 @@ export type AggregateCampaign = {
 }
 
 export type CampaignAvgAggregateOutputType = {
+  idImportacao: number | null
   recorrenciaDias: number | null
 }
 
 export type CampaignSumAggregateOutputType = {
+  idImportacao: number | null
   recorrenciaDias: number | null
 }
 
@@ -39,6 +41,7 @@ export type CampaignMinAggregateOutputType = {
   nome: string | null
   descricao: string | null
   status: $Enums.CampaignStatus | null
+  idImportacao: number | null
   recorrenciaDias: number | null
   dataFinal: Date | null
   instanciaNome: string | null
@@ -56,6 +59,7 @@ export type CampaignMaxAggregateOutputType = {
   nome: string | null
   descricao: string | null
   status: $Enums.CampaignStatus | null
+  idImportacao: number | null
   recorrenciaDias: number | null
   dataFinal: Date | null
   instanciaNome: string | null
@@ -73,6 +77,7 @@ export type CampaignCountAggregateOutputType = {
   nome: number
   descricao: number
   status: number
+  idImportacao: number
   recorrenciaDias: number
   dataFinal: number
   instanciaNome: number
@@ -88,10 +93,12 @@ export type CampaignCountAggregateOutputType = {
 
 
 export type CampaignAvgAggregateInputType = {
+  idImportacao?: true
   recorrenciaDias?: true
 }
 
 export type CampaignSumAggregateInputType = {
+  idImportacao?: true
   recorrenciaDias?: true
 }
 
@@ -100,6 +107,7 @@ export type CampaignMinAggregateInputType = {
   nome?: true
   descricao?: true
   status?: true
+  idImportacao?: true
   recorrenciaDias?: true
   dataFinal?: true
   instanciaNome?: true
@@ -117,6 +125,7 @@ export type CampaignMaxAggregateInputType = {
   nome?: true
   descricao?: true
   status?: true
+  idImportacao?: true
   recorrenciaDias?: true
   dataFinal?: true
   instanciaNome?: true
@@ -134,6 +143,7 @@ export type CampaignCountAggregateInputType = {
   nome?: true
   descricao?: true
   status?: true
+  idImportacao?: true
   recorrenciaDias?: true
   dataFinal?: true
   instanciaNome?: true
@@ -238,6 +248,7 @@ export type CampaignGroupByOutputType = {
   nome: string
   descricao: string | null
   status: $Enums.CampaignStatus
+  idImportacao: number
   recorrenciaDias: number
   dataFinal: Date | null
   instanciaNome: string | null
@@ -278,6 +289,7 @@ export type CampaignWhereInput = {
   nome?: Prisma.StringFilter<"Campaign"> | string
   descricao?: Prisma.StringNullableFilter<"Campaign"> | string | null
   status?: Prisma.EnumCampaignStatusFilter<"Campaign"> | $Enums.CampaignStatus
+  idImportacao?: Prisma.IntFilter<"Campaign"> | number
   recorrenciaDias?: Prisma.IntFilter<"Campaign"> | number
   dataFinal?: Prisma.DateTimeNullableFilter<"Campaign"> | Date | string | null
   instanciaNome?: Prisma.StringNullableFilter<"Campaign"> | string | null
@@ -299,6 +311,7 @@ export type CampaignOrderByWithRelationInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   recorrenciaDias?: Prisma.SortOrder
   dataFinal?: Prisma.SortOrderInput | Prisma.SortOrder
   instanciaNome?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -317,6 +330,7 @@ export type CampaignOrderByWithRelationInput = {
 
 export type CampaignWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  idImportacao?: number
   AND?: Prisma.CampaignWhereInput | Prisma.CampaignWhereInput[]
   OR?: Prisma.CampaignWhereInput[]
   NOT?: Prisma.CampaignWhereInput | Prisma.CampaignWhereInput[]
@@ -337,13 +351,14 @@ export type CampaignWhereUniqueInput = Prisma.AtLeast<{
   leads?: Prisma.LeadListRelationFilter
   leadCampaigns?: Prisma.LeadCampaignListRelationFilter
   eventos?: Prisma.TimelineEventListRelationFilter
-}, "id">
+}, "id" | "idImportacao">
 
 export type CampaignOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   recorrenciaDias?: Prisma.SortOrder
   dataFinal?: Prisma.SortOrderInput | Prisma.SortOrder
   instanciaNome?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -369,6 +384,7 @@ export type CampaignScalarWhereWithAggregatesInput = {
   nome?: Prisma.StringWithAggregatesFilter<"Campaign"> | string
   descricao?: Prisma.StringNullableWithAggregatesFilter<"Campaign"> | string | null
   status?: Prisma.EnumCampaignStatusWithAggregatesFilter<"Campaign"> | $Enums.CampaignStatus
+  idImportacao?: Prisma.IntWithAggregatesFilter<"Campaign"> | number
   recorrenciaDias?: Prisma.IntWithAggregatesFilter<"Campaign"> | number
   dataFinal?: Prisma.DateTimeNullableWithAggregatesFilter<"Campaign"> | Date | string | null
   instanciaNome?: Prisma.StringNullableWithAggregatesFilter<"Campaign"> | string | null
@@ -386,6 +402,7 @@ export type CampaignCreateInput = {
   nome: string
   descricao?: string | null
   status?: $Enums.CampaignStatus
+  idImportacao?: number
   recorrenciaDias?: number
   dataFinal?: Date | string | null
   instanciaNome?: string | null
@@ -407,6 +424,7 @@ export type CampaignUncheckedCreateInput = {
   nome: string
   descricao?: string | null
   status?: $Enums.CampaignStatus
+  idImportacao?: number
   recorrenciaDias?: number
   dataFinal?: Date | string | null
   instanciaNome?: string | null
@@ -449,6 +467,7 @@ export type CampaignUncheckedUpdateInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
+  idImportacao?: Prisma.IntFieldUpdateOperationsInput | number
   recorrenciaDias?: Prisma.IntFieldUpdateOperationsInput | number
   dataFinal?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   instanciaNome?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -470,6 +489,7 @@ export type CampaignCreateManyInput = {
   nome: string
   descricao?: string | null
   status?: $Enums.CampaignStatus
+  idImportacao?: number
   recorrenciaDias?: number
   dataFinal?: Date | string | null
   instanciaNome?: string | null
@@ -504,6 +524,7 @@ export type CampaignUncheckedUpdateManyInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
+  idImportacao?: Prisma.IntFieldUpdateOperationsInput | number
   recorrenciaDias?: Prisma.IntFieldUpdateOperationsInput | number
   dataFinal?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   instanciaNome?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -526,6 +547,7 @@ export type CampaignCountOrderByAggregateInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   recorrenciaDias?: Prisma.SortOrder
   dataFinal?: Prisma.SortOrder
   instanciaNome?: Prisma.SortOrder
@@ -539,6 +561,7 @@ export type CampaignCountOrderByAggregateInput = {
 }
 
 export type CampaignAvgOrderByAggregateInput = {
+  idImportacao?: Prisma.SortOrder
   recorrenciaDias?: Prisma.SortOrder
 }
 
@@ -547,6 +570,7 @@ export type CampaignMaxOrderByAggregateInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   recorrenciaDias?: Prisma.SortOrder
   dataFinal?: Prisma.SortOrder
   instanciaNome?: Prisma.SortOrder
@@ -564,6 +588,7 @@ export type CampaignMinOrderByAggregateInput = {
   nome?: Prisma.SortOrder
   descricao?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  idImportacao?: Prisma.SortOrder
   recorrenciaDias?: Prisma.SortOrder
   dataFinal?: Prisma.SortOrder
   instanciaNome?: Prisma.SortOrder
@@ -577,6 +602,7 @@ export type CampaignMinOrderByAggregateInput = {
 }
 
 export type CampaignSumOrderByAggregateInput = {
+  idImportacao?: Prisma.SortOrder
   recorrenciaDias?: Prisma.SortOrder
 }
 
@@ -662,6 +688,7 @@ export type CampaignCreateWithoutLeadsInput = {
   nome: string
   descricao?: string | null
   status?: $Enums.CampaignStatus
+  idImportacao?: number
   recorrenciaDias?: number
   dataFinal?: Date | string | null
   instanciaNome?: string | null
@@ -682,6 +709,7 @@ export type CampaignUncheckedCreateWithoutLeadsInput = {
   nome: string
   descricao?: string | null
   status?: $Enums.CampaignStatus
+  idImportacao?: number
   recorrenciaDias?: number
   dataFinal?: Date | string | null
   instanciaNome?: string | null
@@ -738,6 +766,7 @@ export type CampaignUncheckedUpdateWithoutLeadsInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
+  idImportacao?: Prisma.IntFieldUpdateOperationsInput | number
   recorrenciaDias?: Prisma.IntFieldUpdateOperationsInput | number
   dataFinal?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   instanciaNome?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -758,6 +787,7 @@ export type CampaignCreateWithoutLeadCampaignsInput = {
   nome: string
   descricao?: string | null
   status?: $Enums.CampaignStatus
+  idImportacao?: number
   recorrenciaDias?: number
   dataFinal?: Date | string | null
   instanciaNome?: string | null
@@ -778,6 +808,7 @@ export type CampaignUncheckedCreateWithoutLeadCampaignsInput = {
   nome: string
   descricao?: string | null
   status?: $Enums.CampaignStatus
+  idImportacao?: number
   recorrenciaDias?: number
   dataFinal?: Date | string | null
   instanciaNome?: string | null
@@ -834,6 +865,7 @@ export type CampaignUncheckedUpdateWithoutLeadCampaignsInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
+  idImportacao?: Prisma.IntFieldUpdateOperationsInput | number
   recorrenciaDias?: Prisma.IntFieldUpdateOperationsInput | number
   dataFinal?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   instanciaNome?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -854,6 +886,7 @@ export type CampaignCreateWithoutMensagensInput = {
   nome: string
   descricao?: string | null
   status?: $Enums.CampaignStatus
+  idImportacao?: number
   recorrenciaDias?: number
   dataFinal?: Date | string | null
   instanciaNome?: string | null
@@ -874,6 +907,7 @@ export type CampaignUncheckedCreateWithoutMensagensInput = {
   nome: string
   descricao?: string | null
   status?: $Enums.CampaignStatus
+  idImportacao?: number
   recorrenciaDias?: number
   dataFinal?: Date | string | null
   instanciaNome?: string | null
@@ -930,6 +964,7 @@ export type CampaignUncheckedUpdateWithoutMensagensInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
+  idImportacao?: Prisma.IntFieldUpdateOperationsInput | number
   recorrenciaDias?: Prisma.IntFieldUpdateOperationsInput | number
   dataFinal?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   instanciaNome?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -950,6 +985,7 @@ export type CampaignCreateWithoutEventosInput = {
   nome: string
   descricao?: string | null
   status?: $Enums.CampaignStatus
+  idImportacao?: number
   recorrenciaDias?: number
   dataFinal?: Date | string | null
   instanciaNome?: string | null
@@ -970,6 +1006,7 @@ export type CampaignUncheckedCreateWithoutEventosInput = {
   nome: string
   descricao?: string | null
   status?: $Enums.CampaignStatus
+  idImportacao?: number
   recorrenciaDias?: number
   dataFinal?: Date | string | null
   instanciaNome?: string | null
@@ -1026,6 +1063,7 @@ export type CampaignUncheckedUpdateWithoutEventosInput = {
   nome?: Prisma.StringFieldUpdateOperationsInput | string
   descricao?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
+  idImportacao?: Prisma.IntFieldUpdateOperationsInput | number
   recorrenciaDias?: Prisma.IntFieldUpdateOperationsInput | number
   dataFinal?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   instanciaNome?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1104,6 +1142,7 @@ export type CampaignSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   nome?: boolean
   descricao?: boolean
   status?: boolean
+  idImportacao?: boolean
   recorrenciaDias?: boolean
   dataFinal?: boolean
   instanciaNome?: boolean
@@ -1126,6 +1165,7 @@ export type CampaignSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   nome?: boolean
   descricao?: boolean
   status?: boolean
+  idImportacao?: boolean
   recorrenciaDias?: boolean
   dataFinal?: boolean
   instanciaNome?: boolean
@@ -1143,6 +1183,7 @@ export type CampaignSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   nome?: boolean
   descricao?: boolean
   status?: boolean
+  idImportacao?: boolean
   recorrenciaDias?: boolean
   dataFinal?: boolean
   instanciaNome?: boolean
@@ -1160,6 +1201,7 @@ export type CampaignSelectScalar = {
   nome?: boolean
   descricao?: boolean
   status?: boolean
+  idImportacao?: boolean
   recorrenciaDias?: boolean
   dataFinal?: boolean
   instanciaNome?: boolean
@@ -1172,7 +1214,7 @@ export type CampaignSelectScalar = {
   atualizadoEm?: boolean
 }
 
-export type CampaignOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nome" | "descricao" | "status" | "recorrenciaDias" | "dataFinal" | "instanciaNome" | "reiniciadaEm" | "filtroProduto" | "filtroMarca" | "filtroPersona" | "filtroRegiao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["campaign"]>
+export type CampaignOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nome" | "descricao" | "status" | "idImportacao" | "recorrenciaDias" | "dataFinal" | "instanciaNome" | "reiniciadaEm" | "filtroProduto" | "filtroMarca" | "filtroPersona" | "filtroRegiao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["campaign"]>
 export type CampaignInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   mensagens?: boolean | Prisma.Campaign$mensagensArgs<ExtArgs>
   leads?: boolean | Prisma.Campaign$leadsArgs<ExtArgs>
@@ -1196,6 +1238,12 @@ export type $CampaignPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     nome: string
     descricao: string | null
     status: $Enums.CampaignStatus
+    /**
+     * Identificador sequencial e imutável para importação por planilha. Gerado
+     * automaticamente a partir de 1 (o usuário não edita). Permite que o arquivo
+     * traga este número na coluna "campanha" em vez do nome exato da campanha.
+     */
+    idImportacao: number
     recorrenciaDias: number
     dataFinal: Date | null
     instanciaNome: string | null
@@ -1637,6 +1685,7 @@ export interface CampaignFieldRefs {
   readonly nome: Prisma.FieldRef<"Campaign", 'String'>
   readonly descricao: Prisma.FieldRef<"Campaign", 'String'>
   readonly status: Prisma.FieldRef<"Campaign", 'CampaignStatus'>
+  readonly idImportacao: Prisma.FieldRef<"Campaign", 'Int'>
   readonly recorrenciaDias: Prisma.FieldRef<"Campaign", 'Int'>
   readonly dataFinal: Prisma.FieldRef<"Campaign", 'DateTime'>
   readonly instanciaNome: Prisma.FieldRef<"Campaign", 'String'>

@@ -108,6 +108,7 @@ export const CampaignScalarFieldEnum = {
   nome: 'nome',
   descricao: 'descricao',
   status: 'status',
+  idImportacao: 'idImportacao',
   recorrenciaDias: 'recorrenciaDias',
   dataFinal: 'dataFinal',
   instanciaNome: 'instanciaNome',

@@ -202,8 +202,10 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
     }
   }
 
-  // Mapa de nome de campanha (normalizado) -> id, para resolver a coluna
-  // opcional "campanha" do arquivo. Buscamos uma única vez para o lote todo.
+  // Mapa para resolver a coluna opcional "campanha" do arquivo -> id da
+  // campanha. Aceita tanto o ID de importação (número sequencial e fixo, ex.:
+  // "1") quanto o nome exato da campanha, para que a equipe possa usar o ID e
+  // não precise digitar o nome completo. Buscamos uma única vez para o lote.
   const mapaCampanhas = new Map<string, string>()
   const precisaCampanhas = linhas.some((linha) => String(linha?.campanha ?? "").trim().length > 0)
   if (precisaCampanhas) {
@@ -211,6 +213,9 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
       const campanhas = await listCampaigns()
       for (const campanha of campanhas) {
         mapaCampanhas.set(campanha.nome.trim().toLowerCase(), campanha.id)
+        // O ID de importação tem prioridade de leitura, mas como as chaves não
+        // colidem (número vs. nome) podemos guardar ambos no mesmo mapa.
+        mapaCampanhas.set(String(campanha.idImportacao), campanha.id)
       }
     } catch (error) {
       await recordAppLog({ origem: "leads", mensagem: "Falha ao carregar campanhas para importação de leads.", detalhes: error })
@@ -266,12 +271,13 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
     }
 
     // A coluna "campanha" é opcional. Se preenchida, precisa casar (sem
-    // diferenciar maiúsculas) com uma campanha existente pelo nome.
+    // diferenciar maiúsculas) com o ID de importação ou o nome de uma campanha
+    // existente.
     let campanhaId: string | null = null
     if (campanhaBruta.length > 0) {
       const encontrada = mapaCampanhas.get(campanhaBruta.toLowerCase())
       if (!encontrada) {
-        erros.push({ linha: numeroLinha, nome, motivo: `Campanha "${campanhaBruta}" não encontrada.` })
+        erros.push({ linha: numeroLinha, nome, motivo: `Campanha "${campanhaBruta}" não encontrada (use o ID de importação ou o nome exato).` })
         continue
       }
       campanhaId = encontrada

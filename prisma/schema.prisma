@@ -81,6 +81,11 @@ model Campaign {
   descricao String?
   status    CampaignStatus @default(rascunho)
 
+  /// Identificador sequencial e imutável para importação por planilha. Gerado
+  /// automaticamente a partir de 1 (o usuário não edita). Permite que o arquivo
+  /// traga este número na coluna "campanha" em vez do nome exato da campanha.
+  idImportacao Int @unique @default(autoincrement())
+
   recorrenciaDias Int       @default(7)
   dataFinal       DateTime?
 
