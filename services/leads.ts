@@ -847,6 +847,14 @@ export async function assignCampaign(leadId: string, campanhaId: string | null):
       create: { leadId, campanhaId },
       update: {},
     })
+  } else {
+    // "Remover da campanha" (aba Leads): desvincula o lead de TODAS as
+    // campanhas às quais está associado. Antes desta chamada os vínculos em
+    // LeadCampaign nunca eram apagados quando campanhaId vinha nulo — o
+    // código só tratava o caso de adicionar um vínculo, então a consulta
+    // abaixo sempre reencontrava os vínculos antigos intactos e recolocava o
+    // lead na mesma campanha (por isso ele "nunca saía").
+    await prisma.leadCampaign.deleteMany({ where: { leadId } })
   }
 
   const campanhasVinculadas = await prisma.leadCampaign.findMany({ where: { leadId }, select: { campanhaId: true } })
