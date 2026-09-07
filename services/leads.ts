@@ -143,6 +143,20 @@ function toLeadRow(record: LeadRowRecord, respostas: number, ultimoContato: Date
   }
 }
 
+/**
+ * Versão enxuta para a busca global do header: só os campos exibidos ali,
+ * limitada aos mais recentes. Evita repetir em toda navegação o custo de
+ * `listLeads()` (join de campanhas + 2 agregações sobre a base inteira) só
+ * para mostrar 40 nomes num dropdown de busca.
+ */
+export async function listLeadsResumo(limit = 40): Promise<Array<Pick<Lead, "id" | "nome" | "produto">>> {
+  return prisma.lead.findMany({
+    select: { id: true, nome: true, produto: true },
+    orderBy: { criadoEm: "desc" },
+    take: limit,
+  })
+}
+
 export async function listLeads(): Promise<LeadRow[]> {
   const leads = await prisma.lead.findMany({
     select: leadRowSelect,

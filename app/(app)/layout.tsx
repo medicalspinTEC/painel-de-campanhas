@@ -8,7 +8,7 @@ import { isDatabaseConfigured } from "@/lib/prisma"
 import { recordAppLog } from "@/services/app-logs"
 import { listCampaigns } from "@/services/campaigns"
 import { listEvents } from "@/services/events"
-import { listLeads } from "@/services/leads"
+import { listLeadsResumo } from "@/services/leads"
 
 /*
  * O painel lê leads, campanhas e eventos direto do Postgres via Prisma. Como
@@ -96,13 +96,24 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
    * conexão aparece primeiro. Tratando o erro neste ponto, o usuário recebe
    * instruções em vez de uma tela de erro do Next em cada rota.
    */
-  let leads: Awaited<ReturnType<typeof listLeads>>
+  let leads: Awaited<ReturnType<typeof listLeadsResumo>>
   let campanhas: Awaited<ReturnType<typeof listCampaigns>>
   let notificacoes: Awaited<ReturnType<typeof listEvents>>
-  const evolutionStatus = await getEvolutionInstanceStatus()
+  let evolutionStatus: Awaited<ReturnType<typeof getEvolutionInstanceStatus>>
 
+  /*
+   * As quatro chamadas são independentes entre si (banco x API externa da
+   * Evolution), então rodam em paralelo. Antes o status da Evolution era
+   * aguardado sozinho antes das queries do banco começarem, somando os dois
+   * tempos em vez de ficar limitado ao mais lento dos dois.
+   */
   try {
-    ;[leads, campanhas, notificacoes] = await Promise.all([listLeads(), listCampaigns(), listEvents(30)])
+    ;[leads, campanhas, notificacoes, evolutionStatus] = await Promise.all([
+      listLeadsResumo(),
+      listCampaigns(),
+      listEvents(30),
+      getEvolutionInstanceStatus(),
+    ])
   } catch (error) {
     console.error("[v0] Falha ao carregar dados do banco:", error)
     return <DatabaseSetupNotice erro={resumirErro(error)} />
@@ -117,7 +128,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       />
       <SidebarInset className="min-w-0">
         <AppHeader
-          leads={leads.slice(0, 40).map((l) => ({
+          leads={leads.map((l) => ({
             id: l.id,
             nome: l.nome,
             detalhe: l.produto,
