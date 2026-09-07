@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache"
 
-import { assignCampaign, createLead, deleteLead, LeadValidationError, setLeadStatus, updateLead, updateLeadNotes, type LeadInput } from "@/services/leads"
-import { listCampaigns } from "@/services/campaigns"
+import { assignCampaign, createLead, createLeadsBulk, deleteLead, LeadValidationError, setLeadStatus, updateLead, updateLeadNotes, type LeadBulkInput, type LeadInput } from "@/services/leads"
 import { mapProdutosPorIdImportacao } from "@/services/produtos"
+import { prisma } from "@/lib/prisma"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
 import { recordAppLog } from "@/services/app-logs"
 import { validarTelefoneBR } from "@/lib/telefone"
@@ -205,12 +205,14 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
   // Mapa para resolver a coluna opcional "campanha" do arquivo -> id da
   // campanha. Aceita tanto o ID de importação (número sequencial e fixo, ex.:
   // "1") quanto o nome exato da campanha, para que a equipe possa usar o ID e
-  // não precise digitar o nome completo. Buscamos uma única vez para o lote.
+  // não precise digitar o nome completo. Buscamos uma única vez para o lote,
+  // com uma consulta direta e enxuta (sem estatísticas nem o encerramento de
+  // campanhas expiradas de `listCampaigns`, que aqui seriam trabalho perdido).
   const mapaCampanhas = new Map<string, string>()
   const precisaCampanhas = linhas.some((linha) => String(linha?.campanha ?? "").trim().length > 0)
   if (precisaCampanhas) {
     try {
-      const campanhas = await listCampaigns()
+      const campanhas = await prisma.campaign.findMany({ select: { id: true, nome: true, idImportacao: true } })
       for (const campanha of campanhas) {
         mapaCampanhas.set(campanha.nome.trim().toLowerCase(), campanha.id)
         // O ID de importação tem prioridade de leitura, mas como as chaves não
@@ -238,7 +240,11 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
     mapa.get(valor.trim().toLowerCase()) ?? valor
 
   const erros: ImportLeadsResult["erros"] = []
-  let criados = 0
+  // Linha (para a mensagem de erro) e nome de cada candidato, indexados pela
+  // mesma posição enviada a `createLeadsBulk` — o serviço não precisa saber de
+  // "número de linha da planilha", só devolve o índice de volta.
+  const contextoPorIndice = new Map<number, { linha: number; nome: string }>()
+  const candidatos: Array<{ index: number; input: LeadBulkInput }> = []
 
   for (let i = 0; i < linhas.length; i++) {
     // +2: linha 1 é o cabeçalho e o índice é base zero, então a primeira linha
@@ -260,6 +266,9 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
       erros.push({ linha: numeroLinha, nome: nome || "(sem nome)", motivo: "Nome ausente ou muito curto." })
       continue
     }
+    // O formato do telefone é revalidado dentro de `createLeadsBulk` (que
+    // também normaliza e checa duplicidade); aqui só barramos cedo o que já dá
+    // para saber sem ir ao banco, para não gastar índice do lote com erro óbvio.
     const resultadoTelefone = validarTelefoneBR(telefone)
     if (!resultadoTelefone.ok) {
       erros.push({ linha: numeroLinha, nome, motivo: resultadoTelefone.erro ?? "Telefone inválido." })
@@ -283,32 +292,59 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
       campanhaId = encontrada
     }
 
-    const input: LeadInput = {
-      nome,
-      telefone,
-      produto: produto as LeadInput["produto"],
-      marca: marca as LeadInput["marca"],
-      persona: persona as LeadInput["persona"],
-      regiao: regiao as LeadInput["regiao"],
-      notas: notasBruta.length > 0 ? notasBruta : null,
-      status: (STATUS_VALIDOS.includes(statusBruto as LeadStatus) ? statusBruto : "novo") as LeadStatus,
-      campanhaId,
-      campanhasIds: campanhaId ? [campanhaId] : [],
-    }
+    const index = candidatos.length
+    contextoPorIndice.set(index, { linha: numeroLinha, nome })
+    candidatos.push({
+      index,
+      input: {
+        nome,
+        telefone,
+        produto,
+        marca,
+        persona,
+        regiao,
+        notas: notasBruta.length > 0 ? notasBruta : null,
+        status: (STATUS_VALIDOS.includes(statusBruto as LeadStatus) ? statusBruto : "novo") as LeadStatus,
+        campanhaId,
+      },
+    })
+  }
 
+  // Todo o lote é criado em uma única passagem (checagens em lote em vez de
+  // uma ida ao banco por linha) — é isto que faz a importação de muitos leads
+  // de uma vez ser rápida.
+  let criados = 0
+  if (candidatos.length > 0) {
     try {
-      await createLead(input)
-      criados++
+      const resultados = await createLeadsBulk(candidatos)
+      for (const resultado of resultados) {
+        const contexto = contextoPorIndice.get(resultado.index)
+        if (resultado.ok) {
+          criados++
+        } else {
+          erros.push({
+            linha: contexto?.linha ?? 0,
+            nome: contexto?.nome ?? "(desconhecido)",
+            motivo: resultado.motivo ?? "Dados inválidos.",
+          })
+        }
+      }
     } catch (error) {
-      if (error instanceof LeadValidationError) {
-        const motivo = Object.values(error.errors).join(" ") || "Dados inválidos."
-        erros.push({ linha: numeroLinha, nome, motivo })
-      } else {
-        await recordAppLog({ origem: "leads", mensagem: `Falha ao importar lead "${nome}" (linha ${numeroLinha}).`, detalhes: error })
-        erros.push({ linha: numeroLinha, nome, motivo: "Erro inesperado ao salvar. Verifique a conexão com o banco." })
+      await recordAppLog({ origem: "leads", mensagem: `Falha ao importar lote de ${candidatos.length} lead(s).`, detalhes: error })
+      for (const { index } of candidatos) {
+        const contexto = contextoPorIndice.get(index)
+        erros.push({
+          linha: contexto?.linha ?? 0,
+          nome: contexto?.nome ?? "(desconhecido)",
+          motivo: "Erro inesperado ao salvar. Verifique a conexão com o banco.",
+        })
       }
     }
   }
+
+  // Erros por linha não vêm necessariamente na ordem original (a validação de
+  // formato roda antes do lote, e o lote devolve seus resultados por índice).
+  erros.sort((a, b) => a.linha - b.linha)
 
   if (criados > 0) revalidarLeads()
 

@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto"
+
 import { prisma } from "@/lib/prisma"
 import { validarTelefoneBR, apenasDigitos } from "@/lib/telefone"
 import { recordAppLog } from "@/services/app-logs"
@@ -380,6 +382,264 @@ export async function createLead(input: LeadInput): Promise<Lead> {
   })
 
   return criado
+}
+
+/** Uma linha já validada (formato) aguardando criação em lote. */
+export interface LeadBulkInput {
+  nome: string
+  telefone: string
+  produto?: string
+  marca?: string
+  persona?: string
+  regiao?: string
+  notas?: string | null
+  status: LeadStatus
+  campanhaId: string | null
+}
+
+export interface LeadBulkOutcome {
+  /** Mesmo índice recebido em `itens`, para o chamador remontar a linha original. */
+  index: number
+  ok: boolean
+  motivo?: string
+}
+
+/**
+ * Cria muitos leads de uma vez otimizado para lotes grandes (importação de
+ * planilha). Aplica as mesmas regras de negócio de `createLead` (telefone com
+ * país 55, unicidade de nome/telefone, cadastro automático de segmentação,
+ * vinculação a campanhas compatíveis), mas resolvidas para o lote inteiro em
+ * vez de uma vez por linha:
+ *
+ * - a checagem de duplicidade carrega os leads existentes UMA vez (em vez de
+ *   uma consulta com TODOS os leads a cada linha, que tornava a importação
+ *   quadrática no tamanho da base);
+ * - o cadastro automático de produto/marca/persona/região usa `createMany`
+ *   (uma consulta por dimensão) em vez de um upsert por linha;
+ * - os leads são inseridos com `createMany` (uma única ida ao banco);
+ * - a vinculação a campanhas compatíveis é calculada em memória para o lote
+ *   inteiro (uma consulta de campanhas) em vez de uma consulta por campanha
+ *   por lead;
+ * - a engine de disparo roda UMA vez ao final do lote (ela já varre todos os
+ *   disparos devidos do sistema), em vez de uma varredura completa por lead.
+ */
+export async function createLeadsBulk(itens: Array<{ index: number; input: LeadBulkInput }>): Promise<LeadBulkOutcome[]> {
+  if (itens.length === 0) return []
+
+  const agora = new Date()
+  const resultados: LeadBulkOutcome[] = []
+
+  // 1) Nomes e telefones já cadastrados, carregados uma única vez para todo o
+  // lote (evita a consulta O(total de leads) por linha).
+  const existentes = await prisma.lead.findMany({ select: { nome: true, telefone: true } })
+  const nomesExistentes = new Set(existentes.map((l) => l.nome.trim().toLowerCase()))
+  const telefonesExistentes = new Set(existentes.map((l) => apenasDigitos(l.telefone)))
+
+  type Aceito = {
+    index: number
+    id: string
+    nome: string
+    telefone: string
+    produto: string
+    marca: string
+    persona: string
+    regiao: string
+    notas: string | null
+    status: LeadStatus
+    campanhaId: string | null
+  }
+  const aceitos: Aceito[] = []
+
+  // 2) Validação de telefone/duplicidade em memória (sem ida ao banco por
+  // linha). Cada lead aceito entra imediatamente nos conjuntos de nomes e
+  // telefones para pegar duplicidade dentro do próprio arquivo, do mesmo jeito
+  // que a checagem sequencial original pegava (linha 5 duplicando a linha 2).
+  for (const { index, input } of itens) {
+    const nomeLimpo = input.nome.trim()
+    const resultadoTelefone = validarTelefoneBR(input.telefone)
+    if (!resultadoTelefone.ok) {
+      resultados.push({ index, ok: false, motivo: resultadoTelefone.erro ?? "Telefone inválido." })
+      continue
+    }
+    const telefoneNormalizado = resultadoTelefone.normalizado
+    const nomeChave = nomeLimpo.toLowerCase()
+
+    if (nomesExistentes.has(nomeChave)) {
+      resultados.push({ index, ok: false, motivo: "Já existe um lead cadastrado com este nome." })
+      continue
+    }
+    if (telefonesExistentes.has(telefoneNormalizado)) {
+      resultados.push({ index, ok: false, motivo: "Já existe um lead cadastrado com este telefone." })
+      continue
+    }
+
+    nomesExistentes.add(nomeChave)
+    telefonesExistentes.add(telefoneNormalizado)
+
+    aceitos.push({
+      index,
+      id: randomUUID(),
+      nome: nomeLimpo,
+      telefone: telefoneNormalizado,
+      produto: input.produto ?? "",
+      marca: input.marca ?? "",
+      persona: input.persona ?? "",
+      regiao: input.regiao ?? "",
+      notas: normalizarNotas(input.notas),
+      status: input.status,
+      campanhaId: input.campanhaId,
+    })
+  }
+
+  if (aceitos.length === 0) return resultados
+
+  // 3) Cadastra em lote qualquer produto/marca/persona/região nova: uma única
+  // consulta por dimensão (com `skipDuplicates`) em vez de um upsert por linha.
+  const distintos = (valores: string[]) => [...new Set(valores.map((v) => v.trim()).filter(Boolean))]
+  try {
+    await Promise.all([
+      (async () => {
+        const nomes = distintos(aceitos.map((l) => l.produto))
+        if (nomes.length) await prisma.produto.createMany({ data: nomes.map((nome) => ({ nome, ativo: true })), skipDuplicates: true })
+      })(),
+      (async () => {
+        const nomes = distintos(aceitos.map((l) => l.marca))
+        if (nomes.length) await prisma.marca.createMany({ data: nomes.map((nome) => ({ nome, ativo: true })), skipDuplicates: true })
+      })(),
+      (async () => {
+        const nomes = distintos(aceitos.map((l) => l.persona))
+        if (nomes.length) await prisma.persona.createMany({ data: nomes.map((nome) => ({ nome, ativo: true })), skipDuplicates: true })
+      })(),
+      (async () => {
+        const nomes = distintos(aceitos.map((l) => l.regiao))
+        if (nomes.length) await prisma.regiao.createMany({ data: nomes.map((nome) => ({ nome, ativo: true })), skipDuplicates: true })
+      })(),
+    ])
+  } catch (error) {
+    // Complementar, como em `garantirDimensoesSegmentacao`: não impede a
+    // criação dos leads.
+    await recordAppLog({
+      nivel: "aviso",
+      origem: "leads",
+      mensagem: "Falha ao cadastrar automaticamente dimensões de segmentação durante a importação em lote de leads.",
+      detalhes: error,
+    })
+  }
+
+  // 4) Nomes das campanhas vinculadas explicitamente (para o texto do evento).
+  const campanhaIdsExplicitos = [...new Set(aceitos.map((l) => l.campanhaId).filter((id): id is string => Boolean(id)))]
+  const campanhasExplicitas = campanhaIdsExplicitos.length
+    ? await prisma.campaign.findMany({ where: { id: { in: campanhaIdsExplicitos } }, select: { id: true, nome: true, status: true } })
+    : []
+  const nomeCampanhaPorId = new Map(campanhasExplicitas.map((c) => [c.id, c.nome]))
+  const statusCampanhaExplicitaPorId = new Map(campanhasExplicitas.map((c) => [c.id, c.status]))
+
+  // 5) Insere todos os leads do lote em uma única ida ao banco.
+  await prisma.lead.createMany({
+    data: aceitos.map((l) => ({
+      id: l.id,
+      nome: l.nome,
+      telefone: l.telefone,
+      produto: l.produto,
+      marca: l.marca,
+      persona: l.persona,
+      regiao: l.regiao,
+      status: l.status,
+      notas: l.notas,
+      campanhaId: l.campanhaId,
+      entradaCampanhaEm: l.campanhaId ? agora : null,
+      criadoEm: agora,
+    })),
+  })
+
+  // 6) Evento "campanha_iniciada" e vínculo para quem já chega com campanha
+  // explícita — também em lote.
+  const comCampanhaExplicita = aceitos.filter((l): l is Aceito & { campanhaId: string } => Boolean(l.campanhaId))
+  if (comCampanhaExplicita.length > 0) {
+    await prisma.timelineEvent.createMany({
+      data: comCampanhaExplicita.map((l) => ({
+        leadId: l.id,
+        campanhaId: l.campanhaId,
+        tipo: "campanha_iniciada" as const,
+        descricao: `Lead entrou na campanha ${nomeCampanhaPorId.get(l.campanhaId) ?? ""}.`,
+        data: agora,
+        sucesso: true,
+      })),
+    })
+    await prisma.leadCampaign.createMany({
+      data: comCampanhaExplicita.map((l) => ({ leadId: l.id, campanhaId: l.campanhaId })),
+      skipDuplicates: true,
+    })
+  }
+
+  // 7) Vincula automaticamente a campanhas compatíveis: mesma regra de
+  // `vincularLeadACampanhasCompativeis`, mas com as campanhas carregadas UMA
+  // vez e o cruzamento com cada lead feito em memória, em vez de uma consulta
+  // de campanhas (e outra de vínculo já existente) por lead.
+  const campanhasElegiveis = await prisma.campaign.findMany({
+    where: { status: { not: "encerrada" } },
+    select: { id: true, status: true, filtroProduto: true, filtroMarca: true, filtroPersona: true, filtroRegiao: true },
+  })
+
+  const paresParaVincular: Array<{ leadId: string; campanhaId: string }> = []
+  let entrouEmCampanhaAtiva = comCampanhaExplicita.some((l) => statusCampanhaExplicitaPorId.get(l.campanhaId) === "ativa")
+  for (const l of aceitos) {
+    for (const c of campanhasElegiveis) {
+      if (c.id === l.campanhaId) continue // já vinculado no passo 6
+      const combina =
+        (c.filtroProduto == null || c.filtroProduto === l.produto) &&
+        (c.filtroMarca == null || c.filtroMarca === l.marca) &&
+        (c.filtroPersona == null || c.filtroPersona === l.persona) &&
+        (c.filtroRegiao == null || c.filtroRegiao === l.regiao)
+      if (!combina) continue
+      paresParaVincular.push({ leadId: l.id, campanhaId: c.id })
+      if (c.status === "ativa") entrouEmCampanhaAtiva = true
+    }
+  }
+  if (paresParaVincular.length > 0) {
+    await prisma.leadCampaign.createMany({ data: paresParaVincular, skipDuplicates: true })
+  }
+
+  // 8) Notifica os webhooks assinados. `emitWebhookEvent` apenas agenda a
+  // entrega (roda depois da resposta), então disparar um por lead aqui não
+  // bloqueia a importação.
+  for (const l of aceitos) {
+    const lead = toLead({ ...l, criadoEm: agora, entradaCampanhaEm: l.campanhaId ? agora : null })
+    void emitWebhookEvent("lead.criado", { lead })
+    if (l.campanhaId) {
+      void emitWebhookEvent("lead.entrou_em_campanha", {
+        lead,
+        campanha: { id: l.campanhaId, nome: nomeCampanhaPorId.get(l.campanhaId) ?? null },
+      })
+    }
+    if (l.status !== "novo") {
+      void emitWebhookEvent("lead.status_alterado", { lead, statusAnterior: "novo" as LeadStatus })
+      if (l.status === "respondeu") void emitWebhookEvent("lead.status_alterado", { lead })
+    }
+  }
+
+  // 9) Uma única varredura da engine cobre os disparos iniciais devidos de
+  // todo o lote (ela já varre o sistema inteiro), em vez de uma varredura
+  // completa a cada lead importado.
+  if (entrouEmCampanhaAtiva) {
+    try {
+      const { processDueMessages } = await import("@/services/campaign-engine")
+      await processDueMessages()
+    } catch (error) {
+      await recordAppLog({
+        nivel: "erro",
+        origem: "campaigns",
+        mensagem: "Exceção inesperada ao acionar a engine para as mensagens iniciais da importação em lote de leads.",
+        detalhes: error,
+      })
+    }
+  }
+
+  for (const l of aceitos) {
+    resultados.push({ index: l.index, ok: true })
+  }
+
+  return resultados
 }
 
 /**
