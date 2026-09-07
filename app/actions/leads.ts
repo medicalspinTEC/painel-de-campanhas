@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 
-import { assignCampaign, createLead, createLeadsBulk, deleteLead, LeadValidationError, setLeadStatus, updateLead, updateLeadNotes, type LeadBulkInput, type LeadInput } from "@/services/leads"
+import { assignCampaign, createLead, createLeadsBulk, deleteLead, deleteLeads, LeadValidationError, setLeadStatus, updateLead, updateLeadNotes, type LeadBulkInput, type LeadInput } from "@/services/leads"
 import { mapProdutosPorIdImportacao } from "@/services/produtos"
 import { prisma } from "@/lib/prisma"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
@@ -124,6 +124,32 @@ export async function deleteLeadAction(id: string) {
   }
   revalidarLeads()
   return { ok: true, message: "Lead excluído." }
+}
+
+/** Exclui vários leads de uma vez (seleção em massa na tabela). */
+export async function deleteLeadsAction(ids: string[]) {
+  const idsUnicos = [...new Set(ids)].filter(Boolean)
+  if (idsUnicos.length === 0) {
+    return { ok: false, message: "Nenhum lead selecionado." }
+  }
+
+  let removidos = 0
+  try {
+    removidos = await deleteLeads(idsUnicos)
+  } catch (error) {
+    await recordAppLog({ origem: "leads", mensagem: `Falha ao excluir ${idsUnicos.length} lead(s) em massa.`, detalhes: error })
+    return { ok: false, message: "Não foi possível excluir os leads selecionados." }
+  }
+
+  if (removidos > 0) revalidarLeads()
+
+  return {
+    ok: removidos > 0,
+    message:
+      removidos === 0
+        ? "Nenhum dos leads selecionados foi encontrado (podem já ter sido excluídos)."
+        : `${removidos} lead(s) excluído(s).`,
+  }
 }
 
 export async function setLeadStatusAction(id: string, status: LeadStatus) {

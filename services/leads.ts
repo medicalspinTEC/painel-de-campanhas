@@ -928,3 +928,34 @@ export async function deleteLead(id: string): Promise<void> {
   const removido = await prisma.lead.delete({ where: { id } })
   await emitWebhookEvent("lead.removido", { lead: toLead(removido) })
 }
+
+/**
+ * Exclui muitos leads de uma vez (usado pela seleção em massa da tabela).
+ * Uma única instrução `deleteMany` para o lote inteiro — os eventos e
+ * vínculos de campanha de cada lead são removidos em cascata pelas FKs do
+ * schema — em vez de um `delete` por lead, que faria uma ida ao banco (e um
+ * disparo de webhook aguardado) por item selecionado.
+ *
+ * Retorna quantos leads foram de fato encontrados e removidos: ids que não
+ * existem (mais) são simplesmente ignorados, sem erro.
+ */
+export async function deleteLeads(ids: string[]): Promise<number> {
+  const idsUnicos = [...new Set(ids)].filter(Boolean)
+  if (idsUnicos.length === 0) return 0
+
+  // `deleteMany` não devolve os registros removidos, mas o webhook
+  // `lead.removido` precisa do conteúdo de cada lead — carregamos antes de
+  // excluir, em uma única consulta para o lote inteiro.
+  const leadsParaRemover = await prisma.lead.findMany({ where: { id: { in: idsUnicos } } })
+  if (leadsParaRemover.length === 0) return 0
+
+  await prisma.lead.deleteMany({ where: { id: { in: idsUnicos } } })
+
+  // A entrega em si roda em background (`emitWebhookEvent` apenas agenda),
+  // então notificar um evento por lead aqui não atrasa a resposta.
+  for (const lead of leadsParaRemover) {
+    void emitWebhookEvent("lead.removido", { lead: toLead(lead) })
+  }
+
+  return leadsParaRemover.length
+}

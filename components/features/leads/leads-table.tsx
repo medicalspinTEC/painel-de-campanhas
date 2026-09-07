@@ -15,7 +15,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
-import { assignCampaignAction, deleteLeadAction, setLeadStatusAction } from "@/app/actions/leads"
+import { assignCampaignAction, deleteLeadAction, deleteLeadsAction, setLeadStatusAction } from "@/app/actions/leads"
 import { LeadFormDialog, type CampanhaOpcao } from "@/components/features/leads/lead-form-dialog"
 import { LeadsImportDialog } from "@/components/features/leads/leads-import-dialog"
 import { SelectField, opcoesComExtras } from "@/components/shared/select-field"
@@ -84,7 +84,7 @@ export function LeadsTable({
   const [formAberto, setFormAberto] = useState(false)
   const [importarAberto, setImportarAberto] = useState(false)
   const [leadEditando, setLeadEditando] = useState<LeadRow | null>(null)
-  const [leadExcluindo, setLeadExcluindo] = useState<LeadRow | null>(null)
+  const [exclusao, setExclusao] = useState<{ tipo: "um"; lead: LeadRow } | { tipo: "lote"; ids: string[] } | null>(null)
   const [pending, startTransition] = useTransition()
 
   const valoresExistentes = useMemo(
@@ -144,12 +144,22 @@ export function LeadsTable({
   }
 
   function excluir() {
-    if (!leadExcluindo) return
-    const alvo = leadExcluindo
+    if (!exclusao) return
+    const alvo = exclusao
     startTransition(async () => {
-      await deleteLeadAction(alvo.id)
-      toast.success(`Lead ${alvo.nome} excluído.`)
-      setLeadExcluindo(null)
+      if (alvo.tipo === "um") {
+        await deleteLeadAction(alvo.lead.id)
+        toast.success(`Lead ${alvo.lead.nome} excluído.`)
+      } else {
+        const res = await deleteLeadsAction(alvo.ids)
+        if (res.ok) {
+          toast.success(res.message)
+        } else {
+          toast.error(res.message)
+        }
+        setSelecionados([])
+      }
+      setExclusao(null)
     })
   }
 
@@ -240,7 +250,7 @@ export function LeadsTable({
               size="sm"
               className="w-56"
             />
-            <Button variant="destructive" size="sm" onClick={() => setLeadExcluindo({ id: selecionados[0], nome: "leads selecionados" } as LeadRow)} disabled={pending}>
+            <Button variant="destructive" size="sm" onClick={() => setExclusao({ tipo: "lote", ids: selecionados })} disabled={pending}>
               Excluir
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setSelecionados([])} disabled={pending}>
@@ -351,7 +361,7 @@ export function LeadsTable({
                           Editar
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem variant="destructive" onClick={() => setLeadExcluindo(lead)}>
+                        <DropdownMenuItem variant="destructive" onClick={() => setExclusao({ tipo: "um", lead })}>
                           <Trash2 className="size-4" />
                           Excluir
                         </DropdownMenuItem>
@@ -417,12 +427,16 @@ export function LeadsTable({
 
       <LeadsImportDialog open={importarAberto} onOpenChange={setImportarAberto} />
 
-      <AlertDialog open={Boolean(leadExcluindo)} onOpenChange={(aberto) => !aberto && setLeadExcluindo(null)}>
+      <AlertDialog open={Boolean(exclusao)} onOpenChange={(aberto) => !aberto && setExclusao(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir lead?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {exclusao?.tipo === "lote" ? `Excluir ${formatNumber(exclusao.ids.length)} leads?` : "Excluir lead?"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {leadExcluindo?.nome} e todo o histórico de eventos serão removidos permanentemente.
+              {exclusao?.tipo === "lote"
+                ? `${formatNumber(exclusao.ids.length)} leads selecionados e todo o histórico de eventos serão removidos permanentemente.`
+                : `${exclusao?.lead.nome} e todo o histórico de eventos serão removidos permanentemente.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
