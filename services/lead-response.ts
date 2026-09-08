@@ -207,27 +207,25 @@ export async function processarRespostaLead(payload: unknown): Promise<RespostaL
     },
   })
 
-  // 6. Marca como respondeu e registra o evento correspondente. Mesmo que o
-  //    lead esteja em várias campanhas, a resposta é atribuída à campanha
-  //    que enviou a última mensagem (campanhaAlvo) e ele sai de todas.
-  await prisma.timelineEvent.create({
-    data: {
-      leadId: lead.id,
-      campanhaId: campanhaAlvo?.id ?? null,
-      tipo: "resposta",
-      descricao: campanhaAlvo
-        ? `Lead respondeu pela campanha ${campanhaAlvo.nome}.`
-        : "Lead respondeu após responder no WhatsApp.",
-      detalhes:
-        campanhaIds.length > 1
-          ? `Removido de ${campanhaIds.length} campanhas após resposta.`
-          : campanhaAlvo
-            ? `Removido da campanha ${campanhaAlvo.nome}.`
-            : null,
-      data: agora,
-      sucesso: true,
-    },
-  })
+  // 6. Se o lead estava em alguma campanha, registra a saída dela como um
+  //    evento à parte (tipo "removido_campanha", ícone diferente no feed) —
+  //    separado do evento de resposta acima, já que são fatos distintos e nem
+  //    toda resposta necessariamente tira o lead de uma campanha.
+  if (campanhaIds.length > 0) {
+    await prisma.timelineEvent.create({
+      data: {
+        leadId: lead.id,
+        campanhaId: campanhaAlvo?.id ?? null,
+        tipo: "removido_campanha",
+        descricao:
+          campanhaIds.length > 1
+            ? `Lead removido de ${campanhaIds.length} campanhas após responder.`
+            : `Lead removido da campanha ${campanhaAlvo?.nome ?? ""} após responder.`,
+        data: agora,
+        sucesso: true,
+      },
+    })
+  }
 
   // 7. Remove o lead de TODAS as campanhas em que estava vinculado e zera a
   //    campanha principal, já que ele deixou de participar de qualquer uma.

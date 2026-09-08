@@ -152,9 +152,9 @@ export async function deleteLeadsAction(ids: string[]) {
   }
 }
 
-export async function setLeadStatusAction(id: string, status: LeadStatus) {
+export async function setLeadStatusAction(id: string, status: LeadStatus, resposta?: string) {
   try {
-    await setLeadStatus(id, status)
+    await setLeadStatus(id, status, resposta)
   } catch (error) {
     await recordAppLog({ origem: "leads", mensagem: `Falha ao atualizar status do lead id=${id} para "${status}".`, detalhes: error })
     return { ok: false, message: "Não foi possível atualizar o status." }

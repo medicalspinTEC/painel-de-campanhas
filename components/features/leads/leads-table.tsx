@@ -34,6 +34,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -44,6 +52,7 @@ import {
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Textarea } from "@/components/ui/textarea"
 import { formatNumber, formatRelative } from "@/lib/format"
 import type { LeadRow } from "@/services/leads"
 import { LEAD_STATUS_LABEL, type LeadStatus } from "@/types"
@@ -90,6 +99,8 @@ export function LeadsTable({
   const [importarAberto, setImportarAberto] = useState(false)
   const [leadEditando, setLeadEditando] = useState<LeadRow | null>(null)
   const [alterandoStatusId, setAlterandoStatusId] = useState<string | null>(null)
+  const [respostaAlvo, setRespostaAlvo] = useState<LeadRow | null>(null)
+  const [respostaTexto, setRespostaTexto] = useState("")
   const [exclusao, setExclusao] = useState<{ tipo: "um"; lead: LeadRow } | { tipo: "lote"; ids: string[] } | null>(null)
   const [pending, startTransition] = useTransition()
 
@@ -151,9 +162,22 @@ export function LeadsTable({
 
   function alterarStatus(lead: LeadRow, status: LeadStatus) {
     if (status === lead.status) return
+    // Marcar como "Respondeu" tira o lead da campanha (mesma regra da resposta
+    // automática pelo WhatsApp) e é o único caso em que vale a pena registrar o
+    // que o lead disse — por isso perguntamos antes de aplicar, em vez de trocar
+    // direto como os demais status.
+    if (status === "respondeu") {
+      setRespostaTexto("")
+      setRespostaAlvo(lead)
+      return
+    }
+    aplicarStatus(lead, status)
+  }
+
+  function aplicarStatus(lead: LeadRow, status: LeadStatus, resposta?: string) {
     setAlterandoStatusId(lead.id)
     startTransition(async () => {
-      const res = await setLeadStatusAction(lead.id, status)
+      const res = await setLeadStatusAction(lead.id, status, resposta)
       if (res.ok) {
         // Ao marcar como "Respondeu" o lead sai da campanha automaticamente
         // (mesma regra da resposta pelo WhatsApp), por isso o aviso extra aqui.
@@ -167,6 +191,14 @@ export function LeadsTable({
       }
       setAlterandoStatusId(null)
     })
+  }
+
+  function confirmarResposta() {
+    if (!respostaAlvo) return
+    const lead = respostaAlvo
+    const texto = respostaTexto.trim()
+    setRespostaAlvo(null)
+    aplicarStatus(lead, "respondeu", texto.length > 0 ? texto : undefined)
   }
 
   function excluir() {
@@ -459,6 +491,34 @@ export function LeadsTable({
       />
 
       <LeadsImportDialog open={importarAberto} onOpenChange={setImportarAberto} />
+
+      <Dialog open={Boolean(respostaAlvo)} onOpenChange={(aberto) => !aberto && setRespostaAlvo(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Marcar {respostaAlvo?.nome} como respondido</DialogTitle>
+            <DialogDescription>
+              O lead sai da campanha automaticamente. Se quiser, digite o que ele respondeu para registrar no
+              histórico — é opcional.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            autoFocus
+            value={respostaTexto}
+            onChange={(event) => setRespostaTexto(event.target.value)}
+            placeholder="O que o lead respondeu? (opcional)"
+            className="min-h-24 resize-y"
+            aria-label="Resposta do lead"
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setRespostaAlvo(null)} disabled={pending}>
+              Cancelar
+            </Button>
+            <Button onClick={confirmarResposta} disabled={pending}>
+              {pending ? "Salvando…" : "Marcar como respondido"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={Boolean(exclusao)} onOpenChange={(aberto) => !aberto && setExclusao(null)}>
         <AlertDialogContent>

@@ -883,7 +883,7 @@ export async function assignCampaign(leadId: string, campanhaId: string | null):
   return resultado
 }
 
-export async function setLeadStatus(id: string, status: LeadStatus): Promise<Lead | null> {
+export async function setLeadStatus(id: string, status: LeadStatus, resposta?: string | null): Promise<Lead | null> {
   const lead = await prisma.lead.findUnique({ where: { id }, select: { campanhaId: true, status: true } })
   if (!lead) return null
 
@@ -907,28 +907,50 @@ export async function setLeadStatus(id: string, status: LeadStatus): Promise<Lea
     await prisma.leadCampaign.deleteMany({ where: { leadId: id } })
   }
 
+  // Ao marcar manualmente, a equipe pode opcionalmente digitar o que o lead
+  // respondeu (a interface pergunta isso antes de confirmar). O texto é
+  // opcional: sem ele, o evento de resposta fica só com a descrição padrão.
+  //
+  // "Resposta" e "saída da campanha" são registrados como dois eventos
+  // separados (tipos diferentes, ícones diferentes no feed) em vez de um só
+  // evento combinado — cada um conta uma coisa distinta e nem toda troca de
+  // status para "respondeu" tira o lead de uma campanha.
+  const respostaTexto = resposta?.trim() || null
+  const eventosParaCriar =
+    status === "respondeu"
+      ? [
+          {
+            campanhaId: lead.campanhaId,
+            tipo: "resposta" as const,
+            descricao: "Lead respondeu.",
+            detalhes: respostaTexto ? `Resposta: "${respostaTexto}".` : null,
+            data: agora,
+            sucesso: true,
+          },
+          ...(campanhasVinculadas.length > 0
+            ? [
+                {
+                  campanhaId: lead.campanhaId,
+                  tipo: "removido_campanha" as const,
+                  descricao:
+                    campanhasVinculadas.length > 1
+                      ? `Lead removido de ${campanhasVinculadas.length} campanhas após responder.`
+                      : `Lead removido da campanha ${campanhasVinculadas[0].campanha.nome} após responder.`,
+                  detalhes: null,
+                  data: agora,
+                  sucesso: true,
+                },
+              ]
+            : []),
+        ]
+      : []
+
   const atualizado = await prisma.lead.update({
     where: { id },
     data: {
       status,
       ...(saiDaCampanha ? { campanhaId: null, entradaCampanhaEm: null } : {}),
-      ...(status === "respondeu"
-        ? {
-            eventos: {
-              create: {
-                campanhaId: lead.campanhaId,
-                tipo: "resposta" as const,
-                descricao: "Lead respondeu.",
-                detalhes:
-                  campanhasVinculadas.length > 0
-                    ? `Removido de ${campanhasVinculadas.length} campanha(s): ${campanhasVinculadas.map((v) => v.campanha.nome).join(", ")}.`
-                    : null,
-                data: agora,
-                sucesso: true,
-              },
-            },
-          }
-        : {}),
+      ...(eventosParaCriar.length > 0 ? { eventos: { create: eventosParaCriar } } : {}),
     },
   })
 
