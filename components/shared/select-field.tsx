@@ -18,6 +18,7 @@ export function SelectField({
   className,
   id,
   ariaInvalid,
+  disabled,
 }: {
   name?: string
   value: string
@@ -28,6 +29,7 @@ export function SelectField({
   className?: string
   id?: string
   ariaInvalid?: boolean
+  disabled?: boolean
 }) {
   return (
     <Select
@@ -35,6 +37,7 @@ export function SelectField({
       value={value}
       onValueChange={(next) => onValueChange(String(next ?? ""))}
       items={opcoes}
+      disabled={disabled}
     >
       <SelectTrigger id={id} size={size} className={className} aria-invalid={ariaInvalid}>
         <SelectValue placeholder={placeholder} />

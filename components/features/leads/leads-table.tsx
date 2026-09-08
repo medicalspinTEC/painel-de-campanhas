@@ -19,7 +19,6 @@ import { assignCampaignAction, deleteLeadAction, deleteLeadsAction, setLeadStatu
 import { LeadFormDialog, type CampanhaOpcao } from "@/components/features/leads/lead-form-dialog"
 import { LeadsImportDialog } from "@/components/features/leads/leads-import-dialog"
 import { SelectField, opcoesComExtras } from "@/components/shared/select-field"
-import { LeadStatusBadge } from "@/components/shared/status-badges"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,6 +56,12 @@ const OPCOES_STATUS = [
   ...(Object.keys(LEAD_STATUS_LABEL) as LeadStatus[]).map((s) => ({ value: s, label: LEAD_STATUS_LABEL[s] })),
 ]
 
+/** Mesmas opções, sem "Todos os status" — usada no select de troca rápida por linha. */
+const OPCOES_STATUS_LEAD = (Object.keys(LEAD_STATUS_LABEL) as LeadStatus[]).map((s) => ({
+  value: s,
+  label: LEAD_STATUS_LABEL[s],
+}))
+
 export function LeadsTable({
   leads,
   campanhas,
@@ -84,6 +89,7 @@ export function LeadsTable({
   const [formAberto, setFormAberto] = useState(false)
   const [importarAberto, setImportarAberto] = useState(false)
   const [leadEditando, setLeadEditando] = useState<LeadRow | null>(null)
+  const [alterandoStatusId, setAlterandoStatusId] = useState<string | null>(null)
   const [exclusao, setExclusao] = useState<{ tipo: "um"; lead: LeadRow } | { tipo: "lote"; ids: string[] } | null>(null)
   const [pending, startTransition] = useTransition()
 
@@ -140,6 +146,26 @@ export function LeadsTable({
       const res = await assignCampaignAction(selecionados, alvo)
       toast.success(res.message)
       setSelecionados([])
+    })
+  }
+
+  function alterarStatus(lead: LeadRow, status: LeadStatus) {
+    if (status === lead.status) return
+    setAlterandoStatusId(lead.id)
+    startTransition(async () => {
+      const res = await setLeadStatusAction(lead.id, status)
+      if (res.ok) {
+        // Ao marcar como "Respondeu" o lead sai da campanha automaticamente
+        // (mesma regra da resposta pelo WhatsApp), por isso o aviso extra aqui.
+        toast.success(
+          status === "respondeu"
+            ? `${lead.nome} marcado como respondido e removido da campanha.`
+            : `${lead.nome}: status atualizado.`,
+        )
+      } else {
+        toast.error(res.message)
+      }
+      setAlterandoStatusId(null)
     })
   }
 
@@ -329,7 +355,14 @@ export function LeadsTable({
                     </span>
                   </TableCell>
                   <TableCell>
-                    <LeadStatusBadge status={lead.status} />
+                    <SelectField
+                      value={lead.status}
+                      onValueChange={(valor) => alterarStatus(lead, valor as LeadStatus)}
+                      opcoes={OPCOES_STATUS_LEAD}
+                      size="sm"
+                      className="w-36"
+                      disabled={alterandoStatusId === lead.id}
+                    />
                   </TableCell>
                   <TableCell className="hidden xl:table-cell">
                     <span className="text-sm text-muted-foreground">

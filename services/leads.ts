@@ -887,10 +887,31 @@ export async function setLeadStatus(id: string, status: LeadStatus): Promise<Lea
   const lead = await prisma.lead.findUnique({ where: { id }, select: { campanhaId: true, status: true } })
   if (!lead) return null
 
+  const agora = new Date()
+
+  // Marcar como "respondeu" — manualmente pela tabela/API ou automaticamente
+  // pela resposta no WhatsApp (`processarRespostaLead`) — tem que ter o mesmo
+  // efeito: o lead sai de toda campanha em que estava. Sem isso, um lead
+  // marcado como respondido aqui continuava vinculado em `LeadCampaign` e a
+  // engine (que decide quem recebe mensagem só por esse vínculo, sem olhar o
+  // status) seguia disparando a sequência normalmente para ele.
+  const saiDaCampanha = status === "respondeu"
+  const campanhasVinculadas = saiDaCampanha
+    ? await prisma.leadCampaign.findMany({
+        where: { leadId: id },
+        select: { campanha: { select: { nome: true } } },
+      })
+    : []
+
+  if (saiDaCampanha && campanhasVinculadas.length > 0) {
+    await prisma.leadCampaign.deleteMany({ where: { leadId: id } })
+  }
+
   const atualizado = await prisma.lead.update({
     where: { id },
     data: {
       status,
+      ...(saiDaCampanha ? { campanhaId: null, entradaCampanhaEm: null } : {}),
       ...(status === "respondeu"
         ? {
             eventos: {
@@ -898,7 +919,11 @@ export async function setLeadStatus(id: string, status: LeadStatus): Promise<Lea
                 campanhaId: lead.campanhaId,
                 tipo: "resposta" as const,
                 descricao: "Lead respondeu.",
-                data: new Date(),
+                detalhes:
+                  campanhasVinculadas.length > 0
+                    ? `Removido de ${campanhasVinculadas.length} campanha(s): ${campanhasVinculadas.map((v) => v.campanha.nome).join(", ")}.`
+                    : null,
+                data: agora,
                 sucesso: true,
               },
             },
