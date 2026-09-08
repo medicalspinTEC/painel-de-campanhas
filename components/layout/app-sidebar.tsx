@@ -115,7 +115,7 @@ export function AppSidebar({ instanceName, instanceState, profileImageUrl }: App
           </div>
           <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
             <span className="truncate text-sm font-semibold leading-tight">Medical Spin</span>
-            <span className="truncate text-xs text-muted-foreground leading-tight">Follow-up WhatsApp</span>
+            <span className="truncate text-xs text-muted-foreground leading-tight">Follow-up WhatsApp v1.1</span>
           </div>
         </div>
       </SidebarHeader>
