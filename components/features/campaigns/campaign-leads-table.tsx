@@ -1,8 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useState, useTransition } from "react"
-import { RotateCw, SkipForward } from "lucide-react"
+import { useEffect, useMemo, useState, useTransition } from "react"
+import { ChevronLeft, ChevronRight, RotateCw, SkipForward } from "lucide-react"
 import { toast } from "sonner"
 
 import { skipCampaignMessageAction } from "@/app/actions/campaigns"
@@ -19,10 +19,14 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatDate } from "@/lib/format"
 import type { LeadStatus } from "@/types"
+
+/** Opções de itens por página exibidas no seletor. */
+const TAMANHOS_PAGINA = [10, 25, 50, 100] as const
 
 export interface CampaignLeadItem {
   id: string
@@ -89,6 +93,18 @@ export function CampaignLeadsTable({
   const [pending, startTransition] = useTransition()
   const [alvo, setAlvo] = useState<CampaignLeadItem | null>(null)
   const [enviandoId, setEnviandoId] = useState<string | null>(null)
+  const [tamanhoPagina, setTamanhoPagina] = useState<(typeof TAMANHOS_PAGINA)[number]>(10)
+  const [pagina, setPagina] = useState(1)
+
+  const totalPaginas = Math.max(1, Math.ceil(leads.length / tamanhoPagina))
+  // Corrige a página atual se a lista encolheu (ex.: após um filtro) e ela
+  // ficou fora do intervalo válido, sem esperar por um novo render disparado
+  // pelo usuário.
+  const paginaAtual = Math.min(pagina, totalPaginas)
+  const leadsDaPagina = useMemo(() => {
+    const inicio = (paginaAtual - 1) * tamanhoPagina
+    return leads.slice(inicio, inicio + tamanhoPagina)
+  }, [leads, paginaAtual, tamanhoPagina])
 
   if (leads.length === 0) {
     return (
@@ -129,7 +145,7 @@ export function CampaignLeadsTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {leads.map((lead) => (
+          {leadsDaPagina.map((lead) => (
             <TableRow key={lead.id}>
               <TableCell>
                 <Link href={`/leads/${lead.id}`} className="font-medium hover:underline">
@@ -167,6 +183,59 @@ export function CampaignLeadsTable({
           ))}
         </TableBody>
       </Table>
+
+      <div className="flex flex-col-reverse items-center justify-between gap-3 pt-4 sm:flex-row">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>Por página</span>
+          <Select
+            value={String(tamanhoPagina)}
+            onValueChange={(valor) => {
+              setTamanhoPagina(Number(valor) as (typeof TAMANHOS_PAGINA)[number])
+              setPagina(1)
+            }}
+          >
+            <SelectTrigger className="h-8 w-[72px]" aria-label="Leads por página">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TAMANHOS_PAGINA.map((tamanho) => (
+                <SelectItem key={tamanho} value={String(tamanho)}>
+                  {tamanho}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span>
+            {leads.length === 0
+              ? "0 leads"
+              : `${(paginaAtual - 1) * tamanhoPagina + 1}–${Math.min(paginaAtual * tamanhoPagina, leads.length)} de ${leads.length} leads`}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPagina((p) => Math.max(1, p - 1))}
+            disabled={paginaAtual <= 1}
+          >
+            <ChevronLeft className="size-4" />
+            Anterior
+          </Button>
+          <span className="text-sm tabular-nums text-muted-foreground">
+            Página {paginaAtual} de {totalPaginas}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+            disabled={paginaAtual >= totalPaginas}
+          >
+            Próxima
+            <ChevronRight className="size-4" />
+          </Button>
+        </div>
+      </div>
 
       <AlertDialog open={Boolean(alvo)} onOpenChange={(aberto) => !aberto && !pending && setAlvo(null)}>
         <AlertDialogContent>

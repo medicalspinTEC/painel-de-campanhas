@@ -28,7 +28,7 @@ export default async function CampanhaPage({ params }: { params: Promise<{ id: s
 
   const leadsDaCampanha = leads.filter((l) => l.campanhasIds.includes(campanha.id))
   const temMensagens = campanha.mensagens.length > 0
-  const itensLeads: CampaignLeadItem[] = leadsDaCampanha.slice(0, 12).map((lead) => {
+  const itensLeads: CampaignLeadItem[] = leadsDaCampanha.map((lead) => {
     const schedule = agenda[lead.id]
     return {
       id: lead.id,
