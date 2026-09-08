@@ -352,6 +352,13 @@ export async function createLead(input: LeadInput): Promise<Lead> {
     ? await prisma.campaign.findUnique({ where: { id: input.campanhaId }, select: { nome: true } })
     : null
 
+  // Vincular a uma campanha (pelo campo legado `campanhaId` ou pela lista
+  // `campanhasIds`) já na criação reflete no status como "em_campanha",
+  // independente do status da própria campanha (ativa, pausada ou
+  // rascunho) — ver `statusAoVincularCampanha`.
+  const vinculaCampanha = Boolean(input.campanhaId) || Boolean(input.campanhasIds?.length)
+  const statusParaGravar = vinculaCampanha ? statusAoVincularCampanha(input.status) : input.status
+
   const lead = await prisma.lead.create({
     data: {
       nome: input.nome.trim(),
@@ -360,7 +367,7 @@ export async function createLead(input: LeadInput): Promise<Lead> {
       marca: input.marca ?? "",
       persona: input.persona ?? "",
       regiao: input.regiao ?? "",
-      status: input.status,
+      status: statusParaGravar,
       notas: normalizarNotas(input.notas),
       campanhaId: input.campanhaId,
       entradaCampanhaEm: input.campanhaId ? agora : null,
@@ -556,7 +563,15 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
   const nomeCampanhaPorId = new Map(campanhasExplicitas.map((c) => [c.id, c.nome]))
   const statusCampanhaExplicitaPorId = new Map(campanhasExplicitas.map((c) => [c.id, c.status]))
 
-  // 5) Insere todos os leads do lote em uma única ida ao banco.
+  // 5) Insere todos os leads do lote em uma única ida ao banco. Quem já chega
+  // com campanha explícita (`campanhaId`) entra direto como "em_campanha",
+  // independente do status dessa campanha (ativa, pausada ou rascunho) — ver
+  // `statusAoVincularCampanha`. Ajustamos o objeto em memória antes do
+  // insert para que o webhook do passo 8 reflita o mesmo status gravado.
+  for (const l of aceitos) {
+    if (l.campanhaId) l.status = statusAoVincularCampanha(l.status)
+  }
+
   await prisma.lead.createMany({
     data: aceitos.map((l) => ({
       id: l.id,
@@ -620,6 +635,19 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
   }
   if (paresParaVincular.length > 0) {
     await prisma.leadCampaign.createMany({ data: paresParaVincular, skipDuplicates: true })
+
+    // Mesma regra para quem foi vinculado automaticamente por filtro (e
+    // ainda não tinha campanha explícita no passo 6): grava no banco e
+    // reflete em memória para o webhook do passo 8 usar o status correto.
+    const leadIdsAutoVinculados = [...new Set(paresParaVincular.map((p) => p.leadId))]
+    await prisma.lead.updateMany({
+      where: { id: { in: leadIdsAutoVinculados }, status: { not: "respondeu" } },
+      data: { status: "em_campanha" },
+    })
+    const autoVinculadosSet = new Set(leadIdsAutoVinculados)
+    for (const l of aceitos) {
+      if (autoVinculadosSet.has(l.id)) l.status = statusAoVincularCampanha(l.status)
+    }
   }
 
   // 8) Notifica os webhooks assinados. `emitWebhookEvent` apenas agenda a
@@ -674,6 +702,19 @@ async function emitirStatus(lead: Lead, anterior: LeadStatus | null) {
   if (lead.status === "respondeu") await emitWebhookEvent("lead.status_alterado", { lead })
 }
 
+/**
+ * Status resultante de vincular um lead a uma campanha. Um lead que passa a
+ * ter vínculo em `LeadCampaign` deve refletir isso como "em_campanha",
+ * independente do status da própria campanha (ativa, pausada ou rascunho) e
+ * de a vinculação ser manual, automática (por filtro) ou por importação em
+ * massa. A única exceção é quem já respondeu: responder tira o lead de toda
+ * campanha (ver `setLeadStatus`), então uma vinculação posterior não deve
+ * reabrir esse estado.
+ */
+export function statusAoVincularCampanha(statusAtual: LeadStatus): LeadStatus {
+  return statusAtual === "respondeu" ? statusAtual : "em_campanha"
+}
+
 export async function updateLead(id: string, input: LeadInput): Promise<Lead | null> {
   const atual = await prisma.lead.findUnique({ where: { id }, select: { campanhaId: true, status: true } })
   if (!atual) return null
@@ -698,12 +739,19 @@ export async function updateLead(id: string, input: LeadInput): Promise<Lead | n
       ? await prisma.campaign.findUnique({ where: { id: input.campanhaId }, select: { nome: true } })
       : null
 
+  // Vincular a uma campanha (pelo campo legado `campanhaId` ou pela lista
+  // `campanhasIds`) reflete no status como "em_campanha", independente do
+  // status da própria campanha (ativa, pausada ou rascunho) — ver
+  // `statusAoVincularCampanha`.
+  const vinculaCampanha = Boolean(input.campanhaId) || Boolean(input.campanhasIds?.length)
+  const statusParaGravar = vinculaCampanha ? statusAoVincularCampanha(input.status) : input.status
+
   const lead = await prisma.lead.update({
     where: { id },
     data: {
       nome: input.nome.trim(),
       telefone: telefoneNormalizado,
-      status: input.status,
+      status: statusParaGravar,
       campanhaId: input.campanhaId,
       // Dimensões de segmentação são opcionais: só sobrescrevem quando enviadas.
       ...(input.produto !== undefined ? { produto: input.produto } : {}),
@@ -846,6 +894,15 @@ async function vincularLeadACampanhasCompativeis(lead: {
       await dispararMensagemInicialDaCampanha(lead.id, campanha.id)
     }
   }
+
+  // Vinculação automática por filtro: reflete no status como "em_campanha",
+  // independente do status das campanhas encontradas acima serem ativa,
+  // pausada ou rascunho. `updateMany` com o filtro de status evita reabrir
+  // esse estado para quem já respondeu.
+  await prisma.lead.updateMany({
+    where: { id: lead.id, status: { not: "respondeu" } },
+    data: { status: "em_campanha" },
+  })
 }
 
 export async function assignCampaign(leadId: string, campanhaId: string | null): Promise<Lead | null> {
@@ -860,8 +917,10 @@ export async function assignCampaign(leadId: string, campanhaId: string | null):
     ? await prisma.campaign.findUnique({ where: { id: campanhaId }, select: { nome: true } })
     : null
 
-  const novoStatus =
-    campanhaId && (lead.status === "novo" || lead.status === "encerrado") ? "em_campanha" : undefined
+  // Vinculação manual: reflete no status como "em_campanha", independente do
+  // status da própria campanha (ativa, pausada ou rascunho) — ver
+  // `statusAoVincularCampanha`.
+  const novoStatus = campanhaId ? statusAoVincularCampanha(lead.status) : undefined
 
   if (campanhaId) {
     await prisma.leadCampaign.upsert({

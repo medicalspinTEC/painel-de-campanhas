@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
-import { CalendarClock, Copy, MessageSquare, MoreHorizontal, Pause, Play, Trash2, Users } from "lucide-react"
+import { CalendarClock, Copy, MessageSquare, MoreHorizontal, Pause, Play, Trash2, Users, Ban, SquarePen } from "lucide-react"
 import { toast } from "sonner"
 
 import {
@@ -40,7 +40,7 @@ export function CampaignCard({ campanha }: { campanha: CampaignWithStats }) {
   const [pending, startTransition] = useTransition()
   const [confirmar, setConfirmar] = useState(false)
 
-  function alterarStatus(status: "ativa" | "pausada") {
+  function alterarStatus(status: "ativa" | "pausada" | "encerrada" | "rascunho") {
     startTransition(async () => {
       const res = await setCampaignStatusAction(campanha.id, status)
       if (res.ok) toast.success(res.message)
@@ -106,15 +106,31 @@ export function CampaignCard({ campanha }: { campanha: CampaignWithStats }) {
                   Editar
                 </DropdownMenuItem>
                 {campanha.status === "ativa" ? (
-                  <DropdownMenuItem onClick={() => alterarStatus("pausada")} disabled={pending}>
-                    <Pause className="size-4" />
-                    Pausar
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem onClick={() => alterarStatus("pausada")} disabled={pending}>
+                      <Pause className="size-4" />
+                      Pausar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => alterarStatus("encerrada")} disabled={pending}>
+                      <Ban className="size-4" />
+                      Encerrar
+                    </DropdownMenuItem>                 
+                  </>
                 ) : (
-                  <DropdownMenuItem onClick={() => alterarStatus("ativa")} disabled={pending}>
-                    <Play className="size-4" />
-                    Ativar
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem onClick={() => alterarStatus("ativa")} disabled={pending}>
+                      <Play className="size-4" />
+                      Ativar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => alterarStatus("encerrada")} disabled={pending}>
+                      <Ban className="size-4" />
+                      Encerrar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => alterarStatus("rascunho")} disabled={pending}>
+                      <SquarePen className="size-4" />
+                      Rascunho
+                    </DropdownMenuItem>
+                  </>
                 )}
                 <DropdownMenuItem onClick={duplicar} disabled={pending}>
                   <Copy className="size-4" />

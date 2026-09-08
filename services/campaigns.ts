@@ -399,6 +399,18 @@ async function sincronizarLeadsDaCampanha(campanhaId: string, leadIds: string[] 
       })
     }
   }
+
+  // Vincular a uma campanha (seleção manual de leads ou correspondência por
+  // filtro, na criação/edição da campanha) reflete no status do lead como
+  // "em_campanha", independente do status da própria campanha (ativa,
+  // pausada ou rascunho). `updateMany` com o filtro de status evita reabrir
+  // esse estado para quem já respondeu.
+  if (selecionados.size > 0) {
+    await prisma.lead.updateMany({
+      where: { id: { in: Array.from(selecionados) }, status: { not: "respondeu" } },
+      data: { status: "em_campanha" },
+    })
+  }
 }
 
 export async function createCampaign(input: CampaignInput): Promise<Campaign> {
