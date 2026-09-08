@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { ArrowLeft, CalendarClock, MessageSquare, Send, Users } from "lucide-react"
 
 import { CampaignLeadsTable, type CampaignLeadItem } from "@/components/features/campaigns/campaign-leads-table"
+import { CampaignRespondersTable } from "@/components/features/campaigns/campaign-responders-table"
 import { CampaignResponses } from "@/components/features/campaigns/campaign-responses"
 import { KpiCard } from "@/components/shared/kpi-card"
 import { LinkButton } from "@/components/shared/link-button"
@@ -11,16 +12,17 @@ import { CampaignStatusBadge } from "@/components/shared/status-badges"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatDate, formatNumber, formatPercent, renderTemplate } from "@/lib/format"
-import { getCampaign, getCampaignResponses, getCampaignSchedule } from "@/services/campaigns"
+import { getCampaign, getCampaignResponders, getCampaignResponses, getCampaignSchedule } from "@/services/campaigns"
 import { listLeads } from "@/services/leads"
 
 export default async function CampanhaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [campanha, leads, agenda, respostas] = await Promise.all([
+  const [campanha, leads, agenda, respostas, respondentes] = await Promise.all([
     getCampaign(id),
     listLeads(),
     getCampaignSchedule(id),
     getCampaignResponses(id),
+    getCampaignResponders(id),
   ])
   if (!campanha) notFound()
 
@@ -142,6 +144,20 @@ export default async function CampanhaPage({ params }: { params: Promise<{ id: s
         </CardHeader>
         <CardContent>
           <CampaignLeadsTable campanhaId={campanha.id} leads={itensLeads} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Leads que responderam</CardTitle>
+          <CardDescription>
+            {respondentes.length === 0
+              ? "Assim que um lead responder, ele sai da sequência e aparece aqui."
+              : `${formatNumber(respondentes.length)} ${respondentes.length === 1 ? "lead respondeu" : "leads responderam"} a esta campanha.`}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <CampaignRespondersTable leads={respondentes} />
         </CardContent>
       </Card>
 

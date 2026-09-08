@@ -812,6 +812,60 @@ export async function getCampaignResponses(campanhaId: string): Promise<Campaign
   }))
 }
 
+export interface CampaignResponder {
+  leadId: string
+  leadNome: string
+  leadTelefone: string
+  leadStatus: LeadStatus
+  /** Quantas respostas (eventos) este lead já registrou nesta campanha. */
+  totalRespostas: number
+  /** Data da resposta mais recente deste lead nesta campanha. */
+  ultimaRespostaEm: string
+}
+
+/**
+ * Mesma origem de dados de `getCampaignResponses` (eventos de timeline tipo
+ * "resposta"), mas agregada por lead: uma linha por lead em vez de uma linha
+ * por evento de resposta. Como responder faz o lead sair da campanha (a
+ * vinculação em `LeadCampaign` é removida — ver `setLeadStatus` e
+ * `processarRespostaLead`), esta é a única forma de ver, na própria campanha,
+ * quem já respondeu, já que esses leads não aparecem mais em "Leads
+ * vinculados". Ordenado da resposta mais recente para a mais antiga.
+ */
+export async function getCampaignResponders(campanhaId: string): Promise<CampaignResponder[]> {
+  const respostas = await prisma.timelineEvent.findMany({
+    where: { campanhaId, tipo: "resposta" },
+    orderBy: { data: "desc" },
+    select: {
+      leadId: true,
+      data: true,
+      lead: { select: { nome: true, telefone: true, status: true } },
+    },
+  })
+
+  // A consulta já vem ordenada da mais recente para a mais antiga, então a
+  // primeira ocorrência de cada leadId é a resposta mais recente dele — daí
+  // dar para agregar em uma única passagem, sem reordenar depois.
+  const porLead = new Map<string, CampaignResponder>()
+  for (const r of respostas) {
+    const existente = porLead.get(r.leadId)
+    if (existente) {
+      existente.totalRespostas += 1
+      continue
+    }
+    porLead.set(r.leadId, {
+      leadId: r.leadId,
+      leadNome: r.lead?.nome ?? "Lead removido",
+      leadTelefone: r.lead?.telefone ?? "",
+      leadStatus: (r.lead?.status ?? "novo") as LeadStatus,
+      totalRespostas: 1,
+      ultimaRespostaEm: r.data.toISOString(),
+    })
+  }
+
+  return [...porLead.values()]
+}
+
 export async function deleteCampaign(id: string): Promise<void> {
   /*
    * `onDelete: SetNull` libera os leads automaticamente, mas os que estavam
