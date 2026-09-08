@@ -1,14 +1,12 @@
-import type { ReactNode } from "react"
+import { Suspense, type ReactNode } from "react"
 
-import { AppHeader } from "@/components/layout/app-header"
+import { AppHeaderData } from "@/components/layout/app-header-data"
+import { AppHeaderSkeleton } from "@/components/layout/app-header-skeleton"
 import { AppSidebar } from "@/components/layout/app-sidebar"
+import { AppSidebarData } from "@/components/layout/app-sidebar-data"
 import { DatabaseSetupNotice } from "@/components/layout/database-setup-notice"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { isDatabaseConfigured } from "@/lib/prisma"
-import { recordAppLog } from "@/services/app-logs"
-import { listCampaigns } from "@/services/campaigns"
-import { listEvents } from "@/services/events"
-import { listLeads } from "@/services/leads"
+import { checkDatabaseConnection, isDatabaseConfigured } from "@/lib/prisma"
 
 /*
  * O painel lê leads, campanhas e eventos direto do Postgres via Prisma. Como
@@ -46,45 +44,6 @@ function resumirErro(error: unknown): string {
   return resumo.length > 0 ? resumo : bruto.split("\n")[0]
 }
 
-async function getEvolutionInstanceStatus() {
-  const apiUrl = (process.env.EVOLUTION_API_URL ?? "https://evo-j0o08ok8sgwc4cog04w0owok.95.217.164.173.sslip.io").replace(/\/$/, "")
-  const apiKey = process.env.EVOLUTION_API_KEY
-  const instanceName = process.env.EVOLUTION_INSTANCE_NAME
-
-  try {
-    const response = await fetch(`${apiUrl}/instance/connectionState/${instanceName}`, {
-      headers: { apikey: apiKey ?? "" },
-      next: { revalidate: 15 },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Evolution status request failed with ${response.status}`)
-    }
-
-    const payload = (await response.json()) as {
-      instance?: { instanceName?: string; state?: string }
-    }
-
-    return {
-      instanceName: payload.instance?.instanceName ?? instanceName,
-      instanceState: payload.instance?.state ?? "unknown",
-      profileImageUrl: process.env.EVOLUTION_PROFILE_IMAGE_URL?.trim() || null,
-    }
-  } catch (error) {
-    await recordAppLog({
-      nivel: "erro",
-      origem: "evolution",
-      mensagem: "Falha ao consultar status da instância Evolution API.",
-      detalhes: error,
-    })
-    return {
-      instanceName,
-      instanceState: "unknown",
-      profileImageUrl: null,
-    }
-  }
-}
-
 export default async function AppLayout({ children }: { children: ReactNode }) {
   // Sem connection string nem faz sentido tentar consultar: mostramos o setup.
   if (!isDatabaseConfigured()) {
@@ -93,44 +52,29 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   /*
    * O layout envolve todas as páginas do painel, então é aqui que a falha de
-   * conexão aparece primeiro. Tratando o erro neste ponto, o usuário recebe
-   * instruções em vez de uma tela de erro do Next em cada rota.
+   * conexão aparece primeiro. Antes, essa checagem carregava leads, campanhas
+   * E eventos por completo (com agregações) a cada navegação, só para
+   * confirmar que o banco respondia — um `SELECT 1` faz a mesma verificação
+   * sem o custo. Os dados de fato (busca do cabeçalho, status da instância)
+   * são buscados por `AppHeaderData`/`AppSidebarData` abaixo, cada um dentro
+   * do seu próprio `<Suspense>`, para não travar a troca de página.
    */
-  let leads: Awaited<ReturnType<typeof listLeads>>
-  let campanhas: Awaited<ReturnType<typeof listCampaigns>>
-  let notificacoes: Awaited<ReturnType<typeof listEvents>>
-  const evolutionStatus = await getEvolutionInstanceStatus()
-
   try {
-    ;[leads, campanhas, notificacoes] = await Promise.all([listLeads(), listCampaigns(), listEvents(30)])
+    await checkDatabaseConnection()
   } catch (error) {
-    console.error("[v0] Falha ao carregar dados do banco:", error)
+    console.error("[v0] Falha ao conectar ao banco:", error)
     return <DatabaseSetupNotice erro={resumirErro(error)} />
   }
 
   return (
     <SidebarProvider>
-      <AppSidebar
-        instanceName={evolutionStatus.instanceName}
-        instanceState={evolutionStatus.instanceState}
-        profileImageUrl={evolutionStatus.profileImageUrl}
-      />
+      <Suspense fallback={<AppSidebar instanceState="unknown" />}>
+        <AppSidebarData />
+      </Suspense>
       <SidebarInset className="min-w-0">
-        <AppHeader
-          leads={leads.slice(0, 40).map((l) => ({
-            id: l.id,
-            nome: l.nome,
-            detalhe: l.produto,
-            href: `/leads/${l.id}`,
-          }))}
-          campanhas={campanhas.map((c) => ({
-            id: c.id,
-            nome: c.nome,
-            detalhe: `${c.totalLeads} leads`,
-            href: `/campanhas/${c.id}`,
-          }))}
-          notificacoes={notificacoes}
-        />
+        <Suspense fallback={<AppHeaderSkeleton />}>
+          <AppHeaderData />
+        </Suspense>
         <div className="min-w-0 flex-1 p-4 md:p-6">{children}</div>
       </SidebarInset>
     </SidebarProvider>

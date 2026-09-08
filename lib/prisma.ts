@@ -9,6 +9,16 @@ export function isDatabaseConfigured() {
   return Boolean(process.env.DATABASE_URL)
 }
 
+/**
+ * Checagem de conectividade barata (`SELECT 1`), usada pelo layout do painel
+ * para decidir se mostra o aviso de setup do banco. Antes, essa decisão
+ * dependia do resultado de `listLeads`/`listCampaigns`/`listEvents` — três
+ * varreduras completas de tabela só para confirmar que o banco responde.
+ */
+export async function checkDatabaseConnection(): Promise<void> {
+  await prisma.$queryRaw`SELECT 1`
+}
+
 declare global {
   // eslint-disable-next-line no-var
   var __prisma: { cliente: PrismaClient; url: string | undefined } | undefined

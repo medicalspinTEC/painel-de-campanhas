@@ -179,6 +179,28 @@ export async function listLeads(): Promise<LeadRow[]> {
   )
 }
 
+export interface LeadSearchItem {
+  id: string
+  nome: string
+  produto: string
+}
+
+/**
+ * Versão enxuta de `listLeads` para a busca global do cabeçalho: só os campos
+ * exibidos (id, nome, produto) e limitada a `limit` registros no próprio banco
+ * (em vez de carregar TODOS os leads com as agregações de mensagens/respostas
+ * e só então cortar em memória com `.slice(0, 40)`, como o cabeçalho fazia
+ * antes). Como o cabeçalho aparece em toda navegação do painel, essa consulta
+ * roda a cada troca de página — precisa ser barata.
+ */
+export async function listLeadsForSearch(limit = 40): Promise<LeadSearchItem[]> {
+  return prisma.lead.findMany({
+    select: { id: true, nome: true, produto: true },
+    orderBy: { criadoEm: "desc" },
+    take: limit,
+  })
+}
+
 export async function getLead(id: string): Promise<LeadRow | null> {
   const lead = await prisma.lead.findUnique({ where: { id }, select: leadRowSelect })
   if (!lead) return null

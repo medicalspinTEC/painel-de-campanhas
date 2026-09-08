@@ -222,6 +222,30 @@ export async function listCampaigns(): Promise<CampaignWithStats[]> {
   )
 }
 
+export interface CampaignSearchItem {
+  id: string
+  nome: string
+  totalLeads: number
+}
+
+/**
+ * Versão enxuta de `listCampaigns` para a busca global do cabeçalho: id, nome
+ * e contagem de leads via `_count` (uma única consulta), sem rodar
+ * `encerrarCampanhasExpiradas()` nem as agregações completas de
+ * mensagens/respostas de `loadStats`. O cabeçalho aparece em toda navegação
+ * do painel, então essa consulta precisa ser barata — a varredura de
+ * expiração continua acontecendo normalmente quando a página de Campanhas é
+ * visitada (via `listCampaigns`).
+ */
+export async function listCampaignsForSearch(limit = 40): Promise<CampaignSearchItem[]> {
+  const campanhas = await prisma.campaign.findMany({
+    select: { id: true, nome: true, _count: { select: { leadCampaigns: true } } },
+    orderBy: { criadoEm: "desc" },
+    take: limit,
+  })
+  return campanhas.map((c) => ({ id: c.id, nome: c.nome, totalLeads: c._count.leadCampaigns }))
+}
+
 export async function getCampaign(id: string): Promise<CampaignWithStats | null> {
   await encerrarCampanhasExpiradas()
   const campanha = await prisma.campaign.findUnique({ where: { id }, include: campaignInclude })
