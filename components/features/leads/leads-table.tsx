@@ -60,7 +60,10 @@ import type { LeadRow } from "@/services/leads"
 import { LEAD_STATUS_LABEL, type LeadStatus } from "@/types"
 
 const TODOS = "todos"
-const POR_PAGINA = 12
+const OPCOES_POR_PAGINA = [10, 25, 50, 100].map((quantidade) => ({
+  value: String(quantidade),
+  label: `${quantidade}`,
+}))
 
 const OPCOES_STATUS = [
   { value: TODOS, label: "Todos os status" },
@@ -99,6 +102,7 @@ export function LeadsTable({
   const [regiao, setRegiao] = useState(TODOS)
   const [campanhaFiltro, setCampanhaFiltro] = useState(TODOS)
   const [pagina, setPagina] = useState(1)
+  const [porPagina, setPorPagina] = useState(10)
   const [selecionados, setSelecionados] = useState<string[]>([])
   const [formAberto, setFormAberto] = useState(false)
   const [importarAberto, setImportarAberto] = useState(false)
@@ -135,9 +139,9 @@ export function LeadsTable({
     })
   }, [leads, busca, status, produto, marca, regiao, campanhaFiltro])
 
-  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / POR_PAGINA))
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / porPagina))
   const paginaAtual = Math.min(pagina, totalPaginas)
-  const visiveis = filtrados.slice((paginaAtual - 1) * POR_PAGINA, paginaAtual * POR_PAGINA)
+  const visiveis = filtrados.slice((paginaAtual - 1) * porPagina, paginaAtual * porPagina)
   const todosSelecionados = visiveis.length > 0 && visiveis.every((l) => selecionados.includes(l.id))
 
   function resetPagina<T>(setter: (v: T) => void) {
@@ -462,11 +466,23 @@ export function LeadsTable({
         ) : null}
       </Card>
 
-      <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
+      <div className="flex flex-col-reverse items-center justify-between gap-3 pt-4 sm:flex-row">
         <p className="text-sm text-muted-foreground">
           {formatNumber(filtrados.length)} de {formatNumber(leads.length)} leads
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>Por página</span>
+          <SelectField
+            value={String(porPagina)}
+            onValueChange={(valor) => {
+              setPorPagina(Number(valor))
+              setPagina(1)
+              setSelecionados([])
+            }}
+            opcoes={OPCOES_POR_PAGINA}
+            size="sm"
+            className="h-8 w-[72px]" 
+          />
           <Button
             variant="outline"
             size="sm"
