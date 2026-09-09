@@ -103,6 +103,12 @@ export const WEBHOOK_EVENTS: WebhookEventDef[] = [
     descricao: "Um disparo foi antecipado manualmente na página da campanha.",
     grupo: "Mensagens",
   },
+  {
+    key: "mensagem.manual",
+    label: "Mensagem manual enviada",
+    descricao: "Uma mensagem avulsa foi enviada a um lead pela página de detalhe.",
+    grupo: "Mensagens",
+  },
 
   // Sistema
   {

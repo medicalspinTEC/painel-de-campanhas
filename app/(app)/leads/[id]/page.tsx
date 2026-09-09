@@ -2,6 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, MessageCircleReply, NotebookPen, Send, Sparkles } from "lucide-react"
 
+import { LeadMessageDialog } from "@/components/features/leads/lead-message-dialog"
 import { LeadNotes } from "@/components/features/leads/lead-notes"
 import { LeadTimeline } from "@/components/features/leads/lead-timeline"
 import { LinkButton } from "@/components/shared/link-button"
@@ -10,11 +11,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { formatDateTime, formatRelative, initials } from "@/lib/format"
+import { listInstanceOptions } from "@/services/evolution"
 import { getLead, getLeadTimeline } from "@/services/leads"
 
 export default async function LeadDetalhePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [lead, eventos] = await Promise.all([getLead(id), getLeadTimeline(id)])
+  const [lead, eventos, instancias] = await Promise.all([getLead(id), getLeadTimeline(id), listInstanceOptions()])
   if (!lead) notFound()
 
   const atributos = [
@@ -49,6 +51,8 @@ export default async function LeadDetalhePage({ params }: { params: Promise<{ id
             </div>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
+            <LeadMessageDialog leadId={lead.id} leadNome={lead.nome} instancias={instancias} />
+
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1 rounded-lg border border-border bg-muted/40 px-3 py-2">
                 <span className="flex items-center gap-1.5 text-xs text-muted-foreground">

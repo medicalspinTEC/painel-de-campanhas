@@ -507,6 +507,67 @@ async function shouldSendMessage(leadId: string, campanhaId: string, mensagemId:
   return !jaEnviada
 }
 
+/**
+ * Envia um texto livre via WhatsApp (Evolution API), sem qualquer lógica de
+ * campanha, dedupe ou timeline — apenas a chamada HTTP. Usado pelo envio
+ * manual/individual de mensagem a um lead (ver `services/leads.ts`), que
+ * registra o evento na timeline por conta própria (sem atribuir a campanha
+ * alguma, mesmo que o lead esteja vinculado a uma no momento do envio).
+ */
+export async function sendWhatsAppText(input: {
+  telefone: string
+  texto: string
+  /** Instância que envia a mensagem; ausente/vazia cai na instância padrão do ambiente. */
+  instanciaNome?: string | null
+}): Promise<EvolutionSendResult> {
+  const { apiUrl, apiKey } = getEvolutionCredentials()
+  const instanceName = input.instanciaNome?.trim() || process.env.EVOLUTION_INSTANCE_NAME?.trim()
+
+  if (!instanceName || !apiKey) {
+    return {
+      ok: false,
+      erro:
+        "Credenciais da Evolution não configuradas (EVOLUTION_API_KEY ausente, ou nenhuma instância escolhida e EVOLUTION_INSTANCE_NAME também ausente).",
+    }
+  }
+
+  const telefone = normalizePhoneForEvolution(input.telefone)
+  if (!telefone) {
+    return { ok: false, erro: "Número de telefone inválido para envio." }
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/message/sendText/${encodeURIComponent(instanceName)}`, {
+      method: "POST",
+      headers: { "content-type": "application/json", apikey: apiKey },
+      body: JSON.stringify({ number: telefone, text: input.texto }),
+    })
+
+    if (!response.ok) {
+      const detalhe = await response.text()
+      const mensagem = detalhe || `Evolution respondeu com status ${response.status}`
+      await recordAppLog({
+        nivel: "erro",
+        origem: "evolution",
+        mensagem: `Evolution retornou HTTP ${response.status} ao enviar mensagem individual.`,
+        detalhes: mensagem,
+      })
+      return { ok: false, erro: mensagem }
+    }
+
+    return { ok: true }
+  } catch (error) {
+    const mensagem = error instanceof Error ? error.message : String(error)
+    await recordAppLog({
+      nivel: "erro",
+      origem: "evolution",
+      mensagem: "Exceção ao chamar a Evolution API para enviar mensagem individual.",
+      detalhes: error,
+    })
+    return { ok: false, erro: mensagem }
+  }
+}
+
 export async function sendCampaignMessageToLead(input: {
   leadId: string
   campanhaId: string

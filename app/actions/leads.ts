@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 
-import { assignCampaign, createLead, createLeadsBulk, deleteLead, deleteLeads, LeadValidationError, setLeadStatus, updateLead, updateLeadNotes, type LeadBulkInput, type LeadInput } from "@/services/leads"
+import { assignCampaign, createLead, createLeadsBulk, deleteLead, deleteLeads, LeadValidationError, sendLeadMessage, setLeadStatus, updateLead, updateLeadNotes, type LeadBulkInput, type LeadInput } from "@/services/leads"
 import { mapProdutosPorIdImportacao } from "@/services/produtos"
 import { prisma } from "@/lib/prisma"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
@@ -177,6 +177,28 @@ export async function updateLeadNotesAction(id: string, notas: string) {
   }
   revalidatePath(`/leads/${id}`)
   return { ok: true, message: "Notas salvas." }
+}
+
+/** Limite defensivo para o texto de uma mensagem individual. */
+const MAX_MENSAGEM_INDIVIDUAL = 4096
+
+/** Envia uma mensagem avulsa a um lead específico, fora de qualquer campanha. */
+export async function sendLeadMessageAction(leadId: string, texto: string, instanciaNome?: string | null) {
+  const textoLimpo = texto.trim()
+  if (!textoLimpo) {
+    return { ok: false, message: "Escreva uma mensagem antes de enviar." }
+  }
+  if (textoLimpo.length > MAX_MENSAGEM_INDIVIDUAL) {
+    return { ok: false, message: `A mensagem é muito longa (máximo de ${MAX_MENSAGEM_INDIVIDUAL} caracteres).` }
+  }
+  try {
+    const resultado = await sendLeadMessage(leadId, textoLimpo, instanciaNome)
+    if (resultado.ok) revalidatePath(`/leads/${leadId}`)
+    return resultado
+  } catch (error) {
+    await recordAppLog({ origem: "leads", mensagem: `Falha ao enviar mensagem individual para o lead id=${leadId}.`, detalhes: error })
+    return { ok: false, message: "Não foi possível enviar a mensagem. Verifique a conexão com o banco." }
+  }
 }
 
 /** Linha de lead recebida de um arquivo Excel/CSV importado. */

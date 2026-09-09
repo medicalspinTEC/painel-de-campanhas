@@ -1,9 +1,11 @@
 import { randomUUID } from "node:crypto"
 
 import { prisma } from "@/lib/prisma"
+import { renderTemplate } from "@/lib/format"
 import { validarTelefoneBR, apenasDigitos } from "@/lib/telefone"
 import { recordAppLog } from "@/services/app-logs"
 import { emitWebhookEvent } from "@/services/webhooks"
+import { sendWhatsAppText } from "@/services/evolution"
 import { garantirProduto } from "@/services/produtos"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
 import type { Lead, LeadStatus, TimelineEvent } from "@/types"
@@ -1057,6 +1059,80 @@ export async function updateLeadNotes(id: string, notas: string): Promise<Lead |
   })
 
   return toLead(lead)
+}
+
+export interface SendLeadMessageResult {
+  ok: boolean
+  message: string
+}
+
+/**
+ * Envia uma mensagem avulsa (fora da sequência de qualquer campanha) para um
+ * lead específico. Diferente do disparo de campanha:
+ *  - não passa pela dedupe de `shouldSendMessage` (é sempre um envio novo);
+ *  - o evento fica com `campanhaId: null` e `mensagemId: null` DE PROPÓSITO,
+ *    mesmo que o lead esteja vinculado a uma campanha no momento — do
+ *    contrário o envio manual seria contado nas estatísticas daquela
+ *    campanha (ver `services/campaigns.ts`), o que não faz sentido para uma
+ *    mensagem que não faz parte da sequência.
+ * O texto aceita as mesmas variáveis do editor de campanhas (ex.:
+ * `{{primeiro_nome}}`), resolvidas aqui com o nome do próprio lead.
+ */
+export async function sendLeadMessage(
+  leadId: string,
+  texto: string,
+  instanciaNome?: string | null,
+): Promise<SendLeadMessageResult> {
+  const lead = await prisma.lead.findUnique({
+    where: { id: leadId },
+    select: { id: true, nome: true, telefone: true },
+  })
+  if (!lead) return { ok: false, message: "Lead não encontrado." }
+
+  const textoLimpo = texto.trim()
+  if (!textoLimpo) return { ok: false, message: "Escreva uma mensagem antes de enviar." }
+
+  const textoPersonalizado = renderTemplate(textoLimpo, lead.nome.trim())
+
+  const envio = await sendWhatsAppText({
+    telefone: lead.telefone,
+    texto: textoPersonalizado,
+    instanciaNome,
+  })
+
+  if (!envio.ok) {
+    await prisma.timelineEvent.create({
+      data: {
+        leadId: lead.id,
+        campanhaId: null,
+        mensagemId: null,
+        tipo: "falha",
+        descricao: "Falha ao enviar mensagem individual.",
+        detalhes: envio.erro ?? null,
+        sucesso: false,
+      },
+    })
+    return { ok: false, message: envio.erro ?? "Não foi possível enviar a mensagem." }
+  }
+
+  await prisma.timelineEvent.create({
+    data: {
+      leadId: lead.id,
+      campanhaId: null,
+      mensagemId: null,
+      tipo: "mensagem_enviada",
+      descricao: "Mensagem individual enviada manualmente.",
+      detalhes: `Mensagem: "${textoPersonalizado}"`,
+      sucesso: true,
+    },
+  })
+
+  await emitWebhookEvent("mensagem.manual", {
+    lead: { id: lead.id, nome: lead.nome, telefone: lead.telefone },
+    mensagem: textoPersonalizado,
+  })
+
+  return { ok: true, message: "Mensagem enviada." }
 }
 
 export async function deleteLead(id: string): Promise<void> {
