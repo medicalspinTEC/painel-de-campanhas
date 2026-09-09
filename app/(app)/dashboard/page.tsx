@@ -52,7 +52,7 @@ async function Graficos() {
       <Card>
         <CardHeader>
           <CardTitle>Campanhas mais eficientes</CardTitle>
-          <CardDescription>Taxa de conversão em respostas de leads.</CardDescription>
+          <CardDescription>Taxa de respostas de leads.</CardDescription>
         </CardHeader>
         <CardContent>
           <TopCampaignsChart dados={campanhas.filter((c) => c.leads > 0)} />

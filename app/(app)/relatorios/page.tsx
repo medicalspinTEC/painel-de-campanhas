@@ -36,13 +36,13 @@ export default async function RelatoriosPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         titulo="Relatórios"
-        descricao="Análise de conversão, melhores horários e desempenho por mensagem."
+        descricao="Análise de campanhas, melhores horários e desempenho por mensagem."
       />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Funil de conversão</CardTitle>
+            <CardTitle>Funil de follow-up</CardTitle>
             <CardDescription>Do cadastro do lead até a resposta.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -74,7 +74,7 @@ export default async function RelatoriosPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Conversão por segmento</CardTitle>
+          <CardTitle>Análise por segmento</CardTitle>
           <CardDescription>Percentual de leads que respondem em cada dimensão.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -105,7 +105,7 @@ export default async function RelatoriosPage() {
         <Card>
           <CardHeader>
             <CardTitle>Desempenho por campanha</CardTitle>
-            <CardDescription>Ordenado pela taxa de conversão em respostas.</CardDescription>
+            <CardDescription>Ordenado pela taxa de respostas.</CardDescription>
           </CardHeader>
           <CardContent className="overflow-x-auto">
             <Table>
@@ -114,8 +114,7 @@ export default async function RelatoriosPage() {
                   <TableHead>Campanha</TableHead>
                   <TableHead className="text-right">Leads</TableHead>
                   <TableHead className="text-right">Enviadas</TableHead>
-                  <TableHead className="text-right">Resposta</TableHead>
-                  <TableHead className="text-right">Conversão</TableHead>
+                  <TableHead className="text-right">Resposta</TableHead>                 
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -124,12 +123,7 @@ export default async function RelatoriosPage() {
                     <TableCell className="font-medium">{c.nome}</TableCell>
                     <TableCell className="text-right tabular-nums">{formatNumber(c.leads)}</TableCell>
                     <TableCell className="text-right tabular-nums">{formatNumber(c.enviadas)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{formatPercent(c.taxaResposta)}</TableCell>
-                    <TableCell className="text-right">
-                      <Badge variant="secondary" className="tabular-nums">
-                        {formatPercent(c.taxaConversao)}
-                      </Badge>
-                    </TableCell>
+                    <TableCell className="text-right tabular-nums">{formatPercent(c.taxaResposta)}</TableCell>                    
                   </TableRow>
                 ))}
               </TableBody>
