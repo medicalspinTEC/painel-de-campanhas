@@ -8,7 +8,15 @@ import { emitWebhookEvent } from "@/services/webhooks"
 import type { Campaign, CampaignMessage, CampaignStatus, LeadStatus } from "@/types"
 
 export interface CampaignWithStats extends Campaign {
+  /**
+   * Total histórico de leads da campanha: quem ainda está vinculado (não
+   * respondeu) + quem já respondeu e por isso foi desvinculado (ver
+   * `services/lead-response.ts`). Não usar apenas a contagem de `LeadCampaign`
+   * aqui, pois ela cai a cada resposta e o KPI pareceria "perder" leads.
+   */
   totalLeads: number
+  /** Quantos desses leads ainda não responderam (continuam vinculados). */
+  leadsPendentes: number
   mensagensEnviadas: number
   respostas: number
   taxaResposta: number
@@ -68,23 +76,31 @@ const campaignInclude = {
  */
 async function loadStats(campaignIds: string[]) {
   if (campaignIds.length === 0) {
-    return { eventos: new Map<string, { enviadas: number; respostas: number }>(), leads: new Map<string, { total: number; respostas: number }>() }
+    return {
+      eventos: new Map<string, { enviadas: number; respostas: number }>(),
+      leads: new Map<string, { pendentes: number; respondidosUnicos: number }>(),
+    }
   }
 
-  const [porTipo, porCampanha, leadsVinculados] = await Promise.all([
+  const [porTipo, porCampanha, respondentesUnicos] = await Promise.all([
     prisma.timelineEvent.groupBy({
       by: ["campanhaId", "tipo"],
       where: { campanhaId: { in: campaignIds }, tipo: { in: ["mensagem_enviada", "resposta"] } },
       _count: { _all: true },
     }),
+    // Vínculos atuais: leads ainda na campanha, ou seja, que ainda não responderam.
     prisma.leadCampaign.groupBy({
       by: ["campanhaId"],
       where: { campanhaId: { in: campaignIds } },
       _count: { _all: true },
     }),
-    prisma.leadCampaign.findMany({
-      where: { campanhaId: { in: campaignIds } },
-      select: { campanhaId: true, lead: { select: { status: true } } },
+    // Quem responde é desvinculado (ver services/lead-response.ts), então o
+    // total histórico de leads da campanha precisa somar esses de volta —
+    // usamos o evento "resposta" da timeline, agrupado por lead, para contar
+    // cada lead uma única vez mesmo que ele tenha respondido mais de uma vez.
+    prisma.timelineEvent.groupBy({
+      by: ["campanhaId", "leadId"],
+      where: { campanhaId: { in: campaignIds }, tipo: "resposta" },
     }),
   ])
 
@@ -97,20 +113,25 @@ async function loadStats(campaignIds: string[]) {
     eventos.set(row.campanhaId, atual)
   }
 
-  const leads = new Map<string, { total: number; respostas: number }>()
+  const leads = new Map<string, { pendentes: number; respondidosUnicos: number }>()
   for (const row of porCampanha) {
     const campanhaId = row.campanhaId
     if (!campanhaId) continue
-    const atual = leads.get(campanhaId) ?? { total: 0, respostas: 0 }
-    atual.total += row._count._all
+    const atual = leads.get(campanhaId) ?? { pendentes: 0, respondidosUnicos: 0 }
+    atual.pendentes += row._count._all
     leads.set(campanhaId, atual)
   }
 
-  for (const item of leadsVinculados) {
-    const campanhaId = item.campanhaId
-    if (!campanhaId) continue
-    const atual = leads.get(campanhaId) ?? { total: 0, respostas: 0 }
-    if (item.lead.status === "respondeu") atual.respostas += 1
+  const respondidosPorCampanha = new Map<string, Set<string>>()
+  for (const row of respondentesUnicos) {
+    if (!row.campanhaId) continue
+    const set = respondidosPorCampanha.get(row.campanhaId) ?? new Set<string>()
+    set.add(row.leadId)
+    respondidosPorCampanha.set(row.campanhaId, set)
+  }
+  for (const [campanhaId, set] of respondidosPorCampanha) {
+    const atual = leads.get(campanhaId) ?? { pendentes: 0, respondidosUnicos: 0 }
+    atual.respondidosUnicos = set.size
     leads.set(campanhaId, atual)
   }
 
@@ -120,15 +141,17 @@ async function loadStats(campaignIds: string[]) {
 function withStats(
   campaign: Campaign,
   eventos: { enviadas: number; respostas: number },
-  leads: { total: number; respostas: number },
+  leads: { pendentes: number; respondidosUnicos: number },
 ): CampaignWithStats {
+  const totalLeads = leads.pendentes + leads.respondidosUnicos
   return {
     ...campaign,
-    totalLeads: leads.total,
+    totalLeads,
+    leadsPendentes: leads.pendentes,
     mensagensEnviadas: eventos.enviadas,
     respostas: eventos.respostas,
     taxaResposta: eventos.enviadas ? (eventos.respostas / eventos.enviadas) * 100 : 0,
-    taxaConversao: leads.total ? (leads.respostas / leads.total) * 100 : 0,
+    taxaConversao: totalLeads ? (leads.respondidosUnicos / totalLeads) * 100 : 0,
   }
 }
 
@@ -217,7 +240,7 @@ export async function listCampaigns(): Promise<CampaignWithStats[]> {
     withStats(
       toCampaign(c),
       eventos.get(c.id) ?? { enviadas: 0, respostas: 0 },
-      leads.get(c.id) ?? { total: 0, respostas: 0 },
+      leads.get(c.id) ?? { pendentes: 0, respondidosUnicos: 0 },
     ),
   )
 }
@@ -254,7 +277,7 @@ export async function getCampaign(id: string): Promise<CampaignWithStats | null>
   return withStats(
     toCampaign(campanha),
     eventos.get(id) ?? { enviadas: 0, respostas: 0 },
-    leads.get(id) ?? { total: 0, respostas: 0 },
+    leads.get(id) ?? { pendentes: 0, respondidosUnicos: 0 },
   )
 }
 

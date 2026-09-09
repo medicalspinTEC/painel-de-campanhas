@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, CalendarClock, MessageSquare, Send, Users } from "lucide-react"
+import { ArrowLeft, CalendarClock, Hourglass, MessageSquare, Send, Users } from "lucide-react"
 
 import { CampaignLeadsTable, type CampaignLeadItem } from "@/components/features/campaigns/campaign-leads-table"
 import { CampaignRespondersTable } from "@/components/features/campaigns/campaign-responders-table"
@@ -62,8 +62,9 @@ export default async function CampanhaPage({ params }: { params: Promise<{ id: s
         </PageHeader>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <KpiCard titulo="Leads na campanha" valor={formatNumber(campanha.totalLeads)} icon={Users} />
+        <KpiCard titulo="Faltam responder" valor={formatNumber(campanha.leadsPendentes)} icon={Hourglass} />
         <KpiCard titulo="Mensagens enviadas" valor={formatNumber(campanha.mensagensEnviadas)} icon={Send} />
         <KpiCard titulo="Respostas" valor={formatNumber(campanha.respostas)} icon={MessageSquare} />
         <KpiCard titulo="Taxa de resposta" valor={formatPercent(taxa)} icon={CalendarClock} />
