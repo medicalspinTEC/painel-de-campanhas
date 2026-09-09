@@ -2,6 +2,7 @@ import { LeadsTable } from "@/components/features/leads/leads-table"
 import { PageHeader } from "@/components/shared/page-header"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
 import { listCampaigns } from "@/services/campaigns"
+import { listInstanceOptions } from "@/services/evolution"
 import { listLeads } from "@/services/leads"
 import { listNomesProdutosAtivos } from "@/services/produtos"
 
@@ -11,20 +12,21 @@ export const metadata = {
 }
 
 export default async function LeadsPage() {
-  const [leads, campanhas, produtos, marcas, personas, regioes] = await Promise.all([
+  const [leads, campanhas, produtos, marcas, personas, regioes, instancias] = await Promise.all([
     listLeads(),
     listCampaigns(),
     listNomesProdutosAtivos(),
     servicoMarcas.listarNomesAtivos(),
     servicoPersonas.listarNomesAtivos(),
     servicoRegioes.listarNomesAtivos(),
+    listInstanceOptions(),
   ])
 
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
         titulo="Leads"
-        descricao="Base segmentada por produto, marca, persona e região. Selecione leads para movê-los entre campanhas."
+        descricao="Base segmentada por produto, marca, persona e região. Selecione leads para movê-los entre campanhas ou enviar mensagens avulsas."
       />
       <LeadsTable
         leads={leads}
@@ -33,6 +35,7 @@ export default async function LeadsPage() {
         marcas={marcas}
         personas={personas}
         regioes={regioes}
+        instancias={instancias}
       />
     </div>
   )

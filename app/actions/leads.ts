@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 
-import { assignCampaign, createLead, createLeadsBulk, deleteLead, deleteLeads, LeadValidationError, sendLeadMessage, setLeadStatus, updateLead, updateLeadNotes, type LeadBulkInput, type LeadInput } from "@/services/leads"
+import { assignCampaign, createLead, createLeadsBulk, deleteLead, deleteLeads, LeadValidationError, sendLeadMessage, sendLeadsMessage, setLeadStatus, updateLead, updateLeadNotes, type LeadBulkInput, type LeadInput } from "@/services/leads"
 import { mapProdutosPorIdImportacao } from "@/services/produtos"
 import { prisma } from "@/lib/prisma"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
@@ -198,6 +198,34 @@ export async function sendLeadMessageAction(leadId: string, texto: string, insta
   } catch (error) {
     await recordAppLog({ origem: "leads", mensagem: `Falha ao enviar mensagem individual para o lead id=${leadId}.`, detalhes: error })
     return { ok: false, message: "Não foi possível enviar a mensagem. Verifique a conexão com o banco." }
+  }
+}
+
+/** Envia a mesma mensagem avulsa para vários leads selecionados na tabela. */
+export async function sendLeadsMessageAction(leadIds: string[], texto: string, instanciaNome?: string | null) {
+  const idsUnicos = [...new Set(leadIds)].filter(Boolean)
+  if (idsUnicos.length === 0) {
+    return { ok: false, message: "Nenhum lead selecionado.", enviados: 0, erros: [] }
+  }
+  const textoLimpo = texto.trim()
+  if (!textoLimpo) {
+    return { ok: false, message: "Escreva uma mensagem antes de enviar.", enviados: 0, erros: [] }
+  }
+  if (textoLimpo.length > MAX_MENSAGEM_INDIVIDUAL) {
+    return {
+      ok: false,
+      message: `A mensagem é muito longa (máximo de ${MAX_MENSAGEM_INDIVIDUAL} caracteres).`,
+      enviados: 0,
+      erros: [],
+    }
+  }
+  try {
+    const resultado = await sendLeadsMessage(idsUnicos, textoLimpo, instanciaNome)
+    if (resultado.enviados > 0) revalidarLeads()
+    return resultado
+  } catch (error) {
+    await recordAppLog({ origem: "leads", mensagem: `Falha ao enviar mensagem em massa para ${idsUnicos.length} lead(s).`, detalhes: error })
+    return { ok: false, message: "Não foi possível enviar as mensagens. Verifique a conexão com o banco.", enviados: 0, erros: [] }
   }
 }
 

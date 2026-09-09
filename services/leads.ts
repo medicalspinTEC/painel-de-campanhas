@@ -1135,6 +1135,78 @@ export async function sendLeadMessage(
   return { ok: true, message: "Mensagem enviada." }
 }
 
+export interface SendLeadsMessageResult {
+  ok: boolean
+  message: string
+  /** Quantos envios tiveram sucesso. */
+  enviados: number
+  /** Leads que falharam, com o motivo (para o usuário revisar). */
+  erros: Array<{ leadId: string; nome: string; motivo: string }>
+}
+
+/**
+ * Envia a mesma mensagem avulsa para vários leads de uma vez (seleção em
+ * massa na tabela). Reaproveita `sendLeadMessage` lead a lead — cada envio
+ * mantém as mesmas regras (personalização por `{{primeiro_nome}}`, evento na
+ * timeline com `campanhaId: null`, webhook `mensagem.manual`) — para que o
+ * comportamento seja idêntico ao de mandar uma mensagem individual repetidas
+ * vezes. Um lead que falhe (ex.: WhatsApp não conectado) não interrompe os
+ * demais: cada resultado é coletado e reportado no final.
+ */
+export async function sendLeadsMessage(
+  leadIds: string[],
+  texto: string,
+  instanciaNome?: string | null,
+): Promise<SendLeadsMessageResult> {
+  const idsUnicos = [...new Set(leadIds)].filter(Boolean)
+  if (idsUnicos.length === 0) {
+    return { ok: false, message: "Nenhum lead selecionado.", enviados: 0, erros: [] }
+  }
+
+  const textoLimpo = texto.trim()
+  if (!textoLimpo) {
+    return { ok: false, message: "Escreva uma mensagem antes de enviar.", enviados: 0, erros: [] }
+  }
+
+  const leads = await prisma.lead.findMany({
+    where: { id: { in: idsUnicos } },
+    select: { id: true, nome: true },
+  })
+  const nomesPorId = new Map(leads.map((l) => [l.id, l.nome]))
+
+  let enviados = 0
+  const erros: SendLeadsMessageResult["erros"] = []
+
+  // Envio sequencial (um lead por vez): mesma abordagem já usada para outras
+  // ações em lote (ex.: `assignCampaignAction`) e evita disparar dezenas de
+  // mensagens simultâneas para a mesma instância do WhatsApp.
+  for (const leadId of idsUnicos) {
+    const nome = nomesPorId.get(leadId) ?? "(lead removido)"
+    if (!nomesPorId.has(leadId)) {
+      erros.push({ leadId, nome, motivo: "Lead não encontrado." })
+      continue
+    }
+    try {
+      const resultado = await sendLeadMessage(leadId, textoLimpo, instanciaNome)
+      if (resultado.ok) {
+        enviados++
+      } else {
+        erros.push({ leadId, nome, motivo: resultado.message })
+      }
+    } catch (error) {
+      await recordAppLog({ origem: "leads", mensagem: `Falha ao enviar mensagem em massa para lead id=${leadId}.`, detalhes: error })
+      erros.push({ leadId, nome, motivo: "Erro inesperado ao enviar." })
+    }
+  }
+
+  const message =
+    enviados === 0
+      ? "Nenhuma mensagem foi enviada. Revise os erros e tente novamente."
+      : `${enviados} mensagem(ns) enviada(s)${erros.length > 0 ? ` · ${erros.length} com erro` : ""}.`
+
+  return { ok: enviados > 0, message, enviados, erros }
+}
+
 export async function deleteLead(id: string): Promise<void> {
   // Os eventos são removidos em cascata pela FK definida no schema.
   const removido = await prisma.lead.delete({ where: { id } })

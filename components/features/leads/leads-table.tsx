@@ -17,6 +17,7 @@ import { toast } from "sonner"
 
 import { assignCampaignAction, deleteLeadAction, deleteLeadsAction, setLeadStatusAction } from "@/app/actions/leads"
 import { LeadFormDialog, type CampanhaOpcao } from "@/components/features/leads/lead-form-dialog"
+import { LeadsBulkMessageDialog } from "@/components/features/leads/leads-bulk-message-dialog"
 import { LeadsImportDialog } from "@/components/features/leads/leads-import-dialog"
 import { SelectField, opcoesComExtras } from "@/components/shared/select-field"
 import {
@@ -54,6 +55,7 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
 import { formatNumber, formatRelative } from "@/lib/format"
+import type { InstanceOption } from "@/services/evolution"
 import type { LeadRow } from "@/services/leads"
 import { LEAD_STATUS_LABEL, type LeadStatus } from "@/types"
 
@@ -78,6 +80,7 @@ export function LeadsTable({
   marcas = [],
   personas = [],
   regioes = [],
+  instancias = [],
 }: {
   leads: LeadRow[]
   campanhas: CampanhaOpcao[]
@@ -86,6 +89,8 @@ export function LeadsTable({
   marcas?: string[]
   personas?: string[]
   regioes?: string[]
+  /** Instâncias do WhatsApp disponíveis para o envio de mensagem avulsa em massa. */
+  instancias?: InstanceOption[]
 }) {
   const [busca, setBusca] = useState("")
   const [status, setStatus] = useState(TODOS)
@@ -299,7 +304,12 @@ export function LeadsTable({
           <p className="text-sm font-medium">
             {formatNumber(selecionados.length)} lead(s) selecionado(s)
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <LeadsBulkMessageDialog
+              leadIds={selecionados}
+              instancias={instancias}
+              onEnviado={() => setSelecionados([])}
+            />
             <SelectField
               value=""
               onValueChange={moverParaCampanha}
