@@ -38,6 +38,11 @@ export type LeadCampaign = Prisma.LeadCampaignModel
  */
 export type CampaignMessage = Prisma.CampaignMessageModel
 /**
+ * Model ScheduledMessage
+ * 
+ */
+export type ScheduledMessage = Prisma.ScheduledMessageModel
+/**
  * Model Produto
  * Produtos cadastrados pela equipe na página de Segmentação.
  * O nome é a chave de negócio: os leads guardam o produto como texto (o nome),

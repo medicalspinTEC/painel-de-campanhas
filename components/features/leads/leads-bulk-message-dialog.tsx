@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { MessageSquarePlus, Send } from "lucide-react"
+import { CalendarClock, MessageSquarePlus, Send } from "lucide-react"
 import { toast } from "sonner"
 
 import { sendLeadsMessageAction } from "@/app/actions/leads"
@@ -49,6 +49,7 @@ export function LeadsBulkMessageDialog({
   const [open, setOpen] = useState(false)
   const [texto, setTexto] = useState("")
   const [instancia, setInstancia] = useState<string>(INSTANCIA_PADRAO)
+  const [agendadoPara, setAgendadoPara] = useState("")
   const [pendente, iniciar] = useTransition()
 
   const opcoesInstancia: OpcaoSelect[] = [
@@ -59,7 +60,10 @@ export function LeadsBulkMessageDialog({
   function fechar(next: boolean) {
     if (pendente) return
     setOpen(next)
-    if (!next) setTexto("")
+    if (!next) {
+      setTexto("")
+      setAgendadoPara("")
+    }
   }
 
   function enviar() {
@@ -71,10 +75,12 @@ export function LeadsBulkMessageDialog({
         leadIds,
         textoLimpo,
         instancia === INSTANCIA_PADRAO ? null : instancia,
+        agendadoPara || null,
       )
       if (resultado.ok) {
         toast.success(resultado.message)
         setTexto("")
+        setAgendadoPara("")
         setOpen(false)
         onEnviado?.()
       } else {
@@ -119,6 +125,18 @@ export function LeadsBulkMessageDialog({
               aria-label="Mensagem para os leads selecionados"
               disabled={pendente}
             />
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <CalendarClock className="size-4" />
+              <span>Agendar para</span>
+              <input
+                type="datetime-local"
+                value={agendadoPara}
+                min={new Date(Date.now() + 60_000).toISOString().slice(0, 16)}
+                onChange={(event) => setAgendadoPara(event.target.value)}
+                className="ml-auto rounded-md border bg-background px-2 py-1 text-sm font-normal"
+                disabled={pendente}
+              />
+            </label>
             <span className="text-right text-xs tabular-nums text-muted-foreground">
               {texto.length}/{LIMITE}
             </span>
@@ -130,7 +148,7 @@ export function LeadsBulkMessageDialog({
             </Button>
             <Button onClick={enviar} disabled={pendente || !texto.trim()}>
               <Send className="size-4" />
-              {pendente ? "Enviando…" : `Enviar para ${formatNumber(leadIds.length)}`}
+              {pendente ? "Processando…" : agendadoPara ? "Agendar mensagens" : `Enviar para ${formatNumber(leadIds.length)}`}
             </Button>
           </DialogFooter>
         </DialogContent>

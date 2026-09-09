@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { MessageSquarePlus, Send } from "lucide-react"
+import { CalendarClock, MessageSquarePlus, Send } from "lucide-react"
 import { toast } from "sonner"
 
 import { sendLeadMessageAction } from "@/app/actions/leads"
@@ -41,6 +41,7 @@ export function LeadMessageDialog({
   const [open, setOpen] = useState(false)
   const [texto, setTexto] = useState("")
   const [instancia, setInstancia] = useState<string>(INSTANCIA_PADRAO)
+  const [agendadoPara, setAgendadoPara] = useState("")
   const [pendente, iniciar] = useTransition()
 
   const opcoesInstancia: OpcaoSelect[] = [
@@ -51,7 +52,10 @@ export function LeadMessageDialog({
   function fechar(next: boolean) {
     if (pendente) return
     setOpen(next)
-    if (!next) setTexto("")
+    if (!next) {
+      setTexto("")
+      setAgendadoPara("")
+    }
   }
 
   function enviar() {
@@ -63,10 +67,12 @@ export function LeadMessageDialog({
         leadId,
         textoLimpo,
         instancia === INSTANCIA_PADRAO ? null : instancia,
+        agendadoPara || null,
       )
       if (resultado.ok) {
         toast.success(resultado.message)
         setTexto("")
+        setAgendadoPara("")
         setOpen(false)
       } else {
         toast.error(resultado.message)
@@ -110,6 +116,18 @@ export function LeadMessageDialog({
               aria-label="Mensagem para o lead"
               disabled={pendente}
             />
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <CalendarClock className="size-4" />
+              <span>Agendar para</span>
+              <input
+                type="datetime-local"
+                value={agendadoPara}
+                min={new Date(Date.now() + 60_000).toISOString().slice(0, 16)}
+                onChange={(event) => setAgendadoPara(event.target.value)}
+                className="ml-auto rounded-md border bg-background px-2 py-1 text-sm font-normal"
+                disabled={pendente}
+              />
+            </label>
             <span className="text-right text-xs tabular-nums text-muted-foreground">
               {texto.length}/{LIMITE}
             </span>
@@ -121,7 +139,7 @@ export function LeadMessageDialog({
             </Button>
             <Button onClick={enviar} disabled={pendente || !texto.trim()}>
               <Send className="size-4" />
-              {pendente ? "Enviando…" : "Enviar"}
+              {pendente ? "Processando…" : agendadoPara ? "Agendar" : "Enviar"}
             </Button>
           </DialogFooter>
         </DialogContent>

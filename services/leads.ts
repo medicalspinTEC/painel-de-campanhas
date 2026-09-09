@@ -1066,6 +1066,30 @@ export interface SendLeadMessageResult {
   message: string
 }
 
+function parseScheduledDate(value: string): Date | null {
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) || date.getTime() <= Date.now() ? null : date
+}
+
+export async function scheduleLeadMessage(leadId: string, texto: string, agendadoPara: string, instanciaNome?: string | null): Promise<SendLeadMessageResult> {
+  const date = parseScheduledDate(agendadoPara)
+  if (!date) return { ok: false, message: "Escolha uma data e hora futuras para o agendamento." }
+  const lead = await prisma.lead.findUnique({ where: { id: leadId }, select: { id: true } })
+  if (!lead) return { ok: false, message: "Lead não encontrado." }
+  await prisma.scheduledMessage.create({ data: { leadId, texto: texto.trim(), instanciaNome: instanciaNome ?? null, agendadoPara: date } })
+  return { ok: true, message: `Mensagem agendada para ${date.toLocaleString("pt-BR")}.` }
+}
+
+export async function scheduleLeadsMessage(leadIds: string[], texto: string, agendadoPara: string, instanciaNome?: string | null): Promise<SendLeadsMessageResult> {
+  const date = parseScheduledDate(agendadoPara)
+  if (!date) return { ok: false, message: "Escolha uma data e hora futuras para o agendamento.", enviados: 0, erros: [] }
+  const ids = [...new Set(leadIds)].filter(Boolean)
+  const leads = await prisma.lead.findMany({ where: { id: { in: ids } }, select: { id: true } })
+  if (leads.length === 0) return { ok: false, message: "Nenhum lead encontrado.", enviados: 0, erros: [] }
+  await prisma.scheduledMessage.createMany({ data: leads.map((lead) => ({ leadId: lead.id, texto: texto.trim(), instanciaNome: instanciaNome ?? null, agendadoPara: date })) })
+  return { ok: true, message: `${leads.length} mensagem(ns) agendada(s) para ${date.toLocaleString("pt-BR")}.`, enviados: leads.length, erros: [] }
+}
+
 /**
  * Envia uma mensagem avulsa (fora da sequência de qualquer campanha) para um
  * lead específico. Diferente do disparo de campanha:

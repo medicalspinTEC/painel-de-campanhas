@@ -249,6 +249,7 @@ export type LeadWhereInput = {
   campanha?: Prisma.XOR<Prisma.CampaignNullableScalarRelationFilter, Prisma.CampaignWhereInput> | null
   campanhas?: Prisma.LeadCampaignListRelationFilter
   eventos?: Prisma.TimelineEventListRelationFilter
+  mensagensAgendadas?: Prisma.ScheduledMessageListRelationFilter
 }
 
 export type LeadOrderByWithRelationInput = {
@@ -268,6 +269,7 @@ export type LeadOrderByWithRelationInput = {
   campanha?: Prisma.CampaignOrderByWithRelationInput
   campanhas?: Prisma.LeadCampaignOrderByRelationAggregateInput
   eventos?: Prisma.TimelineEventOrderByRelationAggregateInput
+  mensagensAgendadas?: Prisma.ScheduledMessageOrderByRelationAggregateInput
 }
 
 export type LeadWhereUniqueInput = Prisma.AtLeast<{
@@ -290,6 +292,7 @@ export type LeadWhereUniqueInput = Prisma.AtLeast<{
   campanha?: Prisma.XOR<Prisma.CampaignNullableScalarRelationFilter, Prisma.CampaignWhereInput> | null
   campanhas?: Prisma.LeadCampaignListRelationFilter
   eventos?: Prisma.TimelineEventListRelationFilter
+  mensagensAgendadas?: Prisma.ScheduledMessageListRelationFilter
 }, "id">
 
 export type LeadOrderByWithAggregationInput = {
@@ -346,6 +349,7 @@ export type LeadCreateInput = {
   campanha?: Prisma.CampaignCreateNestedOneWithoutLeadsInput
   campanhas?: Prisma.LeadCampaignCreateNestedManyWithoutLeadInput
   eventos?: Prisma.TimelineEventCreateNestedManyWithoutLeadInput
+  mensagensAgendadas?: Prisma.ScheduledMessageCreateNestedManyWithoutLeadInput
 }
 
 export type LeadUncheckedCreateInput = {
@@ -364,6 +368,7 @@ export type LeadUncheckedCreateInput = {
   atualizadoEm?: Date | string
   campanhas?: Prisma.LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
   eventos?: Prisma.TimelineEventUncheckedCreateNestedManyWithoutLeadInput
+  mensagensAgendadas?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
 }
 
 export type LeadUpdateInput = {
@@ -382,6 +387,7 @@ export type LeadUpdateInput = {
   campanha?: Prisma.CampaignUpdateOneWithoutLeadsNestedInput
   campanhas?: Prisma.LeadCampaignUpdateManyWithoutLeadNestedInput
   eventos?: Prisma.TimelineEventUpdateManyWithoutLeadNestedInput
+  mensagensAgendadas?: Prisma.ScheduledMessageUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadUncheckedUpdateInput = {
@@ -400,6 +406,7 @@ export type LeadUncheckedUpdateInput = {
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   campanhas?: Prisma.LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
   eventos?: Prisma.TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
+  mensagensAgendadas?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadCreateManyInput = {
@@ -588,6 +595,20 @@ export type LeadUpdateOneRequiredWithoutCampanhasNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.LeadUpdateToOneWithWhereWithoutCampanhasInput, Prisma.LeadUpdateWithoutCampanhasInput>, Prisma.LeadUncheckedUpdateWithoutCampanhasInput>
 }
 
+export type LeadCreateNestedOneWithoutMensagensAgendadasInput = {
+  create?: Prisma.XOR<Prisma.LeadCreateWithoutMensagensAgendadasInput, Prisma.LeadUncheckedCreateWithoutMensagensAgendadasInput>
+  connectOrCreate?: Prisma.LeadCreateOrConnectWithoutMensagensAgendadasInput
+  connect?: Prisma.LeadWhereUniqueInput
+}
+
+export type LeadUpdateOneRequiredWithoutMensagensAgendadasNestedInput = {
+  create?: Prisma.XOR<Prisma.LeadCreateWithoutMensagensAgendadasInput, Prisma.LeadUncheckedCreateWithoutMensagensAgendadasInput>
+  connectOrCreate?: Prisma.LeadCreateOrConnectWithoutMensagensAgendadasInput
+  upsert?: Prisma.LeadUpsertWithoutMensagensAgendadasInput
+  connect?: Prisma.LeadWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.LeadUpdateToOneWithWhereWithoutMensagensAgendadasInput, Prisma.LeadUpdateWithoutMensagensAgendadasInput>, Prisma.LeadUncheckedUpdateWithoutMensagensAgendadasInput>
+}
+
 export type LeadCreateNestedOneWithoutEventosInput = {
   create?: Prisma.XOR<Prisma.LeadCreateWithoutEventosInput, Prisma.LeadUncheckedCreateWithoutEventosInput>
   connectOrCreate?: Prisma.LeadCreateOrConnectWithoutEventosInput
@@ -617,6 +638,7 @@ export type LeadCreateWithoutCampanhaInput = {
   atualizadoEm?: Date | string
   campanhas?: Prisma.LeadCampaignCreateNestedManyWithoutLeadInput
   eventos?: Prisma.TimelineEventCreateNestedManyWithoutLeadInput
+  mensagensAgendadas?: Prisma.ScheduledMessageCreateNestedManyWithoutLeadInput
 }
 
 export type LeadUncheckedCreateWithoutCampanhaInput = {
@@ -634,6 +656,7 @@ export type LeadUncheckedCreateWithoutCampanhaInput = {
   atualizadoEm?: Date | string
   campanhas?: Prisma.LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
   eventos?: Prisma.TimelineEventUncheckedCreateNestedManyWithoutLeadInput
+  mensagensAgendadas?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
 }
 
 export type LeadCreateOrConnectWithoutCampanhaInput = {
@@ -696,6 +719,7 @@ export type LeadCreateWithoutCampanhasInput = {
   atualizadoEm?: Date | string
   campanha?: Prisma.CampaignCreateNestedOneWithoutLeadsInput
   eventos?: Prisma.TimelineEventCreateNestedManyWithoutLeadInput
+  mensagensAgendadas?: Prisma.ScheduledMessageCreateNestedManyWithoutLeadInput
 }
 
 export type LeadUncheckedCreateWithoutCampanhasInput = {
@@ -713,6 +737,7 @@ export type LeadUncheckedCreateWithoutCampanhasInput = {
   criadoEm?: Date | string
   atualizadoEm?: Date | string
   eventos?: Prisma.TimelineEventUncheckedCreateNestedManyWithoutLeadInput
+  mensagensAgendadas?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
 }
 
 export type LeadCreateOrConnectWithoutCampanhasInput = {
@@ -746,6 +771,7 @@ export type LeadUpdateWithoutCampanhasInput = {
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   campanha?: Prisma.CampaignUpdateOneWithoutLeadsNestedInput
   eventos?: Prisma.TimelineEventUpdateManyWithoutLeadNestedInput
+  mensagensAgendadas?: Prisma.ScheduledMessageUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadUncheckedUpdateWithoutCampanhasInput = {
@@ -762,6 +788,95 @@ export type LeadUncheckedUpdateWithoutCampanhasInput = {
   entradaCampanhaEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  eventos?: Prisma.TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
+  mensagensAgendadas?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
+}
+
+export type LeadCreateWithoutMensagensAgendadasInput = {
+  id?: string
+  nome: string
+  telefone: string
+  produto: string
+  marca: string
+  persona: string
+  regiao: string
+  status?: $Enums.LeadStatus
+  notas?: string | null
+  entradaCampanhaEm?: Date | string | null
+  criadoEm?: Date | string
+  atualizadoEm?: Date | string
+  campanha?: Prisma.CampaignCreateNestedOneWithoutLeadsInput
+  campanhas?: Prisma.LeadCampaignCreateNestedManyWithoutLeadInput
+  eventos?: Prisma.TimelineEventCreateNestedManyWithoutLeadInput
+}
+
+export type LeadUncheckedCreateWithoutMensagensAgendadasInput = {
+  id?: string
+  nome: string
+  telefone: string
+  produto: string
+  marca: string
+  persona: string
+  regiao: string
+  status?: $Enums.LeadStatus
+  notas?: string | null
+  campanhaId?: string | null
+  entradaCampanhaEm?: Date | string | null
+  criadoEm?: Date | string
+  atualizadoEm?: Date | string
+  campanhas?: Prisma.LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
+  eventos?: Prisma.TimelineEventUncheckedCreateNestedManyWithoutLeadInput
+}
+
+export type LeadCreateOrConnectWithoutMensagensAgendadasInput = {
+  where: Prisma.LeadWhereUniqueInput
+  create: Prisma.XOR<Prisma.LeadCreateWithoutMensagensAgendadasInput, Prisma.LeadUncheckedCreateWithoutMensagensAgendadasInput>
+}
+
+export type LeadUpsertWithoutMensagensAgendadasInput = {
+  update: Prisma.XOR<Prisma.LeadUpdateWithoutMensagensAgendadasInput, Prisma.LeadUncheckedUpdateWithoutMensagensAgendadasInput>
+  create: Prisma.XOR<Prisma.LeadCreateWithoutMensagensAgendadasInput, Prisma.LeadUncheckedCreateWithoutMensagensAgendadasInput>
+  where?: Prisma.LeadWhereInput
+}
+
+export type LeadUpdateToOneWithWhereWithoutMensagensAgendadasInput = {
+  where?: Prisma.LeadWhereInput
+  data: Prisma.XOR<Prisma.LeadUpdateWithoutMensagensAgendadasInput, Prisma.LeadUncheckedUpdateWithoutMensagensAgendadasInput>
+}
+
+export type LeadUpdateWithoutMensagensAgendadasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nome?: Prisma.StringFieldUpdateOperationsInput | string
+  telefone?: Prisma.StringFieldUpdateOperationsInput | string
+  produto?: Prisma.StringFieldUpdateOperationsInput | string
+  marca?: Prisma.StringFieldUpdateOperationsInput | string
+  persona?: Prisma.StringFieldUpdateOperationsInput | string
+  regiao?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaCampanhaEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  campanha?: Prisma.CampaignUpdateOneWithoutLeadsNestedInput
+  campanhas?: Prisma.LeadCampaignUpdateManyWithoutLeadNestedInput
+  eventos?: Prisma.TimelineEventUpdateManyWithoutLeadNestedInput
+}
+
+export type LeadUncheckedUpdateWithoutMensagensAgendadasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nome?: Prisma.StringFieldUpdateOperationsInput | string
+  telefone?: Prisma.StringFieldUpdateOperationsInput | string
+  produto?: Prisma.StringFieldUpdateOperationsInput | string
+  marca?: Prisma.StringFieldUpdateOperationsInput | string
+  persona?: Prisma.StringFieldUpdateOperationsInput | string
+  regiao?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  campanhaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaCampanhaEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  campanhas?: Prisma.LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
   eventos?: Prisma.TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
 }
 
@@ -780,6 +895,7 @@ export type LeadCreateWithoutEventosInput = {
   atualizadoEm?: Date | string
   campanha?: Prisma.CampaignCreateNestedOneWithoutLeadsInput
   campanhas?: Prisma.LeadCampaignCreateNestedManyWithoutLeadInput
+  mensagensAgendadas?: Prisma.ScheduledMessageCreateNestedManyWithoutLeadInput
 }
 
 export type LeadUncheckedCreateWithoutEventosInput = {
@@ -797,6 +913,7 @@ export type LeadUncheckedCreateWithoutEventosInput = {
   criadoEm?: Date | string
   atualizadoEm?: Date | string
   campanhas?: Prisma.LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
+  mensagensAgendadas?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
 }
 
 export type LeadCreateOrConnectWithoutEventosInput = {
@@ -830,6 +947,7 @@ export type LeadUpdateWithoutEventosInput = {
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   campanha?: Prisma.CampaignUpdateOneWithoutLeadsNestedInput
   campanhas?: Prisma.LeadCampaignUpdateManyWithoutLeadNestedInput
+  mensagensAgendadas?: Prisma.ScheduledMessageUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadUncheckedUpdateWithoutEventosInput = {
@@ -847,6 +965,7 @@ export type LeadUncheckedUpdateWithoutEventosInput = {
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   campanhas?: Prisma.LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
+  mensagensAgendadas?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadCreateManyCampanhaInput = {
@@ -879,6 +998,7 @@ export type LeadUpdateWithoutCampanhaInput = {
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   campanhas?: Prisma.LeadCampaignUpdateManyWithoutLeadNestedInput
   eventos?: Prisma.TimelineEventUpdateManyWithoutLeadNestedInput
+  mensagensAgendadas?: Prisma.ScheduledMessageUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadUncheckedUpdateWithoutCampanhaInput = {
@@ -896,6 +1016,7 @@ export type LeadUncheckedUpdateWithoutCampanhaInput = {
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   campanhas?: Prisma.LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
   eventos?: Prisma.TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
+  mensagensAgendadas?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadUncheckedUpdateManyWithoutCampanhaInput = {
@@ -921,11 +1042,13 @@ export type LeadUncheckedUpdateManyWithoutCampanhaInput = {
 export type LeadCountOutputType = {
   campanhas: number
   eventos: number
+  mensagensAgendadas: number
 }
 
 export type LeadCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   campanhas?: boolean | LeadCountOutputTypeCountCampanhasArgs
   eventos?: boolean | LeadCountOutputTypeCountEventosArgs
+  mensagensAgendadas?: boolean | LeadCountOutputTypeCountMensagensAgendadasArgs
 }
 
 /**
@@ -952,6 +1075,13 @@ export type LeadCountOutputTypeCountEventosArgs<ExtArgs extends runtime.Types.Ex
   where?: Prisma.TimelineEventWhereInput
 }
 
+/**
+ * LeadCountOutputType without action
+ */
+export type LeadCountOutputTypeCountMensagensAgendadasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ScheduledMessageWhereInput
+}
+
 
 export type LeadSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -970,6 +1100,7 @@ export type LeadSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   campanha?: boolean | Prisma.Lead$campanhaArgs<ExtArgs>
   campanhas?: boolean | Prisma.Lead$campanhasArgs<ExtArgs>
   eventos?: boolean | Prisma.Lead$eventosArgs<ExtArgs>
+  mensagensAgendadas?: boolean | Prisma.Lead$mensagensAgendadasArgs<ExtArgs>
   _count?: boolean | Prisma.LeadCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["lead"]>
 
@@ -1028,6 +1159,7 @@ export type LeadInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   campanha?: boolean | Prisma.Lead$campanhaArgs<ExtArgs>
   campanhas?: boolean | Prisma.Lead$campanhasArgs<ExtArgs>
   eventos?: boolean | Prisma.Lead$eventosArgs<ExtArgs>
+  mensagensAgendadas?: boolean | Prisma.Lead$mensagensAgendadasArgs<ExtArgs>
   _count?: boolean | Prisma.LeadCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type LeadIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1043,6 +1175,7 @@ export type $LeadPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     campanha: Prisma.$CampaignPayload<ExtArgs> | null
     campanhas: Prisma.$LeadCampaignPayload<ExtArgs>[]
     eventos: Prisma.$TimelineEventPayload<ExtArgs>[]
+    mensagensAgendadas: Prisma.$ScheduledMessagePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1455,6 +1588,7 @@ export interface Prisma__LeadClient<T, Null = never, ExtArgs extends runtime.Typ
   campanha<T extends Prisma.Lead$campanhaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Lead$campanhaArgs<ExtArgs>>): Prisma.Prisma__CampaignClient<runtime.Types.Result.GetResult<Prisma.$CampaignPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   campanhas<T extends Prisma.Lead$campanhasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Lead$campanhasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LeadCampaignPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   eventos<T extends Prisma.Lead$eventosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Lead$eventosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TimelineEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  mensagensAgendadas<T extends Prisma.Lead$mensagensAgendadasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Lead$mensagensAgendadasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ScheduledMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1962,6 +2096,30 @@ export type Lead$eventosArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   distinct?: Prisma.TimelineEventScalarFieldEnum | Prisma.TimelineEventScalarFieldEnum[]
+}
+
+/**
+ * Lead.mensagensAgendadas
+ */
+export type Lead$mensagensAgendadasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ScheduledMessage
+   */
+  select?: Prisma.ScheduledMessageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ScheduledMessage
+   */
+  omit?: Prisma.ScheduledMessageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ScheduledMessageInclude<ExtArgs> | null
+  where?: Prisma.ScheduledMessageWhereInput
+  orderBy?: Prisma.ScheduledMessageOrderByWithRelationInput | Prisma.ScheduledMessageOrderByWithRelationInput[]
+  cursor?: Prisma.ScheduledMessageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ScheduledMessageScalarFieldEnum | Prisma.ScheduledMessageScalarFieldEnum[]
 }
 
 /**

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { renderTemplate } from "@/lib/format"
 import {
   decidirCiclo,
   type EngineMessage,
@@ -7,8 +8,10 @@ import {
 import { recordAppLog } from "@/services/app-logs"
 import { encerrarCampanhasExpiradas } from "@/services/campaigns"
 import { sendCampaignMessageToLead } from "@/services/evolution"
+import { sendWhatsAppText } from "@/services/evolution"
 import { recordMessageEvent } from "@/services/message-events"
 import { getSettings } from "@/services/settings"
+import { emitWebhookEvent } from "@/services/webhooks"
 
 /**
  * Número máximo de tentativas de envio por mensagem dentro de um ciclo.
@@ -239,6 +242,35 @@ async function executarVarredura(agora: Date): Promise<EngineResult> {
       periodoEsperaMs,
     )
 
+    let processados = 0
+    let enviados = 0
+    let reiniciados = 0
+
+    const mensagensAvulsas = await prisma.scheduledMessage.findMany({
+      where: { status: "pendente", agendadoPara: { lte: agora } },
+      orderBy: { agendadoPara: "asc" },
+      take: Math.max(0, orcamento),
+      include: { lead: { select: { id: true, nome: true, telefone: true } } },
+    })
+
+    for (const mensagem of mensagensAvulsas) {
+      processados += 1
+      if (orcamento <= 0) break
+      const tentativa = mensagem.tentativas + 1
+      await prisma.scheduledMessage.update({ where: { id: mensagem.id }, data: { tentativas: tentativa, ultimaTentativaEm: agora } })
+      const texto = renderTemplate(mensagem.texto, mensagem.lead.nome.trim())
+      const envio = await sendWhatsAppText({ telefone: mensagem.lead.telefone, texto, instanciaNome: mensagem.instanciaNome })
+      if (envio.ok) {
+        await prisma.scheduledMessage.update({ where: { id: mensagem.id }, data: { status: "enviada", enviadoEm: agora, erro: null } })
+        await prisma.timelineEvent.create({ data: { leadId: mensagem.leadId, campanhaId: null, mensagemId: null, tipo: "mensagem_enviada", descricao: "Mensagem avulsa agendada enviada.", detalhes: `Mensagem: "${texto}"`, sucesso: true } })
+        await emitWebhookEvent("mensagem.manual", { lead: mensagem.lead, mensagem: texto })
+        enviados += 1
+        orcamento -= 1
+      } else {
+        await prisma.scheduledMessage.update({ where: { id: mensagem.id }, data: { status: tentativa >= MAX_TENTATIVAS_ENVIO ? "falhou" : "pendente", erro: envio.erro ?? "Não foi possível enviar a mensagem." } })
+      }
+    }
+
     const campanhas = await prisma.campaign.findMany({
       where: { status: "ativa" },
       select: {
@@ -262,10 +294,6 @@ async function executarVarredura(agora: Date): Promise<EngineResult> {
         },
       },
     })
-
-    let processados = 0
-    let enviados = 0
-    let reiniciados = 0
 
     for (const campanha of campanhas) {
       if (campanha.mensagens.length === 0) continue

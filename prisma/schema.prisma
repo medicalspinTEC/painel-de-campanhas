@@ -32,6 +32,12 @@ enum EventType {
   campanha_encerrada
 }
 
+enum ScheduledMessageStatus {
+  pendente
+  enviada
+  falhou
+}
+
 /// Nível de severidade dos logs de sistema (não confundir com eventos de lead).
 enum AppLogNivel {
   info
@@ -68,6 +74,7 @@ model Lead {
   atualizadoEm      DateTime  @updatedAt
 
   eventos TimelineEvent[]
+  mensagensAgendadas ScheduledMessage[]
 
   // A listagem ordena por data de criação e filtra por campanha e status.
   @@index([campanhaId])
@@ -157,6 +164,25 @@ model CampaignMessage {
 
   // A sequência é sempre lida na ordem do dia de disparo.
   @@index([campanhaId, dia])
+}
+
+model ScheduledMessage {
+  id                String                 @id @default(cuid())
+  texto             String
+  instanciaNome     String?
+  agendadoPara      DateTime
+  status            ScheduledMessageStatus @default(pendente)
+  tentativas        Int                    @default(0)
+  ultimaTentativaEm DateTime?
+  erro              String?
+  criadoEm          DateTime               @default(now())
+  enviadoEm         DateTime?
+
+  leadId String
+  lead   Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([status, agendadoPara])
+  @@index([leadId, agendadoPara])
 }
 
 /// Produtos cadastrados pela equipe na página de Segmentação.

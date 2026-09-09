@@ -401,6 +401,7 @@ export const ModelName = {
   Campaign: 'Campaign',
   LeadCampaign: 'LeadCampaign',
   CampaignMessage: 'CampaignMessage',
+  ScheduledMessage: 'ScheduledMessage',
   Produto: 'Produto',
   Marca: 'Marca',
   Persona: 'Persona',
@@ -427,7 +428,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "lead" | "campaign" | "leadCampaign" | "campaignMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "inboundEvent" | "instance"
+    modelProps: "lead" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "inboundEvent" | "instance"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -724,6 +725,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.CampaignMessageCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.CampaignMessageCountAggregateOutputType> | number
+        }
+      }
+    }
+    ScheduledMessage: {
+      payload: Prisma.$ScheduledMessagePayload<ExtArgs>
+      fields: Prisma.ScheduledMessageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ScheduledMessageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ScheduledMessageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>
+        }
+        findFirst: {
+          args: Prisma.ScheduledMessageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ScheduledMessageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>
+        }
+        findMany: {
+          args: Prisma.ScheduledMessageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>[]
+        }
+        create: {
+          args: Prisma.ScheduledMessageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>
+        }
+        createMany: {
+          args: Prisma.ScheduledMessageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ScheduledMessageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>[]
+        }
+        delete: {
+          args: Prisma.ScheduledMessageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>
+        }
+        update: {
+          args: Prisma.ScheduledMessageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>
+        }
+        deleteMany: {
+          args: Prisma.ScheduledMessageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ScheduledMessageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ScheduledMessageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>[]
+        }
+        upsert: {
+          args: Prisma.ScheduledMessageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>
+        }
+        aggregate: {
+          args: Prisma.ScheduledMessageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateScheduledMessage>
+        }
+        groupBy: {
+          args: Prisma.ScheduledMessageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScheduledMessageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ScheduledMessageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScheduledMessageCountAggregateOutputType> | number
         }
       }
     }
@@ -1643,6 +1718,23 @@ export const CampaignMessageScalarFieldEnum = {
 export type CampaignMessageScalarFieldEnum = (typeof CampaignMessageScalarFieldEnum)[keyof typeof CampaignMessageScalarFieldEnum]
 
 
+export const ScheduledMessageScalarFieldEnum = {
+  id: 'id',
+  texto: 'texto',
+  instanciaNome: 'instanciaNome',
+  agendadoPara: 'agendadoPara',
+  status: 'status',
+  tentativas: 'tentativas',
+  ultimaTentativaEm: 'ultimaTentativaEm',
+  erro: 'erro',
+  criadoEm: 'criadoEm',
+  enviadoEm: 'enviadoEm',
+  leadId: 'leadId'
+} as const
+
+export type ScheduledMessageScalarFieldEnum = (typeof ScheduledMessageScalarFieldEnum)[keyof typeof ScheduledMessageScalarFieldEnum]
+
+
 export const ProdutoScalarFieldEnum = {
   id: 'id',
   nome: 'nome',
@@ -1910,6 +2002,20 @@ export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
+ * Reference to a field of type 'ScheduledMessageStatus'
+ */
+export type EnumScheduledMessageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScheduledMessageStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ScheduledMessageStatus[]'
+ */
+export type ListEnumScheduledMessageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScheduledMessageStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
@@ -2126,6 +2232,7 @@ export type GlobalOmitConfig = {
   campaign?: Prisma.CampaignOmit
   leadCampaign?: Prisma.LeadCampaignOmit
   campaignMessage?: Prisma.CampaignMessageOmit
+  scheduledMessage?: Prisma.ScheduledMessageOmit
   produto?: Prisma.ProdutoOmit
   marca?: Prisma.MarcaOmit
   persona?: Prisma.PersonaOmit

@@ -55,6 +55,7 @@ export const ModelName = {
   Campaign: 'Campaign',
   LeadCampaign: 'LeadCampaign',
   CampaignMessage: 'CampaignMessage',
+  ScheduledMessage: 'ScheduledMessage',
   Produto: 'Produto',
   Marca: 'Marca',
   Persona: 'Persona',
@@ -145,6 +146,23 @@ export const CampaignMessageScalarFieldEnum = {
 } as const
 
 export type CampaignMessageScalarFieldEnum = (typeof CampaignMessageScalarFieldEnum)[keyof typeof CampaignMessageScalarFieldEnum]
+
+
+export const ScheduledMessageScalarFieldEnum = {
+  id: 'id',
+  texto: 'texto',
+  instanciaNome: 'instanciaNome',
+  agendadoPara: 'agendadoPara',
+  status: 'status',
+  tentativas: 'tentativas',
+  ultimaTentativaEm: 'ultimaTentativaEm',
+  erro: 'erro',
+  criadoEm: 'criadoEm',
+  enviadoEm: 'enviadoEm',
+  leadId: 'leadId'
+} as const
+
+export type ScheduledMessageScalarFieldEnum = (typeof ScheduledMessageScalarFieldEnum)[keyof typeof ScheduledMessageScalarFieldEnum]
 
 
 export const ProdutoScalarFieldEnum = {

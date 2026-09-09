@@ -40,6 +40,15 @@ export const EventType = {
 export type EventType = (typeof EventType)[keyof typeof EventType]
 
 
+export const ScheduledMessageStatus = {
+  pendente: 'pendente',
+  enviada: 'enviada',
+  falhou: 'falhou'
+} as const
+
+export type ScheduledMessageStatus = (typeof ScheduledMessageStatus)[keyof typeof ScheduledMessageStatus]
+
+
 export const AppLogNivel = {
   info: 'info',
   aviso: 'aviso',
