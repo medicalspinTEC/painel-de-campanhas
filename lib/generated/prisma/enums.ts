@@ -34,7 +34,8 @@ export const EventType = {
   falha: 'falha',
   resposta: 'resposta',
   campanha_iniciada: 'campanha_iniciada',
-  campanha_encerrada: 'campanha_encerrada'
+  campanha_encerrada: 'campanha_encerrada',
+  removido_campanha: 'removido_campanha'
 } as const
 
 export type EventType = (typeof EventType)[keyof typeof EventType]

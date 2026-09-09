@@ -30,6 +30,7 @@ enum EventType {
   resposta
   campanha_iniciada
   campanha_encerrada
+  removido_campanha
 }
 
 enum ScheduledMessageStatus {
