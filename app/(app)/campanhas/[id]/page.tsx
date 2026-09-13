@@ -67,7 +67,6 @@ export default async function CampanhaPage({ params }: { params: Promise<{ id: s
         <KpiCard titulo="Leads na campanha" valor={formatNumber(campanha.totalLeads)} icon={Users} />
         <KpiCard titulo="Faltam responder" valor={formatNumber(campanha.leadsPendentes)} icon={Hourglass} />
         <KpiCard titulo="Mensagens enviadas" valor={formatNumber(campanha.mensagensEnviadas)} icon={Send} />
-        <KpiCard titulo="Respostas" valor={formatNumber(campanha.respostas)} icon={MessageSquare} />
         <KpiCard titulo="Taxa de resposta" valor={formatPercent(taxa)} icon={CalendarClock} />
       </div>
 
