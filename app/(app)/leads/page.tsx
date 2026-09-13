@@ -30,7 +30,7 @@ export default async function LeadsPage() {
       />
       <LeadsTable
         leads={leads}
-        campanhas={campanhas.map((c) => ({ id: c.id, nome: c.nome }))}
+        campanhas={campanhas.map((c) => ({ id: c.id, nome: c.nome, tipo: c.tipo }))}
         produtos={produtos}
         marcas={marcas}
         personas={personas}

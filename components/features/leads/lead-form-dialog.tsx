@@ -23,6 +23,7 @@ import {
   LEAD_STATUS_LABEL,
   type LeadStatus,
   type Lead,
+  type CampaignTipo,
 } from "@/types"
 
 const estadoInicial: ActionState = { ok: false, message: "" }
@@ -35,6 +36,8 @@ const OPCOES_STATUS = (Object.keys(LEAD_STATUS_LABEL) as LeadStatus[]).map((s) =
 export interface CampanhaOpcao {
   id: string
   nome: string
+  /** Usado para exigir mensagem individual ao vincular (ver `leads-table.tsx`). */
+  tipo?: CampaignTipo
 }
 
 /** Valores de segmentação já cadastrados na base, para reaproveitar como opções. */

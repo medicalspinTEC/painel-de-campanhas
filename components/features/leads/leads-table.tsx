@@ -111,6 +111,10 @@ export function LeadsTable({
   const [respostaAlvo, setRespostaAlvo] = useState<LeadRow | null>(null)
   const [respostaTexto, setRespostaTexto] = useState("")
   const [exclusao, setExclusao] = useState<{ tipo: "um"; lead: LeadRow } | { tipo: "lote"; ids: string[] } | null>(null)
+  // Campanha individual precisa de uma mensagem por vínculo — abrimos este
+  // card antes de vincular, em vez de mandar direto pelo select abaixo.
+  const [pedidoMensagem, setPedidoMensagem] = useState<{ campanhaId: string; campanhaNome: string; leadIds: string[] } | null>(null)
+  const [mensagemIndividual, setMensagemIndividual] = useState("")
   const [pending, startTransition] = useTransition()
 
   const valoresExistentes = useMemo(
@@ -162,11 +166,42 @@ export function LeadsTable({
 
   function moverParaCampanha(campanhaId: string) {
     const alvo = campanhaId === "none" ? null : campanhaId
+    if (alvo) {
+      const campanha = campanhas.find((c) => c.id === alvo)
+      if (campanha?.tipo === "individual") {
+        // Campanha individual não tem sequência automática: sem uma mensagem
+        // definida agora, o vínculo fica parado sem nada para disparar. Por
+        // isso pedimos o texto antes de vincular, em vez de mandar direto.
+        setMensagemIndividual("")
+        setPedidoMensagem({ campanhaId: alvo, campanhaNome: campanha.nome, leadIds: selecionados })
+        return
+      }
+    }
+    executarMoverParaCampanha(alvo)
+  }
+
+  function executarMoverParaCampanha(campanhaId: string | null, leadIds: string[] = selecionados, mensagem?: string) {
     startTransition(async () => {
-      const res = await assignCampaignAction(selecionados, alvo)
-      toast.success(res.message)
-      setSelecionados([])
+      const res = await assignCampaignAction(leadIds, campanhaId, mensagem)
+      if (res.ok) {
+        toast.success(res.message)
+        setSelecionados([])
+      } else {
+        toast.error(res.message)
+      }
     })
+  }
+
+  function confirmarMensagemIndividual() {
+    if (!pedidoMensagem) return
+    const texto = mensagemIndividual.trim()
+    if (texto.length < 10) {
+      toast.error("Escreva uma mensagem com pelo menos 10 caracteres.")
+      return
+    }
+    const { campanhaId, leadIds } = pedidoMensagem
+    setPedidoMensagem(null)
+    executarMoverParaCampanha(campanhaId, leadIds, texto)
   }
 
   function alterarStatus(lead: LeadRow, status: LeadStatus) {
@@ -517,6 +552,37 @@ export function LeadsTable({
       />
 
       <LeadsImportDialog open={importarAberto} onOpenChange={setImportarAberto} />
+
+      <Dialog open={Boolean(pedidoMensagem)} onOpenChange={(aberto) => !aberto && setPedidoMensagem(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mensagem individual — {pedidoMensagem?.campanhaNome}</DialogTitle>
+            <DialogDescription>
+              Campanha individual: o lead só recebe algo quando há uma mensagem própria vinculada a ele.
+              {pedidoMensagem && pedidoMensagem.leadIds.length > 1
+                ? ` Este texto será usado para os ${pedidoMensagem.leadIds.length} leads selecionados.`
+                : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            autoFocus
+            value={mensagemIndividual}
+            onChange={(event) => setMensagemIndividual(event.target.value)}
+            placeholder="Escreva a mensagem que será enviada a este lead…"
+            className="min-h-32 resize-y"
+            maxLength={4096}
+            aria-label="Mensagem individual"
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setPedidoMensagem(null)} disabled={pending}>
+              Cancelar
+            </Button>
+            <Button onClick={confirmarMensagemIndividual} disabled={pending || mensagemIndividual.trim().length < 10}>
+              {pending ? "Vinculando…" : "Vincular e enviar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={Boolean(respostaAlvo)} onOpenChange={(aberto) => !aberto && setRespostaAlvo(null)}>
         <DialogContent>
