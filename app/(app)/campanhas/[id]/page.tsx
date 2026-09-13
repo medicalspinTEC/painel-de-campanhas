@@ -73,7 +73,7 @@ export default async function CampanhaPage({ params }: { params: Promise<{ id: s
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader>
-            <CardTitle>{campanha.tipo === "individual" ? "Mensagens individuais" : "Sequência de mensagens"}</CardTitle>
+            <CardTitle>{campanha.tipo === "individual" ? "Mensagens individuais-BETA" : "Sequência de mensagens"}</CardTitle>
             <CardDescription>
               {campanha.tipo === "individual"
                 ? "Cada lead recebe apenas a mensagem escrita para ele, uma única vez."
@@ -140,7 +140,7 @@ export default async function CampanhaPage({ params }: { params: Promise<{ id: s
               </span>
             </Detalhe>
             <Detalhe rotulo="Tipo">
-              {campanha.tipo === "individual" ? "Individual (uma mensagem por lead)" : "Padrão (sequência para todos)"}
+              {campanha.tipo === "individual" ? "Individual (uma mensagem por lead-BETA)" : "Padrão (sequência para todos)"}
             </Detalhe>
             <Detalhe rotulo="Recorrência">
               {campanha.tipo === "individual" ? "Disparo único, sem repetição" : `${campanha.recorrenciaDias} dias`}

@@ -111,7 +111,7 @@ export const LEAD_STATUS_LABEL: Record<LeadStatus, string> = {
 
 export const CAMPAIGN_TIPO_LABEL: Record<CampaignTipo, string> = {
   padrao: "Padrão (uma mensagem para todos)",
-  individual: "Individual (uma mensagem por lead)",
+  individual: "Individual (uma mensagem por lead-BETA)",
 }
 
 export const CAMPAIGN_STATUS_LABEL: Record<CampaignStatus, string> = {
