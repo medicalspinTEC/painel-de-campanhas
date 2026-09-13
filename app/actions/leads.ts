@@ -471,9 +471,9 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
   return { ok: criados > 0, message, total: linhas.length, criados, erros }
 }
 
-export async function assignCampaignAction(leadIds: string[], campanhaId: string | null) {
+export async function assignCampaignAction(leadIds: string[], campanhaId: string | null, mensagemIndividual?: string | null) {
   try {
-    for (const id of leadIds) await assignCampaign(id, campanhaId)
+    for (const id of leadIds) await assignCampaign(id, campanhaId, mensagemIndividual)
   } catch (error) {
     await recordAppLog({ origem: "leads", mensagem: `Falha ao mover ${leadIds.length} lead(s) de campanha.`, detalhes: error })
     return { ok: false, message: "Não foi possível mover os leads de campanha." }

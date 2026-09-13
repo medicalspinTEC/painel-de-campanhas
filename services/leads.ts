@@ -836,6 +836,7 @@ async function dispararMensagemInicialDaCampanha(leadId: string, campanhaId: str
     where: { id: campanhaId },
     select: {
       status: true,
+      tipo: true,
       mensagens: { where: { dia: 0 }, select: { id: true } },
     },
   })
@@ -846,6 +847,26 @@ async function dispararMensagemInicialDaCampanha(leadId: string, campanhaId: str
   // pode ser vinculado normalmente a campanhas em rascunho, pausadas ou
   // encerradas — o disparo fica retido até a campanha ser ativada.
   if (campanha.status !== "ativa") return
+
+  // Campanhas `individual` não têm sequência (nem mensagem de `dia 0`): o que
+  // há para disparar de imediato é o texto individual já gravado no vínculo
+  // (`LeadCampaign.mensagemIndividual`). Mesma lógica do "dia 0" das campanhas
+  // `padrao` — aciona a engine agora; ela decide se este lead tem mensagem
+  // individual pendente e a envia dentro do ritmo de envio configurado.
+  if (campanha.tipo === "individual") {
+    try {
+      const { processDueMessages } = await import("@/services/campaign-engine")
+      await processDueMessages()
+    } catch (error) {
+      await recordAppLog({
+        nivel: "erro",
+        origem: "campaigns",
+        mensagem: `Exceção inesperada ao acionar a engine para a mensagem individual do lead ${leadId} na campanha ${campanhaId}.`,
+        detalhes: error,
+      })
+    }
+    return
+  }
 
   // Sem mensagem de `dia 0` não há nada imediato para disparar.
   if (!campanha.mensagens?.length) return
@@ -921,7 +942,7 @@ async function vincularLeadACampanhasCompativeis(lead: {
   })
 }
 
-export async function assignCampaign(leadId: string, campanhaId: string | null): Promise<Lead | null> {
+export async function assignCampaign(leadId: string, campanhaId: string | null, mensagemIndividual?: string | null): Promise<Lead | null> {
   const lead = await prisma.lead.findUnique({
     where: { id: leadId },
     select: { campanhaId: true, status: true, campanha: { select: { nome: true } } },
@@ -939,10 +960,14 @@ export async function assignCampaign(leadId: string, campanhaId: string | null):
   const novoStatus = campanhaId ? statusAoVincularCampanha(lead.status) : undefined
 
   if (campanhaId) {
+    // `mensagemIndividual` só é enviado pela UI para campanhas `tipo: "individual"`
+    // (ver diálogo em `leads-table.tsx`); para as demais chega `undefined` e o
+    // campo simplesmente não é tocado no upsert.
+    const dadosMensagem = mensagemIndividual?.trim() ? { mensagemIndividual: mensagemIndividual.trim() } : {}
     await prisma.leadCampaign.upsert({
       where: { leadId_campanhaId: { leadId, campanhaId } },
-      create: { leadId, campanhaId },
-      update: {},
+      create: { leadId, campanhaId, ...dadosMensagem },
+      update: dadosMensagem,
     })
   } else {
     // "Remover da campanha" (aba Leads): desvincula o lead de TODAS as
