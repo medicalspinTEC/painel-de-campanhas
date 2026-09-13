@@ -24,6 +24,17 @@ enum CampaignStatus {
   rascunho
 }
 
+/// Tipo de campanha, escolhido na criação e imutável depois:
+///  - `padrao`: uma única sequência de mensagens (dia/horário) disparada
+///    igualmente para todos os leads vinculados.
+///  - `individual`: sem sequência; cada lead recebe UMA mensagem própria,
+///    definida manualmente no vínculo (`LeadCampaign.mensagemIndividual`),
+///    enviada uma única vez (sem recorrência).
+enum CampaignTipo {
+  padrao
+  individual
+}
+
 enum EventType {
   mensagem_enviada
   falha
@@ -89,6 +100,10 @@ model Campaign {
   descricao String?
   status    CampaignStatus @default(rascunho)
 
+  /// Define se a campanha usa uma sequência única para todos (`padrao`) ou
+  /// uma mensagem individual por lead (`individual`). Escolhido na criação.
+  tipo CampaignTipo @default(padrao)
+
   /// Identificador sequencial e imutável para importação por planilha. Gerado
   /// automaticamente a partir de 1 (o usuário não edita). Permite que o arquivo
   /// traga este número na coluna "campanha" em vez do nome exato da campanha.
@@ -146,6 +161,12 @@ model LeadCampaign {
   // última mensagem). Entra no cálculo de dedupe junto de Campaign.reiniciadaEm
   // para liberar o reenvio da sequência a este lead específico.
   cicloReiniciadoEm DateTime?
+
+  // Usados apenas quando a campanha (`Campaign.tipo`) é `individual`: o texto
+  // que este lead específico deve receber, e o momento em que foi enviado
+  // (disparo único — null significa que ainda está pendente).
+  mensagemIndividual  String?
+  enviadaIndividualEm DateTime?
 
   @@unique([leadId, campanhaId])
   @@index([campanhaId])

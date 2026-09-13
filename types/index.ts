@@ -2,6 +2,13 @@ export type LeadStatus = "novo" | "em_campanha" | "respondeu" | "encerrado"
 
 export type CampaignStatus = "ativa" | "pausada" | "encerrada" | "rascunho"
 
+/**
+ * `padrao`: uma sequência única de mensagens disparada para todos os leads.
+ * `individual`: sem sequência — cada lead recebe uma mensagem própria, uma
+ * única vez (sem recorrência).
+ */
+export type CampaignTipo = "padrao" | "individual"
+
 export type EventType =
   | "mensagem_enviada"
   | "falha"
@@ -48,6 +55,8 @@ export interface Campaign {
   nome: string
   descricao?: string
   status: CampaignStatus
+  /** Escolhido na criação e imutável depois: ver `CampaignTipo`. */
+  tipo: CampaignTipo
   /**
    * Identificador sequencial e imutável usado na importação por planilha.
    * Gerado automaticamente a partir de 1; o usuário não pode alterar.
@@ -98,6 +107,11 @@ export const LEAD_STATUS_LABEL: Record<LeadStatus, string> = {
   em_campanha: "Em campanha",
   respondeu: "Respondeu",
   encerrado: "Encerrado",
+}
+
+export const CAMPAIGN_TIPO_LABEL: Record<CampaignTipo, string> = {
+  padrao: "Padrão (uma mensagem para todos)",
+  individual: "Individual (uma mensagem por lead)",
 }
 
 export const CAMPAIGN_STATUS_LABEL: Record<CampaignStatus, string> = {

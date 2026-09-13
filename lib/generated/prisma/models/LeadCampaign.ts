@@ -31,6 +31,8 @@ export type LeadCampaignMinAggregateOutputType = {
   criadoEm: Date | null
   proximaMensagemEm: Date | null
   cicloReiniciadoEm: Date | null
+  mensagemIndividual: string | null
+  enviadaIndividualEm: Date | null
 }
 
 export type LeadCampaignMaxAggregateOutputType = {
@@ -40,6 +42,8 @@ export type LeadCampaignMaxAggregateOutputType = {
   criadoEm: Date | null
   proximaMensagemEm: Date | null
   cicloReiniciadoEm: Date | null
+  mensagemIndividual: string | null
+  enviadaIndividualEm: Date | null
 }
 
 export type LeadCampaignCountAggregateOutputType = {
@@ -49,6 +53,8 @@ export type LeadCampaignCountAggregateOutputType = {
   criadoEm: number
   proximaMensagemEm: number
   cicloReiniciadoEm: number
+  mensagemIndividual: number
+  enviadaIndividualEm: number
   _all: number
 }
 
@@ -60,6 +66,8 @@ export type LeadCampaignMinAggregateInputType = {
   criadoEm?: true
   proximaMensagemEm?: true
   cicloReiniciadoEm?: true
+  mensagemIndividual?: true
+  enviadaIndividualEm?: true
 }
 
 export type LeadCampaignMaxAggregateInputType = {
@@ -69,6 +77,8 @@ export type LeadCampaignMaxAggregateInputType = {
   criadoEm?: true
   proximaMensagemEm?: true
   cicloReiniciadoEm?: true
+  mensagemIndividual?: true
+  enviadaIndividualEm?: true
 }
 
 export type LeadCampaignCountAggregateInputType = {
@@ -78,6 +88,8 @@ export type LeadCampaignCountAggregateInputType = {
   criadoEm?: true
   proximaMensagemEm?: true
   cicloReiniciadoEm?: true
+  mensagemIndividual?: true
+  enviadaIndividualEm?: true
   _all?: true
 }
 
@@ -160,6 +172,8 @@ export type LeadCampaignGroupByOutputType = {
   criadoEm: Date
   proximaMensagemEm: Date | null
   cicloReiniciadoEm: Date | null
+  mensagemIndividual: string | null
+  enviadaIndividualEm: Date | null
   _count: LeadCampaignCountAggregateOutputType | null
   _min: LeadCampaignMinAggregateOutputType | null
   _max: LeadCampaignMaxAggregateOutputType | null
@@ -190,6 +204,8 @@ export type LeadCampaignWhereInput = {
   criadoEm?: Prisma.DateTimeFilter<"LeadCampaign"> | Date | string
   proximaMensagemEm?: Prisma.DateTimeNullableFilter<"LeadCampaign"> | Date | string | null
   cicloReiniciadoEm?: Prisma.DateTimeNullableFilter<"LeadCampaign"> | Date | string | null
+  mensagemIndividual?: Prisma.StringNullableFilter<"LeadCampaign"> | string | null
+  enviadaIndividualEm?: Prisma.DateTimeNullableFilter<"LeadCampaign"> | Date | string | null
   lead?: Prisma.XOR<Prisma.LeadScalarRelationFilter, Prisma.LeadWhereInput>
   campanha?: Prisma.XOR<Prisma.CampaignScalarRelationFilter, Prisma.CampaignWhereInput>
 }
@@ -201,6 +217,8 @@ export type LeadCampaignOrderByWithRelationInput = {
   criadoEm?: Prisma.SortOrder
   proximaMensagemEm?: Prisma.SortOrderInput | Prisma.SortOrder
   cicloReiniciadoEm?: Prisma.SortOrderInput | Prisma.SortOrder
+  mensagemIndividual?: Prisma.SortOrderInput | Prisma.SortOrder
+  enviadaIndividualEm?: Prisma.SortOrderInput | Prisma.SortOrder
   lead?: Prisma.LeadOrderByWithRelationInput
   campanha?: Prisma.CampaignOrderByWithRelationInput
 }
@@ -216,6 +234,8 @@ export type LeadCampaignWhereUniqueInput = Prisma.AtLeast<{
   criadoEm?: Prisma.DateTimeFilter<"LeadCampaign"> | Date | string
   proximaMensagemEm?: Prisma.DateTimeNullableFilter<"LeadCampaign"> | Date | string | null
   cicloReiniciadoEm?: Prisma.DateTimeNullableFilter<"LeadCampaign"> | Date | string | null
+  mensagemIndividual?: Prisma.StringNullableFilter<"LeadCampaign"> | string | null
+  enviadaIndividualEm?: Prisma.DateTimeNullableFilter<"LeadCampaign"> | Date | string | null
   lead?: Prisma.XOR<Prisma.LeadScalarRelationFilter, Prisma.LeadWhereInput>
   campanha?: Prisma.XOR<Prisma.CampaignScalarRelationFilter, Prisma.CampaignWhereInput>
 }, "id" | "leadId_campanhaId">
@@ -227,6 +247,8 @@ export type LeadCampaignOrderByWithAggregationInput = {
   criadoEm?: Prisma.SortOrder
   proximaMensagemEm?: Prisma.SortOrderInput | Prisma.SortOrder
   cicloReiniciadoEm?: Prisma.SortOrderInput | Prisma.SortOrder
+  mensagemIndividual?: Prisma.SortOrderInput | Prisma.SortOrder
+  enviadaIndividualEm?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.LeadCampaignCountOrderByAggregateInput
   _max?: Prisma.LeadCampaignMaxOrderByAggregateInput
   _min?: Prisma.LeadCampaignMinOrderByAggregateInput
@@ -242,6 +264,8 @@ export type LeadCampaignScalarWhereWithAggregatesInput = {
   criadoEm?: Prisma.DateTimeWithAggregatesFilter<"LeadCampaign"> | Date | string
   proximaMensagemEm?: Prisma.DateTimeNullableWithAggregatesFilter<"LeadCampaign"> | Date | string | null
   cicloReiniciadoEm?: Prisma.DateTimeNullableWithAggregatesFilter<"LeadCampaign"> | Date | string | null
+  mensagemIndividual?: Prisma.StringNullableWithAggregatesFilter<"LeadCampaign"> | string | null
+  enviadaIndividualEm?: Prisma.DateTimeNullableWithAggregatesFilter<"LeadCampaign"> | Date | string | null
 }
 
 export type LeadCampaignCreateInput = {
@@ -249,6 +273,8 @@ export type LeadCampaignCreateInput = {
   criadoEm?: Date | string
   proximaMensagemEm?: Date | string | null
   cicloReiniciadoEm?: Date | string | null
+  mensagemIndividual?: string | null
+  enviadaIndividualEm?: Date | string | null
   lead: Prisma.LeadCreateNestedOneWithoutCampanhasInput
   campanha: Prisma.CampaignCreateNestedOneWithoutLeadCampaignsInput
 }
@@ -260,6 +286,8 @@ export type LeadCampaignUncheckedCreateInput = {
   criadoEm?: Date | string
   proximaMensagemEm?: Date | string | null
   cicloReiniciadoEm?: Date | string | null
+  mensagemIndividual?: string | null
+  enviadaIndividualEm?: Date | string | null
 }
 
 export type LeadCampaignUpdateInput = {
@@ -267,6 +295,8 @@ export type LeadCampaignUpdateInput = {
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   proximaMensagemEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cicloReiniciadoEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  mensagemIndividual?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enviadaIndividualEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lead?: Prisma.LeadUpdateOneRequiredWithoutCampanhasNestedInput
   campanha?: Prisma.CampaignUpdateOneRequiredWithoutLeadCampaignsNestedInput
 }
@@ -278,6 +308,8 @@ export type LeadCampaignUncheckedUpdateInput = {
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   proximaMensagemEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cicloReiniciadoEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  mensagemIndividual?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enviadaIndividualEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type LeadCampaignCreateManyInput = {
@@ -287,6 +319,8 @@ export type LeadCampaignCreateManyInput = {
   criadoEm?: Date | string
   proximaMensagemEm?: Date | string | null
   cicloReiniciadoEm?: Date | string | null
+  mensagemIndividual?: string | null
+  enviadaIndividualEm?: Date | string | null
 }
 
 export type LeadCampaignUpdateManyMutationInput = {
@@ -294,6 +328,8 @@ export type LeadCampaignUpdateManyMutationInput = {
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   proximaMensagemEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cicloReiniciadoEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  mensagemIndividual?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enviadaIndividualEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type LeadCampaignUncheckedUpdateManyInput = {
@@ -303,6 +339,8 @@ export type LeadCampaignUncheckedUpdateManyInput = {
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   proximaMensagemEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cicloReiniciadoEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  mensagemIndividual?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enviadaIndividualEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type LeadCampaignListRelationFilter = {
@@ -327,6 +365,8 @@ export type LeadCampaignCountOrderByAggregateInput = {
   criadoEm?: Prisma.SortOrder
   proximaMensagemEm?: Prisma.SortOrder
   cicloReiniciadoEm?: Prisma.SortOrder
+  mensagemIndividual?: Prisma.SortOrder
+  enviadaIndividualEm?: Prisma.SortOrder
 }
 
 export type LeadCampaignMaxOrderByAggregateInput = {
@@ -336,6 +376,8 @@ export type LeadCampaignMaxOrderByAggregateInput = {
   criadoEm?: Prisma.SortOrder
   proximaMensagemEm?: Prisma.SortOrder
   cicloReiniciadoEm?: Prisma.SortOrder
+  mensagemIndividual?: Prisma.SortOrder
+  enviadaIndividualEm?: Prisma.SortOrder
 }
 
 export type LeadCampaignMinOrderByAggregateInput = {
@@ -345,6 +387,8 @@ export type LeadCampaignMinOrderByAggregateInput = {
   criadoEm?: Prisma.SortOrder
   proximaMensagemEm?: Prisma.SortOrder
   cicloReiniciadoEm?: Prisma.SortOrder
+  mensagemIndividual?: Prisma.SortOrder
+  enviadaIndividualEm?: Prisma.SortOrder
 }
 
 export type LeadCampaignCreateNestedManyWithoutLeadInput = {
@@ -436,6 +480,8 @@ export type LeadCampaignCreateWithoutLeadInput = {
   criadoEm?: Date | string
   proximaMensagemEm?: Date | string | null
   cicloReiniciadoEm?: Date | string | null
+  mensagemIndividual?: string | null
+  enviadaIndividualEm?: Date | string | null
   campanha: Prisma.CampaignCreateNestedOneWithoutLeadCampaignsInput
 }
 
@@ -445,6 +491,8 @@ export type LeadCampaignUncheckedCreateWithoutLeadInput = {
   criadoEm?: Date | string
   proximaMensagemEm?: Date | string | null
   cicloReiniciadoEm?: Date | string | null
+  mensagemIndividual?: string | null
+  enviadaIndividualEm?: Date | string | null
 }
 
 export type LeadCampaignCreateOrConnectWithoutLeadInput = {
@@ -483,6 +531,8 @@ export type LeadCampaignScalarWhereInput = {
   criadoEm?: Prisma.DateTimeFilter<"LeadCampaign"> | Date | string
   proximaMensagemEm?: Prisma.DateTimeNullableFilter<"LeadCampaign"> | Date | string | null
   cicloReiniciadoEm?: Prisma.DateTimeNullableFilter<"LeadCampaign"> | Date | string | null
+  mensagemIndividual?: Prisma.StringNullableFilter<"LeadCampaign"> | string | null
+  enviadaIndividualEm?: Prisma.DateTimeNullableFilter<"LeadCampaign"> | Date | string | null
 }
 
 export type LeadCampaignCreateWithoutCampanhaInput = {
@@ -490,6 +540,8 @@ export type LeadCampaignCreateWithoutCampanhaInput = {
   criadoEm?: Date | string
   proximaMensagemEm?: Date | string | null
   cicloReiniciadoEm?: Date | string | null
+  mensagemIndividual?: string | null
+  enviadaIndividualEm?: Date | string | null
   lead: Prisma.LeadCreateNestedOneWithoutCampanhasInput
 }
 
@@ -499,6 +551,8 @@ export type LeadCampaignUncheckedCreateWithoutCampanhaInput = {
   criadoEm?: Date | string
   proximaMensagemEm?: Date | string | null
   cicloReiniciadoEm?: Date | string | null
+  mensagemIndividual?: string | null
+  enviadaIndividualEm?: Date | string | null
 }
 
 export type LeadCampaignCreateOrConnectWithoutCampanhaInput = {
@@ -533,6 +587,8 @@ export type LeadCampaignCreateManyLeadInput = {
   criadoEm?: Date | string
   proximaMensagemEm?: Date | string | null
   cicloReiniciadoEm?: Date | string | null
+  mensagemIndividual?: string | null
+  enviadaIndividualEm?: Date | string | null
 }
 
 export type LeadCampaignUpdateWithoutLeadInput = {
@@ -540,6 +596,8 @@ export type LeadCampaignUpdateWithoutLeadInput = {
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   proximaMensagemEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cicloReiniciadoEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  mensagemIndividual?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enviadaIndividualEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   campanha?: Prisma.CampaignUpdateOneRequiredWithoutLeadCampaignsNestedInput
 }
 
@@ -549,6 +607,8 @@ export type LeadCampaignUncheckedUpdateWithoutLeadInput = {
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   proximaMensagemEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cicloReiniciadoEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  mensagemIndividual?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enviadaIndividualEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type LeadCampaignUncheckedUpdateManyWithoutLeadInput = {
@@ -557,6 +617,8 @@ export type LeadCampaignUncheckedUpdateManyWithoutLeadInput = {
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   proximaMensagemEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cicloReiniciadoEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  mensagemIndividual?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enviadaIndividualEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type LeadCampaignCreateManyCampanhaInput = {
@@ -565,6 +627,8 @@ export type LeadCampaignCreateManyCampanhaInput = {
   criadoEm?: Date | string
   proximaMensagemEm?: Date | string | null
   cicloReiniciadoEm?: Date | string | null
+  mensagemIndividual?: string | null
+  enviadaIndividualEm?: Date | string | null
 }
 
 export type LeadCampaignUpdateWithoutCampanhaInput = {
@@ -572,6 +636,8 @@ export type LeadCampaignUpdateWithoutCampanhaInput = {
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   proximaMensagemEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cicloReiniciadoEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  mensagemIndividual?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enviadaIndividualEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lead?: Prisma.LeadUpdateOneRequiredWithoutCampanhasNestedInput
 }
 
@@ -581,6 +647,8 @@ export type LeadCampaignUncheckedUpdateWithoutCampanhaInput = {
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   proximaMensagemEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cicloReiniciadoEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  mensagemIndividual?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enviadaIndividualEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type LeadCampaignUncheckedUpdateManyWithoutCampanhaInput = {
@@ -589,6 +657,8 @@ export type LeadCampaignUncheckedUpdateManyWithoutCampanhaInput = {
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   proximaMensagemEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cicloReiniciadoEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  mensagemIndividual?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enviadaIndividualEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -600,6 +670,8 @@ export type LeadCampaignSelect<ExtArgs extends runtime.Types.Extensions.Internal
   criadoEm?: boolean
   proximaMensagemEm?: boolean
   cicloReiniciadoEm?: boolean
+  mensagemIndividual?: boolean
+  enviadaIndividualEm?: boolean
   lead?: boolean | Prisma.LeadDefaultArgs<ExtArgs>
   campanha?: boolean | Prisma.CampaignDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["leadCampaign"]>
@@ -611,6 +683,8 @@ export type LeadCampaignSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   criadoEm?: boolean
   proximaMensagemEm?: boolean
   cicloReiniciadoEm?: boolean
+  mensagemIndividual?: boolean
+  enviadaIndividualEm?: boolean
   lead?: boolean | Prisma.LeadDefaultArgs<ExtArgs>
   campanha?: boolean | Prisma.CampaignDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["leadCampaign"]>
@@ -622,6 +696,8 @@ export type LeadCampaignSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   criadoEm?: boolean
   proximaMensagemEm?: boolean
   cicloReiniciadoEm?: boolean
+  mensagemIndividual?: boolean
+  enviadaIndividualEm?: boolean
   lead?: boolean | Prisma.LeadDefaultArgs<ExtArgs>
   campanha?: boolean | Prisma.CampaignDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["leadCampaign"]>
@@ -633,9 +709,11 @@ export type LeadCampaignSelectScalar = {
   criadoEm?: boolean
   proximaMensagemEm?: boolean
   cicloReiniciadoEm?: boolean
+  mensagemIndividual?: boolean
+  enviadaIndividualEm?: boolean
 }
 
-export type LeadCampaignOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "leadId" | "campanhaId" | "criadoEm" | "proximaMensagemEm" | "cicloReiniciadoEm", ExtArgs["result"]["leadCampaign"]>
+export type LeadCampaignOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "leadId" | "campanhaId" | "criadoEm" | "proximaMensagemEm" | "cicloReiniciadoEm" | "mensagemIndividual" | "enviadaIndividualEm", ExtArgs["result"]["leadCampaign"]>
 export type LeadCampaignInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   lead?: boolean | Prisma.LeadDefaultArgs<ExtArgs>
   campanha?: boolean | Prisma.CampaignDefaultArgs<ExtArgs>
@@ -662,6 +740,8 @@ export type $LeadCampaignPayload<ExtArgs extends runtime.Types.Extensions.Intern
     criadoEm: Date
     proximaMensagemEm: Date | null
     cicloReiniciadoEm: Date | null
+    mensagemIndividual: string | null
+    enviadaIndividualEm: Date | null
   }, ExtArgs["result"]["leadCampaign"]>
   composites: {}
 }
@@ -1093,6 +1173,8 @@ export interface LeadCampaignFieldRefs {
   readonly criadoEm: Prisma.FieldRef<"LeadCampaign", 'DateTime'>
   readonly proximaMensagemEm: Prisma.FieldRef<"LeadCampaign", 'DateTime'>
   readonly cicloReiniciadoEm: Prisma.FieldRef<"LeadCampaign", 'DateTime'>
+  readonly mensagemIndividual: Prisma.FieldRef<"LeadCampaign", 'String'>
+  readonly enviadaIndividualEm: Prisma.FieldRef<"LeadCampaign", 'DateTime'>
 }
     
 

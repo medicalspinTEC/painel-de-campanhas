@@ -79,6 +79,11 @@ export function CampaignCard({ campanha }: { campanha: CampaignWithStats }) {
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center gap-2">
                 <CampaignStatusBadge status={campanha.status} />
+                {campanha.tipo === "individual" ? (
+                  <span className="rounded-md bg-secondary px-1.5 py-0.5 text-[0.6875rem] font-medium text-secondary-foreground">
+                    Individual
+                  </span>
+                ) : null}
                 <span
                   className="rounded-md bg-muted px-1.5 py-0.5 text-[0.6875rem] font-medium tabular-nums text-muted-foreground"
                   title="ID de importação (use na planilha de leads)"
@@ -154,11 +159,15 @@ export function CampaignCard({ campanha }: { campanha: CampaignWithStats }) {
               label="Enviados"
               valor={formatNumber(campanha.mensagensEnviadas)}
             />
-            <Metrica
-              icone={<CalendarClock className="size-3.5" />}
-              label="Cada"
-              valor={`${campanha.recorrenciaDias}d`}
-            />
+            {campanha.tipo === "individual" ? (
+              <Metrica icone={<CalendarClock className="size-3.5" />} label="Envio" valor="Único" />
+            ) : (
+              <Metrica
+                icone={<CalendarClock className="size-3.5" />}
+                label="Cada"
+                valor={`${campanha.recorrenciaDias}d`}
+              />
+            )}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -171,7 +180,11 @@ export function CampaignCard({ campanha }: { campanha: CampaignWithStats }) {
         </CardContent>
 
         <CardFooter className="justify-between border-t text-xs text-muted-foreground">
-          <span>{campanha.mensagens.length} mensagens na sequência</span>
+          <span>
+            {campanha.tipo === "individual"
+              ? "Mensagem individual por lead"
+              : `${campanha.mensagens.length} mensagens na sequência`}
+          </span>
           <span>{campanha.dataFinal ? `Até ${formatDate(campanha.dataFinal)}` : "Sem data limite"}</span>
         </CardFooter>
       </Card>

@@ -159,6 +159,13 @@ export type EnumCampaignStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumCampaignStatusFilter<$PrismaModel> | $Enums.CampaignStatus
 }
 
+export type EnumCampaignTipoFilter<$PrismaModel = never> = {
+  equals?: $Enums.CampaignTipo | Prisma.EnumCampaignTipoFieldRefInput<$PrismaModel>
+  in?: $Enums.CampaignTipo[] | Prisma.ListEnumCampaignTipoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CampaignTipo[] | Prisma.ListEnumCampaignTipoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCampaignTipoFilter<$PrismaModel> | $Enums.CampaignTipo
+}
+
 export type IntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>
@@ -178,6 +185,16 @@ export type EnumCampaignStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumCampaignStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumCampaignStatusFilter<$PrismaModel>
+}
+
+export type EnumCampaignTipoWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CampaignTipo | Prisma.EnumCampaignTipoFieldRefInput<$PrismaModel>
+  in?: $Enums.CampaignTipo[] | Prisma.ListEnumCampaignTipoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CampaignTipo[] | Prisma.ListEnumCampaignTipoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCampaignTipoWithAggregatesFilter<$PrismaModel> | $Enums.CampaignTipo
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCampaignTipoFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCampaignTipoFilter<$PrismaModel>
 }
 
 export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -496,6 +513,13 @@ export type NestedEnumCampaignStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumCampaignStatusFilter<$PrismaModel> | $Enums.CampaignStatus
 }
 
+export type NestedEnumCampaignTipoFilter<$PrismaModel = never> = {
+  equals?: $Enums.CampaignTipo | Prisma.EnumCampaignTipoFieldRefInput<$PrismaModel>
+  in?: $Enums.CampaignTipo[] | Prisma.ListEnumCampaignTipoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CampaignTipo[] | Prisma.ListEnumCampaignTipoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCampaignTipoFilter<$PrismaModel> | $Enums.CampaignTipo
+}
+
 export type NestedEnumCampaignStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.CampaignStatus | Prisma.EnumCampaignStatusFieldRefInput<$PrismaModel>
   in?: $Enums.CampaignStatus[] | Prisma.ListEnumCampaignStatusFieldRefInput<$PrismaModel>
@@ -504,6 +528,16 @@ export type NestedEnumCampaignStatusWithAggregatesFilter<$PrismaModel = never> =
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumCampaignStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumCampaignStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumCampaignTipoWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CampaignTipo | Prisma.EnumCampaignTipoFieldRefInput<$PrismaModel>
+  in?: $Enums.CampaignTipo[] | Prisma.ListEnumCampaignTipoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CampaignTipo[] | Prisma.ListEnumCampaignTipoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCampaignTipoWithAggregatesFilter<$PrismaModel> | $Enums.CampaignTipo
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCampaignTipoFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCampaignTipoFilter<$PrismaModel>
 }
 
 export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {

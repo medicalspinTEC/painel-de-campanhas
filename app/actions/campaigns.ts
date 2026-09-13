@@ -32,6 +32,16 @@ function revalidar(id?: string) {
 function validar(input: CampaignInput) {
   const errors: Record<string, string> = {}
   if (input.nome.trim().length < 3) errors.nome = "Dê um nome com pelo menos 3 caracteres."
+
+  if ((input.tipo ?? "padrao") === "individual") {
+    const leadIds = [...new Set((input.leadIds ?? []).filter(Boolean))]
+    if (leadIds.length === 0) errors.leadIds = "Selecione pelo menos um lead para a campanha individual."
+    const mensagens = input.leadMensagens ?? {}
+    const semMensagem = leadIds.some((id) => (mensagens[id] ?? "").trim().length < 10)
+    if (semMensagem) errors.mensagens = "Escreva uma mensagem com pelo menos 10 caracteres para cada lead selecionado."
+    return errors
+  }
+
   if (input.recorrenciaDias < 1) errors.recorrenciaDias = "A recorrência mínima é de 1 dia."
   if (input.mensagens.length === 0) errors.mensagens = "Adicione pelo menos uma mensagem na sequência."
   if (input.mensagens.some((m) => m.texto.trim().length < 10))

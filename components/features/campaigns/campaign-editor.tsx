@@ -21,8 +21,10 @@ import { formatNumber, renderTemplate } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import {
   CAMPAIGN_STATUS_LABEL,
+  CAMPAIGN_TIPO_LABEL,
   type Campaign,
   type CampaignStatus,
+  type CampaignTipo,
 } from "@/types"
 
 const QUALQUER = "qualquer"
@@ -30,6 +32,11 @@ const QUALQUER = "qualquer"
 const OPCOES_STATUS = (Object.keys(CAMPAIGN_STATUS_LABEL) as CampaignStatus[]).map((s) => ({
   value: s,
   label: CAMPAIGN_STATUS_LABEL[s],
+}))
+
+const OPCOES_TIPO = (Object.keys(CAMPAIGN_TIPO_LABEL) as CampaignTipo[]).map((t) => ({
+  value: t,
+  label: CAMPAIGN_TIPO_LABEL[t],
 }))
 
 interface MensagemRascunho {
@@ -78,6 +85,7 @@ export function CampaignEditor({
   personas = [],
   regioes = [],
   instancias = [],
+  mensagensIndividuais = {},
 }: {
   campanha?: Campaign
   leads: LeadResumo[]
@@ -88,6 +96,8 @@ export function CampaignEditor({
   regioes?: string[]
   /** Instâncias de WhatsApp disponíveis para envio (página Instâncias). */
   instancias?: InstanciaOpcao[]
+  /** Textos individuais já salvos por lead (campanhas `individual`). */
+  mensagensIndividuais?: Record<string, { mensagem: string; enviadaEm: string | null }>
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -96,6 +106,11 @@ export function CampaignEditor({
   const [nome, setNome] = useState(campanha?.nome ?? "")
   const [descricao, setDescricao] = useState(campanha?.descricao ?? "")
   const [status, setStatus] = useState<string>(campanha?.status ?? "rascunho")
+  const [tipo, setTipo] = useState<CampaignTipo>(campanha?.tipo ?? "padrao")
+  const individual = tipo === "individual"
+  const [leadMensagens, setLeadMensagens] = useState<Record<string, string>>(() =>
+    Object.fromEntries(Object.entries(mensagensIndividuais).map(([leadId, m]) => [leadId, m.mensagem])),
+  )
   const [recorrencia, setRecorrencia] = useState(String(campanha?.recorrenciaDias ?? 30))
   const [dataFinal, setDataFinal] = useState(campanha?.dataFinal ? campanha.dataFinal.slice(0, 10) : "")
   const [instancia, setInstancia] = useState<string>(campanha?.instanciaNome ?? INSTANCIA_PADRAO)
@@ -211,6 +226,7 @@ export function CampaignEditor({
       nome: nome.trim(),
       descricao: descricao.trim() || undefined,
       status: status as CampaignStatus,
+      tipo,
       recorrenciaDias: Number(recorrencia) || 0,
       // Fixamos o fim do dia em UTC (`Z`) para que a data não "ande" a cada
       // salvamento: usar horário local converteria 23:59 para o dia seguinte em
@@ -224,10 +240,15 @@ export function CampaignEditor({
         regiao: regiao === QUALQUER ? null : (regiao as Campaign["filtros"]["regiao"]),
       },
       leadIds: leadIdsSelecionados,
-      mensagens: mensagens
-        .slice()
-        .sort((a, b) => a.dia - b.dia)
-        .map((m) => ({ id: m.id, dia: Number(m.dia) || 0, horario: m.horario, texto: m.texto.trim() })),
+      mensagens: individual
+        ? []
+        : mensagens
+            .slice()
+            .sort((a, b) => a.dia - b.dia)
+            .map((m) => ({ id: m.id, dia: Number(m.dia) || 0, horario: m.horario, texto: m.texto.trim() })),
+      leadMensagens: individual
+        ? Object.fromEntries(leadIdsSelecionados.map((id) => [id, (leadMensagens[id] ?? "").trim()]))
+        : undefined,
     }
 
     startTransition(async () => {
@@ -287,7 +308,23 @@ export function CampaignEditor({
               />
             </Field>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Field>
+              <FieldLabel htmlFor="tipo">Tipo de campanha</FieldLabel>
+              <SelectField
+                id="tipo"
+                value={tipo}
+                onValueChange={(v) => setTipo(v as CampaignTipo)}
+                opcoes={OPCOES_TIPO}
+                className="w-full"
+              />
+              <FieldDescription>
+                {individual
+                  ? "Cada lead selecionado recebe sua própria mensagem, uma única vez (sem sequência nem recorrência)."
+                  : "Todos os leads da campanha recebem a mesma sequência de mensagens."}
+              </FieldDescription>
+            </Field>
+
+            <div className={cn("grid grid-cols-1 gap-4", individual ? "sm:grid-cols-1" : "sm:grid-cols-3")}>
               <Field>
                 <FieldLabel htmlFor="status">Status</FieldLabel>
                 <SelectField
@@ -298,28 +335,32 @@ export function CampaignEditor({
                   className="w-full"
                 />
               </Field>
-              <Field data-invalid={Boolean(errors.recorrenciaDias)}>
-                <FieldLabel htmlFor="recorrencia">Recorrência (dias)</FieldLabel>
-                <Input
-                  id="recorrencia"
-                  type="number"
-                  min={1}
-                  value={recorrencia}
-                  onChange={(e) => setRecorrencia(e.target.value)}
-                  aria-invalid={Boolean(errors.recorrenciaDias)}
-                />
-                <FieldDescription>Intervalo para reiniciar a sequência.</FieldDescription>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="dataFinal">Data limite</FieldLabel>
-                <Input
-                  id="dataFinal"
-                  type="date"
-                  value={dataFinal}
-                  onChange={(e) => setDataFinal(e.target.value)}
-                />
-                <FieldDescription>Opcional. Encerra os envios.</FieldDescription>
-              </Field>
+              {individual ? null : (
+                <>
+                  <Field data-invalid={Boolean(errors.recorrenciaDias)}>
+                    <FieldLabel htmlFor="recorrencia">Recorrência (dias)</FieldLabel>
+                    <Input
+                      id="recorrencia"
+                      type="number"
+                      min={1}
+                      value={recorrencia}
+                      onChange={(e) => setRecorrencia(e.target.value)}
+                      aria-invalid={Boolean(errors.recorrenciaDias)}
+                    />
+                    <FieldDescription>Intervalo para reiniciar a sequência.</FieldDescription>
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="dataFinal">Data limite</FieldLabel>
+                    <Input
+                      id="dataFinal"
+                      type="date"
+                      value={dataFinal}
+                      onChange={(e) => setDataFinal(e.target.value)}
+                    />
+                    <FieldDescription>Opcional. Encerra os envios.</FieldDescription>
+                  </Field>
+                </>
+              )}
             </div>
 
             <Field>
@@ -340,6 +381,7 @@ export function CampaignEditor({
           </CardContent>
         </Card>
 
+        {individual ? null : (
         <Card>
           <CardHeader>
             <CardTitle>Sequência de mensagens</CardTitle>
@@ -434,35 +476,67 @@ export function CampaignEditor({
             </Button>
           </CardContent>
         </Card>
+        )}
       </div>
 
       <div className="flex w-full flex-col gap-4 xl:w-80 xl:shrink-0">
         <Card>
           <CardHeader>
             <CardTitle>Vinculação manual</CardTitle>
-            <CardDescription>Selecione leads específicos para entrar nesta campanha.</CardDescription>
+            <CardDescription>
+              {individual
+                ? "Selecione os leads e escreva a mensagem de cada um."
+                : "Selecione leads específicos para entrar nesta campanha."}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
-            <div className="max-h-64 space-y-2 overflow-auto pr-1">
+            {errors.leadIds ? (
+              <p className="text-sm text-destructive" role="alert">
+                {errors.leadIds}
+              </p>
+            ) : null}
+            <div className="max-h-96 space-y-2 overflow-auto pr-1">
               {leads.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Cadastre leads para vincular manualmente.</p>
               ) : (
                 leads.map((lead) => {
                   const checked = leadIdsSelecionados.includes(lead.id)
+                  const enviadaEm = mensagensIndividuais[lead.id]?.enviadaEm
                   return (
-                    <label
-                      key={lead.id}
-                      className="flex cursor-pointer items-start gap-2 rounded-lg border border-border bg-background/70 p-2.5"
-                    >
-                      <Checkbox checked={checked} onCheckedChange={(value) => toggleLead(lead.id, value === true)} />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="truncate text-sm font-medium">{lead.nome}</span>
-                          {checked ? <span className="text-[10px] font-semibold uppercase tracking-wide text-primary">Vinculado</span> : null}
+                    <div key={lead.id} className="rounded-lg border border-border bg-background/70 p-2.5">
+                      <label className="flex cursor-pointer items-start gap-2">
+                        <Checkbox checked={checked} onCheckedChange={(value) => toggleLead(lead.id, value === true)} />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="truncate text-sm font-medium">{lead.nome}</span>
+                            {checked ? (
+                              <span className="text-[10px] font-semibold uppercase tracking-wide text-primary">
+                                Vinculado
+                              </span>
+                            ) : null}
+                          </div>
+                          <p className="truncate text-xs text-muted-foreground">{lead.telefone}</p>
                         </div>
-                        <p className="truncate text-xs text-muted-foreground">{lead.telefone}</p>
-                      </div>
-                    </label>
+                      </label>
+                      {individual && checked ? (
+                        <div className="mt-2 flex flex-col gap-1 pl-6">
+                          <Textarea
+                            value={leadMensagens[lead.id] ?? ""}
+                            onChange={(e) =>
+                              setLeadMensagens((atual) => ({ ...atual, [lead.id]: e.target.value }))
+                            }
+                            placeholder={`Mensagem para ${lead.nome}...`}
+                            rows={2}
+                            aria-label={`Mensagem individual para ${lead.nome}`}
+                          />
+                          {enviadaEm ? (
+                            <span className="text-[11px] text-muted-foreground">
+                              Já enviada em {new Date(enviadaEm).toLocaleString("pt-BR")}.
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
                   )
                 })
               )}
@@ -470,6 +544,8 @@ export function CampaignEditor({
           </CardContent>
         </Card>
 
+        {individual ? null : (
+        <>
         <Card>
           <CardHeader>
             <CardTitle>Público-alvo</CardTitle>
@@ -539,6 +615,34 @@ export function CampaignEditor({
             ))}
           </CardContent>
         </Card>
+
+        </>
+        )}
+
+        {individual ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Resumo</CardTitle>
+              <CardDescription>Cada lead selecionado recebe apenas a mensagem escrita para ele.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/8 px-3 py-2.5">
+                <Users className="size-4 text-primary" />
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold tabular-nums">
+                    {formatNumber(leadIdsSelecionados.length)} leads selecionados
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {formatNumber(
+                      leadIdsSelecionados.filter((id) => (leadMensagens[id] ?? "").trim().length >= 10).length,
+                    )}{" "}
+                    com mensagem escrita
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
 
         <div className="flex gap-2">
           <LinkButton variant="outline" href={campanha ? `/campanhas/${campanha.id}` : "/campanhas"} className="flex-1">

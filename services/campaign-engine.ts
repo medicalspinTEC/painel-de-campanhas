@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/prisma"
 import { renderTemplate } from "@/lib/format"
 import {
+  ajustarJanela,
   decidirCiclo,
   type EngineMessage,
+  type JanelaHorario,
   type LeadCycleDecision,
 } from "@/lib/campaign-engine-schedule"
 import { recordAppLog } from "@/services/app-logs"
@@ -91,6 +93,21 @@ function calcularAncora(marcos: Array<Date | null | undefined>, fallback: Date):
 }
 
 /** Converte o período de espera entre lotes (valor + unidade) em milissegundos. */
+/**
+ * Campanhas `individual` disparam a mensagem de cada lead assim que possível
+ * (sem sequência nem recorrência), mas ainda respeitam a janela de horário e a
+ * pausa de fim de semana: só considera "agora" um bom momento se ele já cai
+ * dentro da janela permitida.
+ */
+function podeEnviarAgora(agora: Date, pausarNoFimDeSemana: boolean, janela: JanelaHorario): boolean {
+  if (pausarNoFimDeSemana) {
+    const diaDaSemana = agora.getDay()
+    if (diaDaSemana === 0 || diaDaSemana === 6) return false
+  }
+  if (janela.ativa && ajustarJanela(agora, janela).getTime() !== agora.getTime()) return false
+  return true
+}
+
 function calcularPeriodoEsperaMs(valor: number, unidade: string): number {
   const base = unidade === "minutos" ? 60_000 : 3_600_000
   return Math.max(0, valor) * base
@@ -268,6 +285,52 @@ async function executarVarredura(agora: Date): Promise<EngineResult> {
         orcamento -= 1
       } else {
         await prisma.scheduledMessage.update({ where: { id: mensagem.id }, data: { status: tentativa >= MAX_TENTATIVAS_ENVIO ? "falhou" : "pendente", erro: envio.erro ?? "Não foi possível enviar a mensagem." } })
+      }
+    }
+
+    // Campanhas `individual`: sem sequência nem recorrência — cada lead recebe
+    // sua própria mensagem uma única vez, assim que a janela/ritmo permitirem.
+    const campanhasIndividuais = await prisma.campaign.findMany({
+      where: { status: "ativa", tipo: "individual" },
+      select: {
+        id: true,
+        instanciaNome: true,
+        leadCampaigns: {
+          where: { mensagemIndividual: { not: null }, enviadaIndividualEm: null },
+          select: { id: true, leadId: true, mensagemIndividual: true, lead: { select: { telefone: true } } },
+        },
+      },
+    })
+
+    for (const campanha of campanhasIndividuais) {
+      if (campanha.leadCampaigns.length === 0) continue
+      // Campanhas individuais têm uma mensagem única e não devem esperar a
+      // pausa de fim de semana; a janela horária continua sendo respeitada.
+      if (!podeEnviarAgora(agora, false, janela)) continue
+
+      for (const vinculo of campanha.leadCampaigns) {
+        processados += 1
+        if (orcamento <= 0) break
+        if (!vinculo.mensagemIndividual) continue
+
+        const envio = await sendCampaignMessageToLead({
+          leadId: vinculo.leadId,
+          campanhaId: campanha.id,
+          mensagemId: null,
+          texto: vinculo.mensagemIndividual,
+          telefone: vinculo.lead.telefone,
+          instanciaNome: campanha.instanciaNome,
+          descricaoSucesso: "Mensagem individual enviada pela engine.",
+          descricaoFalha: "Falha ao enviar mensagem individual pela engine.",
+        })
+
+        if (envio.ok) {
+          enviados += 1
+          orcamento -= 1
+          await prisma.leadCampaign.update({ where: { id: vinculo.id }, data: { enviadaIndividualEm: agora } })
+        }
+        // Falha: não marca `enviadaIndividualEm` — a engine tenta de novo no
+        // próximo tick (sem limite de tentativas dedicado, é só um envio).
       }
     }
 

@@ -29,6 +29,14 @@ export const CampaignStatus = {
 export type CampaignStatus = (typeof CampaignStatus)[keyof typeof CampaignStatus]
 
 
+export const CampaignTipo = {
+  padrao: 'padrao',
+  individual: 'individual'
+} as const
+
+export type CampaignTipo = (typeof CampaignTipo)[keyof typeof CampaignTipo]
+
+
 export const EventType = {
   mensagem_enviada: 'mensagem_enviada',
   falha: 'falha',

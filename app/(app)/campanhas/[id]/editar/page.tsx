@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 
 import { CampaignEditor } from "@/components/features/campaigns/campaign-editor"
 import { PageHeader } from "@/components/shared/page-header"
-import { getCampaign } from "@/services/campaigns"
+import { getCampaign, getIndividualLeadMessages } from "@/services/campaigns"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
 import { listInstanceOptions } from "@/services/evolution"
 import { listLeads } from "@/services/leads"
@@ -20,6 +20,7 @@ export default async function EditarCampanhaPage({ params }: { params: Promise<{
     listInstanceOptions(),
   ])
   if (!campanha) notFound()
+  const mensagensIndividuais = campanha.tipo === "individual" ? await getIndividualLeadMessages(id) : {}
 
   return (
     <div className="flex flex-col gap-6">
@@ -31,6 +32,7 @@ export default async function EditarCampanhaPage({ params }: { params: Promise<{
         personas={personas}
         regioes={regioes}
         instancias={instancias}
+        mensagensIndividuais={mensagensIndividuais}
         leads={leads.map((l) => ({
           id: l.id,
           nome: l.nome,

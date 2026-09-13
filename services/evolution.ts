@@ -468,7 +468,12 @@ function normalizePhoneForEvolution(value: string): string {
   return compact.replace(/\D/g, "")
 }
 
-async function shouldSendMessage(leadId: string, campanhaId: string, mensagemId: string): Promise<boolean> {
+async function shouldSendMessage(leadId: string, campanhaId: string, mensagemId: string | null): Promise<boolean> {
+  // Campanhas `individual` não têm CampaignMessage (mensagemId nulo): a dedupe
+  // de disparo único é feita pelo chamador via `LeadCampaign.enviadaIndividualEm`,
+  // então aqui não há nada a checar.
+  if (!mensagemId) return true
+
   /*
    * A dedupe evita reenviar a mesma mensagem ao lead dentro do mesmo ciclo da
    * campanha. Definimos um "corte" a partir do qual os envios contam, usando o
@@ -571,7 +576,8 @@ export async function sendWhatsAppText(input: {
 export async function sendCampaignMessageToLead(input: {
   leadId: string
   campanhaId: string
-  mensagemId: string
+  /** Nulo para campanhas `individual` (não há CampaignMessage associada). */
+  mensagemId: string | null
   texto: string
   telefone: string
   /**

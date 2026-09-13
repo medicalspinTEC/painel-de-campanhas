@@ -1679,6 +1679,7 @@ export const CampaignScalarFieldEnum = {
   nome: 'nome',
   descricao: 'descricao',
   status: 'status',
+  tipo: 'tipo',
   idImportacao: 'idImportacao',
   recorrenciaDias: 'recorrenciaDias',
   dataFinal: 'dataFinal',
@@ -1701,7 +1702,9 @@ export const LeadCampaignScalarFieldEnum = {
   campanhaId: 'campanhaId',
   criadoEm: 'criadoEm',
   proximaMensagemEm: 'proximaMensagemEm',
-  cicloReiniciadoEm: 'cicloReiniciadoEm'
+  cicloReiniciadoEm: 'cicloReiniciadoEm',
+  mensagemIndividual: 'mensagemIndividual',
+  enviadaIndividualEm: 'enviadaIndividualEm'
 } as const
 
 export type LeadCampaignScalarFieldEnum = (typeof LeadCampaignScalarFieldEnum)[keyof typeof LeadCampaignScalarFieldEnum]
@@ -1984,6 +1987,20 @@ export type EnumCampaignStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$P
  * Reference to a field of type 'CampaignStatus[]'
  */
 export type ListEnumCampaignStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CampaignStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'CampaignTipo'
+ */
+export type EnumCampaignTipoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CampaignTipo'>
+    
+
+
+/**
+ * Reference to a field of type 'CampaignTipo[]'
+ */
+export type ListEnumCampaignTipoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CampaignTipo[]'>
     
 
 

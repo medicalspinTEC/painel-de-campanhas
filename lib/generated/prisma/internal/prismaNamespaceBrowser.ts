@@ -109,6 +109,7 @@ export const CampaignScalarFieldEnum = {
   nome: 'nome',
   descricao: 'descricao',
   status: 'status',
+  tipo: 'tipo',
   idImportacao: 'idImportacao',
   recorrenciaDias: 'recorrenciaDias',
   dataFinal: 'dataFinal',
@@ -131,7 +132,9 @@ export const LeadCampaignScalarFieldEnum = {
   campanhaId: 'campanhaId',
   criadoEm: 'criadoEm',
   proximaMensagemEm: 'proximaMensagemEm',
-  cicloReiniciadoEm: 'cicloReiniciadoEm'
+  cicloReiniciadoEm: 'cicloReiniciadoEm',
+  mensagemIndividual: 'mensagemIndividual',
+  enviadaIndividualEm: 'enviadaIndividualEm'
 } as const
 
 export type LeadCampaignScalarFieldEnum = (typeof LeadCampaignScalarFieldEnum)[keyof typeof LeadCampaignScalarFieldEnum]

@@ -5,7 +5,7 @@ import { sendCampaignMessageToLead } from "@/services/evolution"
 import { assignCampaign } from "@/services/leads"
 import { getSettings } from "@/services/settings"
 import { emitWebhookEvent } from "@/services/webhooks"
-import type { Campaign, CampaignMessage, CampaignStatus, LeadStatus } from "@/types"
+import type { Campaign, CampaignMessage, CampaignStatus, CampaignTipo, LeadStatus } from "@/types"
 
 export interface CampaignWithStats extends Campaign {
   /**
@@ -29,6 +29,7 @@ type CampaignRecord = {
   descricao: string | null
   idImportacao: number
   status: CampaignStatus
+  tipo: CampaignTipo
   recorrenciaDias: number
   dataFinal: Date | null
   instanciaNome: string | null
@@ -47,6 +48,7 @@ function toCampaign(record: CampaignRecord): Campaign {
     descricao: record.descricao ?? undefined,
     idImportacao: record.idImportacao,
     status: record.status,
+    tipo: record.tipo,
     recorrenciaDias: record.recorrenciaDias,
     dataFinal: record.dataFinal?.toISOString() ?? null,
     instanciaNome: record.instanciaNome ?? null,
@@ -285,13 +287,21 @@ export interface CampaignInput {
   nome: string
   descricao?: string
   status: CampaignStatus
+  /** Escolhido na criação; ver `CampaignTipo`. Default `padrao`. */
+  tipo?: CampaignTipo
   recorrenciaDias: number
   dataFinal: string | null
   /** Instância que envia as mensagens. Nulo/ausente = padrão do ambiente. */
   instanciaNome?: string | null
   filtros: Campaign["filtros"]
   leadIds?: string[]
+  /** Sequência de mensagens. Só usada quando `tipo` é `padrao`. */
   mensagens: Array<Omit<CampaignMessage, "id"> & { id?: string }>
+  /**
+   * Texto individual por lead (chave = leadId). Só usado quando `tipo` é
+   * `individual`; cada lead selecionado precisa de uma entrada aqui.
+   */
+  leadMensagens?: Record<string, string>
 }
 
 function toCampaignData(input: CampaignInput) {
@@ -299,6 +309,7 @@ function toCampaignData(input: CampaignInput) {
     nome: input.nome,
     descricao: input.descricao ?? null,
     status: input.status,
+    tipo: input.tipo ?? "padrao",
     recorrenciaDias: input.recorrenciaDias,
     dataFinal: input.dataFinal ? new Date(input.dataFinal) : null,
     instanciaNome: input.instanciaNome?.trim() || null,
@@ -345,8 +356,20 @@ async function acionarEngineDeDisparo() {
   }
 }
 
-async function dispararMensagemInicialParaLeads(campanhaId: string, leadIds: string[] | undefined) {
+async function dispararMensagemInicialParaLeads(
+  campanhaId: string,
+  leadIds: string[] | undefined,
+  tipo: CampaignTipo = "padrao",
+) {
   if (!leadIds?.length) return
+
+  if (tipo === "individual") {
+    // Sem "dia 0": a engine dispara qualquer mensagem individual pendente
+    // (`mensagemIndividual` preenchido e `enviadaIndividualEm` nulo) respeitando
+    // o ritmo de envio, então basta acionar a varredura.
+    await acionarEngineDeDisparo()
+    return
+  }
 
   const campanha = await prisma.campaign.findUnique({
     where: { id: campanhaId },
@@ -367,6 +390,24 @@ async function dispararMensagemInicialParaLeads(campanhaId: string, leadIds: str
   // acionar a engine: ela envia a mensagem devida dentro do orçamento e adia o
   // excedente para os próximos ticks — exatamente como as mensagens agendadas.
   await acionarEngineDeDisparo()
+}
+
+/**
+ * Grava o texto individual de cada lead selecionado (campanhas `individual`).
+ * Assume que `sincronizarLeadsDaCampanha` já rodou, então as linhas de
+ * `LeadCampaign` para estes leads já existem.
+ */
+async function sincronizarMensagensIndividuais(campanhaId: string, leadMensagens: Record<string, string> | undefined) {
+  const entradas = Object.entries(leadMensagens ?? {})
+  if (entradas.length === 0) return
+  await Promise.all(
+    entradas.map(([leadId, texto]) =>
+      prisma.leadCampaign.updateMany({
+        where: { campanhaId, leadId },
+        data: { mensagemIndividual: texto.trim() || null },
+      }),
+    ),
+  )
 }
 
 /**
@@ -437,13 +478,14 @@ async function sincronizarLeadsDaCampanha(campanhaId: string, leadIds: string[] 
 }
 
 export async function createCampaign(input: CampaignInput): Promise<Campaign> {
+  const tipo = input.tipo ?? "padrao"
   const campanha = await prisma.campaign.create({
     data: {
       ...toCampaignData(input),
       // Campanha já criada ativa dispara agora: registra o início.
       reiniciadaEm: input.status === "ativa" ? new Date() : null,
       mensagens: {
-        create: input.mensagens.map((m) => ({ dia: m.dia, horario: m.horario, texto: m.texto })),
+        create: tipo === "padrao" ? input.mensagens.map((m) => ({ dia: m.dia, horario: m.horario, texto: m.texto })) : [],
       },
     },
     include: campaignInclude,
@@ -452,11 +494,15 @@ export async function createCampaign(input: CampaignInput): Promise<Campaign> {
   const criada = toCampaign(campanha)
   await emitWebhookEvent("campanha.criada", { campanha: criada })
   await emitirStatusCampanha(criada, null)
-  const leadIdsFinais = await leadsFinaisDaCampanha(criada.filtros, input.leadIds)
+  // Individual: só vincula quem foi selecionado manualmente (não há filtro de
+  // público automático, já que leads futuros não teriam mensagem definida).
+  const leadIdsFinais =
+    tipo === "individual" ? [...new Set((input.leadIds ?? []).filter(Boolean))] : await leadsFinaisDaCampanha(criada.filtros, input.leadIds)
   if (leadIdsFinais.length) {
     await sincronizarLeadsDaCampanha(criada.id, leadIdsFinais)
+    if (tipo === "individual") await sincronizarMensagensIndividuais(criada.id, input.leadMensagens)
     if (criada.status === "ativa") {
-      await dispararMensagemInicialParaLeads(criada.id, leadIdsFinais)
+      await dispararMensagemInicialParaLeads(criada.id, leadIdsFinais, tipo)
     }
   }
 
@@ -472,8 +518,11 @@ export async function updateCampaign(id: string, input: CampaignInput): Promise<
    * saíram do editor e atualizamos as que permaneceram, preservando os ids —
    * assim o histórico de eventos continua apontando para a mensagem correta.
    */
-  const mantidas = input.mensagens.filter((m): m is CampaignMessage => Boolean(m.id))
-  const novas = input.mensagens.filter((m) => !m.id)
+  const tipo = input.tipo ?? "padrao"
+  // Individual não usa a sequência: qualquer CampaignMessage remanescente de
+  // uma troca de tipo (padrao -> individual) é removida.
+  const mantidas = tipo === "padrao" ? input.mensagens.filter((m): m is CampaignMessage => Boolean(m.id)) : []
+  const novas = tipo === "padrao" ? input.mensagens.filter((m) => !m.id) : []
 
   const campanha = await prisma.$transaction(async (tx) => {
     await tx.campaignMessage.deleteMany({
@@ -503,10 +552,14 @@ export async function updateCampaign(id: string, input: CampaignInput): Promise<
   const atualizada = toCampaign(campanha)
   await emitWebhookEvent("campanha.atualizada", { campanha: atualizada })
   await emitirStatusCampanha(atualizada, existe.status)
-  const leadIdsFinais = await leadsFinaisDaCampanha(atualizada.filtros, input.leadIds)
+  const leadIdsFinais =
+    tipo === "individual"
+      ? [...new Set((input.leadIds ?? []).filter(Boolean))]
+      : await leadsFinaisDaCampanha(atualizada.filtros, input.leadIds)
   await sincronizarLeadsDaCampanha(atualizada.id, leadIdsFinais, id)
+  if (tipo === "individual") await sincronizarMensagensIndividuais(atualizada.id, input.leadMensagens)
   if (input.status === "ativa") {
-    await dispararMensagemInicialParaLeads(atualizada.id, leadIdsFinais)
+    await dispararMensagemInicialParaLeads(atualizada.id, leadIdsFinais, tipo)
   }
 
   // Encerramento manual pela edição: rodado APÓS a sincronização de leads para
@@ -520,7 +573,7 @@ export async function updateCampaign(id: string, input: CampaignInput): Promise<
 }
 
 export async function setCampaignStatus(id: string, status: CampaignStatus): Promise<Campaign | null> {
-  const existe = await prisma.campaign.findUnique({ where: { id }, select: { id: true, status: true } })
+  const existe = await prisma.campaign.findUnique({ where: { id }, select: { id: true, status: true, tipo: true } })
   if (!existe) return null
   const campanha = await prisma.campaign.update({
     where: { id },
@@ -539,7 +592,7 @@ export async function setCampaignStatus(id: string, status: CampaignStatus): Pro
       select: { leadId: true },
     })
     const leadIds = leadsVinculados.map((item) => item.leadId)
-    await dispararMensagemInicialParaLeads(id, leadIds)
+    await dispararMensagemInicialParaLeads(id, leadIds, atualizada.tipo)
   }
 
   // Encerramento manual: os leads remanescentes (que não responderam) são
@@ -561,6 +614,7 @@ export async function duplicateCampaign(id: string): Promise<Campaign | null> {
       descricao: original.descricao,
       // A cópia nasce como rascunho para não disparar mensagens sem revisão.
       status: "rascunho",
+      tipo: original.tipo,
       recorrenciaDias: original.recorrenciaDias,
       dataFinal: original.dataFinal,
       instanciaNome: original.instanciaNome,
@@ -827,6 +881,31 @@ export async function skipToNextMessage(leadId: string, campanhaId: string): Pro
     aguardandoRecorrencia,
     proximaMensagemEm: proxima.toISOString(),
   }
+}
+
+export interface IndividualLeadMessage {
+  mensagem: string
+  enviadaEm: string | null
+}
+
+/**
+ * Texto individual e status de envio por lead, para campanhas `tipo:
+ * individual`. Usado no editor (pré-preencher os textos salvos) e na página
+ * de detalhe (mostrar o que cada lead vai receber / já recebeu).
+ */
+export async function getIndividualLeadMessages(campanhaId: string): Promise<Record<string, IndividualLeadMessage>> {
+  const vinculos = await prisma.leadCampaign.findMany({
+    where: { campanhaId },
+    select: { leadId: true, mensagemIndividual: true, enviadaIndividualEm: true },
+  })
+  const resultado: Record<string, IndividualLeadMessage> = {}
+  for (const v of vinculos) {
+    resultado[v.leadId] = {
+      mensagem: v.mensagemIndividual ?? "",
+      enviadaEm: v.enviadaIndividualEm?.toISOString() ?? null,
+    }
+  }
+  return resultado
 }
 
 export interface CampaignResponse {
