@@ -1005,6 +1005,154 @@ export async function assignCampaign(leadId: string, campanhaId: string | null, 
   return resultado
 }
 
+export interface AssignCampaignBulkResult {
+  atualizados: number
+}
+
+/**
+ * Vincula ou desvincula MUITOS leads de uma campanha de uma só vez (seleção em
+ * massa na aba Leads). Reaproveita o mesmo contrato de `assignCampaign`, mas em
+ * lote: antes, a ação em massa chamava `assignCampaign` lead a lead, e cada
+ * chamada fazia várias idas sequenciais ao banco (`upsert`/`deleteMany` de
+ * `LeadCampaign`, `update` do Lead, evento de timeline) e ainda acionava uma
+ * VARREDURA COMPLETA da engine (`processDueMessages`) — isso repetido uma vez
+ * por lead selecionado era o maior custo de tempo, não as queries em si. Aqui:
+ * as escritas viram um punhado de queries em lote (independente de quantos
+ * leads), e a engine roda no máximo uma vez para o lote inteiro.
+ *
+ * Aproximação assumida para o campo legado "campanha principal" do Lead
+ * (`Lead.campanhaId`/`entradaCampanhaEm`, usado como âncora de agendamento):
+ * um lead que já tinha uma campanha principal mantém a mesma ao ser vinculado
+ * a uma campanha ADICIONAL (multi-campanha via `LeadCampaign` continua
+ * funcionando normalmente) — só quem ainda não tinha nenhuma passa a ter esta
+ * como principal. Isso cobre o caso comum (lead sem campanha ganhando uma) sem
+ * precisar recalcular por lead qual vínculo é "o primeiro", que é o que tornava
+ * o `assignCampaign` individual caro de repetir em massa.
+ */
+export async function assignCampaignBulk(
+  leadIds: string[],
+  campanhaId: string | null,
+  mensagemIndividual?: string | null,
+): Promise<AssignCampaignBulkResult> {
+  const idsUnicos = [...new Set(leadIds)].filter(Boolean)
+  if (idsUnicos.length === 0) return { atualizados: 0 }
+
+  const agora = new Date()
+
+  // --- Desvincular (remover da campanha) em massa ---------------------------
+  // Mesma regra do caso individual: remove de TODAS as campanhas vinculadas e
+  // limpa o campo "principal" — e, como no original, isso não emite webhook
+  // nenhum (só `lead.entrou_em_campanha` existe no catálogo, e não se aplica
+  // a uma remoção).
+  if (!campanhaId) {
+    const leadsExistentes = await prisma.lead.findMany({
+      where: { id: { in: idsUnicos } },
+      select: { id: true },
+    })
+    if (leadsExistentes.length === 0) return { atualizados: 0 }
+
+    await prisma.leadCampaign.deleteMany({ where: { leadId: { in: idsUnicos } } })
+    await prisma.lead.updateMany({
+      where: { id: { in: idsUnicos } },
+      data: { campanhaId: null, entradaCampanhaEm: null },
+    })
+
+    return { atualizados: leadsExistentes.length }
+  }
+
+  // --- Vincular (mover para campanha) em massa -------------------------------
+  const campanha = await prisma.campaign.findUnique({
+    where: { id: campanhaId },
+    select: { nome: true, status: true, tipo: true },
+  })
+  if (!campanha) return { atualizados: 0 }
+
+  const leadsAntes = await prisma.lead.findMany({
+    where: { id: { in: idsUnicos } },
+    select: { id: true, campanhaId: true, status: true },
+  })
+  if (leadsAntes.length === 0) return { atualizados: 0 }
+
+  // Quem já tem um vínculo com ESTA campanha específica (reimportar/reeditar a
+  // mensagem individual de quem já está vinculado não deve duplicar a linha).
+  const jaVinculados = await prisma.leadCampaign.findMany({
+    where: { leadId: { in: idsUnicos }, campanhaId },
+    select: { leadId: true },
+  })
+  const jaVinculadosSet = new Set(jaVinculados.map((v) => v.leadId))
+  const novosVinculos = idsUnicos.filter((id) => !jaVinculadosSet.has(id))
+
+  const textoMensagem = mensagemIndividual?.trim() || null
+  const dadosMensagem = textoMensagem ? { mensagemIndividual: textoMensagem } : {}
+
+  if (novosVinculos.length > 0) {
+    await prisma.leadCampaign.createMany({
+      data: novosVinculos.map((leadId) => ({ leadId, campanhaId, ...dadosMensagem })),
+      skipDuplicates: true,
+    })
+  }
+  if (textoMensagem && jaVinculadosSet.size > 0) {
+    await prisma.leadCampaign.updateMany({
+      where: { leadId: { in: Array.from(jaVinculadosSet) }, campanhaId },
+      data: dadosMensagem,
+    })
+  }
+
+  // Campanha principal: só grava para quem ainda não tinha nenhuma (ver nota
+  // no comentário da função).
+  const semCampanhaAtual = leadsAntes.filter((l) => !l.campanhaId).map((l) => l.id)
+  if (semCampanhaAtual.length > 0) {
+    await prisma.lead.updateMany({
+      where: { id: { in: semCampanhaAtual } },
+      data: { campanhaId, entradaCampanhaEm: agora },
+    })
+  }
+
+  // Status "em_campanha" para todo o lote (quem já respondeu não é reaberto).
+  await prisma.lead.updateMany({
+    where: { id: { in: idsUnicos }, status: { not: "respondeu" } },
+    data: { status: "em_campanha" },
+  })
+
+  await prisma.timelineEvent.createMany({
+    data: idsUnicos.map((leadId) => ({
+      leadId,
+      campanhaId,
+      tipo: "campanha_iniciada" as const,
+      descricao: `Lead entrou na campanha ${campanha.nome}.`,
+      data: agora,
+      sucesso: true,
+    })),
+  })
+
+  const leadsDepois = await prisma.lead.findMany({ where: { id: { in: idsUnicos } }, select: leadRowSelect })
+  for (const lead of leadsDepois) {
+    void emitWebhookEvent("lead.entrou_em_campanha", {
+      lead: toLead(lead),
+      campanha: { id: campanhaId, nome: campanha.nome },
+    })
+  }
+
+  // Uma única varredura da engine cobre os disparos iniciais devidos de TODO o
+  // lote (ela já varre o sistema inteiro) — em vez de uma varredura completa
+  // por lead selecionado, que era o maior custo desta ação em massa.
+  if (campanha.status === "ativa") {
+    try {
+      const { processDueMessages } = await import("@/services/campaign-engine")
+      await processDueMessages()
+    } catch (error) {
+      await recordAppLog({
+        nivel: "erro",
+        origem: "campaigns",
+        mensagem: `Exceção inesperada ao acionar a engine para os disparos iniciais em massa na campanha ${campanhaId}.`,
+        detalhes: error,
+      })
+    }
+  }
+
+  return { atualizados: idsUnicos.length }
+}
+
 export async function setLeadStatus(id: string, status: LeadStatus, resposta?: string | null): Promise<Lead | null> {
   const lead = await prisma.lead.findUnique({ where: { id }, select: { campanhaId: true, status: true } })
   if (!lead) return null

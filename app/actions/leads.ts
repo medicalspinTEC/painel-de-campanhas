@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 
-import { assignCampaign, createLead, createLeadsBulk, deleteLead, deleteLeads, LeadValidationError, scheduleLeadMessage, scheduleLeadsMessage, sendLeadMessage, sendLeadsMessage, setLeadStatus, updateLead, updateLeadNotes, type LeadBulkInput, type LeadInput } from "@/services/leads"
+import { assignCampaignBulk, createLead, createLeadsBulk, deleteLead, deleteLeads, LeadValidationError, scheduleLeadMessage, scheduleLeadsMessage, sendLeadMessage, sendLeadsMessage, setLeadStatus, updateLead, updateLeadNotes, type LeadBulkInput, type LeadInput } from "@/services/leads"
 import { mapProdutosPorIdImportacao } from "@/services/produtos"
 import { prisma } from "@/lib/prisma"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
@@ -472,12 +472,16 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
 }
 
 export async function assignCampaignAction(leadIds: string[], campanhaId: string | null, mensagemIndividual?: string | null) {
+  let resultado: { atualizados: number }
   try {
-    for (const id of leadIds) await assignCampaign(id, campanhaId, mensagemIndividual)
+    // Em lote: antes disparava uma chamada de serviço (e uma varredura da
+    // engine) por lead selecionado — lento com muitos leads. Ver
+    // `assignCampaignBulk` para o detalhe da otimização.
+    resultado = await assignCampaignBulk(leadIds, campanhaId, mensagemIndividual)
   } catch (error) {
     await recordAppLog({ origem: "leads", mensagem: `Falha ao mover ${leadIds.length} lead(s) de campanha.`, detalhes: error })
     return { ok: false, message: "Não foi possível mover os leads de campanha." }
   }
   revalidarLeads()
-  return { ok: true, message: `${leadIds.length} lead(s) movidos de campanha.` }
+  return { ok: true, message: `${resultado.atualizados} lead(s) movidos de campanha.` }
 }
