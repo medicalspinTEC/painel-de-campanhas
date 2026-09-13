@@ -448,20 +448,27 @@ async function sincronizarLeadsDaCampanha(campanhaId: string, leadIds: string[] 
   })
   const idsAtuais = new Set(atuais.map((item) => item.leadId))
 
-  for (const leadId of Array.from(idsAtuais)) {
-    if (!selecionados.has(leadId)) {
-      await prisma.leadCampaign.deleteMany({ where: { leadId, campanhaId: campanhaAtualId ?? campanhaId } })
-    }
+  // Antes disparava um `deleteMany`/`upsert` POR LEAD (N idas ao banco cada).
+  // Com campanhas de público amplo (muitos leads batendo com o filtro), isso
+  // fazia a criação/edição da campanha demorar minutos. Calculamos a diferença
+  // em memória e aplicamos cada lado em uma única query em lote.
+  const paraRemover = Array.from(idsAtuais).filter((leadId) => !selecionados.has(leadId))
+  const paraAdicionar = Array.from(selecionados).filter((leadId) => !idsAtuais.has(leadId))
+
+  if (paraRemover.length > 0) {
+    await prisma.leadCampaign.deleteMany({
+      where: { leadId: { in: paraRemover }, campanhaId: campanhaAtualId ?? campanhaId },
+    })
   }
 
-  for (const leadId of Array.from(selecionados)) {
-    if (!idsAtuais.has(leadId)) {
-      await prisma.leadCampaign.upsert({
-        where: { leadId_campanhaId: { leadId, campanhaId } },
-        create: { leadId, campanhaId },
-        update: {},
-      })
-    }
+  if (paraAdicionar.length > 0) {
+    // `createMany` com `skipDuplicates` substitui o `upsert` individual: como
+    // já filtramos para quem NÃO está em `idsAtuais`, não há conflito real a
+    // resolver — o `skipDuplicates` é só uma proteção extra contra corrida.
+    await prisma.leadCampaign.createMany({
+      data: paraAdicionar.map((leadId) => ({ leadId, campanhaId })),
+      skipDuplicates: true,
+    })
   }
 
   // Vincular a uma campanha (seleção manual de leads ou correspondência por
