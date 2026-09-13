@@ -245,6 +245,13 @@ export interface LeadImportRow {
   notas?: string
   /** Nome da campanha a vincular (opcional). Resolvido para ID no servidor. */
   campanha?: string
+  /**
+   * Texto individual a enviar automaticamente ao lead (opcional). Só é
+   * aplicado quando a coluna `campanha` aponta para uma campanha do tipo
+   * `individual`: o texto é gravado no vínculo lead-campanha e disparado pela
+   * engine sem precisar abrir a campanha depois para digitar lead por lead.
+   */
+  mensagem?: string
 }
 
 export interface ImportLeadsResult {
@@ -289,15 +296,21 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
   // com uma consulta direta e enxuta (sem estatísticas nem o encerramento de
   // campanhas expiradas de `listCampaigns`, que aqui seriam trabalho perdido).
   const mapaCampanhas = new Map<string, string>()
-  const precisaCampanhas = linhas.some((linha) => String(linha?.campanha ?? "").trim().length > 0)
+  // Tipo de cada campanha (por id), para só aplicar a coluna "mensagem" às
+  // campanhas `individual` — nas `padrao` o texto não tem onde ser usado.
+  const tipoCampanhaPorId = new Map<string, string>()
+  const precisaCampanhas =
+    linhas.some((linha) => String(linha?.campanha ?? "").trim().length > 0) ||
+    linhas.some((linha) => String(linha?.mensagem ?? "").trim().length > 0)
   if (precisaCampanhas) {
     try {
-      const campanhas = await prisma.campaign.findMany({ select: { id: true, nome: true, idImportacao: true } })
+      const campanhas = await prisma.campaign.findMany({ select: { id: true, nome: true, idImportacao: true, tipo: true } })
       for (const campanha of campanhas) {
         mapaCampanhas.set(campanha.nome.trim().toLowerCase(), campanha.id)
         // O ID de importação tem prioridade de leitura, mas como as chaves não
         // colidem (número vs. nome) podemos guardar ambos no mesmo mapa.
         mapaCampanhas.set(String(campanha.idImportacao), campanha.id)
+        tipoCampanhaPorId.set(campanha.id, campanha.tipo)
       }
     } catch (error) {
       await recordAppLog({ origem: "leads", mensagem: "Falha ao carregar campanhas para importação de leads.", detalhes: error })
@@ -341,6 +354,7 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
     const notasBruta = String(bruto.notas ?? "").trim()
     const statusBruto = String(bruto.status ?? "").trim()
     const campanhaBruta = String(bruto.campanha ?? "").trim()
+    const mensagemBruta = String(bruto.mensagem ?? "").trim()
 
     if (nome.length < 3) {
       erros.push({ linha: numeroLinha, nome: nome || "(sem nome)", motivo: "Nome ausente ou muito curto." })
@@ -372,6 +386,26 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
       campanhaId = encontrada
     }
 
+    // A coluna "mensagem" só se aplica junto com uma campanha do tipo
+    // `individual`: é para lá que a coluna "campanha" precisa apontar quando
+    // "mensagem" vem preenchida, senão o texto não teria onde ser gravado.
+    let mensagemIndividual: string | null = null
+    if (mensagemBruta.length > 0) {
+      if (!campanhaId) {
+        erros.push({ linha: numeroLinha, nome, motivo: 'Coluna "mensagem" preenchida sem uma campanha individual na coluna "campanha".' })
+        continue
+      }
+      if (tipoCampanhaPorId.get(campanhaId) !== "individual") {
+        erros.push({ linha: numeroLinha, nome, motivo: `A campanha "${campanhaBruta}" não é do tipo individual, então a coluna "mensagem" não pode ser usada com ela.` })
+        continue
+      }
+      if (mensagemBruta.length > MAX_MENSAGEM_INDIVIDUAL) {
+        erros.push({ linha: numeroLinha, nome, motivo: `A mensagem é muito longa (máximo de ${MAX_MENSAGEM_INDIVIDUAL} caracteres).` })
+        continue
+      }
+      mensagemIndividual = mensagemBruta
+    }
+
     const index = candidatos.length
     contextoPorIndice.set(index, { linha: numeroLinha, nome })
     candidatos.push({
@@ -386,6 +420,7 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
         notas: notasBruta.length > 0 ? notasBruta : null,
         status: (STATUS_VALIDOS.includes(statusBruto as LeadStatus) ? statusBruto : "novo") as LeadStatus,
         campanhaId,
+        mensagemIndividual,
       },
     })
   }

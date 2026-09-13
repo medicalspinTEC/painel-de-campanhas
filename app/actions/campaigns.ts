@@ -35,13 +35,30 @@ function validar(input: CampaignInput) {
 
   if ((input.tipo ?? "padrao") === "individual") {
     const leadIds = [...new Set((input.leadIds ?? []).filter(Boolean))]
-    if (leadIds.length === 0) errors.leadIds = "Selecione pelo menos um lead para a campanha individual."
-    const mensagens = input.leadMensagens ?? {}
-    const semMensagem = leadIds.some((id) => (mensagens[id] ?? "").trim().length < 10)
-    if (semMensagem) errors.mensagens = "Escreva uma mensagem com pelo menos 10 caracteres para cada lead selecionado."
+    // Leads só são exigidos para ATIVAR a campanha (aqui, quando ela já é
+    // salva com status "ativa"). Criar ou manter como rascunho/pausada não
+    // exige nenhum lead vinculado ainda — é o que permite, por exemplo,
+    // criar a campanha individual primeiro e só depois importar os leads
+    // (com a coluna "mensagem" da importação) antes de ativá-la.
+    if (input.status === "ativa") {
+      if (leadIds.length === 0) errors.leadIds = "Selecione pelo menos um lead para ativar a campanha individual."
+      const mensagens = input.leadMensagens ?? {}
+      const semMensagem = leadIds.some((id) => (mensagens[id] ?? "").trim().length < 10)
+      if (semMensagem) errors.mensagens = "Escreva uma mensagem com pelo menos 10 caracteres para cada lead selecionado."
+    } else if (leadIds.length > 0) {
+      // Se leads já foram selecionados manualmente (mesmo em rascunho),
+      // mantemos a exigência de mensagem para quem foi selecionado — evita
+      // salvar um vínculo que nunca vai disparar nada.
+      const mensagens = input.leadMensagens ?? {}
+      const semMensagem = leadIds.some((id) => (mensagens[id] ?? "").trim().length < 10)
+      if (semMensagem) errors.mensagens = "Escreva uma mensagem com pelo menos 10 caracteres para cada lead selecionado."
+    }
     return errors
   }
 
+  // Campanha padrão: mesma regra — leads não são exigidos para criar ou
+  // salvar a campanha, só passam a importar quando ela é ativada (e podem
+  // chegar depois, por filtro ou importação).
   if (input.recorrenciaDias < 1) errors.recorrenciaDias = "A recorrência mínima é de 1 dia."
   if (input.mensagens.length === 0) errors.mensagens = "Adicione pelo menos uma mensagem na sequência."
   if (input.mensagens.some((m) => m.texto.trim().length < 10))

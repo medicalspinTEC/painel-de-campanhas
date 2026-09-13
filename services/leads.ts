@@ -426,6 +426,10 @@ export interface LeadBulkInput {
   notas?: string | null
   status: LeadStatus
   campanhaId: string | null
+  // Texto individual (campanhas `tipo: "individual"`) já vinculado a
+  // `campanhaId`. Gravado direto em `LeadCampaign.mensagemIndividual`, sem
+  // precisar abrir a campanha depois para digitar lead por lead.
+  mensagemIndividual?: string | null
 }
 
 export interface LeadBulkOutcome {
@@ -478,6 +482,7 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
     notas: string | null
     status: LeadStatus
     campanhaId: string | null
+    mensagemIndividual: string | null
   }
   const aceitos: Aceito[] = []
 
@@ -519,6 +524,7 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
       notas: normalizarNotas(input.notas),
       status: input.status,
       campanhaId: input.campanhaId,
+      mensagemIndividual: input.mensagemIndividual?.trim() || null,
     })
   }
 
@@ -606,7 +612,15 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
       })),
     })
     await prisma.leadCampaign.createMany({
-      data: comCampanhaExplicita.map((l) => ({ leadId: l.id, campanhaId: l.campanhaId })),
+      // `mensagemIndividual` só faz sentido para campanhas `tipo: "individual"`;
+      // a action já garante isso antes de chegar aqui (não resolve a coluna
+      // "mensagem" para campanhas do tipo padrão), então basta repassar o
+      // valor recebido.
+      data: comCampanhaExplicita.map((l) => ({
+        leadId: l.id,
+        campanhaId: l.campanhaId,
+        mensagemIndividual: l.mensagemIndividual,
+      })),
       skipDuplicates: true,
     })
   }

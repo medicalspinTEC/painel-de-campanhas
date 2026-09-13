@@ -28,6 +28,7 @@ const MAPA_COLUNAS: Record<keyof LeadImportRow, string[]> = {
   regiao: ["regiao", "região", "regiao/uf", "uf"],
   notas: ["notas", "observacoes", "observações", "obs"],
   campanha: ["campanha", "campaign"],
+  mensagem: ["mensagem", "mensagem individual", "message"],
 }
 
 /** Remove acentos e normaliza o cabeçalho para casar com o mapa de colunas. */
@@ -53,7 +54,7 @@ function mapearLinha(linha: Record<string, unknown>): LeadImportRow {
   return resultado
 }
 
-const COLUNAS_MODELO = ["nome", "telefone", "produto", "marca", "persona", "regiao", "notas", "campanha"]
+const COLUNAS_MODELO = ["nome", "telefone", "produto", "marca", "persona", "regiao", "notas", "campanha", "mensagem"]
 
 export function LeadsImportDialog({
   open,
@@ -118,7 +119,7 @@ export function LeadsImportDialog({
   function baixarModelo() {
     const worksheet = XLSX.utils.aoa_to_sheet([
       COLUNAS_MODELO,
-      ["Lead de Teste", "5511988887777", "ID", "ID", "ID", "ID", "ID", "ID"],
+      ["Lead de Teste", "5511988887777", "ID", "ID", "ID", "ID", "ID", "ID", "Olá! Esta é sua mensagem individual."],
     ])
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, "Leads")
@@ -153,10 +154,16 @@ export function LeadsImportDialog({
             <p className="text-muted-foreground">
               <strong className="text-foreground">nome</strong> e{" "}
               <strong className="text-foreground">telefone</strong> são obrigatórios. Opcionais: produto, marca,
-              persona, regiao, notas e campanha. Nos campos de segmentação você pode informar o nome ou o
+              persona, regiao, notas, campanha e mensagem. Nos campos de segmentação você pode informar o nome ou o
               ID de importação cadastrado na aba Segmentação. Na coluna campanha use o{" "}
               <strong className="text-foreground">ID de importação</strong> da campanha (o número mostrado na
               página Campanhas) ou o nome exato dela. O telefone deve incluir o país 55 (ex.: 5511988887777).
+            </p>
+            <p className="text-muted-foreground">
+              A coluna <strong className="text-foreground">mensagem</strong>, quando preenchida junto com a coluna
+              campanha apontando para uma <strong className="text-foreground">campanha individual</strong>, vincula
+              esse texto automaticamente ao lead — a mensagem é disparada pela campanha sem precisar digitá-la
+              depois, lead por lead. Não se aplica a campanhas do tipo padrão.
             </p>
             <div>
               <Button type="button" variant="outline" size="sm" onClick={baixarModelo}>
@@ -221,6 +228,7 @@ export function LeadsImportDialog({
                       <TableHead className="hidden md:table-cell">Região</TableHead>
                       <TableHead className="hidden lg:table-cell">Notas</TableHead>
                       <TableHead className="hidden lg:table-cell">Campanha</TableHead>
+                      <TableHead className="hidden lg:table-cell">Mensagem</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -234,6 +242,7 @@ export function LeadsImportDialog({
                         <TableCell className="hidden md:table-cell">{linha.regiao || "—"}</TableCell>
                         <TableCell className="hidden lg:table-cell">{linha.notas || "—"}</TableCell>
                         <TableCell className="hidden lg:table-cell">{linha.campanha || "—"}</TableCell>
+                        <TableCell className="hidden lg:table-cell max-w-[200px] truncate">{linha.mensagem || "—"}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
