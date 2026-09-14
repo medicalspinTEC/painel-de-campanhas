@@ -2,6 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, CalendarClock, Hourglass, MessageSquare, Send, Users } from "lucide-react"
 
+import { CampaignFollowUpButton } from "@/components/features/campaigns/campaign-follow-up-button"
 import { CampaignLeadsTable, type CampaignLeadItem } from "@/components/features/campaigns/campaign-leads-table"
 import { CampaignRespondersTable } from "@/components/features/campaigns/campaign-responders-table"
 import { CampaignResponses } from "@/components/features/campaigns/campaign-responses"
@@ -58,6 +59,9 @@ export default async function CampanhaPage({ params }: { params: Promise<{ id: s
           Campanhas
         </Link>
         <PageHeader titulo={campanha.nome} descricao={campanha.descricao ?? "Sem descrição"}>
+          {campanha.status === "encerrada" && saidosSemResponder.length > 0 ? (
+            <CampaignFollowUpButton campanhaId={campanha.id} totalSaidos={saidosSemResponder.length} />
+          ) : null}
           <LinkButton variant="outline" href={`/campanhas/${campanha.id}/editar`}>
             Editar campanha
           </LinkButton>

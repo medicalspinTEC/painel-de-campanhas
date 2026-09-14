@@ -1107,6 +1107,81 @@ export async function getCampaignFormerLeads(campanhaId: string): Promise<Campai
     .sort((a, b) => (a.entrouEm < b.entrouEm ? 1 : -1))
 }
 
+export interface FollowUpCampaignResult {
+  campanhaId: string
+  leadIds: string[]
+}
+
+/** Sufixo usado no nome da campanha de reengajamento, para poder ser removido
+ * ao criar uma nova a partir de uma que já é ela mesma um reengajamento. */
+const SUFIXO_REENGAJAMENTO = /\s*\(não responderam\)\s*$/i
+
+/**
+ * A partir de uma campanha já ENCERRADA, cria automaticamente uma nova
+ * campanha (como rascunho) vinculada exatamente aos leads que saíram dela sem
+ * responder (`getCampaignFormerLeads`). A sequência de mensagens — ou, para
+ * campanhas `individual`, o texto de cada lead — é copiada da campanha
+ * original como ponto de partida.
+ *
+ * A campanha nasce `rascunho` (mesmo raciocínio de `duplicateCampaign`): nada
+ * é disparado até o usuário revisar e ativar. Os filtros de público NÃO são
+ * copiados e os leads são vinculados diretamente via `sincronizarLeadsDaCampanha`
+ * (sem passar por `leadsFinaisDaCampanha`), para que a nova campanha comece
+ * restrita apenas a quem não respondeu — e não a toda a base, o que
+ * aconteceria se ela nascesse sem filtros e sem essa vinculação direta.
+ *
+ * Retorna `null` se a campanha não existir, ainda não estiver encerrada, ou
+ * não houver ninguém que saiu sem responder.
+ */
+export async function createFollowUpCampaign(campanhaId: string): Promise<FollowUpCampaignResult | null> {
+  const original = await prisma.campaign.findUnique({ where: { id: campanhaId }, include: campaignInclude })
+  if (!original || original.status !== "encerrada") return null
+
+  const saidos = await getCampaignFormerLeads(campanhaId)
+  if (saidos.length === 0) return null
+  const leadIds = saidos.map((s) => s.leadId)
+
+  const nomeBase = original.nome.replace(SUFIXO_REENGAJAMENTO, "").trim()
+  const copia = await prisma.campaign.create({
+    data: {
+      nome: `${nomeBase} (não responderam)`,
+      descricao: `Reengajamento automático de quem não respondeu à campanha "${original.nome}".`,
+      status: "rascunho",
+      tipo: original.tipo,
+      recorrenciaDias: original.recorrenciaDias,
+      dataFinal: null,
+      instanciaNome: original.instanciaNome,
+      filtroProduto: null,
+      filtroMarca: null,
+      filtroPersona: null,
+      filtroRegiao: null,
+      mensagens: {
+        create:
+          original.tipo === "padrao"
+            ? original.mensagens.map((m) => ({ dia: m.dia, horario: m.horario, texto: m.texto }))
+            : [],
+      },
+    },
+    include: campaignInclude,
+  })
+
+  const criada = toCampaign(copia)
+  await sincronizarLeadsDaCampanha(criada.id, leadIds)
+
+  if (original.tipo === "individual") {
+    const mensagensAnteriores = await getIndividualLeadMessages(campanhaId)
+    const leadMensagens: Record<string, string> = {}
+    for (const leadId of leadIds) {
+      if (mensagensAnteriores[leadId]?.mensagem) leadMensagens[leadId] = mensagensAnteriores[leadId].mensagem
+    }
+    await sincronizarMensagensIndividuais(criada.id, leadMensagens)
+  }
+
+  await emitWebhookEvent("campanha.criada", { campanha: criada, reengajamentoDe: campanhaId })
+
+  return { campanhaId: criada.id, leadIds }
+}
+
 export async function deleteCampaign(id: string): Promise<void> {
   /*
    * `onDelete: SetNull` libera os leads automaticamente, mas os que estavam

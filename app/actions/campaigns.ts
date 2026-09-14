@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 
 import {
   createCampaign,
+  createFollowUpCampaign,
   deleteCampaign,
   duplicateCampaign,
   setCampaignStatus,
@@ -141,6 +142,32 @@ export async function duplicateCampaignAction(id: string): Promise<CampaignActio
   } catch (error) {
     await recordAppLog({ origem: "campaigns", mensagem: `Falha ao duplicar campanha id=${id}.`, detalhes: error })
     return { ok: false, message: "Não foi possível duplicar a campanha." }
+  }
+}
+
+export async function createFollowUpCampaignAction(id: string): Promise<CampaignActionResult> {
+  try {
+    const resultado = await createFollowUpCampaign(id)
+    if (!resultado) {
+      return {
+        ok: false,
+        message: "Só é possível criar essa campanha a partir de uma campanha encerrada com leads que não responderam.",
+      }
+    }
+    revalidar(resultado.campanhaId)
+    const total = resultado.leadIds.length
+    return {
+      ok: true,
+      message: `Campanha criada como rascunho com ${total} ${total === 1 ? "lead que não respondeu" : "leads que não responderam"}.`,
+      id: resultado.campanhaId,
+    }
+  } catch (error) {
+    await recordAppLog({
+      origem: "campaigns",
+      mensagem: `Falha ao criar campanha de reengajamento a partir da campanha id=${id}.`,
+      detalhes: error,
+    })
+    return { ok: false, message: "Não foi possível criar a nova campanha." }
   }
 }
 
