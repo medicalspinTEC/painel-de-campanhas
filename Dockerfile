@@ -22,7 +22,7 @@ COPY prisma.config.ts ./
 
 # onlyBuiltDependencies (pnpm-workspace.yaml) libera os build scripts do
 # Prisma; o postinstall (prisma generate) roda aqui usando o schema + config.
-RUN pnpm install --frozen-lockfile
+RUN npm install --legacy-peer-deps --frozen-lockfile 
 
 # ================= BUILDER =================
 FROM base AS builder
