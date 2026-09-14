@@ -366,6 +366,20 @@ export async function createLead(input: LeadInput): Promise<Lead> {
     ? await prisma.campaign.findUnique({ where: { id: input.campanhaId }, select: { nome: true } })
     : null
 
+  // `campanhaId` (legado) é sempre a primeira das `campanhasIds` quando esta
+  // lista vem preenchida (ver `app/actions/leads.ts`). Buscamos os nomes das
+  // demais aqui para gravar o evento "campanha_iniciada" de cada uma — sem
+  // isso, um lead adicionado a uma 2ª+ campanha já na criação não deixa
+  // registro histórico algum ao sair dela depois.
+  const outrasCampanhasIds = [...new Set((input.campanhasIds ?? []).filter(Boolean))].filter(
+    (cid) => cid !== input.campanhaId,
+  )
+  const outrasCampanhas =
+    outrasCampanhasIds.length > 0
+      ? await prisma.campaign.findMany({ where: { id: { in: outrasCampanhasIds } }, select: { id: true, nome: true } })
+      : []
+  const nomeOutraCampanhaPorId = new Map(outrasCampanhas.map((c) => [c.id, c.nome]))
+
   // Vincular a uma campanha (pelo campo legado `campanhaId` ou pela lista
   // `campanhasIds`) já na criação reflete no status como "em_campanha",
   // independente do status da própria campanha (ativa, pausada ou
@@ -389,18 +403,30 @@ export async function createLead(input: LeadInput): Promise<Lead> {
       campanhas: {
         create: (input.campanhasIds ?? []).filter(Boolean).map((campanhaId) => ({ campanha: { connect: { id: campanhaId } } })),
       },
-      // Registra a entrada na campanha na mesma transação implícita do create.
-      eventos: input.campanhaId
-        ? {
-            create: {
-              campanhaId: input.campanhaId,
-              tipo: "campanha_iniciada",
-              descricao: `Lead entrou na campanha ${campanha?.nome ?? ""}.`,
-              data: agora,
-              sucesso: true,
-            },
-          }
-        : undefined,
+      // Registra a entrada em cada campanha na mesma transação implícita do
+      // create — a legado (`campanhaId`) e todas as demais de `campanhasIds`.
+      eventos: {
+        create: [
+          ...(input.campanhaId
+            ? [
+                {
+                  campanhaId: input.campanhaId,
+                  tipo: "campanha_iniciada" as const,
+                  descricao: `Lead entrou na campanha ${campanha?.nome ?? ""}.`,
+                  data: agora,
+                  sucesso: true,
+                },
+              ]
+            : []),
+          ...outrasCampanhasIds.map((campanhaId) => ({
+            campanhaId,
+            tipo: "campanha_iniciada" as const,
+            descricao: `Lead entrou na campanha ${nomeOutraCampanhaPorId.get(campanhaId) ?? ""}.`,
+            data: agora,
+            sucesso: true,
+          })),
+        ],
+      },
     },
   })
 
@@ -823,6 +849,21 @@ export async function updateLead(id: string, input: LeadInput): Promise<Lead | n
     }
     if (paraAdicionar.length > 0) {
       await prisma.leadCampaign.createMany({ data: paraAdicionar.map((campanhaId) => ({ leadId: id, campanhaId })) })
+      const campanhasAdicionadas = await prisma.campaign.findMany({
+        where: { id: { in: paraAdicionar } },
+        select: { id: true, nome: true },
+      })
+      const nomePorId = new Map(campanhasAdicionadas.map((c) => [c.id, c.nome]))
+      await prisma.timelineEvent.createMany({
+        data: paraAdicionar.map((campanhaId) => ({
+          leadId: id,
+          campanhaId,
+          tipo: "campanha_iniciada" as const,
+          descricao: `Lead entrou na campanha ${nomePorId.get(campanhaId) ?? ""}.`,
+          data: agora,
+          sucesso: true,
+        })),
+      })
     }
   }
 
@@ -946,6 +987,15 @@ async function vincularLeadACampanhasCompativeis(lead: {
     })
     if (!jaVinculado) {
       await prisma.leadCampaign.create({ data: { leadId: lead.id, campanhaId: campanha.id } })
+      await prisma.timelineEvent.create({
+        data: {
+          leadId: lead.id,
+          campanhaId: campanha.id,
+          tipo: "campanha_iniciada",
+          descricao: "Lead entrou na campanha automaticamente (filtro compatível).",
+          sucesso: true,
+        },
+      })
     }
     if (campanha.status === "ativa") {
       await dispararMensagemInicialDaCampanha(lead.id, campanha.id)

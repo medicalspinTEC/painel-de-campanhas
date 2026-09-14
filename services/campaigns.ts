@@ -84,22 +84,31 @@ async function loadStats(campaignIds: string[]) {
     }
   }
 
-  const [porTipo, porCampanha, respondentesUnicos] = await Promise.all([
+  const [porTipo, vinculosAtuais, iniciadosUnicos, respondentesUnicos] = await Promise.all([
     prisma.timelineEvent.groupBy({
       by: ["campanhaId", "tipo"],
       where: { campanhaId: { in: campaignIds }, tipo: { in: ["mensagem_enviada", "resposta"] } },
       _count: { _all: true },
     }),
-    // Vínculos atuais: leads ainda na campanha, ou seja, que ainda não responderam.
-    prisma.leadCampaign.groupBy({
-      by: ["campanhaId"],
+    // Vínculos atuais (`LeadCampaign`): quem ainda está na campanha agora.
+    // Serve só como reforço para dados antigos que possam não ter o evento
+    // "campanha_iniciada" gravado — ver comentário abaixo.
+    prisma.leadCampaign.findMany({
       where: { campanhaId: { in: campaignIds } },
-      _count: { _all: true },
+      select: { campanhaId: true, leadId: true },
     }),
-    // Quem responde é desvinculado (ver services/lead-response.ts), então o
-    // total histórico de leads da campanha precisa somar esses de volta —
-    // usamos o evento "resposta" da timeline, agrupado por lead, para contar
-    // cada lead uma única vez mesmo que ele tenha respondido mais de uma vez.
+    // Todo lead que já entrou na campanha, para sempre — mesmo que depois
+    // tenha saído (campanha encerrada, filtro mudou, remoção manual etc.).
+    // Diferente do vínculo em `LeadCampaign`, este evento nunca é apagado, então
+    // os KPIs não "encolhem" quando o vínculo atual deixa de existir.
+    prisma.timelineEvent.groupBy({
+      by: ["campanhaId", "leadId"],
+      where: { campanhaId: { in: campaignIds }, tipo: "campanha_iniciada" },
+    }),
+    // Quem responde é desvinculado (ver services/lead-response.ts); contamos
+    // pelo evento "resposta" da timeline (histórico, não pelo vínculo atual)
+    // agrupado por lead, para contar cada lead uma única vez mesmo que ele
+    // tenha respondido mais de uma vez.
     prisma.timelineEvent.groupBy({
       by: ["campanhaId", "leadId"],
       where: { campanhaId: { in: campaignIds }, tipo: "resposta" },
@@ -115,13 +124,20 @@ async function loadStats(campaignIds: string[]) {
     eventos.set(row.campanhaId, atual)
   }
 
-  const leads = new Map<string, { pendentes: number; respondidosUnicos: number }>()
-  for (const row of porCampanha) {
-    const campanhaId = row.campanhaId
-    if (!campanhaId) continue
-    const atual = leads.get(campanhaId) ?? { pendentes: 0, respondidosUnicos: 0 }
-    atual.pendentes += row._count._all
-    leads.set(campanhaId, atual)
+  // União: entrou pelo evento "campanha_iniciada" OU está vinculado agora
+  // (cobre registros antigos, criados antes deste evento existir, sem exigir
+  // uma migração de dados).
+  const iniciadosPorCampanha = new Map<string, Set<string>>()
+  for (const row of iniciadosUnicos) {
+    if (!row.campanhaId) continue
+    const set = iniciadosPorCampanha.get(row.campanhaId) ?? new Set<string>()
+    set.add(row.leadId)
+    iniciadosPorCampanha.set(row.campanhaId, set)
+  }
+  for (const row of vinculosAtuais) {
+    const set = iniciadosPorCampanha.get(row.campanhaId) ?? new Set<string>()
+    set.add(row.leadId)
+    iniciadosPorCampanha.set(row.campanhaId, set)
   }
 
   const respondidosPorCampanha = new Map<string, Set<string>>()
@@ -131,10 +147,12 @@ async function loadStats(campaignIds: string[]) {
     set.add(row.leadId)
     respondidosPorCampanha.set(row.campanhaId, set)
   }
-  for (const [campanhaId, set] of respondidosPorCampanha) {
-    const atual = leads.get(campanhaId) ?? { pendentes: 0, respondidosUnicos: 0 }
-    atual.respondidosUnicos = set.size
-    leads.set(campanhaId, atual)
+
+  const leads = new Map<string, { pendentes: number; respondidosUnicos: number }>()
+  for (const [campanhaId, iniciados] of iniciadosPorCampanha) {
+    const respondidos = respondidosPorCampanha.get(campanhaId) ?? new Set<string>()
+    const pendentes = [...iniciados].filter((leadId) => !respondidos.has(leadId)).length
+    leads.set(campanhaId, { pendentes, respondidosUnicos: respondidos.size })
   }
 
   return { eventos, leads }
@@ -468,6 +486,15 @@ async function sincronizarLeadsDaCampanha(campanhaId: string, leadIds: string[] 
     await prisma.leadCampaign.createMany({
       data: paraAdicionar.map((leadId) => ({ leadId, campanhaId })),
       skipDuplicates: true,
+    })
+    await prisma.timelineEvent.createMany({
+      data: paraAdicionar.map((leadId) => ({
+        leadId,
+        campanhaId,
+        tipo: "campanha_iniciada" as const,
+        descricao: "Lead entrou na campanha.",
+        sucesso: true,
+      })),
     })
   }
 
@@ -1009,6 +1036,75 @@ export async function getCampaignResponders(campanhaId: string): Promise<Campaig
   }
 
   return [...porLead.values()]
+}
+
+export interface CampaignFormerLead {
+  leadId: string
+  leadNome: string
+  leadTelefone: string
+  leadStatus: LeadStatus
+  /** Quando o lead entrou nesta campanha (evento "campanha_iniciada" mais antigo). */
+  entrouEm: string
+}
+
+/**
+ * Leads que já estiveram vinculados a esta campanha (têm o evento histórico
+ * "campanha_iniciada") mas hoje não têm mais vínculo em `LeadCampaign` — por
+ * qualquer motivo que não seja ter respondido (campanha encerrada, filtro de
+ * público mudou, remoção manual no editor). Quem saiu por ter respondido já
+ * aparece em `getCampaignResponders`; esta função existe só para manter um
+ * registro de quem saiu sem responder, já que a listagem de "Leads
+ * vinculados" (baseada em `LeadCampaign`) não mostra mais esses leads. Mesma
+ * lógica histórica usada pelos KPIs "Leads na campanha" / "Faltam responder"
+ * em `loadStats`.
+ */
+export async function getCampaignFormerLeads(campanhaId: string): Promise<CampaignFormerLead[]> {
+  const [iniciados, respondidos, vinculadosAtuais] = await Promise.all([
+    prisma.timelineEvent.findMany({
+      where: { campanhaId, tipo: "campanha_iniciada" },
+      orderBy: { data: "asc" },
+      select: { leadId: true, data: true },
+    }),
+    prisma.timelineEvent.findMany({
+      where: { campanhaId, tipo: "resposta" },
+      select: { leadId: true },
+    }),
+    prisma.leadCampaign.findMany({ where: { campanhaId }, select: { leadId: true } }),
+  ])
+
+  const vinculadosSet = new Set(vinculadosAtuais.map((v) => v.leadId))
+  const respondidosSet = new Set(respondidos.map((r) => r.leadId))
+
+  // A consulta vem ordenada da mais antiga para a mais recente, então a
+  // primeira ocorrência de cada leadId é a entrada original dele na campanha.
+  const entradaPorLead = new Map<string, string>()
+  for (const evento of iniciados) {
+    if (!entradaPorLead.has(evento.leadId)) entradaPorLead.set(evento.leadId, evento.data.toISOString())
+  }
+
+  const leadIdsQueSairam = [...entradaPorLead.keys()].filter(
+    (leadId) => !vinculadosSet.has(leadId) && !respondidosSet.has(leadId),
+  )
+  if (leadIdsQueSairam.length === 0) return []
+
+  const leadsInfo = await prisma.lead.findMany({
+    where: { id: { in: leadIdsQueSairam } },
+    select: { id: true, nome: true, telefone: true, status: true },
+  })
+  const infoPorId = new Map(leadsInfo.map((l) => [l.id, l]))
+
+  return leadIdsQueSairam
+    .map((leadId) => {
+      const info = infoPorId.get(leadId)
+      return {
+        leadId,
+        leadNome: info?.nome ?? "Lead removido",
+        leadTelefone: info?.telefone ?? "",
+        leadStatus: (info?.status ?? "novo") as LeadStatus,
+        entrouEm: entradaPorLead.get(leadId)!,
+      }
+    })
+    .sort((a, b) => (a.entrouEm < b.entrouEm ? 1 : -1))
 }
 
 export async function deleteCampaign(id: string): Promise<void> {

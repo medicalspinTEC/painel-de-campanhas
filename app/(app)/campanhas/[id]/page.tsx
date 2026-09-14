@@ -12,17 +12,18 @@ import { CampaignStatusBadge } from "@/components/shared/status-badges"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatDate, formatNumber, formatPercent, renderTemplate } from "@/lib/format"
-import { getCampaign, getCampaignResponders, getCampaignResponses, getCampaignSchedule, getIndividualLeadMessages } from "@/services/campaigns"
+import { getCampaign, getCampaignFormerLeads, getCampaignResponders, getCampaignResponses, getCampaignSchedule, getIndividualLeadMessages } from "@/services/campaigns"
 import { listLeads } from "@/services/leads"
 
 export default async function CampanhaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [campanha, leads, agenda, respostas, respondentes] = await Promise.all([
+  const [campanha, leads, agenda, respostas, respondentes, saidosSemResponder] = await Promise.all([
     getCampaign(id),
     listLeads(),
     getCampaignSchedule(id),
     getCampaignResponses(id),
     getCampaignResponders(id),
+    getCampaignFormerLeads(id),
   ])
   if (!campanha) notFound()
   const mensagensIndividuais = campanha.tipo === "individual" ? await getIndividualLeadMessages(id) : {}
@@ -176,7 +177,7 @@ export default async function CampanhaPage({ params }: { params: Promise<{ id: s
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <CampaignLeadsTable campanhaId={campanha.id} leads={itensLeads} />
+          <CampaignLeadsTable campanhaId={campanha.id} leads={itensLeads} saidos={saidosSemResponder} />
         </CardContent>
       </Card>
 

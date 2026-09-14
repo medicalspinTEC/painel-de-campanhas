@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useMemo, useState, useTransition } from "react"
-import { ChevronLeft, ChevronRight, RotateCw, SkipForward } from "lucide-react"
+import { ChevronLeft, ChevronRight, RotateCw, SkipForward, UserX } from "lucide-react"
 import { toast } from "sonner"
 
 import { skipCampaignMessageAction } from "@/app/actions/campaigns"
@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Spinner } from "@/components/ui/spinner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatDate } from "@/lib/format"
+import type { CampaignFormerLead } from "@/services/campaigns"
 import type { LeadStatus } from "@/types"
 
 /** Opções de itens por página exibidas no seletor. */
@@ -86,9 +87,16 @@ function Countdown({ iso, aguardandoRecorrencia }: { iso: string | null; aguarda
 export function CampaignLeadsTable({
   campanhaId,
   leads,
+  saidos = [],
 }: {
   campanhaId: string
   leads: CampaignLeadItem[]
+  /**
+   * Registro histórico: leads que já estiveram nesta campanha e saíram sem
+   * responder (campanha encerrada, filtro mudou, remoção manual). Somente
+   * para consulta — não há ação possível, já que não há mais vínculo ativo.
+   */
+  saidos?: CampaignFormerLead[]
 }) {
   const [pending, startTransition] = useTransition()
   const [alvo, setAlvo] = useState<CampaignLeadItem | null>(null)
@@ -105,14 +113,6 @@ export function CampaignLeadsTable({
     const inicio = (paginaAtual - 1) * tamanhoPagina
     return leads.slice(inicio, inicio + tamanhoPagina)
   }, [leads, paginaAtual, tamanhoPagina])
-
-  if (leads.length === 0) {
-    return (
-      <p className="py-6 text-center text-sm text-muted-foreground">
-        Nenhum lead vinculado. Ajuste os filtros ou atribua manualmente na página de leads.
-      </p>
-    )
-  }
 
   function confirmarPular() {
     if (!alvo) return
@@ -131,111 +131,158 @@ export function CampaignLeadsTable({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Lead</TableHead>
-            <TableHead>Produto</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Mensagens</TableHead>
-            <TableHead className="text-right">Próxima mensagem</TableHead>
-            <TableHead className="text-right">Último contato</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {leadsDaPagina.map((lead) => (
-            <TableRow key={lead.id}>
-              <TableCell>
-                <Link href={`/leads/${lead.id}`} className="font-medium hover:underline">
-                  {lead.nome}
-                </Link>
-              </TableCell>
-              <TableCell className="text-muted-foreground">{lead.produto}</TableCell>
-              <TableCell>
-                <LeadStatusBadge status={lead.status} />
-              </TableCell>
-              <TableCell className="text-right tabular-nums">{lead.mensagensEnviadas}</TableCell>
-              <TableCell className="text-right text-muted-foreground">
-                <Countdown iso={lead.proximaMensagemEm} aguardandoRecorrencia={lead.aguardandoRecorrencia} />
-              </TableCell>
-              <TableCell className="text-right text-muted-foreground">
-                {lead.ultimoContato ? formatDate(lead.ultimoContato) : "—"}
-              </TableCell>
-              <TableCell className="text-right">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setAlvo(lead)}
-                  disabled={!lead.temMensagens || pending}
-                  aria-label={`Pular para a próxima mensagem de ${lead.nome}`}
-                >
-                  {enviandoId === lead.id ? (
-                    <Spinner className="size-4" />
-                  ) : (
-                    <SkipForward className="size-4" />
-                  )}
-                  Pular
-                </Button>
-              </TableCell>
+    <div className="flex flex-col gap-6">
+      {leads.length === 0 ? (
+        <p className="py-6 text-center text-sm text-muted-foreground">
+          Nenhum lead vinculado. Ajuste os filtros ou atribua manualmente na página de leads.
+        </p>
+      ) : (
+        <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Lead</TableHead>
+              <TableHead>Produto</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Mensagens</TableHead>
+              <TableHead className="text-right">Próxima mensagem</TableHead>
+              <TableHead className="text-right">Último contato</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {leadsDaPagina.map((lead) => (
+              <TableRow key={lead.id}>
+                <TableCell>
+                  <Link href={`/leads/${lead.id}`} className="font-medium hover:underline">
+                    {lead.nome}
+                  </Link>
+                </TableCell>
+                <TableCell className="text-muted-foreground">{lead.produto}</TableCell>
+                <TableCell>
+                  <LeadStatusBadge status={lead.status} />
+                </TableCell>
+                <TableCell className="text-right tabular-nums">{lead.mensagensEnviadas}</TableCell>
+                <TableCell className="text-right text-muted-foreground">
+                  <Countdown iso={lead.proximaMensagemEm} aguardandoRecorrencia={lead.aguardandoRecorrencia} />
+                </TableCell>
+                <TableCell className="text-right text-muted-foreground">
+                  {lead.ultimoContato ? formatDate(lead.ultimoContato) : "—"}
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setAlvo(lead)}
+                    disabled={!lead.temMensagens || pending}
+                    aria-label={`Pular para a próxima mensagem de ${lead.nome}`}
+                  >
+                    {enviandoId === lead.id ? (
+                      <Spinner className="size-4" />
+                    ) : (
+                      <SkipForward className="size-4" />
+                    )}
+                    Pular
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
 
-      <div className="flex flex-col-reverse items-center justify-between gap-3 pt-4 sm:flex-row">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Por página</span>
-          <Select
-            value={String(tamanhoPagina)}
-            onValueChange={(valor) => {
-              setTamanhoPagina(Number(valor) as (typeof TAMANHOS_PAGINA)[number])
-              setPagina(1)
-            }}
-          >
-            <SelectTrigger className="h-8 w-[72px]" aria-label="Leads por página">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {TAMANHOS_PAGINA.map((tamanho) => (
-                <SelectItem key={tamanho} value={String(tamanho)}>
-                  {tamanho}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <span>
-            {leads.length === 0
-              ? "0 leads"
-              : `${(paginaAtual - 1) * tamanhoPagina + 1}–${Math.min(paginaAtual * tamanhoPagina, leads.length)} de ${leads.length} leads`}
-          </span>
-        </div>
+        <div className="flex flex-col-reverse items-center justify-between gap-3 pt-4 sm:flex-row">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Por página</span>
+            <Select
+              value={String(tamanhoPagina)}
+              onValueChange={(valor) => {
+                setTamanhoPagina(Number(valor) as (typeof TAMANHOS_PAGINA)[number])
+                setPagina(1)
+              }}
+            >
+              <SelectTrigger className="h-8 w-[72px]" aria-label="Leads por página">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TAMANHOS_PAGINA.map((tamanho) => (
+                  <SelectItem key={tamanho} value={String(tamanho)}>
+                    {tamanho}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <span>
+              {leads.length === 0
+                ? "0 leads"
+                : `${(paginaAtual - 1) * tamanhoPagina + 1}–${Math.min(paginaAtual * tamanhoPagina, leads.length)} de ${leads.length} leads`}
+            </span>
+          </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPagina((p) => Math.max(1, p - 1))}
-            disabled={paginaAtual <= 1}
-          >
-            <ChevronLeft className="size-4" />
-            Anterior
-          </Button>
-          <span className="text-sm tabular-nums text-muted-foreground">
-            Página {paginaAtual} de {totalPaginas}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
-            disabled={paginaAtual >= totalPaginas}
-          >
-            Próxima
-            <ChevronRight className="size-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPagina((p) => Math.max(1, p - 1))}
+              disabled={paginaAtual <= 1}
+            >
+              <ChevronLeft className="size-4" />
+              Anterior
+            </Button>
+            <span className="text-sm tabular-nums text-muted-foreground">
+              Página {paginaAtual} de {totalPaginas}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+              disabled={paginaAtual >= totalPaginas}
+            >
+              Próxima
+              <ChevronRight className="size-4" />
+            </Button>
+          </div>
         </div>
-      </div>
+        </div>
+      )}
+
+      {saidos.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          <p className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+            <UserX className="size-4" />
+            Saíram da campanha sem responder ({saidos.length})
+          </p>
+          <div className="overflow-x-auto rounded-lg border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Lead</TableHead>
+                  <TableHead>Status atual</TableHead>
+                  <TableHead className="text-right">Entrou em</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {saidos.map((lead) => (
+                  <TableRow key={lead.leadId} className="text-muted-foreground">
+                    <TableCell>
+                      {lead.leadNome === "Lead removido" ? (
+                        <span>{lead.leadNome}</span>
+                      ) : (
+                        <Link href={`/leads/${lead.leadId}`} className="font-medium hover:underline">
+                          {lead.leadNome}
+                        </Link>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <LeadStatusBadge status={lead.leadStatus} />
+                    </TableCell>
+                    <TableCell className="text-right">{formatDate(lead.entrouEm)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      ) : null}
 
       <AlertDialog open={Boolean(alvo)} onOpenChange={(aberto) => !aberto && !pending && setAlvo(null)}>
         <AlertDialogContent>
