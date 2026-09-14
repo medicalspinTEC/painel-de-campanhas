@@ -445,17 +445,21 @@ async function leadsQueAtendemAosFiltros(filtros: Campaign["filtros"]): Promise<
 }
 
 /**
- * Une os leads selecionados manualmente com os que são compatíveis com os
- * filtros da campanha. É a lista final de leads que devem ficar vinculados:
- * qualquer lead que atende aos filtros entra automaticamente, mesmo sem seleção
- * manual, e quando todos os filtros são "qualquer" toda a base é incluída.
+ * Lista final de leads que devem ficar vinculados à campanha. A vinculação
+ * manual tem prioridade: se o usuário selecionou algum lead manualmente, são
+ * SOMENTE esses leads que entram, e os filtros automáticos de público são
+ * ignorados por completo — mesmo que outros leads também atendam a eles. Os
+ * filtros automáticos só se aplicam quando não há nenhuma seleção manual;
+ * nesse caso, se todos os filtros forem "qualquer", toda a base é incluída
+ * (mesmo comportamento de antes).
  */
 async function leadsFinaisDaCampanha(
   filtros: Campaign["filtros"],
   leadIdsManuais: string[] | undefined,
 ): Promise<string[]> {
-  const compativeis = await leadsQueAtendemAosFiltros(filtros)
-  return [...new Set([...(leadIdsManuais ?? []).filter(Boolean), ...compativeis])]
+  const manuais = [...new Set((leadIdsManuais ?? []).filter(Boolean))]
+  if (manuais.length > 0) return manuais
+  return leadsQueAtendemAosFiltros(filtros)
 }
 
 async function sincronizarLeadsDaCampanha(campanhaId: string, leadIds: string[] | undefined, campanhaAtualId?: string) {

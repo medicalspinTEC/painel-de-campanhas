@@ -486,7 +486,7 @@ export function CampaignEditor({
             <CardDescription>
               {individual
                 ? "Selecione os leads e escreva a mensagem de cada um."
-                : "Selecione leads específicos para entrar nesta campanha."}
+                : "Selecione leads específicos para entrar nesta campanha. Ao selecionar pelo menos um, os filtros de público-alvo abaixo são ignorados e só entram os leads marcados aqui."}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
@@ -549,9 +549,13 @@ export function CampaignEditor({
         <Card>
           <CardHeader>
             <CardTitle>Público-alvo</CardTitle>
-            <CardDescription>Leads são incluídos automaticamente quando atendem aos filtros.</CardDescription>
+            <CardDescription>
+              {leadIdsSelecionados.length > 0
+                ? "Ignorados: há leads selecionados manualmente ao lado, e a vinculação manual manda."
+                : "Leads são incluídos automaticamente quando atendem aos filtros."}
+            </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
+          <CardContent className={cn("flex flex-col gap-3", leadIdsSelecionados.length > 0 && "opacity-50")}>
             <CreatableSelectField
               value={produto}
               onValueChange={setProduto}
@@ -587,7 +591,9 @@ export function CampaignEditor({
               <Users className="size-4 text-primary" />
               <div className="flex flex-col">
                 <span className="text-sm font-semibold tabular-nums">{formatNumber(audiencia)} leads</span>
-                <span className="text-xs text-muted-foreground">compatíveis com os filtros</span>
+                <span className="text-xs text-muted-foreground">
+                  {leadIdsSelecionados.length > 0 ? "compatíveis, mas não usados agora" : "compatíveis com os filtros"}
+                </span>
               </div>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
