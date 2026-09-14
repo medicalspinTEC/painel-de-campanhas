@@ -380,6 +380,7 @@ export function LeadsTable({
                   />
                 </TableHead>
                 <TableHead>Lead</TableHead>
+                <TableHead className="hidden md:table-cell">Negócio</TableHead>
                 <TableHead className="hidden md:table-cell">Produto / Marca</TableHead>
                 <TableHead className="hidden lg:table-cell">Persona / Região</TableHead>
                 <TableHead>Campanha</TableHead>
@@ -404,6 +405,9 @@ export function LeadsTable({
                       <span className="font-medium">{lead.nome}</span>
                       <span className="text-xs tabular-nums text-muted-foreground">{lead.telefone}</span>
                     </Link>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <span className="text-sm">{lead.negocio || "—"}</span>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     <div className="flex flex-col gap-0.5">

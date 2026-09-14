@@ -34,6 +34,7 @@ export type LeadMinAggregateOutputType = {
   regiao: string | null
   status: $Enums.LeadStatus | null
   notas: string | null
+  negocio: string | null
   campanhaId: string | null
   entradaCampanhaEm: Date | null
   criadoEm: Date | null
@@ -50,6 +51,7 @@ export type LeadMaxAggregateOutputType = {
   regiao: string | null
   status: $Enums.LeadStatus | null
   notas: string | null
+  negocio: string | null
   campanhaId: string | null
   entradaCampanhaEm: Date | null
   criadoEm: Date | null
@@ -66,6 +68,7 @@ export type LeadCountAggregateOutputType = {
   regiao: number
   status: number
   notas: number
+  negocio: number
   campanhaId: number
   entradaCampanhaEm: number
   criadoEm: number
@@ -84,6 +87,7 @@ export type LeadMinAggregateInputType = {
   regiao?: true
   status?: true
   notas?: true
+  negocio?: true
   campanhaId?: true
   entradaCampanhaEm?: true
   criadoEm?: true
@@ -100,6 +104,7 @@ export type LeadMaxAggregateInputType = {
   regiao?: true
   status?: true
   notas?: true
+  negocio?: true
   campanhaId?: true
   entradaCampanhaEm?: true
   criadoEm?: true
@@ -116,6 +121,7 @@ export type LeadCountAggregateInputType = {
   regiao?: true
   status?: true
   notas?: true
+  negocio?: true
   campanhaId?: true
   entradaCampanhaEm?: true
   criadoEm?: true
@@ -205,6 +211,7 @@ export type LeadGroupByOutputType = {
   regiao: string
   status: $Enums.LeadStatus
   notas: string | null
+  negocio: string | null
   campanhaId: string | null
   entradaCampanhaEm: Date | null
   criadoEm: Date
@@ -242,6 +249,7 @@ export type LeadWhereInput = {
   regiao?: Prisma.StringFilter<"Lead"> | string
   status?: Prisma.EnumLeadStatusFilter<"Lead"> | $Enums.LeadStatus
   notas?: Prisma.StringNullableFilter<"Lead"> | string | null
+  negocio?: Prisma.StringNullableFilter<"Lead"> | string | null
   campanhaId?: Prisma.StringNullableFilter<"Lead"> | string | null
   entradaCampanhaEm?: Prisma.DateTimeNullableFilter<"Lead"> | Date | string | null
   criadoEm?: Prisma.DateTimeFilter<"Lead"> | Date | string
@@ -262,6 +270,7 @@ export type LeadOrderByWithRelationInput = {
   regiao?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notas?: Prisma.SortOrderInput | Prisma.SortOrder
+  negocio?: Prisma.SortOrderInput | Prisma.SortOrder
   campanhaId?: Prisma.SortOrderInput | Prisma.SortOrder
   entradaCampanhaEm?: Prisma.SortOrderInput | Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
@@ -285,6 +294,7 @@ export type LeadWhereUniqueInput = Prisma.AtLeast<{
   regiao?: Prisma.StringFilter<"Lead"> | string
   status?: Prisma.EnumLeadStatusFilter<"Lead"> | $Enums.LeadStatus
   notas?: Prisma.StringNullableFilter<"Lead"> | string | null
+  negocio?: Prisma.StringNullableFilter<"Lead"> | string | null
   campanhaId?: Prisma.StringNullableFilter<"Lead"> | string | null
   entradaCampanhaEm?: Prisma.DateTimeNullableFilter<"Lead"> | Date | string | null
   criadoEm?: Prisma.DateTimeFilter<"Lead"> | Date | string
@@ -305,6 +315,7 @@ export type LeadOrderByWithAggregationInput = {
   regiao?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notas?: Prisma.SortOrderInput | Prisma.SortOrder
+  negocio?: Prisma.SortOrderInput | Prisma.SortOrder
   campanhaId?: Prisma.SortOrderInput | Prisma.SortOrder
   entradaCampanhaEm?: Prisma.SortOrderInput | Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
@@ -327,6 +338,7 @@ export type LeadScalarWhereWithAggregatesInput = {
   regiao?: Prisma.StringWithAggregatesFilter<"Lead"> | string
   status?: Prisma.EnumLeadStatusWithAggregatesFilter<"Lead"> | $Enums.LeadStatus
   notas?: Prisma.StringNullableWithAggregatesFilter<"Lead"> | string | null
+  negocio?: Prisma.StringNullableWithAggregatesFilter<"Lead"> | string | null
   campanhaId?: Prisma.StringNullableWithAggregatesFilter<"Lead"> | string | null
   entradaCampanhaEm?: Prisma.DateTimeNullableWithAggregatesFilter<"Lead"> | Date | string | null
   criadoEm?: Prisma.DateTimeWithAggregatesFilter<"Lead"> | Date | string
@@ -343,6 +355,7 @@ export type LeadCreateInput = {
   regiao: string
   status?: $Enums.LeadStatus
   notas?: string | null
+  negocio?: string | null
   entradaCampanhaEm?: Date | string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
@@ -362,6 +375,7 @@ export type LeadUncheckedCreateInput = {
   regiao: string
   status?: $Enums.LeadStatus
   notas?: string | null
+  negocio?: string | null
   campanhaId?: string | null
   entradaCampanhaEm?: Date | string | null
   criadoEm?: Date | string
@@ -381,6 +395,7 @@ export type LeadUpdateInput = {
   regiao?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negocio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entradaCampanhaEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -400,6 +415,7 @@ export type LeadUncheckedUpdateInput = {
   regiao?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negocio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   campanhaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entradaCampanhaEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -419,6 +435,7 @@ export type LeadCreateManyInput = {
   regiao: string
   status?: $Enums.LeadStatus
   notas?: string | null
+  negocio?: string | null
   campanhaId?: string | null
   entradaCampanhaEm?: Date | string | null
   criadoEm?: Date | string
@@ -435,6 +452,7 @@ export type LeadUpdateManyMutationInput = {
   regiao?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negocio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entradaCampanhaEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -450,6 +468,7 @@ export type LeadUncheckedUpdateManyInput = {
   regiao?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negocio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   campanhaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entradaCampanhaEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -466,6 +485,7 @@ export type LeadCountOrderByAggregateInput = {
   regiao?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notas?: Prisma.SortOrder
+  negocio?: Prisma.SortOrder
   campanhaId?: Prisma.SortOrder
   entradaCampanhaEm?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
@@ -482,6 +502,7 @@ export type LeadMaxOrderByAggregateInput = {
   regiao?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notas?: Prisma.SortOrder
+  negocio?: Prisma.SortOrder
   campanhaId?: Prisma.SortOrder
   entradaCampanhaEm?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
@@ -498,6 +519,7 @@ export type LeadMinOrderByAggregateInput = {
   regiao?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notas?: Prisma.SortOrder
+  negocio?: Prisma.SortOrder
   campanhaId?: Prisma.SortOrder
   entradaCampanhaEm?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
@@ -633,6 +655,7 @@ export type LeadCreateWithoutCampanhaInput = {
   regiao: string
   status?: $Enums.LeadStatus
   notas?: string | null
+  negocio?: string | null
   entradaCampanhaEm?: Date | string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
@@ -651,6 +674,7 @@ export type LeadUncheckedCreateWithoutCampanhaInput = {
   regiao: string
   status?: $Enums.LeadStatus
   notas?: string | null
+  negocio?: string | null
   entradaCampanhaEm?: Date | string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
@@ -698,6 +722,7 @@ export type LeadScalarWhereInput = {
   regiao?: Prisma.StringFilter<"Lead"> | string
   status?: Prisma.EnumLeadStatusFilter<"Lead"> | $Enums.LeadStatus
   notas?: Prisma.StringNullableFilter<"Lead"> | string | null
+  negocio?: Prisma.StringNullableFilter<"Lead"> | string | null
   campanhaId?: Prisma.StringNullableFilter<"Lead"> | string | null
   entradaCampanhaEm?: Prisma.DateTimeNullableFilter<"Lead"> | Date | string | null
   criadoEm?: Prisma.DateTimeFilter<"Lead"> | Date | string
@@ -714,6 +739,7 @@ export type LeadCreateWithoutCampanhasInput = {
   regiao: string
   status?: $Enums.LeadStatus
   notas?: string | null
+  negocio?: string | null
   entradaCampanhaEm?: Date | string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
@@ -732,6 +758,7 @@ export type LeadUncheckedCreateWithoutCampanhasInput = {
   regiao: string
   status?: $Enums.LeadStatus
   notas?: string | null
+  negocio?: string | null
   campanhaId?: string | null
   entradaCampanhaEm?: Date | string | null
   criadoEm?: Date | string
@@ -766,6 +793,7 @@ export type LeadUpdateWithoutCampanhasInput = {
   regiao?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negocio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entradaCampanhaEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -784,6 +812,7 @@ export type LeadUncheckedUpdateWithoutCampanhasInput = {
   regiao?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negocio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   campanhaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entradaCampanhaEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -802,6 +831,7 @@ export type LeadCreateWithoutMensagensAgendadasInput = {
   regiao: string
   status?: $Enums.LeadStatus
   notas?: string | null
+  negocio?: string | null
   entradaCampanhaEm?: Date | string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
@@ -820,6 +850,7 @@ export type LeadUncheckedCreateWithoutMensagensAgendadasInput = {
   regiao: string
   status?: $Enums.LeadStatus
   notas?: string | null
+  negocio?: string | null
   campanhaId?: string | null
   entradaCampanhaEm?: Date | string | null
   criadoEm?: Date | string
@@ -854,6 +885,7 @@ export type LeadUpdateWithoutMensagensAgendadasInput = {
   regiao?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negocio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entradaCampanhaEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -872,6 +904,7 @@ export type LeadUncheckedUpdateWithoutMensagensAgendadasInput = {
   regiao?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negocio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   campanhaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entradaCampanhaEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -890,6 +923,7 @@ export type LeadCreateWithoutEventosInput = {
   regiao: string
   status?: $Enums.LeadStatus
   notas?: string | null
+  negocio?: string | null
   entradaCampanhaEm?: Date | string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
@@ -908,6 +942,7 @@ export type LeadUncheckedCreateWithoutEventosInput = {
   regiao: string
   status?: $Enums.LeadStatus
   notas?: string | null
+  negocio?: string | null
   campanhaId?: string | null
   entradaCampanhaEm?: Date | string | null
   criadoEm?: Date | string
@@ -942,6 +977,7 @@ export type LeadUpdateWithoutEventosInput = {
   regiao?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negocio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entradaCampanhaEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -960,6 +996,7 @@ export type LeadUncheckedUpdateWithoutEventosInput = {
   regiao?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negocio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   campanhaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entradaCampanhaEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -978,6 +1015,7 @@ export type LeadCreateManyCampanhaInput = {
   regiao: string
   status?: $Enums.LeadStatus
   notas?: string | null
+  negocio?: string | null
   entradaCampanhaEm?: Date | string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
@@ -993,6 +1031,7 @@ export type LeadUpdateWithoutCampanhaInput = {
   regiao?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negocio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entradaCampanhaEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1011,6 +1050,7 @@ export type LeadUncheckedUpdateWithoutCampanhaInput = {
   regiao?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negocio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entradaCampanhaEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1029,6 +1069,7 @@ export type LeadUncheckedUpdateManyWithoutCampanhaInput = {
   regiao?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negocio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entradaCampanhaEm?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1093,6 +1134,7 @@ export type LeadSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   regiao?: boolean
   status?: boolean
   notas?: boolean
+  negocio?: boolean
   campanhaId?: boolean
   entradaCampanhaEm?: boolean
   criadoEm?: boolean
@@ -1114,6 +1156,7 @@ export type LeadSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   regiao?: boolean
   status?: boolean
   notas?: boolean
+  negocio?: boolean
   campanhaId?: boolean
   entradaCampanhaEm?: boolean
   criadoEm?: boolean
@@ -1131,6 +1174,7 @@ export type LeadSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   regiao?: boolean
   status?: boolean
   notas?: boolean
+  negocio?: boolean
   campanhaId?: boolean
   entradaCampanhaEm?: boolean
   criadoEm?: boolean
@@ -1148,13 +1192,14 @@ export type LeadSelectScalar = {
   regiao?: boolean
   status?: boolean
   notas?: boolean
+  negocio?: boolean
   campanhaId?: boolean
   entradaCampanhaEm?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }
 
-export type LeadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nome" | "telefone" | "produto" | "marca" | "persona" | "regiao" | "status" | "notas" | "campanhaId" | "entradaCampanhaEm" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["lead"]>
+export type LeadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nome" | "telefone" | "produto" | "marca" | "persona" | "regiao" | "status" | "notas" | "negocio" | "campanhaId" | "entradaCampanhaEm" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["lead"]>
 export type LeadInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   campanha?: boolean | Prisma.Lead$campanhaArgs<ExtArgs>
   campanhas?: boolean | Prisma.Lead$campanhasArgs<ExtArgs>
@@ -1187,6 +1232,7 @@ export type $LeadPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     regiao: string
     status: $Enums.LeadStatus
     notas: string | null
+    negocio: string | null
     campanhaId: string | null
     entradaCampanhaEm: Date | null
     criadoEm: Date
@@ -1627,6 +1673,7 @@ export interface LeadFieldRefs {
   readonly regiao: Prisma.FieldRef<"Lead", 'String'>
   readonly status: Prisma.FieldRef<"Lead", 'LeadStatus'>
   readonly notas: Prisma.FieldRef<"Lead", 'String'>
+  readonly negocio: Prisma.FieldRef<"Lead", 'String'>
   readonly campanhaId: Prisma.FieldRef<"Lead", 'String'>
   readonly entradaCampanhaEm: Prisma.FieldRef<"Lead", 'DateTime'>
   readonly criadoEm: Prisma.FieldRef<"Lead", 'DateTime'>

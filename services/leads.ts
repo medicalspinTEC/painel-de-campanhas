@@ -78,6 +78,7 @@ type LeadRecord = {
   regiao: string
   status: LeadStatus
   notas: string | null
+  negocio: string | null
   campanhaId: string | null
   entradaCampanhaEm: Date | null
   criadoEm: Date
@@ -97,6 +98,7 @@ function toLead(record: LeadRecord): Lead {
     regiao: record.regiao as Lead["regiao"],
     status: record.status,
     notas: record.notas ?? null,
+    negocio: record.negocio ?? null,
     campanhaId: record.campanhaId,
     criadoEm: record.criadoEm.toISOString(),
     entradaCampanhaEm: record.entradaCampanhaEm?.toISOString() ?? null,
@@ -118,6 +120,7 @@ const leadRowSelect = {
   regiao: true,
   status: true,
   notas: true,
+  negocio: true,
   campanhaId: true,
   entradaCampanhaEm: true,
   criadoEm: true,
@@ -247,6 +250,8 @@ export type LeadInput = Pick<Lead, "nome" | "telefone" | "status"> & {
   regiao?: Lead["regiao"] | ""
   // Anotação livre exibida nos detalhes do lead. `null`/"" limpam o campo.
   notas?: string | null
+  // ID do negócio (CRM externo), texto livre opcional. `null`/"" limpam o campo.
+  negocio?: string | null
   campanhaId: string | null
   campanhasIds?: string[]
 }
@@ -255,6 +260,13 @@ export type LeadInput = Pick<Lead, "nome" | "telefone" | "status"> & {
 function normalizarNotas(notas: string | null | undefined): string | null {
   if (notas == null) return null
   const limpo = notas.trim()
+  return limpo.length > 0 ? limpo : null
+}
+
+/** Normaliza o ID do negócio recebido: vazio vira `null`. */
+function normalizarNegocio(negocio: string | null | undefined): string | null {
+  if (negocio == null) return null
+  const limpo = negocio.trim()
   return limpo.length > 0 ? limpo : null
 }
 
@@ -371,6 +383,7 @@ export async function createLead(input: LeadInput): Promise<Lead> {
       regiao: input.regiao ?? "",
       status: statusParaGravar,
       notas: normalizarNotas(input.notas),
+      negocio: normalizarNegocio(input.negocio),
       campanhaId: input.campanhaId,
       entradaCampanhaEm: input.campanhaId ? agora : null,
       campanhas: {
@@ -424,6 +437,8 @@ export interface LeadBulkInput {
   persona?: string
   regiao?: string
   notas?: string | null
+  // ID do negócio (CRM externo), texto livre opcional.
+  negocio?: string | null
   status: LeadStatus
   campanhaId: string | null
   // Texto individual (campanhas `tipo: "individual"`) já vinculado a
@@ -480,6 +495,7 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
     persona: string
     regiao: string
     notas: string | null
+    negocio: string | null
     status: LeadStatus
     campanhaId: string | null
     mensagemIndividual: string | null
@@ -522,6 +538,7 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
       persona: input.persona ?? "",
       regiao: input.regiao ?? "",
       notas: normalizarNotas(input.notas),
+      negocio: normalizarNegocio(input.negocio),
       status: input.status,
       campanhaId: input.campanhaId,
       mensagemIndividual: input.mensagemIndividual?.trim() || null,
@@ -591,6 +608,7 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
       regiao: l.regiao,
       status: l.status,
       notas: l.notas,
+      negocio: l.negocio,
       campanhaId: l.campanhaId,
       entradaCampanhaEm: l.campanhaId ? agora : null,
       criadoEm: agora,
@@ -776,6 +794,8 @@ export async function updateLead(id: string, input: LeadInput): Promise<Lead | n
       ...(input.regiao !== undefined ? { regiao: input.regiao } : {}),
       // Nota também é opcional: só atualiza quando a chave veio no corpo.
       ...(input.notas !== undefined ? { notas: normalizarNotas(input.notas) } : {}),
+      // Negócio também é opcional: só atualiza quando a chave veio no corpo.
+      ...(input.negocio !== undefined ? { negocio: normalizarNegocio(input.negocio) } : {}),
       ...(trocouCampanha ? { entradaCampanhaEm: input.campanhaId ? agora : null } : {}),
       ...(trocouCampanha && input.campanhaId
         ? {

@@ -39,6 +39,8 @@ export interface Lead {
   campanhaId: string | null
   status: LeadStatus
   notas: string | null
+  /** ID do negócio (CRM externo), texto livre opcional digitado no cadastro. */
+  negocio: string | null
   criadoEm: string
   entradaCampanhaEm: string | null
 }

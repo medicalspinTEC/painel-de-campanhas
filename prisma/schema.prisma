@@ -76,6 +76,10 @@ model Lead {
   // momento pela página de detalhe do lead.
   notas String?
 
+  // Identificador do negócio (ex.: CRM externo) associado ao lead. Opcional,
+  // texto livre digitado pelo usuário no cadastro.
+  negocio String?
+
   campanhaId String?
   campanha   Campaign? @relation(fields: [campanhaId], references: [id], onDelete: SetNull)
 

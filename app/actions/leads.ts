@@ -21,6 +21,9 @@ const STATUS_VALIDOS: LeadStatus[] = ["novo", "em_campanha", "respondeu", "encer
 /** Tamanho máximo para as dimensões de segmentação (texto livre). */
 const MAX_SEGMENTO = 60
 
+/** Tamanho máximo para o ID do negócio (texto livre, opcional). */
+const MAX_NEGOCIO = 120
+
 function parseLead(formData: FormData) {
   const errors: Record<string, string> = {}
   const nome = String(formData.get("nome") ?? "").trim()
@@ -31,6 +34,8 @@ function parseLead(formData: FormData) {
   const persona = String(formData.get("persona") ?? "").trim()
   const regiao = String(formData.get("regiao") ?? "").trim()
   const notas = formData.has("notas") ? String(formData.get("notas") ?? "") : null
+  // Negócio é opcional: ID de texto livre digitado pelo usuário (ex.: CRM externo).
+  const negocio = formData.has("negocio") ? String(formData.get("negocio") ?? "").trim() : null
   const status = String(formData.get("status") ?? "novo")
   const campanhasIdsRaw = String(formData.get("campanhasIds") ?? "")
   const campanhasIds = campanhasIdsRaw
@@ -52,6 +57,7 @@ function parseLead(formData: FormData) {
   if (persona.length > MAX_SEGMENTO) errors.persona = `Use no máximo ${MAX_SEGMENTO} caracteres.`
   if (regiao.length > MAX_SEGMENTO) errors.regiao = `Use no máximo ${MAX_SEGMENTO} caracteres.`
   if (notas != null && notas.length > 5000) errors.notas = "As notas são muito longas (máximo de 5000 caracteres)."
+  if (negocio != null && negocio.length > MAX_NEGOCIO) errors.negocio = `Use no máximo ${MAX_NEGOCIO} caracteres.`
 
   const input: LeadInput = {
     nome,
@@ -61,6 +67,7 @@ function parseLead(formData: FormData) {
     persona: persona as LeadInput["persona"],
     regiao: regiao as LeadInput["regiao"],
     notas,
+    negocio,
     status: (STATUS_VALIDOS.includes(status as LeadStatus) ? status : "novo") as LeadStatus,
     campanhaId: campanhasIds[0] ?? null,
     campanhasIds,
@@ -243,6 +250,8 @@ export interface LeadImportRow {
   regiao?: string
   status?: string
   notas?: string
+  /** ID do negócio (CRM externo), texto livre opcional. */
+  negocio?: string
   /** Nome da campanha a vincular (opcional). Resolvido para ID no servidor. */
   campanha?: string
   /**
@@ -352,6 +361,7 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
     const persona = resolver(String(bruto.persona ?? "").trim(), mapaPersonas)
     const regiao = resolver(String(bruto.regiao ?? "").trim(), mapaRegioes)
     const notasBruta = String(bruto.notas ?? "").trim()
+    const negocioBruto = String(bruto.negocio ?? "").trim()
     const statusBruto = String(bruto.status ?? "").trim()
     const campanhaBruta = String(bruto.campanha ?? "").trim()
     const mensagemBruta = String(bruto.mensagem ?? "").trim()
@@ -370,6 +380,10 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
     }
     if ([produto, marca, persona, regiao].some((valor) => valor.length > MAX_SEGMENTO)) {
       erros.push({ linha: numeroLinha, nome, motivo: `Campos de segmentação devem ter até ${MAX_SEGMENTO} caracteres.` })
+      continue
+    }
+    if (negocioBruto.length > MAX_NEGOCIO) {
+      erros.push({ linha: numeroLinha, nome, motivo: `Negócio deve ter até ${MAX_NEGOCIO} caracteres.` })
       continue
     }
 
@@ -418,6 +432,7 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
         persona,
         regiao,
         notas: notasBruta.length > 0 ? notasBruta : null,
+        negocio: negocioBruto.length > 0 ? negocioBruto : null,
         status: (STATUS_VALIDOS.includes(statusBruto as LeadStatus) ? statusBruto : "novo") as LeadStatus,
         campanhaId,
         mensagemIndividual,

@@ -27,6 +27,7 @@ const MAPA_COLUNAS: Record<keyof LeadImportRow, string[]> = {
   persona: ["persona"],
   regiao: ["regiao", "região", "regiao/uf", "uf"],
   notas: ["notas", "observacoes", "observações", "obs"],
+  negocio: ["negocio", "negócio", "deal", "deal id", "id do negocio", "id do negócio"],
   campanha: ["campanha", "campaign"],
   mensagem: ["mensagem", "mensagem individual", "message"],
 }
@@ -54,7 +55,7 @@ function mapearLinha(linha: Record<string, unknown>): LeadImportRow {
   return resultado
 }
 
-const COLUNAS_MODELO = ["nome", "telefone", "produto", "marca", "persona", "regiao", "notas", "campanha", "mensagem"]
+const COLUNAS_MODELO = ["nome", "telefone", "produto", "marca", "persona", "regiao", "notas", "negocio", "campanha", "mensagem"]
 
 export function LeadsImportDialog({
   open,
@@ -119,7 +120,7 @@ export function LeadsImportDialog({
   function baixarModelo() {
     const worksheet = XLSX.utils.aoa_to_sheet([
       COLUNAS_MODELO,
-      ["Lead de Teste", "5511988887777", "ID", "ID", "ID", "ID", "ID", "ID", "Olá! Esta é sua mensagem individual."],
+      ["Lead de Teste", "5511988887777", "ID", "ID", "ID", "ID", "ID", "", "ID", "Olá! Esta é sua mensagem individual."],
     ])
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, "Leads")
@@ -154,10 +155,14 @@ export function LeadsImportDialog({
             <p className="text-muted-foreground">
               <strong className="text-foreground">nome</strong> e{" "}
               <strong className="text-foreground">telefone</strong> são obrigatórios. Opcionais: produto, marca,
-              persona, regiao, notas, campanha e mensagem. Nos campos de segmentação você pode informar o nome ou o
-              ID de importação cadastrado na aba Segmentação. Na coluna campanha use o{" "}
+              persona, regiao, notas, negocio, campanha e mensagem. Nos campos de segmentação você pode informar o
+              nome ou o ID de importação cadastrado na aba Segmentação. Na coluna campanha use o{" "}
               <strong className="text-foreground">ID de importação</strong> da campanha (o número mostrado na
               página Campanhas) ou o nome exato dela. O telefone deve incluir o país 55 (ex.: 5511988887777).
+            </p>
+            <p className="text-muted-foreground">
+              A coluna <strong className="text-foreground">negocio</strong> é opcional e aceita qualquer texto — use
+              para registrar o ID do negócio em um CRM externo, quando houver.
             </p>
             <p className="text-muted-foreground">
               A coluna <strong className="text-foreground">mensagem</strong>, quando preenchida junto com a coluna
@@ -227,6 +232,7 @@ export function LeadsImportDialog({
                       <TableHead className="hidden md:table-cell">Persona</TableHead>
                       <TableHead className="hidden md:table-cell">Região</TableHead>
                       <TableHead className="hidden lg:table-cell">Notas</TableHead>
+                      <TableHead className="hidden lg:table-cell">Negócio</TableHead>
                       <TableHead className="hidden lg:table-cell">Campanha</TableHead>
                       <TableHead className="hidden lg:table-cell">Mensagem</TableHead>
                     </TableRow>
@@ -241,6 +247,7 @@ export function LeadsImportDialog({
                         <TableCell className="hidden md:table-cell">{linha.persona || "—"}</TableCell>
                         <TableCell className="hidden md:table-cell">{linha.regiao || "—"}</TableCell>
                         <TableCell className="hidden lg:table-cell">{linha.notas || "—"}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{linha.negocio || "—"}</TableCell>
                         <TableCell className="hidden lg:table-cell">{linha.campanha || "—"}</TableCell>
                         <TableCell className="hidden lg:table-cell max-w-[200px] truncate">{linha.mensagem || "—"}</TableCell>
                       </TableRow>

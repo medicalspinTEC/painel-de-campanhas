@@ -73,6 +73,7 @@ export function LeadFormDialog({
   const [regiao, setRegiao] = useState(lead?.regiao ?? "")
   const [status, setStatus] = useState<string>(lead?.status ?? "novo")
   const [notas, setNotas] = useState(lead?.notas ?? "")
+  const [negocio, setNegocio] = useState(lead?.negocio ?? "")
   const [campanhasSelecionadas, setCampanhasSelecionadas] = useState<string[]>(() => (lead ? [lead.campanhaId].filter(Boolean) as string[] : []))
 
   useEffect(() => {
@@ -82,6 +83,7 @@ export function LeadFormDialog({
     setRegiao(lead?.regiao ?? "")
     setStatus(lead?.status ?? "novo")
     setNotas(lead?.notas ?? "")
+    setNegocio(lead?.negocio ?? "")
     setCampanhasSelecionadas(lead ? [lead.campanhaId].filter(Boolean) as string[] : [])
   }, [lead])
 
@@ -219,6 +221,20 @@ export function LeadFormDialog({
                 ariaInvalid={Boolean(erros.regiao)}
               />
               {erros.regiao ? <FieldError>{erros.regiao}</FieldError> : null}
+            </Field>
+
+            <Field data-invalid={Boolean(erros.negocio)}>
+              <FieldLabel htmlFor="negocio">Negócio</FieldLabel>
+              <Input
+                id="negocio"
+                name="negocio"
+                value={negocio}
+                onChange={(event) => setNegocio(event.target.value)}
+                placeholder="ID do negócio (opcional)"
+                maxLength={120}
+                aria-invalid={Boolean(erros.negocio)}
+              />
+              {erros.negocio ? <FieldError>{erros.negocio}</FieldError> : null}
             </Field>
 
             <Field>
