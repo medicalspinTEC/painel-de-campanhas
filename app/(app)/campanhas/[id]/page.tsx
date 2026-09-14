@@ -2,6 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, CalendarClock, Hourglass, MessageSquare, Send, Users } from "lucide-react"
 
+import { CampaignExportMenu } from "@/components/features/campaigns/campaign-export-menu"
 import { CampaignFollowUpButton } from "@/components/features/campaigns/campaign-follow-up-button"
 import { CampaignLeadsTable, type CampaignLeadItem } from "@/components/features/campaigns/campaign-leads-table"
 import { CampaignRespondersTable } from "@/components/features/campaigns/campaign-responders-table"
@@ -36,6 +37,7 @@ export default async function CampanhaPage({ params }: { params: Promise<{ id: s
     return {
       id: lead.id,
       nome: lead.nome,
+      telefone: lead.telefone,
       produto: lead.produto,
       status: lead.status,
       mensagensEnviadas: lead.mensagensEnviadas,
@@ -59,6 +61,9 @@ export default async function CampanhaPage({ params }: { params: Promise<{ id: s
           Campanhas
         </Link>
         <PageHeader titulo={campanha.nome} descricao={campanha.descricao ?? "Sem descrição"}>
+          <CampaignExportMenu
+            data={{ campanha, vinculados: itensLeads, respondentes, saidos: saidosSemResponder }}
+          />
           {campanha.status === "encerrada" && saidosSemResponder.length > 0 ? (
             <CampaignFollowUpButton campanhaId={campanha.id} totalSaidos={saidosSemResponder.length} />
           ) : null}

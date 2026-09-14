@@ -32,6 +32,8 @@ const TAMANHOS_PAGINA = [10, 25, 50, 100] as const
 export interface CampaignLeadItem {
   id: string
   nome: string
+  /** Não exibido nesta tabela, mas reaproveitado pela exportação de resultados. */
+  telefone: string
   produto: string
   status: LeadStatus
   mensagensEnviadas: number
