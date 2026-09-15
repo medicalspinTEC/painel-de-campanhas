@@ -60,6 +60,16 @@ export interface LeadRow extends Lead {
   ultimoContato: string | null
   mensagensEnviadas: number
   respostas: number
+  /**
+   * Campanhas de onde partiu alguma resposta do lead, mesmo que ele já tenha
+   * sido removido dela (responder tira o lead de `LeadCampaign` — ver
+   * `processarRespostaLead`/`setLeadStatus`). Vem do evento `resposta` na
+   * timeline, que preserva o `campanhaId` de origem mesmo depois do vínculo
+   * ser apagado. Sem isso, o filtro de campanha na listagem de leads perde
+   * todo lead que respondeu, já que ele não aparece mais em `campanhasIds`.
+   */
+  campanhasRespondidasIds: string[]
+  campanhasRespondidasNomes: string[]
 }
 
 /*
@@ -138,7 +148,12 @@ type LeadRowRecord = LeadRecord & {
   _count: { eventos: number }
 }
 
-function toLeadRow(record: LeadRowRecord, respostas: number, ultimoContato: Date | null): LeadRow {
+function toLeadRow(
+  record: LeadRowRecord,
+  respostas: number,
+  ultimoContato: Date | null,
+  campanhasRespondidas?: { ids: string[]; nomes: string[] },
+): LeadRow {
   return {
     ...toLead(record),
     campanhasIds: toLeadCampaignIds(record.campanhas),
@@ -147,7 +162,38 @@ function toLeadRow(record: LeadRowRecord, respostas: number, ultimoContato: Date
     ultimoContato: ultimoContato?.toISOString() ?? null,
     mensagensEnviadas: record._count.eventos,
     respostas,
+    campanhasRespondidasIds: campanhasRespondidas?.ids ?? [],
+    campanhasRespondidasNomes: campanhasRespondidas?.nomes ?? [],
   }
+}
+
+/**
+ * Campanhas de onde partiu uma resposta de cada lead, em lote (uma consulta
+ * para todos os ids, não uma por lead). Usa o evento `resposta` da timeline,
+ * que guarda o `campanhaId` de origem mesmo após o lead ser removido de
+ * `LeadCampaign` — é o único registro que sobrevive à saída da campanha.
+ */
+async function campanhasRespondidasPorLead(
+  leadIds: string[],
+): Promise<Map<string, { ids: string[]; nomes: string[] }>> {
+  if (leadIds.length === 0) return new Map()
+
+  const eventos = await prisma.timelineEvent.findMany({
+    where: { leadId: { in: leadIds }, tipo: "resposta", campanhaId: { not: null } },
+    select: { leadId: true, campanhaId: true, campanha: { select: { nome: true } } },
+  })
+
+  const mapa = new Map<string, { ids: string[]; nomes: string[] }>()
+  for (const evento of eventos) {
+    if (!evento.campanhaId) continue
+    const atual = mapa.get(evento.leadId) ?? { ids: [], nomes: [] }
+    if (!atual.ids.includes(evento.campanhaId)) {
+      atual.ids.push(evento.campanhaId)
+      if (evento.campanha?.nome) atual.nomes.push(evento.campanha.nome)
+    }
+    mapa.set(evento.leadId, atual)
+  }
+  return mapa
 }
 
 export async function listLeads(): Promise<LeadRow[]> {
@@ -163,7 +209,7 @@ export async function listLeads(): Promise<LeadRow[]> {
    * Duas agregações em lote em vez de duas consultas por lead: sem isso a
    * listagem faria 2N+1 queries e degradaria linearmente com a base.
    */
-  const [respostas, ultimosContatos] = await Promise.all([
+  const [respostas, ultimosContatos, campanhasRespondidas] = await Promise.all([
     prisma.timelineEvent.groupBy({
       by: ["leadId"],
       where: { leadId: { in: ids }, tipo: "resposta" },
@@ -174,13 +220,19 @@ export async function listLeads(): Promise<LeadRow[]> {
       where: { leadId: { in: ids }, tipo: "mensagem_enviada" },
       _max: { data: true },
     }),
+    campanhasRespondidasPorLead(ids),
   ])
 
   const respostasPorLead = new Map(respostas.map((r) => [r.leadId, r._count._all]))
   const contatoPorLead = new Map(ultimosContatos.map((r) => [r.leadId, r._max.data]))
 
   return leads.map((lead) =>
-    toLeadRow(lead, respostasPorLead.get(lead.id) ?? 0, contatoPorLead.get(lead.id) ?? null),
+    toLeadRow(
+      lead,
+      respostasPorLead.get(lead.id) ?? 0,
+      contatoPorLead.get(lead.id) ?? null,
+      campanhasRespondidas.get(lead.id),
+    ),
   )
 }
 
@@ -210,16 +262,17 @@ export async function getLead(id: string): Promise<LeadRow | null> {
   const lead = await prisma.lead.findUnique({ where: { id }, select: leadRowSelect })
   if (!lead) return null
 
-  const [respostas, ultimoContato] = await Promise.all([
+  const [respostas, ultimoContato, campanhasRespondidas] = await Promise.all([
     prisma.timelineEvent.count({ where: { leadId: id, tipo: "resposta" } }),
     prisma.timelineEvent.findFirst({
       where: { leadId: id, tipo: "mensagem_enviada" },
       orderBy: { data: "desc" },
       select: { data: true },
     }),
+    campanhasRespondidasPorLead([id]),
   ])
 
-  return toLeadRow(lead, respostas, ultimoContato?.data ?? null)
+  return toLeadRow(lead, respostas, ultimoContato?.data ?? null, campanhasRespondidas.get(id))
 }
 
 export async function getLeadTimeline(id: string): Promise<TimelineEvent[]> {

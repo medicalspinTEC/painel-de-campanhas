@@ -138,7 +138,13 @@ export function LeadsTable({
       if (marca !== TODOS && lead.marca !== marca) return false
       if (regiao !== TODOS && lead.regiao !== regiao) return false
       if (campanhaFiltro === "sem" && lead.campanhasIds.length > 0) return false
-      if (campanhaFiltro !== TODOS && campanhaFiltro !== "sem" && !lead.campanhasIds.includes(campanhaFiltro)) return false
+      if (
+        campanhaFiltro !== TODOS &&
+        campanhaFiltro !== "sem" &&
+        !lead.campanhasIds.includes(campanhaFiltro) &&
+        !lead.campanhasRespondidasIds.includes(campanhaFiltro)
+      )
+        return false
       return true
     })
   }, [leads, busca, status, produto, marca, regiao, campanhaFiltro])
@@ -422,13 +428,28 @@ export function LeadsTable({
                     </div>
                   </TableCell>
                   <TableCell>
-                    {lead.campanhasNomes.length > 0 ? (
+                    {lead.campanhasNomes.length > 0 || lead.campanhasRespondidasNomes.length > 0 ? (
                       <div className="flex flex-wrap gap-1">
                         {lead.campanhasNomes.map((nome) => (
                           <Badge key={nome} variant="secondary" className="text-xs">
                             {nome}
                           </Badge>
                         ))}
+                        {/* Campanhas de onde partiu uma resposta, mas das quais o lead já
+                            saiu (responder remove o vínculo automaticamente). Badge
+                            diferenciado (outline) para não parecer vínculo ativo. */}
+                        {lead.campanhasRespondidasNomes
+                          .filter((nome) => !lead.campanhasNomes.includes(nome))
+                          .map((nome) => (
+                            <Badge
+                              key={`respondida-${nome}`}
+                              variant="outline"
+                              className="text-xs text-muted-foreground"
+                              title="Lead respondeu nesta campanha e já saiu dela"
+                            >
+                              {nome}
+                            </Badge>
+                          ))}
                       </div>
                     ) : (
                       <span className="text-sm text-muted-foreground">—</span>
