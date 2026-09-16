@@ -18,11 +18,20 @@ import { emitWebhookEvent } from "@/services/webhooks"
 /**
  * Número máximo de tentativas de envio por mensagem dentro de um ciclo.
  *
- * Cada falha de envio grava um evento de timeline `falha`. Quando o total de
- * falhas de uma mensagem no ciclo atual atinge este limite, a engine para de
- * tentar (a mensagem passa a ser tratada como "resolvida", liberando a
- * sequência) e registra a desistência nos logs e eventos. Ao reiniciar o ciclo
- * pela recorrência, a contagem zera — pois só valem as falhas após a âncora.
+ * Vale para os três tipos de disparo da engine:
+ *  - Campanhas `padrao`: cada falha de envio grava um evento de timeline
+ *    `falha`; ao atingir o limite dentro do ciclo atual, a engine desiste
+ *    daquela mensagem (fica "resolvida", liberando a sequência).
+ *  - Campanhas `individual` (mensagem individual por lead): como não há
+ *    ciclo/recorrência, contam-se todas as falhas já registradas para o par
+ *    lead/campanha; ao atingir o limite, a engine desiste de vez.
+ *  - Mensagens avulsas agendadas (`ScheduledMessage`): usa o contador próprio
+ *    `tentativas` da mensagem; ao atingir o limite, o registro passa para
+ *    `status: "falhou"`.
+ *
+ * Em todos os casos a desistência é registrada nos logs/eventos, e ao
+ * reiniciar o ciclo (campanhas `padrao`) a contagem zera — só valem as falhas
+ * após a âncora.
  */
 export const MAX_TENTATIVAS_ENVIO = 3
 
@@ -290,6 +299,9 @@ async function executarVarredura(agora: Date): Promise<EngineResult> {
 
     // Campanhas `individual`: sem sequência nem recorrência — cada lead recebe
     // sua própria mensagem uma única vez, assim que a janela/ritmo permitirem.
+    // Mesmo limite de tentativas das campanhas `padrao` (MAX_TENTATIVAS_ENVIO):
+    // sem ele, uma mensagem individual que falha continuamente (número
+    // inválido, instância caída etc.) seria retentada para sempre a cada tick.
     const campanhasIndividuais = await prisma.campaign.findMany({
       where: { status: "ativa", tipo: "individual" },
       select: {
@@ -308,10 +320,56 @@ async function executarVarredura(agora: Date): Promise<EngineResult> {
       // pausa de fim de semana; a janela horária continua sendo respeitada.
       if (!podeEnviarAgora(agora, false, janela)) continue
 
+      const leadIdsIndividuais = campanha.leadCampaigns.map((v) => v.leadId)
+
+      // Mensagem individual não tem sequência nem recorrência (é um disparo
+      // único por lead), então — diferente das campanhas `padrao` — não há
+      // âncora de ciclo: contam-se TODAS as falhas já registradas para o par
+      // lead/campanha. `sendCampaignMessageToLead` já grava um evento `falha`
+      // (mensagemId nulo) a cada tentativa malsucedida.
+      const falhasIndividuais = await prisma.timelineEvent.findMany({
+        where: { campanhaId: campanha.id, leadId: { in: leadIdsIndividuais }, tipo: "falha", mensagemId: null },
+        select: { leadId: true, descricao: true },
+      })
+      const falhasPorLead = new Map<string, number>()
+      const abortadosIndividuais = new Set<string>()
+      for (const f of falhasIndividuais) {
+        // Marcador durável de desistência (mesma descrição usada nas campanhas
+        // `padrao`): já foi abortada antes, não recontar nem reabortar.
+        if (f.descricao === ABORT_DESCRICAO) {
+          abortadosIndividuais.add(f.leadId)
+          continue
+        }
+        falhasPorLead.set(f.leadId, (falhasPorLead.get(f.leadId) ?? 0) + 1)
+      }
+
       for (const vinculo of campanha.leadCampaigns) {
         processados += 1
         if (orcamento <= 0) break
         if (!vinculo.mensagemIndividual) continue
+
+        if (abortadosIndividuais.has(vinculo.leadId)) continue
+
+        // Atingiu o limite agora (ainda não abortada): registra a desistência
+        // uma única vez e não tenta enviar neste tick nem nos seguintes.
+        if ((falhasPorLead.get(vinculo.leadId) ?? 0) >= MAX_TENTATIVAS_ENVIO) {
+          abortadosIndividuais.add(vinculo.leadId)
+          await recordAppLog({
+            nivel: "erro",
+            origem: "campaigns",
+            mensagem: `Envio da mensagem individual abortado após ${MAX_TENTATIVAS_ENVIO} tentativas para lead ${vinculo.leadId} na campanha ${campanha.id}.`,
+            detalhes: "A engine parou de tentar enviar esta mensagem individual.",
+          })
+          await recordMessageEvent({
+            kind: "falha",
+            leadId: vinculo.leadId,
+            campanhaId: campanha.id,
+            mensagemId: null,
+            descricao: ABORT_DESCRICAO,
+            detalhes: `A engine atingiu o limite de ${MAX_TENTATIVAS_ENVIO} tentativas e não tentará novamente esta mensagem individual.`,
+          })
+          continue
+        }
 
         const envio = await sendCampaignMessageToLead({
           leadId: vinculo.leadId,
@@ -329,8 +387,9 @@ async function executarVarredura(agora: Date): Promise<EngineResult> {
           orcamento -= 1
           await prisma.leadCampaign.update({ where: { id: vinculo.id }, data: { enviadaIndividualEm: agora } })
         }
-        // Falha: não marca `enviadaIndividualEm` — a engine tenta de novo no
-        // próximo tick (sem limite de tentativas dedicado, é só um envio).
+        // Falha: não marca `enviadaIndividualEm` — `sendCampaignMessageToLead`
+        // já registrou o evento `falha` acima, então o próximo tick recontará
+        // e abortará ao atingir MAX_TENTATIVAS_ENVIO.
       }
     }
 
