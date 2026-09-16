@@ -157,69 +157,40 @@ export default async function LogsPage() {
       </div>
 
       {/* Abas */}
-      <Tabs defaultValue="entrega">        
-        {/* ─── Falhas de entrega ─────────────────────────────────── */}
-        <TabsContent value="entrega" className="mt-4">
+      <Tabs defaultValue="sistema">        
+        {/* ─── Erros do sistema ──────────────────────────────────── */}
+        <TabsContent value="sistema" className="mt-4">
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-
-            <Card className="xl:col-span-2">
+            <Card>
               <CardHeader>
-                <CardTitle>Histórico de falhas</CardTitle>
+                <CardTitle>Erros por origem</CardTitle>
                 <CardDescription>
-                  {falhas.length} ocorrências, da mais recente para a mais antiga.
+                  Somente entradas de nível erro e crítico.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                {falhas.length === 0 ? (
-                  <p className="py-8 text-center text-sm text-muted-foreground">
-                    Nenhuma falha nas últimas semanas. Entrega saudável.
+              <CardContent className="flex flex-col gap-3">
+                {origens.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhum erro registrado.
                   </p>
                 ) : (
-                  <div className="max-h-[32rem] overflow-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Data</TableHead>
-                          <TableHead>Lead</TableHead>
-                          <TableHead>Campanha</TableHead>
-                          <TableHead>Motivo</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {falhas.map((falha) => (
-                          <TableRow key={falha.id}>
-                            <TableCell className="whitespace-nowrap text-muted-foreground tabular-nums">
-                              {formatDateTime(falha.data)}
-                            </TableCell>
-                            <TableCell>
-                              <Link
-                                href={`/leads/${falha.leadId}`}
-                                className="font-medium hover:underline"
-                              >
-                                {falha.leadNome}
-                              </Link>
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {falha.campanhaNome ?? "—"}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="destructive">
-                                {falha.detalhes ?? "Não informado"}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  origens.map(([origem, total]) => (
+                    <div
+                      key={origem}
+                      className="flex items-center justify-between gap-3 text-sm"
+                    >
+                      <span className="text-muted-foreground">
+                        {formatOrigem(origem)}
+                      </span>
+                      <Badge variant="secondary" className="tabular-nums">
+                        {total}
+                      </Badge>
+                    </div>
+                  ))
                 )}
               </CardContent>
             </Card>
-          </div>
-        </TabsContent>
 
-        {/* ─── Erros do sistema ──────────────────────────────────── */}
-        <TabsContent value="sistema" className="mt-4">
             <Card className="xl:col-span-2">
               <CardHeader>
                 <CardTitle>Histórico de erros do sistema</CardTitle>
@@ -273,7 +244,8 @@ export default async function LogsPage() {
                   </div>
                 )}
               </CardContent>
-            </Card>          
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
