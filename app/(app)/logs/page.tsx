@@ -19,11 +19,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatDateTime, formatNumber, formatPercent } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { listEvents, listFailures } from "@/services/events"
-import { listAppLogs, type AppLogNivel } from "@/services/app-logs"
+import { listAppLogOrigens, listAppLogs, getAppLogStats, type AppLogNivel } from "@/services/app-logs"
 import { LogTechnicalDetails } from "@/components/features/logs/log-technical-details"
+import { LogsExportButton } from "@/components/features/logs/logs-export-button"
+import { LogsFilters } from "@/components/features/logs/logs-filters"
 
 export const metadata = {
   title: "Logs | Painel de Campanhas WhatsApp",
+}
+
+const NIVEIS_VALIDOS: AppLogNivel[] = ["info", "aviso", "erro", "critico"]
+const NIVEL_LABEL: Record<AppLogNivel, string> = {
+  info: "Info",
+  aviso: "Aviso",
+  erro: "Erro",
+  critico: "Crítico",
 }
 
 // ---------------------------------------------------------------------------
@@ -89,12 +99,39 @@ function formatOrigem(origem: string): string {
 // Página
 // ---------------------------------------------------------------------------
 
-export default async function LogsPage() {
-  const [falhas, todos, appLogs] = await Promise.all([
+export default async function LogsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ nivel?: string; origem?: string; de?: string; ate?: string }>
+}) {
+  const sp = await searchParams
+
+  const nivel = sp.nivel && NIVEIS_VALIDOS.includes(sp.nivel as AppLogNivel) ? (sp.nivel as AppLogNivel) : undefined
+  const origem = sp.origem?.trim() || undefined
+  const de = sp.de ? new Date(`${sp.de}T00:00:00`) : undefined
+  const ate = sp.ate ? new Date(`${sp.ate}T23:59:59.999`) : undefined
+  const deValido = de && !Number.isNaN(de.getTime()) ? de : undefined
+  const ateValido = ate && !Number.isNaN(ate.getTime()) ? ate : undefined
+
+  const [falhas, todos, appLogs, origensDisponiveis, statsAppLogs] = await Promise.all([
     listFailures(),
     listEvents(),
-    listAppLogs(),
+    listAppLogs({ nivel, origem, de: deValido, ate: ateValido }),
+    listAppLogOrigens(),
+    getAppLogStats(),
   ])
+
+  const filtroAplicado = Boolean(nivel || origem || deValido || ateValido)
+  const resumoFiltros = filtroAplicado
+    ? [
+        nivel && `Nível: ${NIVEL_LABEL[nivel]}`,
+        origem && `Origem: ${formatOrigem(origem)}`,
+        deValido && `De: ${sp.de}`,
+        ateValido && `Até: ${sp.ate}`,
+      ]
+        .filter(Boolean)
+        .join(" · ")
+    : "Nenhum filtro aplicado"
 
   // KPIs de entrega
   const tentativas = todos.filter(
@@ -102,11 +139,9 @@ export default async function LogsPage() {
   ).length
   const taxaFalha = tentativas > 0 ? (falhas.length / tentativas) * 100 : 0
 
-  // KPIs de sistema
-  const errosSistema = appLogs.filter(
-    (l) => l.nivel === "erro" || l.nivel === "critico",
-  ).length
-  const avisosSistema = appLogs.filter((l) => l.nivel === "aviso").length
+  // KPIs de sistema (sempre o total geral — não muda com os filtros da tabela).
+  const errosSistema = statsAppLogs.erros
+  const avisosSistema = statsAppLogs.avisos
 
   // Agrupamento por motivo (entrega)
   const porMotivo = new Map<string, number>()
@@ -163,17 +198,34 @@ export default async function LogsPage() {
           <div>           
             <Card className="xl:col-span-2">
               <CardHeader>
-                <CardTitle>Histórico de erros do sistema</CardTitle>
-                <CardDescription>
-                  {appLogs.length}{" "}
-                  {appLogs.length === 1 ? "entrada" : "entradas"}, da mais
-                  recente para a mais antiga.
-                </CardDescription>
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <CardTitle>Histórico de erros do sistema</CardTitle>
+                    <CardDescription>
+                      {appLogs.length} {appLogs.length === 1 ? "entrada" : "entradas"}
+                      {filtroAplicado ? ` filtrada(s) (${resumoFiltros})` : ""}, da mais recente para a mais antiga.
+                    </CardDescription>
+                  </div>
+                  <LogsExportButton logs={appLogs} filtrosResumo={resumoFiltros} />
+                </div>
+                <div className="mt-4">
+                  <LogsFilters
+                    origens={origensDisponiveis}
+                    valoresIniciais={{
+                      nivel: nivel ?? "todos",
+                      origem: origem ?? "todos",
+                      de: sp.de ?? "",
+                      ate: sp.ate ?? "",
+                    }}
+                  />
+                </div>
               </CardHeader>
               <CardContent>
                 {appLogs.length === 0 ? (
                   <p className="py-8 text-center text-sm text-muted-foreground">
-                    Nenhum erro de sistema registrado. Tudo operando normalmente.
+                    {filtroAplicado
+                      ? "Nenhum erro encontrado com os filtros atuais."
+                      : "Nenhum erro de sistema registrado. Tudo operando normalmente."}
                   </p>
                 ) : (
                   <div className="max-h-[32rem] overflow-auto">
