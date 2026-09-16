@@ -828,6 +828,18 @@ export function statusAoVincularCampanha(statusAtual: LeadStatus): LeadStatus {
   return statusAtual === "respondeu" ? statusAtual : "em_campanha"
 }
 
+/**
+ * Status resultante de remover MANUALMENTE um lead de uma campanha (ação
+ * "Remover da campanha" na aba Leads, individual ou em massa). O lead passa a
+ * refletir "sem_campanha" — diferente de "novo" (nunca esteve em campanha
+ * alguma) e de "encerrado" (saída automática por encerramento da campanha,
+ * ver `encerrarLeadsDaCampanha`). A única exceção é quem já respondeu: esse
+ * status é definitivo e não deve ser rebaixado por uma remoção posterior.
+ */
+export function statusAoRemoverDaCampanha(statusAtual: LeadStatus): LeadStatus {
+  return statusAtual === "respondeu" ? statusAtual : "sem_campanha"
+}
+
 export async function updateLead(id: string, input: LeadInput): Promise<Lead | null> {
   const atual = await prisma.lead.findUnique({ where: { id }, select: { campanhaId: true, status: true } })
   if (!atual) return null
@@ -1079,8 +1091,9 @@ export async function assignCampaign(leadId: string, campanhaId: string | null, 
 
   // Vinculação manual: reflete no status como "em_campanha", independente do
   // status da própria campanha (ativa, pausada ou rascunho) — ver
-  // `statusAoVincularCampanha`.
-  const novoStatus = campanhaId ? statusAoVincularCampanha(lead.status) : undefined
+  // `statusAoVincularCampanha`. Remoção manual (campanhaId nulo): reflete
+  // como "sem_campanha" — ver `statusAoRemoverDaCampanha`.
+  const novoStatus = campanhaId ? statusAoVincularCampanha(lead.status) : statusAoRemoverDaCampanha(lead.status)
 
   if (campanhaId) {
     // `mensagemIndividual` só é enviado pela UI para campanhas `tipo: "individual"`
@@ -1110,7 +1123,7 @@ export async function assignCampaign(leadId: string, campanhaId: string | null, 
     data: {
       campanhaId: campanhaPrincipal,
       entradaCampanhaEm: campanhaPrincipal ? agora : null,
-      ...(novoStatus ? { status: novoStatus } : {}),
+      status: novoStatus,
       ...(campanhaId ? { eventos: { create: { campanhaId, tipo: "campanha_iniciada", descricao: `Lead entrou na campanha ${novaCampanha?.nome ?? ""}.`, data: agora, sucesso: true } } } : {}),
     },
   })
@@ -1178,6 +1191,12 @@ export async function assignCampaignBulk(
     await prisma.lead.updateMany({
       where: { id: { in: idsUnicos } },
       data: { campanhaId: null, entradaCampanhaEm: null },
+    })
+    // Remoção manual reflete no status como "sem_campanha" — ver
+    // `statusAoRemoverDaCampanha`. Quem já respondeu nunca é rebaixado.
+    await prisma.lead.updateMany({
+      where: { id: { in: idsUnicos }, status: { not: "respondeu" } },
+      data: { status: "sem_campanha" },
     })
 
     return { atualizados: leadsExistentes.length }

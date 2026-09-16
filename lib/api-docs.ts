@@ -51,7 +51,7 @@ export const ENUMS = {
   marca: ["Ápice", "NovaVida", "Prisma", "Vértice"],
   persona: ["Investidor", "Primeira Casa", "Empresário", "Família", "Autônomo"],
   regiao: ["Sudeste", "Sul", "Centro-Oeste", "Nordeste", "Norte"],
-  leadStatus: ["novo", "em_campanha", "respondeu", "encerrado"],
+  leadStatus: ["novo", "em_campanha", "sem_campanha", "respondeu", "encerrado"],
   campaignStatus: ["rascunho", "ativa", "pausada", "encerrada"],
   messageKind: ["enviada", "falha", "resposta", "agendada"],
 } as const

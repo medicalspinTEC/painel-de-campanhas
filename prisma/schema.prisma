@@ -13,6 +13,11 @@ datasource db {
 enum LeadStatus {
   novo
   em_campanha
+  /// Lead que já esteve em alguma campanha e foi removido manualmente dela
+  /// (ação "Remover da campanha"), sem ter respondido. Diferente de `novo`
+  /// (nunca esteve em campanha alguma) e de `encerrado` (saiu porque a
+  /// campanha foi encerrada, não por remoção manual).
+  sem_campanha
   respondeu
   encerrado
 }

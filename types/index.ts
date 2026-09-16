@@ -1,4 +1,4 @@
-export type LeadStatus = "novo" | "em_campanha" | "respondeu" | "encerrado"
+export type LeadStatus = "novo" | "em_campanha" | "sem_campanha" | "respondeu" | "encerrado"
 
 export type CampaignStatus = "ativa" | "pausada" | "encerrada" | "rascunho"
 
@@ -107,6 +107,7 @@ export interface Kpis {
 export const LEAD_STATUS_LABEL: Record<LeadStatus, string> = {
   novo: "Novo",
   em_campanha: "Em campanha",
+  sem_campanha: "Sem campanha",
   respondeu: "Respondeu",
   encerrado: "Encerrado",
 }

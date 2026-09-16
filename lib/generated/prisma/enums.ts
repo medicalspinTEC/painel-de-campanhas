@@ -12,6 +12,7 @@
 export const LeadStatus = {
   novo: 'novo',
   em_campanha: 'em_campanha',
+  sem_campanha: 'sem_campanha',
   respondeu: 'respondeu',
   encerrado: 'encerrado'
 } as const

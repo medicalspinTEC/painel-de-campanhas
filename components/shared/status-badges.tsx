@@ -24,6 +24,7 @@ import {
 const leadStyles: Record<LeadStatus, string> = {
   novo: "border-border bg-muted text-muted-foreground",
   em_campanha: "border-chart-2/30 bg-chart-2/12 text-chart-2",
+  sem_campanha: "border-chart-4/30 bg-chart-4/12 text-chart-4",
   respondeu: "border-chart-3/35 bg-chart-3/15 text-chart-3",
   encerrado: "border-border bg-secondary text-secondary-foreground",
 }
