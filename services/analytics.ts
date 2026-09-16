@@ -397,9 +397,10 @@ export async function getFunil(): Promise<FunilPonto[]> {
    * "Contatados" e "Responderam" contam leads distintos, não eventos: um lead
    * que recebeu cinco mensagens é uma pessoa contatada, não cinco.
    */
-  const [total, comCampanha, contatados, responderam] = await Promise.all([
+  const [total, comCampanha, semCampanha, contatados, responderam] = await Promise.all([
     prisma.lead.count(),
     prisma.lead.count({ where: { campanhaId: { not: null } } }),
+    prisma.lead.count({ where: { campanhaId: null } }),
     prisma.timelineEvent
       .groupBy({ by: ["leadId"], where: { tipo: "mensagem_enviada" } })
       .then((rows) => rows.length),
@@ -410,6 +411,7 @@ export async function getFunil(): Promise<FunilPonto[]> {
   return [
     { etapa: "Leads cadastrados", total },
     { etapa: "Em campanha", total: comCampanha },
+    { etapa: "Sem campanha", total: semCampanha },
     { etapa: "Contatados", total: contatados },
     { etapa: "Responderam", total: responderam },
   ]
