@@ -20,6 +20,7 @@ import { formatDateTime, formatNumber, formatPercent } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { listEvents, listFailures } from "@/services/events"
 import { listAppLogs, type AppLogNivel } from "@/services/app-logs"
+import { LogTechnicalDetails } from "@/components/features/logs/log-technical-details"
 
 export const metadata = {
   title: "Logs | Painel de Campanhas WhatsApp",
@@ -58,6 +59,30 @@ function NivelBadge({ nivel }: { nivel: AppLogNivel }) {
       {label}
     </Badge>
   )
+}
+
+// ---------------------------------------------------------------------------
+// Rótulos amigáveis para a origem do erro (não altera o dado gravado, só a
+// forma como é exibido para quem não é programador).
+// ---------------------------------------------------------------------------
+
+const ORIGEM_LABELS: Record<string, string> = {
+  leads: "Leads",
+  campaigns: "Campanhas",
+  "campaign-engine": "Motor de campanhas",
+  evolution: "Envio de WhatsApp (Evolution API)",
+  whatsapp: "WhatsApp",
+  webhooks: "Webhooks",
+  "inbound-webhook": "Webhook recebido",
+  settings: "Configurações",
+  produtos: "Produtos",
+  marcas: "Marcas",
+  personas: "Personas",
+  regioes: "Regiões",
+}
+
+function formatOrigem(origem: string): string {
+  return ORIGEM_LABELS[origem] ?? origem
 }
 
 // ---------------------------------------------------------------------------
@@ -132,58 +157,10 @@ export default async function LogsPage() {
       </div>
 
       {/* Abas */}
-      <Tabs defaultValue="entrega">
-        <TabsList>
-          <TabsTrigger value="entrega" className="gap-1.5">
-            <AlertTriangle className="size-3.5" />
-            Falhas de entrega
-            {falhas.length > 0 && (
-              <Badge variant="secondary" className="tabular-nums">
-                {falhas.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="sistema" className="gap-1.5">
-            <ServerCrash className="size-3.5" />
-            Erros do sistema
-            {errosSistema + avisosSistema > 0 && (
-              <Badge variant="secondary" className="tabular-nums">
-                {errosSistema + avisosSistema}
-              </Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
-
+      <Tabs defaultValue="entrega">        
         {/* ─── Falhas de entrega ─────────────────────────────────── */}
         <TabsContent value="entrega" className="mt-4">
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>Principais motivos</CardTitle>
-                <CardDescription>Agrupado pelo retorno do gateway.</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                {motivos.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Nenhuma falha registrada.
-                  </p>
-                ) : (
-                  motivos.map(([motivo, total]) => (
-                    <div
-                      key={motivo}
-                      className="flex items-center justify-between gap-3 text-sm"
-                    >
-                      <span className="truncate text-muted-foreground">
-                        {motivo}
-                      </span>
-                      <Badge variant="secondary" className="shrink-0 tabular-nums">
-                        {total}
-                      </Badge>
-                    </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
 
             <Card className="xl:col-span-2">
               <CardHeader>
@@ -243,37 +220,6 @@ export default async function LogsPage() {
 
         {/* ─── Erros do sistema ──────────────────────────────────── */}
         <TabsContent value="sistema" className="mt-4">
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>Erros por origem</CardTitle>
-                <CardDescription>
-                  Somente entradas de nível erro e crítico.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                {origens.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Nenhum erro registrado.
-                  </p>
-                ) : (
-                  origens.map(([origem, total]) => (
-                    <div
-                      key={origem}
-                      className="flex items-center justify-between gap-3 text-sm"
-                    >
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {origem}
-                      </span>
-                      <Badge variant="secondary" className="tabular-nums">
-                        {total}
-                      </Badge>
-                    </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
-
             <Card className="xl:col-span-2">
               <CardHeader>
                 <CardTitle>Histórico de erros do sistema</CardTitle>
@@ -308,18 +254,17 @@ export default async function LogsPage() {
                             <TableCell>
                               <NivelBadge nivel={log.nivel} />
                             </TableCell>
-                            <TableCell className="font-mono text-xs text-muted-foreground">
-                              {log.origem}
+                            <TableCell className="text-xs text-muted-foreground">
+                              {formatOrigem(log.origem)}
                             </TableCell>
                             <TableCell>
-                              <div className="flex flex-col gap-0.5">
-                                <span className="text-sm">{log.mensagem}</span>
-                                {log.detalhes && (
-                                  <span className="line-clamp-2 font-mono text-xs text-muted-foreground">
-                                    {log.detalhes}
-                                  </span>
-                                )}
-                              </div>
+                              <LogTechnicalDetails
+                                nivel={log.nivel}
+                                origem={log.origem}
+                                mensagem={log.mensagem}
+                                detalhes={log.detalhes}
+                                data={log.data}
+                              />
                             </TableCell>
                           </TableRow>
                         ))}
@@ -328,8 +273,7 @@ export default async function LogsPage() {
                   </div>
                 )}
               </CardContent>
-            </Card>
-          </div>
+            </Card>          
         </TabsContent>
       </Tabs>
     </div>
