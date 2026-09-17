@@ -9,7 +9,7 @@ FROM node:22-alpine AS base
 RUN apk add --no-cache libc6-compat openssl tzdata
 ENV TZ=America/Sao_Paulo
 
-RUN corepack enable && corepack prepare pnpm@11.17.0 --activate
+RUN npm install -g pnpm@11.17.0
 
 WORKDIR /app
 
