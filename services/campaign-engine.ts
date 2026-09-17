@@ -196,6 +196,13 @@ async function enviarMensagem(
       origem: "campaigns",
       mensagem: `Exceção ao disparar mensagem ${mensagem.id} para lead ${vinculo.leadId} na campanha ${campanhaId}.`,
       detalhes: error,
+      contexto: {
+        etapa: "Envio da mensagem da sequência (enviarMensagem)",
+        leadId: vinculo.leadId,
+        campanhaId,
+        mensagemId: mensagem.id,
+        telefone: vinculo.lead.telefone,
+      },
     })
     return false
   }
@@ -359,6 +366,13 @@ async function executarVarredura(agora: Date): Promise<EngineResult> {
             origem: "campaigns",
             mensagem: `Envio da mensagem individual abortado após ${MAX_TENTATIVAS_ENVIO} tentativas para lead ${vinculo.leadId} na campanha ${campanha.id}.`,
             detalhes: "A engine parou de tentar enviar esta mensagem individual.",
+            contexto: {
+              etapa: "Limite de tentativas da mensagem individual",
+              leadId: vinculo.leadId,
+              campanhaId: campanha.id,
+              telefone: vinculo.lead.telefone,
+              tentativas: String(falhasPorLead.get(vinculo.leadId) ?? 0),
+            },
           })
           await recordMessageEvent({
             kind: "falha",
@@ -513,6 +527,14 @@ async function executarVarredura(agora: Date): Promise<EngineResult> {
             origem: "campaigns",
             mensagem: `Envio abortado após ${MAX_TENTATIVAS_ENVIO} tentativas para lead ${vinculo.leadId} na campanha ${campanha.id}.`,
             detalhes: `mensagemId=${mensagemId} dia=${mensagem?.dia ?? "?"} — a engine parou de tentar e avançou a sequência.`,
+            contexto: {
+              etapa: "Limite de tentativas da sequência (padrão)",
+              leadId: vinculo.leadId,
+              campanhaId: campanha.id,
+              mensagemId,
+              telefone: vinculo.lead.telefone,
+              dia: String(mensagem?.dia ?? "?"),
+            },
           })
           await recordMessageEvent({
             kind: "falha",

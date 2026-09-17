@@ -8,6 +8,31 @@ export interface AppLogInput {
   origem: string
   mensagem: string
   detalhes?: string | unknown
+  /**
+   * Contexto estruturado opcional — o "onde" e o "quê" exatos do erro (qual
+   * lead, campanha, mensagem, instância etc.). Quando informado, aparece
+   * destacado nos detalhes técnicos do log (separado do stack/erro original),
+   * com link direto para o lead/campanha envolvido quando o id é reconhecido.
+   */
+  contexto?: AppLogContexto
+}
+
+/**
+ * Chaves reconhecidas pela UI de Logs para destacar "onde" um erro ocorreu.
+ * Aceita chaves extras (ficam disponíveis nos detalhes técnicos, mesmo sem
+ * rótulo amigável dedicado).
+ */
+export interface AppLogContexto {
+  /** Etapa/operação exata dentro do fluxo (ex.: "Envio da mensagem individual"). */
+  etapa?: string
+  leadId?: string
+  leadNome?: string
+  campanhaId?: string
+  campanhaNome?: string
+  mensagemId?: string
+  instanciaNome?: string
+  telefone?: string
+  [chave: string]: string | undefined
 }
 
 export interface AppLogRow {
@@ -30,13 +55,71 @@ export interface AppLogFiltros {
 }
 
 /**
+ * Captura o local exato (arquivo:linha:coluna, dentro da função que chamou)
+ * de onde `recordAppLog` foi invocado — sem precisar de nenhuma mudança nos
+ * mais de 60 pontos do código que chamam esta função. Usa a API de stack
+ * trace do V8 excluindo o frame do próprio `recordAppLog`, então o primeiro
+ * frame capturado já é quem gerou o log.
+ *
+ * Melhor esforço: em build de produção (minificado/empacotado) o caminho e a
+ * linha refletem o arquivo gerado pelo bundler, não o `.ts` original — ainda
+ * assim aponta exatamente para o trecho de código responsável.
+ */
+function capturarLocalizacao(): string | null {
+  const alvo: { stack?: string } = {}
+  const limiteOriginal = Error.stackTraceLimit
+  try {
+    Error.stackTraceLimit = 2
+    Error.captureStackTrace(alvo, recordAppLog)
+    const linha = alvo.stack?.split("\n")[1]?.trim()
+    if (!linha) return null
+    const semPrefixo = linha.replace(/^at\s+/, "")
+    // Caminho relativo ao projeto, quando possível — mais legível e sem
+    // expor a estrutura de diretórios absoluta do servidor.
+    return semPrefixo.replaceAll(`${process.cwd()}/`, "")
+  } catch {
+    return null
+  } finally {
+    Error.stackTraceLimit = limiteOriginal
+  }
+}
+
+/**
+ * Monta o texto final gravado em `detalhes`: local de origem (capturado
+ * automaticamente) e contexto estruturado (quando o chamador informou),
+ * cada um em seu próprio bloco no topo, seguidos do conteúdo original
+ * (mensagem de erro/stack). Os blocos são separados por linha em branco para
+ * que a UI (`LogTechnicalDetails`) consiga separá-los de volta com segurança
+ * — logs antigos, sem esses blocos, continuam exibidos exatamente como antes.
+ */
+function montarDetalhes(
+  localizacao: string | null,
+  contexto: AppLogContexto | undefined,
+  detalhesOriginal: string | undefined,
+): string | undefined {
+  const blocos: string[] = []
+  if (localizacao) blocos.push(`Local: ${localizacao}`)
+  if (contexto && Object.keys(contexto).length > 0) {
+    try {
+      blocos.push(`Contexto: ${JSON.stringify(contexto)}`)
+    } catch {
+      // Contexto não serializável (ex.: referência circular) — ignora só ele.
+    }
+  }
+  if (detalhesOriginal) blocos.push(detalhesOriginal)
+  return blocos.length > 0 ? blocos.join("\n\n") : undefined
+}
+
+/**
  * Grava um log de sistema no banco.
  *
  * Nunca lança exceção: se o banco estiver indisponível o erro vai apenas para
  * o console, para não mascarar o erro original que estava sendo registrado.
  */
 export async function recordAppLog(input: AppLogInput): Promise<void> {
+  const localizacao = capturarLocalizacao()
   const detalhesStr = formatDetalhes(input.detalhes)
+  const detalhesCompleto = montarDetalhes(localizacao, input.contexto, detalhesStr)
 
   try {
     await prisma.appLog.create({
@@ -44,7 +127,7 @@ export async function recordAppLog(input: AppLogInput): Promise<void> {
         nivel: input.nivel ?? "erro",
         origem: input.origem,
         mensagem: input.mensagem,
-        detalhes: detalhesStr,
+        detalhes: detalhesCompleto,
       },
     })
   } catch (err) {

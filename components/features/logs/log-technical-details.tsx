@@ -1,7 +1,8 @@
 "use client"
 
+import Link from "next/link"
 import { useState } from "react"
-import { Check, Code2, Copy } from "lucide-react"
+import { Check, Code2, Copy, MapPin } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -77,6 +78,72 @@ function explicarErro(detalhes: string | null): string | null {
 }
 
 // ---------------------------------------------------------------------------
+// `detalhes` pode conter, no início, blocos "Local: ..." e "Contexto: {...}"
+// gravados automaticamente por `recordAppLog` (ver services/app-logs.ts),
+// separados por linha em branco do texto original (mensagem de erro/stack).
+// O parsing é tolerante: logs antigos, sem esses blocos, continuam sendo
+// exibidos por completo como "conteúdo original", sem nada quebrar.
+// ---------------------------------------------------------------------------
+
+interface DetalhesEstruturados {
+  localizacao: string | null
+  contexto: Record<string, string> | null
+  original: string | null
+}
+
+function parseDetalhes(raw: string): DetalhesEstruturados {
+  const blocos = raw.split("\n\n")
+  let indice = 0
+  let localizacao: string | null = null
+  let contexto: Record<string, string> | null = null
+
+  if (blocos[indice]?.startsWith("Local: ")) {
+    localizacao = blocos[indice].slice("Local: ".length).trim()
+    indice += 1
+  }
+  if (blocos[indice]?.startsWith("Contexto: ")) {
+    try {
+      contexto = JSON.parse(blocos[indice].slice("Contexto: ".length).trim())
+    } catch {
+      contexto = null
+    }
+    // Só avança se o parse deu certo — um bloco que só PARECE um contexto
+    // (JSON malformado) fica no conteúdo original em vez de ser descartado.
+    if (contexto) indice += 1
+  }
+
+  const original = blocos.slice(indice).join("\n\n").trim() || null
+  return { localizacao, contexto, original }
+}
+
+/** Rótulos amigáveis para as chaves de contexto mais comuns. */
+const CONTEXTO_LABELS: Record<string, string> = {
+  etapa: "Etapa",
+  leadId: "Lead",
+  leadNome: "Lead",
+  campanhaId: "Campanha",
+  campanhaNome: "Campanha",
+  mensagemId: "Mensagem",
+  instanciaNome: "Instância",
+  telefone: "Telefone",
+  statusHttp: "Status HTTP",
+  endpoint: "Endpoint",
+  tentativas: "Tentativas",
+  dia: "Dia da sequência",
+}
+
+function labelContexto(chave: string): string {
+  return CONTEXTO_LABELS[chave] ?? chave
+}
+
+/** Alguns campos de contexto viram link direto para a página do registro. */
+function linkContexto(chave: string, valor: string): string | null {
+  if (chave === "leadId") return `/leads/${valor}`
+  if (chave === "campanhaId") return `/campanhas/${valor}`
+  return null
+}
+
+// ---------------------------------------------------------------------------
 // Componente
 // ---------------------------------------------------------------------------
 
@@ -97,7 +164,8 @@ const NIVEL_LABEL: Record<AppLogNivel, string> = {
 
 export function LogTechnicalDetails({ nivel, origem, mensagem, detalhes, data }: LogTechnicalDetailsProps) {
   const [copiado, setCopiado] = useState(false)
-  const explicacao = explicarErro(detalhes)
+  const estruturado = detalhes ? parseDetalhes(detalhes) : null
+  const explicacao = explicarErro(estruturado?.original ?? detalhes)
 
   async function copiar() {
     if (!detalhes) return
@@ -145,11 +213,48 @@ export function LogTechnicalDetails({ nivel, origem, mensagem, detalhes, data }:
               <span>{formatDateTime(data)}</span>
             </div>
 
-            <ScrollArea className="max-h-72 rounded-md border bg-muted/40">
-              <pre className="whitespace-pre-wrap break-all p-3 font-mono text-xs text-foreground">
-                {detalhes}
-              </pre>
-            </ScrollArea>
+            {estruturado?.localizacao && (
+              <div className="flex items-start gap-1.5 rounded-md border bg-muted/40 p-2 text-xs">
+                <MapPin className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
+                <div className="flex flex-col">
+                  <span className="font-medium text-foreground">Onde ocorreu</span>
+                  <span className="font-mono break-all text-muted-foreground">{estruturado.localizacao}</span>
+                </div>
+              </div>
+            )}
+
+            {estruturado?.contexto && (
+              <div className="rounded-md border bg-muted/40 p-2 text-xs">
+                <span className="font-medium text-foreground">Contexto</span>
+                <dl className="mt-1 flex flex-col gap-1">
+                  {Object.entries(estruturado.contexto).map(([chave, valor]) => {
+                    const href = linkContexto(chave, valor)
+                    return (
+                      <div key={chave} className="flex gap-2">
+                        <dt className="w-28 shrink-0 text-muted-foreground">{labelContexto(chave)}</dt>
+                        <dd className="break-all font-mono text-foreground">
+                          {href ? (
+                            <Link href={href} className="underline hover:text-primary">
+                              {valor}
+                            </Link>
+                          ) : (
+                            valor
+                          )}
+                        </dd>
+                      </div>
+                    )
+                  })}
+                </dl>
+              </div>
+            )}
+
+            {(estruturado ? estruturado.original : detalhes) && (
+              <ScrollArea className="max-h-72 rounded-md border bg-muted/40">
+                <pre className="whitespace-pre-wrap break-all p-3 font-mono text-xs text-foreground">
+                  {estruturado ? estruturado.original : detalhes}
+                </pre>
+              </ScrollArea>
+            )}
 
             <DialogFooter>
               <Button variant="outline" size="sm" onClick={copiar} className="gap-1.5">

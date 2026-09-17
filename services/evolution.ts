@@ -607,6 +607,13 @@ export async function sendCampaignMessageToLead(input: {
       origem: "evolution",
       mensagem,
       detalhes: `leadId=${input.leadId} campanhaId=${input.campanhaId}`,
+      contexto: {
+        etapa: "Validação de credenciais (sendCampaignMessageToLead)",
+        leadId: input.leadId,
+        campanhaId: input.campanhaId,
+        mensagemId: input.mensagemId ?? undefined,
+        instanciaNome: input.instanciaNome ?? undefined,
+      },
     })
     return { ok: false, erro: mensagem }
   }
@@ -619,6 +626,13 @@ export async function sendCampaignMessageToLead(input: {
       origem: "evolution",
       mensagem,
       detalhes: `telefone original="${input.telefone}" leadId=${input.leadId}`,
+      contexto: {
+        etapa: "Validação de telefone (sendCampaignMessageToLead)",
+        leadId: input.leadId,
+        campanhaId: input.campanhaId,
+        mensagemId: input.mensagemId ?? undefined,
+        telefone: input.telefone,
+      },
     })
     return { ok: false, erro: mensagem }
   }
@@ -668,6 +682,16 @@ export async function sendCampaignMessageToLead(input: {
           origem: "evolution",
           mensagem: `Evolution retornou HTTP ${response.status}`,
           detalhes: mensagem,
+          contexto: {
+            etapa: "Resposta da Evolution API (sendCampaignMessageToLead)",
+            leadId: input.leadId,
+            campanhaId: input.campanhaId,
+            mensagemId: input.mensagemId ?? undefined,
+            instanciaNome: instanceName,
+            telefone,
+            statusHttp: String(response.status),
+            endpoint: `${apiUrl}/message/sendText/${instanceName}`,
+          },
         }),
       ])
 
@@ -701,6 +725,15 @@ export async function sendCampaignMessageToLead(input: {
         origem: "evolution",
         mensagem: "Exceção ao chamar a Evolution API.",
         detalhes: error,
+        contexto: {
+          etapa: "Chamada HTTP à Evolution API (sendCampaignMessageToLead)",
+          leadId: input.leadId,
+          campanhaId: input.campanhaId,
+          mensagemId: input.mensagemId ?? undefined,
+          instanciaNome: instanceName,
+          telefone,
+          endpoint: `${apiUrl}/message/sendText/${instanceName}`,
+        },
       }),
     ])
 
