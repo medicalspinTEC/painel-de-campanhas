@@ -10,11 +10,15 @@ import { createAppMcpServer } from "@/lib/mcp/server"
  * tools declaradas em `lib/mcp/server.ts` (leads, campanhas, produtos,
  * indicadores e eventos).
  *
- * Autenticação: esta rota vive sob `/api/*`, então o `proxy.ts` já exige,
- * como qualquer outra rota da API, o header
- *   Authorization: Bearer <API_TOKEN>
- * (ou `x-api-token: <API_TOKEN>`) configurado no `.env`. Não é preciso
- * nenhuma verificação extra aqui.
+ * Autenticação: por decisão explícita, esta rota está PÚBLICA (ver
+ * `proxy.ts`) — contas comuns do claude.ai (fora do Claude Code) ainda não
+ * suportam enviar um header fixo de autenticação para conectores
+ * personalizados, e exigir o `API_TOKEN` aqui impediria a conexão. Isso quer
+ * dizer que qualquer pessoa com esta URL consegue ler e alterar leads e
+ * campanhas — é uma troca deliberada de simplicidade por segurança, válida
+ * enquanto o claude.ai não suportar headers customizados (ou enquanto você
+ * não quiser trocar para OAuth). Para voltar a exigir o `API_TOKEN` nesta
+ * rota, defina `MCP_EXIGIR_TOKEN=true` no `.env` (não é preciso editar código).
  *
  * Modo stateless: cada requisição cria um servidor e um transporte novos, sem
  * `sessionIdGenerator` — não há sessão MCP persistida em memória entre
