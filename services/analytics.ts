@@ -3,6 +3,26 @@ import type { Kpis } from "@/types"
 
 const DAY = 86400000
 
+/**
+ * Recorte de período opcional usado pela página de Relatórios. Quando
+ * ausente (ou sem `de`/`ate`), as consultas seguem valendo para todo o
+ * histórico — o comportamento anterior a este filtro.
+ */
+export interface PeriodoFiltro {
+  de?: Date
+  ate?: Date
+}
+
+type RangeWhere = { gte?: Date; lte?: Date } | undefined
+
+function rangeWhere(periodo?: PeriodoFiltro): RangeWhere {
+  if (!periodo?.de && !periodo?.ate) return undefined
+  return {
+    ...(periodo.de ? { gte: periodo.de } : {}),
+    ...(periodo.ate ? { lte: periodo.ate } : {}),
+  }
+}
+
 export async function getKpis(): Promise<Kpis> {
   const agora = new Date()
   const inicioHoje = new Date(agora)
@@ -134,16 +154,26 @@ export interface CampanhaPerformance {
   tempoMedioRespostaDias: number
 }
 
-export async function getPerformancePorCampanha(): Promise<CampanhaPerformance[]> {
+export async function getPerformancePorCampanha(periodo?: PeriodoFiltro): Promise<CampanhaPerformance[]> {
   const campanhas = await prisma.campaign.findMany({ select: { id: true, nome: true } })
   if (campanhas.length === 0) return []
+
+  const eventoData = rangeWhere(periodo)
+  const de = periodo?.de ?? null
+  const ate = periodo?.ate ?? null
 
   const [eventos, leadsPorCampanha, temposMedios] = await Promise.all([
     prisma.timelineEvent.groupBy({
       by: ["campanhaId", "tipo"],
-      where: { campanhaId: { not: null }, tipo: { in: ["mensagem_enviada", "resposta"] } },
+      where: {
+        campanhaId: { not: null },
+        tipo: { in: ["mensagem_enviada", "resposta"] },
+        ...(eventoData ? { data: eventoData } : {}),
+      },
       _count: { _all: true },
     }),
+    // Total de leads vinculados reflete o estado atual da campanha, não o
+    // período do filtro — só envios e respostas são recortados por data.
     prisma.lead.groupBy({
       by: ["campanhaId"],
       where: { campanhaId: { not: null } },
@@ -162,6 +192,8 @@ export async function getPerformancePorCampanha(): Promise<CampanhaPerformance[]
         AND e."campanhaId" IS NOT NULL
         AND l."entradaCampanhaEm" IS NOT NULL
         AND e."data" >= l."entradaCampanhaEm"
+        AND (${de}::timestamp IS NULL OR e."data" >= ${de}::timestamp)
+        AND (${ate}::timestamp IS NULL OR e."data" <= ${ate}::timestamp)
       GROUP BY 1
     `,
   ])
@@ -207,7 +239,11 @@ export interface MensagemPerformance {
   taxaResposta: number
 }
 
-export async function getPerformancePorMensagem(): Promise<MensagemPerformance[]> {
+export async function getPerformancePorMensagem(periodo?: PeriodoFiltro): Promise<MensagemPerformance[]> {
+  const eventoData = rangeWhere(periodo)
+  const de = periodo?.de ?? null
+  const ate = periodo?.ate ?? null
+
   const [mensagens, enviadasPorMensagem, respostasPorMensagem] = await Promise.all([
     prisma.campaignMessage.findMany({
       select: {
@@ -221,7 +257,11 @@ export async function getPerformancePorMensagem(): Promise<MensagemPerformance[]
     // Envios são atribuídos diretamente à mensagem disparada (o evento carrega o mensagemId).
     prisma.timelineEvent.groupBy({
       by: ["mensagemId"],
-      where: { mensagemId: { not: null }, tipo: "mensagem_enviada" },
+      where: {
+        mensagemId: { not: null },
+        tipo: "mensagem_enviada",
+        ...(eventoData ? { data: eventoData } : {}),
+      },
       _count: { _all: true },
     }),
     /*
@@ -245,6 +285,8 @@ export async function getPerformancePorMensagem(): Promise<MensagemPerformance[]
         LIMIT 1
       ) enviada ON true
       WHERE r."tipo"::text = 'resposta'
+        AND (${de}::timestamp IS NULL OR r."data" >= ${de}::timestamp)
+        AND (${ate}::timestamp IS NULL OR r."data" <= ${ate}::timestamp)
       GROUP BY 1
     `,
   ])
@@ -290,9 +332,12 @@ export interface DimensaoPerformance {
 
 export async function getConversaoPorDimensao(
   dimensao: "produto" | "marca" | "persona" | "regiao",
+  periodo?: PeriodoFiltro,
 ): Promise<DimensaoPerformance[]> {
+  const leadData = rangeWhere(periodo)
   const linhas = await prisma.lead.groupBy({
     by: [dimensao, "status"],
+    where: leadData ? { criadoEm: leadData } : undefined,
     _count: { _all: true },
   })
 
@@ -324,12 +369,17 @@ export interface DistribuicaoPonto {
 
 const DIAS_SEMANA = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"]
 
-export async function getDistribuicaoPorDiaSemana(): Promise<DistribuicaoPonto[]> {
+export async function getDistribuicaoPorDiaSemana(periodo?: PeriodoFiltro): Promise<DistribuicaoPonto[]> {
+  const de = periodo?.de ?? null
+  const ate = periodo?.ate ?? null
+
   // `DOW` do Postgres: 0 = domingo, alinhado com a ordem de DIAS_SEMANA.
   const linhas = await prisma.$queryRaw<Array<{ dow: number; tipo: string; total: bigint }>>`
     SELECT EXTRACT(DOW FROM "data")::int AS dow, "tipo"::text AS tipo, COUNT(*) AS total
     FROM "TimelineEvent"
     WHERE "tipo" IN ('mensagem_enviada', 'resposta')
+      AND (${de}::timestamp IS NULL OR "data" >= ${de}::timestamp)
+      AND (${ate}::timestamp IS NULL OR "data" <= ${ate}::timestamp)
     GROUP BY 1, 2
   `
 
@@ -357,11 +407,16 @@ const FAIXAS_HORARIO = [
   { label: "21h-24h", min: 21, max: 24 },
 ]
 
-export async function getDistribuicaoPorHorario(): Promise<DistribuicaoPonto[]> {
+export async function getDistribuicaoPorHorario(periodo?: PeriodoFiltro): Promise<DistribuicaoPonto[]> {
+  const de = periodo?.de ?? null
+  const ate = periodo?.ate ?? null
+
   const linhas = await prisma.$queryRaw<Array<{ hora: number; tipo: string; total: bigint }>>`
     SELECT EXTRACT(HOUR FROM "data")::int AS hora, "tipo"::text AS tipo, COUNT(*) AS total
     FROM "TimelineEvent"
     WHERE "tipo" IN ('mensagem_enviada', 'resposta')
+      AND (${de}::timestamp IS NULL OR "data" >= ${de}::timestamp)
+      AND (${ate}::timestamp IS NULL OR "data" <= ${ate}::timestamp)
     GROUP BY 1, 2
   `
 
@@ -392,20 +447,28 @@ export interface FunilPonto {
   total: number
 }
 
-export async function getFunil(): Promise<FunilPonto[]> {
+export async function getFunil(periodo?: PeriodoFiltro): Promise<FunilPonto[]> {
   /*
    * "Contatados" e "Responderam" contam leads distintos, não eventos: um lead
-   * que recebeu cinco mensagens é uma pessoa contatada, não cinco.
+   * que recebeu cinco mensagens é uma pessoa contatada, não cinco. Os dois
+   * primeiros estágios usam a data de cadastro do lead; os dois últimos usam
+   * a data do evento — ambos recortados pelo mesmo período do filtro.
    */
+  const leadData = rangeWhere(periodo)
+  const eventoData = rangeWhere(periodo)
+  const leadWhereBase = leadData ? { criadoEm: leadData } : {}
+
   const [total, comCampanha, semCampanha, contatados, responderam] = await Promise.all([
-    prisma.lead.count(),
-    prisma.lead.count({ where: { campanhaId: { not: null } } }),
-    prisma.lead.count({ where: { campanhaId: null } }),
+    prisma.lead.count({ where: leadWhereBase }),
+    prisma.lead.count({ where: { campanhaId: { not: null }, ...leadWhereBase } }),
+    prisma.lead.count({ where: { campanhaId: null, ...leadWhereBase } }),
     prisma.timelineEvent
-      .groupBy({ by: ["leadId"], where: { tipo: "mensagem_enviada" } })
+      .groupBy({ by: ["leadId"], where: { tipo: "mensagem_enviada", ...(eventoData ? { data: eventoData } : {}) } })
       .then((rows) => rows.length),
-    prisma.timelineEvent.groupBy({ by: ["leadId"], where: { tipo: "resposta" } }).then((rows) => rows.length),
-    prisma.lead.count({ where: { status: "respondeu" } }),
+    prisma.timelineEvent
+      .groupBy({ by: ["leadId"], where: { tipo: "resposta", ...(eventoData ? { data: eventoData } : {}) } })
+      .then((rows) => rows.length),
+    prisma.lead.count({ where: { status: "respondeu", ...leadWhereBase } }),
   ])
 
   return [

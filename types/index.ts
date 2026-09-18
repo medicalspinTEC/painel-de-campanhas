@@ -95,7 +95,6 @@ export interface Kpis {
   campanhasAtivas: number
   mensagensHoje: number
   taxaResposta: number
-  taxaQualificacao: number
   variacao: {
     leadsAtivos: number
     campanhasAtivas: number

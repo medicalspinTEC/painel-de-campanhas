@@ -1,4 +1,6 @@
 import { DimensaoChart, DistribuicaoChart, FunilChart } from "@/components/features/reports/report-charts"
+import { ReportsExportMenu } from "@/components/features/reports/reports-export-menu"
+import { ReportsFilters } from "@/components/features/reports/reports-filters"
 import { PageHeader } from "@/components/shared/page-header"
 import { TemplateText } from "@/components/shared/template-text"
 import { Badge } from "@/components/ui/badge"
@@ -6,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatNumber, formatPercent } from "@/lib/format"
+import type { ReportExportData } from "@/lib/report-export"
 import {
   getConversaoPorDimensao,
   getDistribuicaoPorDiaSemana,
@@ -19,25 +22,68 @@ export const metadata = {
   title: "Relatórios | Painel de Campanhas WhatsApp",
 }
 
-export default async function RelatoriosPage() {
+export default async function RelatoriosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ de?: string; ate?: string }>
+}) {
+  const sp = await searchParams
+
+  const de = sp.de ? new Date(`${sp.de}T00:00:00`) : undefined
+  const ate = sp.ate ? new Date(`${sp.ate}T23:59:59.999`) : undefined
+  const deValido = de && !Number.isNaN(de.getTime()) ? de : undefined
+  const ateValido = ate && !Number.isNaN(ate.getTime()) ? ate : undefined
+  const periodo = { de: deValido, ate: ateValido }
+  const filtroAplicado = Boolean(deValido || ateValido)
+
   const [funil, diaSemana, horario, campanhas, mensagens, produto, marca, persona, regiao] = await Promise.all([
-    getFunil(),
-    getDistribuicaoPorDiaSemana(),
-    getDistribuicaoPorHorario(),
-    getPerformancePorCampanha(),
-    getPerformancePorMensagem(),
-    getConversaoPorDimensao("produto"),
-    getConversaoPorDimensao("marca"),
-    getConversaoPorDimensao("persona"),
-    getConversaoPorDimensao("regiao"),
+    getFunil(periodo),
+    getDistribuicaoPorDiaSemana(periodo),
+    getDistribuicaoPorHorario(periodo),
+    getPerformancePorCampanha(periodo),
+    getPerformancePorMensagem(periodo),
+    getConversaoPorDimensao("produto", periodo),
+    getConversaoPorDimensao("marca", periodo),
+    getConversaoPorDimensao("persona", periodo),
+    getConversaoPorDimensao("regiao", periodo),
   ])
+
+  const exportData: ReportExportData = {
+    periodo: { de: sp.de ?? null, ate: sp.ate ?? null },
+    funil,
+    diaSemana,
+    horario,
+    campanhas,
+    mensagens,
+    segmentos: { produto, marca, persona, regiao },
+  }
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         titulo="Relatórios"
         descricao="Análise de campanhas, melhores horários e desempenho por mensagem."
-      />
+      >
+        <ReportsExportMenu data={exportData} />
+      </PageHeader>
+
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <CardTitle>Período</CardTitle>
+              <CardDescription>
+                {filtroAplicado
+                  ? "Relatórios e exportação recortados ao intervalo selecionado."
+                  : "Sem filtro aplicado — relatórios e exportação cobrem todo o histórico."}
+              </CardDescription>
+            </div>
+          </div>
+          <div className="mt-4">
+            <ReportsFilters valoresIniciais={{ de: sp.de ?? "", ate: sp.ate ?? "" }} />
+          </div>
+        </CardHeader>
+      </Card>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <Card>

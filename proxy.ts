@@ -27,26 +27,12 @@ function timingSafeEqual(a: string, b: string): boolean {
  * As rotas de `/api/*` também aceitam o token estático `API_TOKEN` (via header
  * `Authorization: Bearer <token>` ou `x-api-token`) como alternativa ao cookie
  * de sessão — útil para integrações externas, `curl` e o painel de testes.
- *
- * `/api/mcp` é público por decisão explícita: contas comuns do claude.ai
- * (fora do Claude Code) ainda não suportam enviar um header fixo de
- * autenticação para conectores personalizados, então exigir token aqui
- * impediria a conexão. Isso significa que QUALQUER pessoa com a URL consegue
- * ler e alterar leads/campanhas por essa rota — é uma troca deliberada de
- * segurança por simplicidade, não um descuido. Para voltar a exigir o
- * `API_TOKEN` nessa rota assim que o claude.ai suportar o header (ou quando
- * quiser reforçar a segurança), defina `MCP_EXIGIR_TOKEN=true` no `.env` —
- * sem precisar mexer neste arquivo de novo.
  */
-const MCP_EXIGIR_TOKEN = process.env.MCP_EXIGIR_TOKEN === "true"
 
-// Rotas acessíveis sem sessão (fora o caso especial de /api/mcp acima).
+// Rotas acessíveis sem sessão.
 const ROTAS_PUBLICAS = ["/login", "/api/webhook/entrada", "/api/cron"]
 
 function isPublica(pathname: string): boolean {
-  if (pathname === "/api/mcp" || pathname.startsWith("/api/mcp/")) {
-    return !MCP_EXIGIR_TOKEN
-  }
   return ROTAS_PUBLICAS.some((rota) => pathname === rota || pathname.startsWith(`${rota}/`))
 }
 
