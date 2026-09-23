@@ -10,6 +10,15 @@ import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth"
  */
 const API_TOKEN = process.env.API_TOKEN ?? ""
 
+/**
+ * Mesma regra acima (referência literal à env neste módulo).
+ * `/api/mcp` é PÚBLICA por padrão, para o claude.ai conectar só pelo link.
+ * Defina `MCP_EXIGIR_TOKEN=true` no `.env` para voltar a exigir o API_TOKEN
+ * (ou sessão) nessa rota.
+ */
+const MCP_EXIGIR_TOKEN = process.env.MCP_EXIGIR_TOKEN === "true"
+const ROTA_MCP = "/api/mcp"
+
 function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false
   let diff = 0
@@ -33,6 +42,9 @@ function timingSafeEqual(a: string, b: string): boolean {
 const ROTAS_PUBLICAS = ["/login", "/api/webhook/entrada", "/api/cron"]
 
 function isPublica(pathname: string): boolean {
+  if (pathname === ROTA_MCP || pathname.startsWith(`${ROTA_MCP}/`)) {
+    return !MCP_EXIGIR_TOKEN
+  }
   return ROTAS_PUBLICAS.some((rota) => pathname === rota || pathname.startsWith(`${rota}/`))
 }
 
