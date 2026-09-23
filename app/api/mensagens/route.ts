@@ -34,6 +34,7 @@ export async function POST(request: Request) {
       mensagemId: body.mensagemId ?? null,
       descricao: body.descricao,
       detalhes: body.detalhes ?? null,
+      texto: typeof body.texto === "string" ? body.texto : null,
       agendadoPara: body.agendadoPara ?? null,
     })
     if (!resultado.ok) {

@@ -413,6 +413,7 @@ export const API_DOCS: Record<string, EndpointDoc> = {
       { nome: "mensagemId", tipo: "string | null", descricao: "Opcional; mensagem da sequência." },
       { nome: "descricao", tipo: "string", descricao: "Opcional; texto descritivo do evento." },
       { nome: "detalhes", tipo: "string | null", descricao: "Opcional; detalhes extras (ex.: motivo da falha)." },
+      { nome: "texto", tipo: "string | null", descricao: 'Opcional; conteúdo da mensagem enviada (ou da resposta do lead quando kind = "resposta"). Vai no campo `mensagem` do webhook e na timeline. Sem ele, usa o texto da mensagem vinculada por `mensagemId`.' },
       { nome: "agendadoPara", tipo: "string | null", descricao: 'Opcional; ISO date quando kind = "agendada".' },
     ],
     requestExample: `{
@@ -478,6 +479,7 @@ export const API_DOCS: Record<string, EndpointDoc> = {
       { nome: "mensagemId", tipo: "string | null", descricao: "Opcional." },
       { nome: "descricao", tipo: "string", descricao: "Opcional." },
       { nome: "detalhes", tipo: "string | null", descricao: "Opcional." },
+      { nome: "texto", tipo: "string | null", descricao: 'Opcional; conteúdo da mensagem enviada (ou da resposta do lead quando kind = "resposta"). Vai no campo `mensagem` do webhook e na timeline.' },
       { nome: "agendadoPara", tipo: "string | null", descricao: "Opcional; ISO date." },
     ],
     requestExample: `{

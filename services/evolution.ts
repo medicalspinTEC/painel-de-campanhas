@@ -674,6 +674,7 @@ export async function sendCampaignMessageToLead(input: {
           leadId: input.leadId,
           campanhaId: input.campanhaId,
           mensagemId: input.mensagemId,
+          texto,
           descricao: descricaoFalha,
           detalhes: mensagem,
         }),
@@ -703,6 +704,7 @@ export async function sendCampaignMessageToLead(input: {
       leadId: input.leadId,
       campanhaId: input.campanhaId,
       mensagemId: input.mensagemId,
+      texto,
       descricao: descricaoSucesso,
       detalhes: `Enviada para ${telefone}`,
     })
@@ -717,6 +719,7 @@ export async function sendCampaignMessageToLead(input: {
         leadId: input.leadId,
         campanhaId: input.campanhaId,
         mensagemId: input.mensagemId,
+        texto,
         descricao: descricaoFalha,
         detalhes: mensagem,
       }),

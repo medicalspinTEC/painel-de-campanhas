@@ -1,3 +1,4 @@
+import { renderTemplate } from "@/lib/format"
 import { prisma } from "@/lib/prisma"
 import { emitDisparoWebhook, emitWebhookEvent } from "@/services/webhooks"
 
@@ -18,6 +19,13 @@ export interface MessageEventInput {
   mensagemId?: string | null
   descricao?: string
   detalhes?: string | null
+  /**
+   * Conteúdo real da mensagem (já personalizado para o lead). Quem envia sabe o
+   * texto exato — inclusive em campanhas `individual` e envios avulsos, que não
+   * têm `mensagemId`. Quando ausente, cai no texto da mensagem vinculada.
+   * Em `resposta`, é o texto que o lead escreveu.
+   */
+  texto?: string | null
   /** Só usado por `agendada`: quando o disparo deve acontecer. */
   agendadoPara?: string | null
 }
@@ -69,15 +77,26 @@ export async function recordMessageEvent(input: MessageEventInput): Promise<{ ok
 
   /*
    * Registra o conteúdo real da mensagem no histórico do lead e no feed de
-   * eventos — não apenas metadados como o telefone de destino. Quando há uma
-   * mensagem vinculada, o texto enviado fica gravado em `detalhes`, seguido das
-   * informações complementares (ex.: "Enviada para 55...") do chamador.
+   * eventos — não apenas metadados como o telefone de destino. O texto informado
+   * por quem enviou tem prioridade (é exatamente o que saiu, já personalizado);
+   * sem ele, usa o modelo da mensagem vinculada renderizado para este lead. O
+   * texto fica gravado em `detalhes`, seguido das informações complementares
+   * (ex.: "Enviada para 55...") do chamador.
    */
-  const textoMensagem = mensagem?.texto?.trim() || null
+  const textoInformado = input.texto?.trim() || null
+  const textoVinculado = mensagem?.texto?.trim() ? renderTemplate(mensagem.texto.trim(), lead.nome.trim()) : null
+  const textoMensagem = textoInformado ?? textoVinculado
   const detalhesTimeline =
     [textoMensagem ? `Mensagem: "${textoMensagem}"` : null, input.detalhes?.trim() || null]
       .filter(Boolean)
       .join("\n") || null
+
+  /*
+   * Conteúdo enviado aos webhooks no campo `mensagem`. Em `resposta` só vale o
+   * que o lead escreveu: o texto vinculado seria a mensagem que *nós* enviamos,
+   * o que induziria o destinatário a erro.
+   */
+  const textoWebhook = input.kind === "resposta" ? textoInformado : textoMensagem
 
   let eventoId: string | null = null
   if (tipo) {
@@ -110,6 +129,7 @@ export async function recordMessageEvent(input: MessageEventInput): Promise<{ ok
     campanhaId,
     mensagemId: input.mensagemId ?? null,
     descricao,
+    mensagem: textoWebhook,
     detalhes: input.detalhes ?? null,
     ...(input.kind === "agendada" ? { agendadoPara: input.agendadoPara ?? null } : {}),
   })
@@ -118,7 +138,7 @@ export async function recordMessageEvent(input: MessageEventInput): Promise<{ ok
     campanha: campanha?.nome ?? null,
     nome: lead.nome,
     telefone: lead.telefone,
-    mensagem: mensagem?.texto ?? input.detalhes ?? descricao,
+    mensagem: textoWebhook ?? input.detalhes ?? descricao,
     leadId: lead.id,
     campanhaId,
     mensagemId: input.mensagemId ?? null,

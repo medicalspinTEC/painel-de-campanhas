@@ -49,6 +49,7 @@ export async function POST(request: Request) {
       mensagemId: typeof dados.mensagemId === "string" ? dados.mensagemId : null,
       descricao: typeof dados.descricao === "string" ? dados.descricao : undefined,
       detalhes: typeof dados.detalhes === "string" ? dados.detalhes : null,
+      texto: typeof dados.texto === "string" ? dados.texto : null,
       agendadoPara: typeof dados.agendadoPara === "string" ? dados.agendadoPara : null,
     })
     if (!resultado.ok) return NextResponse.json(resultado, { status: 404 })
