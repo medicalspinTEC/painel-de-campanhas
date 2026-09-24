@@ -170,6 +170,12 @@ export function LeadsImportDialog({
               esse texto automaticamente ao lead — a mensagem é disparada pela campanha sem precisar digitá-la
               depois, lead por lead. Não se aplica a campanhas do tipo padrão.
             </p>
+            <p className="text-muted-foreground">
+              Se o telefone já pertencer a um lead cadastrado e a linha tiver uma{" "}
+              <strong className="text-foreground">campanha</strong>, o lead não é duplicado: ele é apenas
+              adicionado a essa campanha, sem sair das que já participa. Nesse caso os demais campos da linha
+              são ignorados.
+            </p>
             <div>
               <Button type="button" variant="outline" size="sm" onClick={baixarModelo}>
                 <Download className="size-4" />
@@ -262,12 +268,12 @@ export function LeadsImportDialog({
             <div className="flex flex-col gap-3">
               <div
                 className={`flex items-start gap-2 rounded-lg border px-3 py-2.5 text-sm ${
-                  resultado.criados > 0
+                  resultado.ok
                     ? "border-primary/30 bg-primary/8 text-foreground"
                     : "border-destructive/30 bg-destructive/8 text-destructive"
                 }`}
               >
-                {resultado.criados > 0 ? (
+                {resultado.ok ? (
                   <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
                 ) : (
                   <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />

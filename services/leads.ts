@@ -530,7 +530,21 @@ export interface LeadBulkOutcome {
   /** Mesmo índice recebido em `itens`, para o chamador remontar a linha original. */
   index: number
   ok: boolean
+  /**
+   * Só quando `ok: true`. `"criado"` = lead novo cadastrado; `"vinculado"` = o
+   * lead já existia (mesmo telefone) e apenas foi adicionado à campanha da
+   * linha, mantendo as campanhas em que já estava.
+   */
+  tipo?: "criado" | "vinculado"
   motivo?: string
+}
+
+/** Lead que já existe (no banco ou criado antes no mesmo lote) a ser adicionado a uma campanha. */
+interface PedidoVinculoLote {
+  index: number
+  leadId: string
+  campanhaId: string
+  mensagemIndividual: string | null
 }
 
 /**
@@ -551,6 +565,11 @@ export interface LeadBulkOutcome {
  *   por lead;
  * - a engine de disparo roda UMA vez ao final do lote (ela já varre todos os
  *   disparos devidos do sistema), em vez de uma varredura completa por lead.
+ *
+ * Lead que já existe (mesmo telefone) NÃO é recriado: se a linha traz uma
+ * campanha, ele é apenas adicionado a ela (`LeadCampaign`), sem sair das
+ * campanhas em que já estava — ver `vincularLeadsExistentesEmLote`. Sem
+ * campanha na linha, continua sendo rejeitado como duplicado.
  */
 export async function createLeadsBulk(itens: Array<{ index: number; input: LeadBulkInput }>): Promise<LeadBulkOutcome[]> {
   if (itens.length === 0) return []
@@ -560,9 +579,12 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
 
   // 1) Nomes e telefones já cadastrados, carregados uma única vez para todo o
   // lote (evita a consulta O(total de leads) por linha).
-  const existentes = await prisma.lead.findMany({ select: { nome: true, telefone: true } })
+  const existentes = await prisma.lead.findMany({ select: { id: true, nome: true, telefone: true } })
   const nomesExistentes = new Set(existentes.map((l) => l.nome.trim().toLowerCase()))
-  const telefonesExistentes = new Set(existentes.map((l) => apenasDigitos(l.telefone)))
+  // Telefone (só dígitos) -> id do lead. O telefone é o que identifica "o mesmo
+  // lead" ao reimportar. Leads novos do próprio lote entram aqui também, para
+  // que o mesmo lead repetido no arquivo com outra campanha seja vinculado.
+  const leadIdPorTelefone = new Map(existentes.map((l) => [apenasDigitos(l.telefone), l.id]))
 
   type Aceito = {
     index: number
@@ -580,6 +602,8 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
     mensagemIndividual: string | null
   }
   const aceitos: Aceito[] = []
+  // Linhas cujo lead já existe e que trazem uma campanha: viram vínculo, não cadastro.
+  const pedidosVinculo: PedidoVinculoLote[] = []
 
   // 2) Validação de telefone/duplicidade em memória (sem ida ao banco por
   // linha). Cada lead aceito entra imediatamente nos conjuntos de nomes e
@@ -595,21 +619,37 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
     const telefoneNormalizado = resultadoTelefone.normalizado
     const nomeChave = nomeLimpo.toLowerCase()
 
+    // Mesmo telefone de um lead que já existe + campanha na linha: não é
+    // duplicidade a barrar, é o mesmo lead entrando em outra campanha. Os
+    // demais dados da linha (nome, segmentação, notas...) não sobrescrevem o
+    // cadastro existente.
+    const leadExistenteId = leadIdPorTelefone.get(telefoneNormalizado)
+    if (leadExistenteId && input.campanhaId) {
+      pedidosVinculo.push({
+        index,
+        leadId: leadExistenteId,
+        campanhaId: input.campanhaId,
+        mensagemIndividual: input.mensagemIndividual?.trim() || null,
+      })
+      continue
+    }
+
     if (nomesExistentes.has(nomeChave)) {
       resultados.push({ index, ok: false, motivo: "Já existe um lead cadastrado com este nome." })
       continue
     }
-    if (telefonesExistentes.has(telefoneNormalizado)) {
+    if (leadExistenteId) {
       resultados.push({ index, ok: false, motivo: "Já existe um lead cadastrado com este telefone." })
       continue
     }
 
+    const novoId = randomUUID()
     nomesExistentes.add(nomeChave)
-    telefonesExistentes.add(telefoneNormalizado)
+    leadIdPorTelefone.set(telefoneNormalizado, novoId)
 
     aceitos.push({
       index,
-      id: randomUUID(),
+      id: novoId,
       nome: nomeLimpo,
       telefone: telefoneNormalizado,
       produto: input.produto ?? "",
@@ -624,7 +664,7 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
     })
   }
 
-  if (aceitos.length === 0) return resultados
+  if (aceitos.length === 0 && pedidosVinculo.length === 0) return resultados
 
   // 3) Cadastra em lote qualquer produto/marca/persona/região nova: uma única
   // consulta por dimensão (com `skipDuplicates`) em vez de um upsert por linha.
@@ -660,7 +700,11 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
   }
 
   // 4) Nomes das campanhas vinculadas explicitamente (para o texto do evento).
-  const campanhaIdsExplicitos = [...new Set(aceitos.map((l) => l.campanhaId).filter((id): id is string => Boolean(id)))]
+  const campanhaIdsExplicitos = [
+    ...new Set(
+      [...aceitos.map((l) => l.campanhaId), ...pedidosVinculo.map((p) => p.campanhaId)].filter((id): id is string => Boolean(id)),
+    ),
+  ]
   const campanhasExplicitas = campanhaIdsExplicitos.length
     ? await prisma.campaign.findMany({ where: { id: { in: campanhaIdsExplicitos } }, select: { id: true, nome: true, status: true } })
     : []
@@ -676,23 +720,25 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
     if (l.campanhaId) l.status = statusAoVincularCampanha(l.status)
   }
 
-  await prisma.lead.createMany({
-    data: aceitos.map((l) => ({
-      id: l.id,
-      nome: l.nome,
-      telefone: l.telefone,
-      produto: l.produto,
-      marca: l.marca,
-      persona: l.persona,
-      regiao: l.regiao,
-      status: l.status,
-      notas: l.notas,
-      negocio: l.negocio,
-      campanhaId: l.campanhaId,
-      entradaCampanhaEm: l.campanhaId ? agora : null,
-      criadoEm: agora,
-    })),
-  })
+  if (aceitos.length > 0) {
+    await prisma.lead.createMany({
+      data: aceitos.map((l) => ({
+        id: l.id,
+        nome: l.nome,
+        telefone: l.telefone,
+        produto: l.produto,
+        marca: l.marca,
+        persona: l.persona,
+        regiao: l.regiao,
+        status: l.status,
+        notas: l.notas,
+        negocio: l.negocio,
+        campanhaId: l.campanhaId,
+        entradaCampanhaEm: l.campanhaId ? agora : null,
+        criadoEm: agora,
+      })),
+    })
+  }
 
   // 6) Evento "campanha_iniciada" e vínculo para quem já chega com campanha
   // explícita — também em lote.
@@ -722,17 +768,29 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
     })
   }
 
+  // 6b) Leads que já existiam (mesmo telefone) e chegaram com uma campanha:
+  // só entram nela, sem sair das campanhas em que já estavam. Roda depois dos
+  // passos 5 e 6 para enxergar os vínculos recém-criados no próprio lote.
+  const vinculo = await vincularLeadsExistentesEmLote(pedidosVinculo, statusCampanhaExplicitaPorId, nomeCampanhaPorId, agora)
+  resultados.push(...vinculo.resultados)
+
   // 7) Vincula automaticamente a campanhas compatíveis: mesma regra de
   // `vincularLeadACampanhasCompativeis`, mas com as campanhas carregadas UMA
   // vez e o cruzamento com cada lead feito em memória, em vez de uma consulta
-  // de campanhas (e outra de vínculo já existente) por lead.
-  const campanhasElegiveis = await prisma.campaign.findMany({
-    where: { status: { not: "encerrada" } },
-    select: { id: true, status: true, filtroProduto: true, filtroMarca: true, filtroPersona: true, filtroRegiao: true },
-  })
+  // de campanhas (e outra de vínculo já existente) por lead. Só vale para leads
+  // novos: quem já existia já passou por essa regra quando foi cadastrado.
+  const campanhasElegiveis =
+    aceitos.length > 0
+      ? await prisma.campaign.findMany({
+          where: { status: { not: "encerrada" } },
+          select: { id: true, status: true, filtroProduto: true, filtroMarca: true, filtroPersona: true, filtroRegiao: true },
+        })
+      : []
 
   const paresParaVincular: Array<{ leadId: string; campanhaId: string }> = []
-  let entrouEmCampanhaAtiva = comCampanhaExplicita.some((l) => statusCampanhaExplicitaPorId.get(l.campanhaId) === "ativa")
+  let entrouEmCampanhaAtiva =
+    vinculo.entrouEmCampanhaAtiva ||
+    comCampanhaExplicita.some((l) => statusCampanhaExplicitaPorId.get(l.campanhaId) === "ativa")
   for (const l of aceitos) {
     for (const c of campanhasElegiveis) {
       if (c.id === l.campanhaId) continue // já vinculado no passo 6
@@ -799,10 +857,128 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
   }
 
   for (const l of aceitos) {
-    resultados.push({ index: l.index, ok: true })
+    resultados.push({ index: l.index, ok: true, tipo: "criado" })
   }
 
   return resultados
+}
+
+/**
+ * Adiciona leads que JÁ EXISTEM a uma campanha, sem remover das que já têm.
+ * É o caminho da importação quando o telefone da linha já pertence a um lead e
+ * a linha traz uma campanha (antes a linha era rejeitada como duplicada).
+ *
+ * Segue o mesmo contrato de `assignCampaignBulk` para vincular:
+ * - o vínculo é só um `LeadCampaign` a mais (nada é removido);
+ * - a campanha "principal" legada (`Lead.campanhaId`) só é preenchida para
+ *   quem ainda não tinha nenhuma;
+ * - o status vira "em_campanha", exceto para quem já respondeu;
+ * - registra `campanha_iniciada` na timeline e emite `lead.entrou_em_campanha`.
+ *
+ * Se o lead já está na campanha informada, a linha é reportada como erro (como
+ * antes, reimportar o mesmo lead na mesma campanha não faz nada). Não aciona a
+ * engine: informa via `entrouEmCampanhaAtiva` para o chamador rodá-la uma única
+ * vez ao final do lote.
+ */
+async function vincularLeadsExistentesEmLote(
+  pedidos: PedidoVinculoLote[],
+  statusCampanhaPorId: Map<string, string>,
+  nomeCampanhaPorId: Map<string, string>,
+  agora: Date,
+): Promise<{ resultados: LeadBulkOutcome[]; entrouEmCampanhaAtiva: boolean }> {
+  if (pedidos.length === 0) return { resultados: [], entrouEmCampanhaAtiva: false }
+
+  const resultados: LeadBulkOutcome[] = []
+  const leadIds = [...new Set(pedidos.map((p) => p.leadId))]
+
+  // Vínculos que já existem (inclui os criados há pouco para leads novos do
+  // próprio lote). A chave também recebe os pedidos aceitos, para pegar o mesmo
+  // lead repetido na mesma campanha dentro do arquivo.
+  const vinculosAtuais = await prisma.leadCampaign.findMany({
+    where: { leadId: { in: leadIds } },
+    select: { leadId: true, campanhaId: true },
+  })
+  const chaves = new Set(vinculosAtuais.map((v) => `${v.leadId}:${v.campanhaId}`))
+
+  const novos: PedidoVinculoLote[] = []
+  for (const pedido of pedidos) {
+    if (!nomeCampanhaPorId.has(pedido.campanhaId)) {
+      resultados.push({ index: pedido.index, ok: false, motivo: "Campanha não encontrada." })
+      continue
+    }
+    const chave = `${pedido.leadId}:${pedido.campanhaId}`
+    if (chaves.has(chave)) {
+      resultados.push({
+        index: pedido.index,
+        ok: false,
+        motivo: `Este lead já está na campanha "${nomeCampanhaPorId.get(pedido.campanhaId) ?? ""}".`,
+      })
+      continue
+    }
+    chaves.add(chave)
+    novos.push(pedido)
+    resultados.push({ index: pedido.index, ok: true, tipo: "vinculado" })
+  }
+
+  if (novos.length === 0) return { resultados, entrouEmCampanhaAtiva: false }
+
+  await prisma.leadCampaign.createMany({
+    data: novos.map((p) => ({ leadId: p.leadId, campanhaId: p.campanhaId, mensagemIndividual: p.mensagemIndividual })),
+    skipDuplicates: true,
+  })
+
+  // Campanha principal legada: só para quem ainda não tinha nenhuma. Se o mesmo
+  // lead entra em duas campanhas no arquivo, vale a primeira.
+  const idsVinculados = [...new Set(novos.map((p) => p.leadId))]
+  const leadsAntes = await prisma.lead.findMany({ where: { id: { in: idsVinculados } }, select: { id: true, campanhaId: true } })
+  const semPrincipal = new Set(leadsAntes.filter((l) => !l.campanhaId).map((l) => l.id))
+  const principalPorLead = new Map<string, string>()
+  for (const p of novos) {
+    if (semPrincipal.has(p.leadId) && !principalPorLead.has(p.leadId)) principalPorLead.set(p.leadId, p.campanhaId)
+  }
+  const leadsPorPrincipal = new Map<string, string[]>()
+  for (const [leadId, campanhaId] of principalPorLead) {
+    leadsPorPrincipal.set(campanhaId, [...(leadsPorPrincipal.get(campanhaId) ?? []), leadId])
+  }
+  for (const [campanhaId, ids] of leadsPorPrincipal) {
+    await prisma.lead.updateMany({
+      where: { id: { in: ids }, campanhaId: null },
+      data: { campanhaId, entradaCampanhaEm: agora },
+    })
+  }
+
+  // Quem já respondeu não é reaberto.
+  await prisma.lead.updateMany({
+    where: { id: { in: idsVinculados }, status: { not: "respondeu" } },
+    data: { status: "em_campanha" },
+  })
+
+  await prisma.timelineEvent.createMany({
+    data: novos.map((p) => ({
+      leadId: p.leadId,
+      campanhaId: p.campanhaId,
+      tipo: "campanha_iniciada" as const,
+      descricao: `Lead entrou na campanha ${nomeCampanhaPorId.get(p.campanhaId) ?? ""}.`,
+      data: agora,
+      sucesso: true,
+    })),
+  })
+
+  const leadsDepois = await prisma.lead.findMany({ where: { id: { in: idsVinculados } }, select: leadRowSelect })
+  const leadPorId = new Map(leadsDepois.map((l) => [l.id, toLead(l)]))
+  for (const p of novos) {
+    const lead = leadPorId.get(p.leadId)
+    if (!lead) continue
+    void emitWebhookEvent("lead.entrou_em_campanha", {
+      lead,
+      campanha: { id: p.campanhaId, nome: nomeCampanhaPorId.get(p.campanhaId) ?? null },
+    })
+  }
+
+  return {
+    resultados,
+    entrouEmCampanhaAtiva: novos.some((p) => statusCampanhaPorId.get(p.campanhaId) === "ativa"),
+  }
 }
 
 /**

@@ -268,8 +268,13 @@ export interface ImportLeadsResult {
   message: string
   /** Total de linhas recebidas do arquivo. */
   total: number
-  /** Leads efetivamente cadastrados. */
+  /** Leads novos efetivamente cadastrados. */
   criados: number
+  /**
+   * Leads que já existiam (mesmo telefone) e foram apenas adicionados à campanha
+   * da linha, sem sair das campanhas em que já estavam.
+   */
+  vinculados: number
   /** Linhas que não puderam ser cadastradas, com o motivo. */
   erros: Array<{ linha: number; nome: string; motivo: string }>
 }
@@ -281,12 +286,14 @@ const MAX_IMPORTACAO = 2000
  * Cria em lote os leads recebidos de um arquivo importado. Cada linha passa
  * pela mesma validação e regras de negócio de `createLead` (telefone com país
  * 55, unicidade de nome/telefone, cadastro automático de segmentação e
- * vinculação a campanhas compatíveis). Erros por linha não interrompem o lote:
- * o resultado reporta quantos foram criados e o motivo de cada falha.
+ * vinculação a campanhas compatíveis). Se o telefone da linha já pertence a um
+ * lead e a linha traz uma campanha, o lead não é recriado: apenas entra nessa
+ * campanha, mantendo as que já tem. Erros por linha não interrompem o lote:
+ * o resultado reporta quantos foram criados/vinculados e o motivo de cada falha.
  */
 export async function importLeadsAction(linhas: LeadImportRow[]): Promise<ImportLeadsResult> {
   if (!Array.isArray(linhas) || linhas.length === 0) {
-    return { ok: false, message: "Nenhuma linha encontrada no arquivo.", total: 0, criados: 0, erros: [] }
+    return { ok: false, message: "Nenhuma linha encontrada no arquivo.", total: 0, criados: 0, vinculados: 0, erros: [] }
   }
   if (linhas.length > MAX_IMPORTACAO) {
     return {
@@ -294,6 +301,7 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
       message: `O arquivo tem ${linhas.length} linhas. Importe no máximo ${MAX_IMPORTACAO} por vez.`,
       total: linhas.length,
       criados: 0,
+      vinculados: 0,
       erros: [],
     }
   }
@@ -444,13 +452,15 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
   // uma ida ao banco por linha) — é isto que faz a importação de muitos leads
   // de uma vez ser rápida.
   let criados = 0
+  let vinculados = 0
   if (candidatos.length > 0) {
     try {
       const resultados = await createLeadsBulk(candidatos)
       for (const resultado of resultados) {
         const contexto = contextoPorIndice.get(resultado.index)
         if (resultado.ok) {
-          criados++
+          if (resultado.tipo === "vinculado") vinculados++
+          else criados++
         } else {
           erros.push({
             linha: contexto?.linha ?? 0,
@@ -476,14 +486,18 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
   // formato roda antes do lote, e o lote devolve seus resultados por índice).
   erros.sort((a, b) => a.linha - b.linha)
 
-  if (criados > 0) revalidarLeads()
+  const processados = criados + vinculados
+  if (processados > 0) revalidarLeads()
+
+  const partes: string[] = []
+  if (criados > 0) partes.push(`${criados} lead(s) importado(s)`)
+  if (vinculados > 0) partes.push(`${vinculados} lead(s) já existente(s) adicionado(s) à campanha`)
+  if (erros.length > 0) partes.push(`${erros.length} com erro`)
 
   const message =
-    criados === 0
-      ? "Nenhum lead foi importado. Revise os erros e tente novamente."
-      : `${criados} lead(s) importado(s)${erros.length > 0 ? ` · ${erros.length} com erro` : ""}.`
+    processados === 0 ? "Nenhum lead foi importado. Revise os erros e tente novamente." : `${partes.join(" · ")}.`
 
-  return { ok: criados > 0, message, total: linhas.length, criados, erros }
+  return { ok: processados > 0, message, total: linhas.length, criados, vinculados, erros }
 }
 
 export async function assignCampaignAction(leadIds: string[], campanhaId: string | null, mensagemIndividual?: string | null) {
