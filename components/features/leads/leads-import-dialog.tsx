@@ -26,6 +26,7 @@ const MAPA_COLUNAS: Record<keyof LeadImportRow, string[]> = {
   marca: ["marca"],
   persona: ["persona"],
   regiao: ["regiao", "região", "regiao/uf", "uf"],
+  status: ["status"],
   notas: ["notas", "observacoes", "observações", "obs"],
   negocio: ["negocio", "negócio", "deal", "deal id", "id do negocio", "id do negócio"],
   campanha: ["campanha", "campaign"],
@@ -70,17 +71,19 @@ export function LeadsImportDialog({
   const [erroLeitura, setErroLeitura] = useState<string | null>(null)
   const [resultado, setResultado] = useState<ImportLeadsResult | null>(null)
   const [pending, startTransition] = useTransition()
+  const [importando, setImportando] = useState(false)
 
   function limpar() {
     setNomeArquivo(null)
     setLinhas([])
     setErroLeitura(null)
     setResultado(null)
+    setImportando(false)
     if (inputRef.current) inputRef.current.value = ""
   }
 
-  function fechar(aberto: boolean) {
-    if (!aberto) limpar()
+  function fechar(aberto: boolean, limparAoFechar = true) {
+    if (!aberto && limparAoFechar) limpar()
     onOpenChange(aberto)
   }
 
@@ -128,19 +131,44 @@ export function LeadsImportDialog({
   }
 
   function importar() {
-    if (linhas.length === 0) return
+    if (linhas.length === 0 || importando) return
+
+    const loadingToastId = toast.loading(
+      <div className="flex items-center gap-3">
+        <Spinner className="size-4" />
+        <div className="flex flex-col gap-0.5">
+          <span className="text-sm font-medium">Importando leads</span>
+          <span className="text-xs text-muted-foreground">{linhas.length} linha(s) em processamento</span>
+        </div>
+      </div>,
+      {
+        duration: Number.POSITIVE_INFINITY,
+        position: "bottom-right",
+      },
+    )
+
+    setImportando(true)
+    setResultado(null)
+    onOpenChange(false)
+
     startTransition(async () => {
-      const res = await importLeadsAction(linhas)
-      setResultado(res)
-      if (res.ok) toast.success(res.message)
-      else toast.error(res.message)
+      try {
+        const res = await importLeadsAction(linhas)
+        setResultado(res)
+        toast.dismiss(loadingToastId)
+        if (res.ok) toast.success(res.message)
+        else toast.error(res.message)
+        onOpenChange(true)
+      } finally {
+        setImportando(false)
+      }
     })
   }
 
   const preview = linhas.slice(0, 100)
 
   return (
-    <Dialog open={open} onOpenChange={fechar}>
+    <Dialog open={open} onOpenChange={(nextOpen, _details) => fechar(nextOpen)}>
       <DialogContent className="flex max-h-[90svh] flex-col gap-0 overflow-hidden sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Importar leads via Excel</DialogTitle>
@@ -320,8 +348,8 @@ export function LeadsImportDialog({
               <Button type="button" variant="outline" onClick={() => fechar(false)}>
                 Cancelar
               </Button>
-              <Button type="button" onClick={importar} disabled={pending || linhas.length === 0}>
-                {pending ? <Spinner /> : <Upload className="size-4" />}
+              <Button type="button" onClick={importar} disabled={pending || importando || linhas.length === 0}>
+                {pending || importando ? <Spinner /> : <Upload className="size-4" />}
                 Importar {linhas.length > 0 ? `${linhas.length} lead(s)` : ""}
               </Button>
             </>
