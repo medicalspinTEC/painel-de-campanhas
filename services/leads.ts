@@ -496,13 +496,7 @@ export async function createLead(input: LeadInput): Promise<Lead> {
 
   // Vincula o lead recém-criado a qualquer campanha ativa/pausada/rascunho cujos
   // filtros ele já atenda, sem depender de seleção manual na campanha.
-  await vincularLeadACampanhasCompativeis({
-    id: criado.id,
-    produto: criado.produto,
-    marca: criado.marca,
-    persona: criado.persona,
-    regiao: criado.regiao,
-  })
+  await vincularLeadACampanhasCompativeis(criado)
 
   return criado
 }
@@ -783,7 +777,7 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
     aceitos.length > 0
       ? await prisma.campaign.findMany({
           where: { status: { not: "encerrada" } },
-          select: { id: true, status: true, filtroProduto: true, filtroMarca: true, filtroPersona: true, filtroRegiao: true },
+          select: { id: true, nome: true, status: true, filtroProduto: true, filtroMarca: true, filtroPersona: true, filtroRegiao: true },
         })
       : []
 
@@ -818,6 +812,15 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
     const autoVinculadosSet = new Set(leadIdsAutoVinculados)
     for (const l of aceitos) {
       if (autoVinculadosSet.has(l.id)) l.status = statusAoVincularCampanha(l.status)
+    }
+    for (const par of paresParaVincular) {
+      const lead = aceitos.find((item) => item.id === par.leadId)
+      const campanha = campanhasElegiveis.find((item) => item.id === par.campanhaId)
+      if (!lead || !campanha) continue
+      void emitWebhookEvent("lead.entrou_em_campanha", {
+        lead: toLead({ ...lead, criadoEm: agora, entradaCampanhaEm: agora }),
+        campanha: { id: campanha.id, nome: campanha.nome },
+      })
     }
   }
 
@@ -1122,13 +1125,7 @@ export async function updateLead(id: string, input: LeadInput): Promise<Lead | n
   // Como as dimensões de segmentação podem ter mudado, revalida a vinculação
   // automática: o lead entra em qualquer campanha não encerrada cujos filtros
   // ele passou a atender.
-  await vincularLeadACampanhasCompativeis({
-    id: atualizado.id,
-    produto: lead.produto,
-    marca: lead.marca,
-    persona: lead.persona,
-    regiao: lead.regiao,
-  })
+  await vincularLeadACampanhasCompativeis(atualizado)
 
   return atualizado
 }
@@ -1200,13 +1197,7 @@ async function dispararMensagemInicialDaCampanha(leadId: string, campanhaId: str
  * inicial (a dedupe do envio evita reenvios). O vínculo é idempotente, então
  * campanhas já vinculadas ao lead não geram efeito.
  */
-async function vincularLeadACampanhasCompativeis(lead: {
-  id: string
-  produto: string
-  marca: string
-  persona: string
-  regiao: string
-}): Promise<void> {
+async function vincularLeadACampanhasCompativeis(lead: Lead): Promise<void> {
   const campanhas = await prisma.campaign.findMany({
     where: {
       status: { not: "encerrada" },
@@ -1217,7 +1208,7 @@ async function vincularLeadACampanhasCompativeis(lead: {
         { OR: [{ filtroRegiao: null }, { filtroRegiao: lead.regiao }] },
       ],
     },
-    select: { id: true, status: true },
+    select: { id: true, nome: true, status: true },
   })
   if (campanhas.length === 0) return
 
@@ -1236,6 +1227,10 @@ async function vincularLeadACampanhasCompativeis(lead: {
           descricao: "Lead entrou na campanha automaticamente (filtro compatível).",
           sucesso: true,
         },
+      })
+      await emitWebhookEvent("lead.entrou_em_campanha", {
+        lead: { ...lead, status: statusAoVincularCampanha(lead.status) },
+        campanha: { id: campanha.id, nome: campanha.nome },
       })
     }
     if (campanha.status === "ativa") {

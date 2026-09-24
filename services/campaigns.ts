@@ -513,6 +513,43 @@ async function sincronizarLeadsDaCampanha(campanhaId: string, leadIds: string[] 
       data: { status: "em_campanha" },
     })
   }
+
+  if (paraAdicionar.length > 0) {
+    const [campanha, leads] = await Promise.all([
+      prisma.campaign.findUnique({ where: { id: campanhaId }, select: { id: true, nome: true } }),
+      prisma.lead.findMany({
+        where: { id: { in: paraAdicionar } },
+        select: {
+          id: true,
+          nome: true,
+          telefone: true,
+          produto: true,
+          marca: true,
+          persona: true,
+          regiao: true,
+          status: true,
+          notas: true,
+          negocio: true,
+          campanhaId: true,
+          entradaCampanhaEm: true,
+          criadoEm: true,
+        },
+      }),
+    ])
+
+    if (campanha) {
+      for (const lead of leads) {
+        void emitWebhookEvent("lead.entrou_em_campanha", {
+          lead: {
+            ...lead,
+            criadoEm: lead.criadoEm.toISOString(),
+            entradaCampanhaEm: lead.entradaCampanhaEm?.toISOString() ?? null,
+          },
+          campanha,
+        })
+      }
+    }
+  }
 }
 
 export async function createCampaign(input: CampaignInput): Promise<Campaign> {
