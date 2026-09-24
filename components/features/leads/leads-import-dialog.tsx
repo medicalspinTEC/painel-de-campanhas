@@ -1,12 +1,13 @@
 "use client"
 
-import { useRef, useState, useTransition } from "react"
+import { useEffect, useRef, useState, useTransition } from "react"
 import { AlertTriangle, CheckCircle2, Download, FileSpreadsheet, Upload, X } from "lucide-react"
 import { toast } from "sonner"
 import * as XLSX from "xlsx"
 
 import { importLeadsAction, type ImportLeadsResult, type LeadImportRow } from "@/app/actions/leads"
 import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 import {
   Dialog,
   DialogContent,
@@ -15,7 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Spinner } from "@/components/ui/spinner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 /** Colunas aceitas no arquivo e seus sinônimos (sem acento, minúsculas). */
@@ -57,6 +57,36 @@ function mapearLinha(linha: Record<string, unknown>): LeadImportRow {
 }
 
 const COLUNAS_MODELO = ["nome", "telefone", "produto", "marca", "persona", "regiao", "notas", "negocio", "campanha", "mensagem"]
+
+function ImportProgressToast({ total, concluido = false }: { total: number; concluido?: boolean }) {
+  const [progresso, setProgresso] = useState(0)
+
+  useEffect(() => {
+    if (concluido) {
+      setProgresso(100)
+      return
+    }
+
+    const intervalo = window.setInterval(() => {
+      setProgresso((valorAtual) => Math.min(valorAtual + 5, 95))
+    }, 150)
+
+    return () => window.clearInterval(intervalo)
+  }, [concluido])
+
+  return (
+    <div className="flex w-full min-w-56 flex-col gap-2">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-sm font-medium">Importando leads</span>
+          <span className="text-xs text-muted-foreground">{total} linha(s) em processamento</span>
+        </div>
+        <span className="text-xs font-medium tabular-nums text-primary">{progresso}%</span>
+      </div>
+      <Progress value={progresso} aria-label={`Progresso da importação: ${progresso}%`} className="gap-0" />
+    </div>
+  )
+}
 
 export function LeadsImportDialog({
   open,
@@ -134,13 +164,7 @@ export function LeadsImportDialog({
     if (linhas.length === 0 || importando) return
 
     const loadingToastId = toast.loading(
-      <div className="flex items-center gap-3">
-        <Spinner className="size-4" />
-        <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-medium">Importando leads</span>
-          <span className="text-xs text-muted-foreground">{linhas.length} linha(s) em processamento</span>
-        </div>
-      </div>,
+      <ImportProgressToast total={linhas.length} />,
       {
         duration: Number.POSITIVE_INFINITY,
         position: "bottom-right",
@@ -155,6 +179,12 @@ export function LeadsImportDialog({
       try {
         const res = await importLeadsAction(linhas)
         setResultado(res)
+        toast.loading(<ImportProgressToast total={linhas.length} concluido />, {
+          id: loadingToastId,
+          duration: Number.POSITIVE_INFINITY,
+          position: "bottom-right",
+        })
+        await new Promise((resolve) => window.setTimeout(resolve, 180))
         toast.dismiss(loadingToastId)
         if (res.ok) toast.success(res.message)
         else toast.error(res.message)
