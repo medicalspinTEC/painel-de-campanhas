@@ -74,6 +74,7 @@ export function LeadFormDialog({
   const [status, setStatus] = useState<string>(lead?.status ?? "novo")
   const [notas, setNotas] = useState(lead?.notas ?? "")
   const [negocio, setNegocio] = useState(lead?.negocio ?? "")
+  const [atividade, setAtividade] = useState(lead?.atividade ?? "")
   const [campanhasSelecionadas, setCampanhasSelecionadas] = useState<string[]>(() => (lead ? [lead.campanhaId].filter(Boolean) as string[] : []))
 
   useEffect(() => {
@@ -84,6 +85,7 @@ export function LeadFormDialog({
     setStatus(lead?.status ?? "novo")
     setNotas(lead?.notas ?? "")
     setNegocio(lead?.negocio ?? "")
+    setAtividade(lead?.atividade ?? "")
     setCampanhasSelecionadas(lead ? [lead.campanhaId].filter(Boolean) as string[] : [])
   }, [lead])
 
@@ -235,6 +237,20 @@ export function LeadFormDialog({
                 aria-invalid={Boolean(erros.negocio)}
               />
               {erros.negocio ? <FieldError>{erros.negocio}</FieldError> : null}
+            </Field>
+
+            <Field data-invalid={Boolean(erros.atividade)}>
+              <FieldLabel htmlFor="atividade">Atividade</FieldLabel>
+              <Input
+                id="atividade"
+                name="atividade"
+                value={atividade}
+                onChange={(event) => setAtividade(event.target.value)}
+                placeholder="ID da atividade (opcional)"
+                maxLength={120}
+                aria-invalid={Boolean(erros.atividade)}
+              />
+              {erros.atividade ? <FieldError>{erros.atividade}</FieldError> : null}
             </Field>
 
             <Field>

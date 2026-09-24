@@ -85,6 +85,9 @@ model Lead {
   // texto livre digitado pelo usuário no cadastro.
   negocio String?
 
+  // Identificador da atividade associado ao lead. Opcional.
+  atividade String?
+
   campanhaId String?
   campanha   Campaign? @relation(fields: [campanhaId], references: [id], onDelete: SetNull)
 

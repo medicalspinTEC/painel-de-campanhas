@@ -29,6 +29,7 @@ const MAPA_COLUNAS: Record<keyof LeadImportRow, string[]> = {
   status: ["status"],
   notas: ["notas", "observacoes", "observações", "obs"],
   negocio: ["negocio", "negócio", "deal", "deal id", "id do negocio", "id do negócio"],
+  atividade: ["atividade", "activity", "id atividade", "id da atividade"],
   campanha: ["campanha", "campaign"],
   mensagem: ["mensagem", "mensagem individual", "message"],
 }
@@ -56,7 +57,7 @@ function mapearLinha(linha: Record<string, unknown>): LeadImportRow {
   return resultado
 }
 
-const COLUNAS_MODELO = ["nome", "telefone", "produto", "marca", "persona", "regiao", "notas", "negocio", "campanha", "mensagem"]
+const COLUNAS_MODELO = ["nome", "telefone", "produto", "marca", "persona", "regiao", "notas", "negocio", "atividade", "campanha", "mensagem"]
 
 function ImportProgressToast({ total, concluido = false }: { total: number; concluido?: boolean }) {
   const [progresso, setProgresso] = useState(0)
@@ -153,7 +154,7 @@ export function LeadsImportDialog({
   function baixarModelo() {
     const worksheet = XLSX.utils.aoa_to_sheet([
       COLUNAS_MODELO,
-      ["Lead de Teste", "5511988887777", "ID", "ID", "ID", "ID", "ID", "", "ID", "Olá! Esta é sua mensagem individual."],
+      ["Lead de Teste", "5511988887777", "ID", "ID", "ID", "ID", "Uma nota sobre este lead", "ID", "ID", "ID", "Olá! Esta é sua mensagem individual."],
     ])
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, "Leads")
@@ -213,7 +214,7 @@ export function LeadsImportDialog({
             <p className="text-muted-foreground">
               <strong className="text-foreground">nome</strong> e{" "}
               <strong className="text-foreground">telefone</strong> são obrigatórios. Opcionais: produto, marca,
-              persona, regiao, notas, negocio, campanha e mensagem. Nos campos de segmentação você pode informar o
+              persona, regiao, notas, negocio, atividade, campanha e mensagem. Nos campos de segmentação você pode informar o
               nome ou o ID de importação cadastrado na aba Segmentação. Na coluna campanha use o{" "}
               <strong className="text-foreground">ID de importação</strong> da campanha (o número mostrado na
               página Campanhas) ou o nome exato dela. O telefone deve incluir o país 55 (ex.: 5511988887777).
@@ -221,6 +222,10 @@ export function LeadsImportDialog({
             <p className="text-muted-foreground">
               A coluna <strong className="text-foreground">negocio</strong> é opcional e aceita qualquer texto — use
               para registrar o ID do negócio em um CRM externo, quando houver.
+            </p>
+            <p className="text-muted-foreground">
+              A coluna <strong className="text-foreground">atividade</strong> é opcional e aceita o ID da atividade
+              associado ao lead.
             </p>
             <p className="text-muted-foreground">
               A coluna <strong className="text-foreground">mensagem</strong>, quando preenchida junto com a coluna

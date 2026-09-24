@@ -89,6 +89,7 @@ type LeadRecord = {
   status: LeadStatus
   notas: string | null
   negocio: string | null
+  atividade: string | null
   campanhaId: string | null
   entradaCampanhaEm: Date | null
   criadoEm: Date
@@ -109,6 +110,7 @@ function toLead(record: LeadRecord): Lead {
     status: record.status,
     notas: record.notas ?? null,
     negocio: record.negocio ?? null,
+    atividade: record.atividade ?? null,
     campanhaId: record.campanhaId,
     criadoEm: record.criadoEm.toISOString(),
     entradaCampanhaEm: record.entradaCampanhaEm?.toISOString() ?? null,
@@ -131,6 +133,7 @@ const leadRowSelect = {
   status: true,
   notas: true,
   negocio: true,
+  atividade: true,
   campanhaId: true,
   entradaCampanhaEm: true,
   criadoEm: true,
@@ -305,6 +308,8 @@ export type LeadInput = Pick<Lead, "nome" | "telefone" | "status"> & {
   notas?: string | null
   // ID do negócio (CRM externo), texto livre opcional. `null`/"" limpam o campo.
   negocio?: string | null
+  // ID da atividade, texto livre opcional. `null`/"" limpam o campo.
+  atividade?: string | null
   campanhaId: string | null
   campanhasIds?: string[]
 }
@@ -320,6 +325,13 @@ function normalizarNotas(notas: string | null | undefined): string | null {
 function normalizarNegocio(negocio: string | null | undefined): string | null {
   if (negocio == null) return null
   const limpo = negocio.trim()
+  return limpo.length > 0 ? limpo : null
+}
+
+/** Normaliza o ID da atividade recebido: vazio vira `null`. */
+function normalizarAtividade(atividade: string | null | undefined): string | null {
+  if (atividade == null) return null
+  const limpo = atividade.trim()
   return limpo.length > 0 ? limpo : null
 }
 
@@ -451,6 +463,7 @@ export async function createLead(input: LeadInput): Promise<Lead> {
       status: statusParaGravar,
       notas: normalizarNotas(input.notas),
       negocio: normalizarNegocio(input.negocio),
+      atividade: normalizarAtividade(input.atividade),
       campanhaId: input.campanhaId,
       entradaCampanhaEm: input.campanhaId ? agora : null,
       campanhas: {
@@ -512,6 +525,8 @@ export interface LeadBulkInput {
   notas?: string | null
   // ID do negócio (CRM externo), texto livre opcional.
   negocio?: string | null
+  // ID da atividade, texto livre opcional.
+  atividade?: string | null
   status: LeadStatus
   campanhaId: string | null
   // Texto individual (campanhas `tipo: "individual"`) já vinculado a
@@ -591,6 +606,7 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
     regiao: string
     notas: string | null
     negocio: string | null
+    atividade: string | null
     status: LeadStatus
     campanhaId: string | null
     mensagemIndividual: string | null
@@ -652,6 +668,7 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
       regiao: input.regiao ?? "",
       notas: normalizarNotas(input.notas),
       negocio: normalizarNegocio(input.negocio),
+      atividade: normalizarAtividade(input.atividade),
       status: input.status,
       campanhaId: input.campanhaId,
       mensagemIndividual: input.mensagemIndividual?.trim() || null,
@@ -727,6 +744,7 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
         status: l.status,
         notas: l.notas,
         negocio: l.negocio,
+        atividade: l.atividade,
         campanhaId: l.campanhaId,
         entradaCampanhaEm: l.campanhaId ? agora : null,
         criadoEm: agora,
@@ -1066,6 +1084,8 @@ export async function updateLead(id: string, input: LeadInput): Promise<Lead | n
       ...(input.notas !== undefined ? { notas: normalizarNotas(input.notas) } : {}),
       // Negócio também é opcional: só atualiza quando a chave veio no corpo.
       ...(input.negocio !== undefined ? { negocio: normalizarNegocio(input.negocio) } : {}),
+      // Atividade também é opcional: só atualiza quando a chave veio no corpo.
+      ...(input.atividade !== undefined ? { atividade: normalizarAtividade(input.atividade) } : {}),
       ...(trocouCampanha ? { entradaCampanhaEm: input.campanhaId ? agora : null } : {}),
       ...(trocouCampanha && input.campanhaId
         ? {

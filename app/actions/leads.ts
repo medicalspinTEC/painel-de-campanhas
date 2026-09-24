@@ -24,6 +24,9 @@ const MAX_SEGMENTO = 60
 /** Tamanho máximo para o ID do negócio (texto livre, opcional). */
 const MAX_NEGOCIO = 120
 
+/** Tamanho máximo para o ID da atividade (texto livre, opcional). */
+const MAX_ATIVIDADE = 120
+
 function parseLead(formData: FormData) {
   const errors: Record<string, string> = {}
   const nome = String(formData.get("nome") ?? "").trim()
@@ -36,6 +39,7 @@ function parseLead(formData: FormData) {
   const notas = formData.has("notas") ? String(formData.get("notas") ?? "") : null
   // Negócio é opcional: ID de texto livre digitado pelo usuário (ex.: CRM externo).
   const negocio = formData.has("negocio") ? String(formData.get("negocio") ?? "").trim() : null
+  const atividade = formData.has("atividade") ? String(formData.get("atividade") ?? "").trim() : null
   const status = String(formData.get("status") ?? "novo")
   const campanhasIdsRaw = String(formData.get("campanhasIds") ?? "")
   const campanhasIds = campanhasIdsRaw
@@ -58,6 +62,7 @@ function parseLead(formData: FormData) {
   if (regiao.length > MAX_SEGMENTO) errors.regiao = `Use no máximo ${MAX_SEGMENTO} caracteres.`
   if (notas != null && notas.length > 5000) errors.notas = "As notas são muito longas (máximo de 5000 caracteres)."
   if (negocio != null && negocio.length > MAX_NEGOCIO) errors.negocio = `Use no máximo ${MAX_NEGOCIO} caracteres.`
+  if (atividade != null && atividade.length > MAX_ATIVIDADE) errors.atividade = `Use no máximo ${MAX_ATIVIDADE} caracteres.`
 
   const input: LeadInput = {
     nome,
@@ -68,6 +73,7 @@ function parseLead(formData: FormData) {
     regiao: regiao as LeadInput["regiao"],
     notas,
     negocio,
+    atividade,
     status: (STATUS_VALIDOS.includes(status as LeadStatus) ? status : "novo") as LeadStatus,
     campanhaId: campanhasIds[0] ?? null,
     campanhasIds,
@@ -252,6 +258,7 @@ export interface LeadImportRow {
   notas?: string
   /** ID do negócio (CRM externo), texto livre opcional. */
   negocio?: string
+  atividade?: string
   /** Nome da campanha a vincular (opcional). Resolvido para ID no servidor. */
   campanha?: string
   /**
@@ -370,6 +377,7 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
     const regiao = resolver(String(bruto.regiao ?? "").trim(), mapaRegioes)
     const notasBruta = String(bruto.notas ?? "").trim()
     const negocioBruto = String(bruto.negocio ?? "").trim()
+    const atividadeBruta = String(bruto.atividade ?? "").trim()
     const statusBruto = String(bruto.status ?? "").trim()
     const campanhaBruta = String(bruto.campanha ?? "").trim()
     const mensagemBruta = String(bruto.mensagem ?? "").trim()
@@ -392,6 +400,10 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
     }
     if (negocioBruto.length > MAX_NEGOCIO) {
       erros.push({ linha: numeroLinha, nome, motivo: `Negócio deve ter até ${MAX_NEGOCIO} caracteres.` })
+      continue
+    }
+    if (atividadeBruta.length > MAX_ATIVIDADE) {
+      erros.push({ linha: numeroLinha, nome, motivo: `Atividade deve ter até ${MAX_ATIVIDADE} caracteres.` })
       continue
     }
 
@@ -441,6 +453,7 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
         regiao,
         notas: notasBruta.length > 0 ? notasBruta : null,
         negocio: negocioBruto.length > 0 ? negocioBruto : null,
+        atividade: atividadeBruta.length > 0 ? atividadeBruta : null,
         status: (STATUS_VALIDOS.includes(statusBruto as LeadStatus) ? statusBruto : "novo") as LeadStatus,
         campanhaId,
         mensagemIndividual,

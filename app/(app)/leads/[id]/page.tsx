@@ -24,7 +24,8 @@ export default async function LeadDetalhePage({ params }: { params: Promise<{ id
     { label: "Marca", valor: lead.marca },
     { label: "Persona", valor: lead.persona },
     { label: "Região", valor: lead.regiao },
-    { label: "Negócio", valor: lead.negocio},
+    { label: "Negócio", valor: lead.negocio ?? "—" },
+    { label: "Atividade", valor: lead.atividade ?? "—" },
     { label: "Telefone", valor: lead.telefone },
     { label: "Cadastrado em", valor: formatDateTime(lead.criadoEm) },
   ]

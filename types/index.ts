@@ -41,6 +41,8 @@ export interface Lead {
   notas: string | null
   /** ID do negócio (CRM externo), texto livre opcional digitado no cadastro. */
   negocio: string | null
+  /** ID da atividade, texto livre opcional digitado no cadastro. */
+  atividade: string | null
   criadoEm: string
   entradaCampanhaEm: string | null
 }
