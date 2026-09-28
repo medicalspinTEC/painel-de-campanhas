@@ -4,12 +4,13 @@ import { z } from "zod"
 import { validarTelefoneBR } from "@/lib/telefone"
 import { listProdutos } from "@/services/produtos"
 import { getKpis } from "@/services/analytics"
-import { listEvents } from "@/services/events"
+import { getEvent, listEvents, listLeadResponses } from "@/services/events"
 import {
   createLead,
   getLead,
   LeadValidationError,
   listLeads,
+  getLeadTimeline,
   sendLeadMessage,
   setLeadStatus,
   updateLeadNotes,
@@ -82,8 +83,9 @@ export function createAppMcpServer(): McpServer {
     {
       title: "Listar leads",
       description:
-        "Lista todos os leads cadastrados, com agregações de mensagens e respostas. Aceita filtro opcional por status e por um termo de busca (nome ou telefone).",
+        "Lista leads com todos os campos e agregações de mensagens e respostas. Aceita filtro opcional por campanha (inclui vínculos atuais e histórico), status e termo de busca por nome ou telefone.",
       inputSchema: {
+        campanhaId: z.string().optional().describe("Filtra leads associados à campanha, incluindo histórico de eventos."),
         status: z
           .enum(STATUS_LEAD_VALORES)
           .optional()
@@ -91,8 +93,8 @@ export function createAppMcpServer(): McpServer {
         busca: z.string().optional().describe("Filtra por nome ou telefone contendo este texto."),
       },
     },
-    async ({ status, busca }) => {
-      let leads = await listLeads()
+    async ({ campanhaId, status, busca }) => {
+      let leads = await listLeads({ campanhaId })
       if (status) leads = leads.filter((lead) => lead.status === status)
       if (busca?.trim()) {
         const termo = busca.trim().toLowerCase()
@@ -101,6 +103,25 @@ export function createAppMcpServer(): McpServer {
         )
       }
       return jsonResult({ ok: true, total: leads.length, leads })
+    },
+  )
+
+  server.registerTool(
+    "buscar_negocio_bdr",
+    {
+      title: "Buscar negócio no BDR",
+      description:
+        "Localiza no cadastro do painel os leads cujo campo negocio corresponde exatamente ao identificador informado e retorna cada perfil completo com sua timeline. Não consulta um BDR externo; usa o vínculo local registrado no lead.",
+      inputSchema: { negocio: z.string().min(1).describe("ID do negócio registrado no campo negocio do lead.") },
+    },
+    async ({ negocio }) => {
+      const negocioId = negocio.trim()
+      if (!negocioId) return errorResult("Informe o ID do negócio.")
+      const leads = await listLeads({ negocio: negocioId })
+      const relacionados = await Promise.all(
+        leads.map(async (lead) => ({ lead, timeline: await getLeadTimeline(lead.id) })),
+      )
+      return jsonResult({ ok: true, negocio: negocioId, total: relacionados.length, relacionados })
     },
   )
 
@@ -114,7 +135,8 @@ export function createAppMcpServer(): McpServer {
     async ({ id }) => {
       const lead = await getLead(id)
       if (!lead) return errorResult("Lead não encontrado.")
-      return jsonResult({ ok: true, lead })
+      const timeline = await getLeadTimeline(id)
+      return jsonResult({ ok: true, lead, timeline })
     },
   )
 
@@ -157,7 +179,7 @@ export function createAppMcpServer(): McpServer {
       }
       try {
         const lead = await createLead(input)
-        return jsonResult({ ok: true, lead })
+        return jsonResult({ ok: true, lead: (await getLead(lead.id)) ?? lead })
       } catch (error) {
         if (error instanceof LeadValidationError) {
           return errorResult("Corrija os campos destacados.", { errors: error.errors })
@@ -182,7 +204,7 @@ export function createAppMcpServer(): McpServer {
     async ({ id, status, resposta }) => {
       const lead = await setLeadStatus(id, status, resposta ?? null)
       if (!lead) return errorResult("Lead não encontrado.")
-      return jsonResult({ ok: true, lead })
+      return jsonResult({ ok: true, lead: (await getLead(lead.id)) ?? lead })
     },
   )
 
@@ -196,7 +218,7 @@ export function createAppMcpServer(): McpServer {
     async ({ id, notas }) => {
       const lead = await updateLeadNotes(id, notas)
       if (!lead) return errorResult("Lead não encontrado.")
-      return jsonResult({ ok: true, lead })
+      return jsonResult({ ok: true, lead: (await getLead(lead.id)) ?? lead })
     },
   )
 
@@ -356,6 +378,39 @@ export function createAppMcpServer(): McpServer {
       inputSchema: {},
     },
     async () => jsonResult({ ok: true, indicadores: await getKpis() }),
+  )
+
+  server.registerTool(
+    "listar_respostas_lead",
+    {
+      title: "Listar respostas recebidas",
+      description:
+        "Lista respostas recebidas dos leads, incluindo o perfil completo do lead, campanha, data e hora, e o conteúdo da resposta quando disponível. Pode filtrar por lead ou campanha.",
+      inputSchema: {
+        leadId: z.string().optional().describe("Filtra pelo ID do lead."),
+        campanhaId: z.string().optional().describe("Filtra pelo ID da campanha."),
+        limite: z.number().int().min(1).max(200).optional().describe("Máximo de respostas; padrão: 50."),
+      },
+    },
+    async ({ leadId, campanhaId, limite }) => {
+      const respostas = await listLeadResponses({ limit: limite ?? 50, leadId, campanhaId })
+      return jsonResult({ ok: true, total: respostas.length, respostas })
+    },
+  )
+
+  server.registerTool(
+    "obter_envio",
+    {
+      title: "Obter envio",
+      description:
+        "Busca um envio de mensagem pelo ID do evento retornado na listagem de eventos, incluindo o texto integral enviado e os dados relacionados.",
+      inputSchema: { id: z.string().describe("ID do evento do envio.") },
+    },
+    async ({ id }) => {
+      const envio = await getEvent(id)
+      if (!envio || envio.tipo !== "mensagem_enviada") return errorResult("Envio não encontrado.")
+      return jsonResult({ ok: true, envio })
+    },
   )
 
   server.registerTool(

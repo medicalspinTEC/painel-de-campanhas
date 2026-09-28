@@ -44,7 +44,7 @@ type EventRecord = {
   mensagem: { dia: number; horario: string } | null
 }
 
-function toEventRow(event: EventRecord): EventRow {
+function toEventRow(event: EventRecord, truncarDetalhes = true): EventRow {
   const detalhes = event.detalhes ?? undefined
   return {
     id: event.id,
@@ -55,13 +55,57 @@ function toEventRow(event: EventRecord): EventRow {
     descricao: event.descricao,
     // Trunca para não serializar o texto integral de centenas de mensagens.
     detalhes:
-      detalhes && detalhes.length > MAX_DETALHES ? `${detalhes.slice(0, MAX_DETALHES).trimEnd()}…` : detalhes,
+      truncarDetalhes && detalhes && detalhes.length > MAX_DETALHES
+        ? `${detalhes.slice(0, MAX_DETALHES).trimEnd()}…`
+        : detalhes,
     data: event.data.toISOString(),
     sucesso: event.sucesso,
     leadNome: event.lead?.nome ?? "Lead removido",
     campanhaNome: event.campanha?.nome ?? null,
     mensagemResumo: event.mensagem ? `Dia ${event.mensagem.dia} · ${event.mensagem.horario}` : null,
   }
+}
+
+export async function getEvent(id: string): Promise<EventRow | null> {
+  const evento = await prisma.timelineEvent.findUnique({ where: { id }, select: eventSelect })
+  return evento ? toEventRow(evento, false) : null
+}
+
+export async function listLeadResponses({
+  limit = 50,
+  leadId,
+  campanhaId,
+}: {
+  limit?: number
+  leadId?: string
+  campanhaId?: string
+} = {}) {
+  const respostas = await prisma.timelineEvent.findMany({
+    where: {
+      tipo: "resposta",
+      ...(leadId ? { leadId } : {}),
+      ...(campanhaId ? { campanhaId } : {}),
+    },
+    include: {
+      lead: true,
+      campanha: { select: { id: true, nome: true } },
+    },
+    orderBy: { data: "desc" },
+    take: limit,
+  })
+
+  return respostas.map((resposta) => ({
+    id: resposta.id,
+    lead: {
+      ...resposta.lead,
+      criadoEm: resposta.lead.criadoEm.toISOString(),
+      atualizadoEm: resposta.lead.atualizadoEm.toISOString(),
+      entradaCampanhaEm: resposta.lead.entradaCampanhaEm?.toISOString() ?? null,
+    },
+    campanha: resposta.campanha,
+    dataHora: resposta.data.toISOString(),
+    conteudo: resposta.detalhes,
+  }))
 }
 
 export async function listEvents(limit?: number): Promise<EventRow[]> {

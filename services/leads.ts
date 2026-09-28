@@ -199,9 +199,25 @@ async function campanhasRespondidasPorLead(
   return mapa
 }
 
-export async function listLeads(): Promise<LeadRow[]> {
+export interface LeadListFilters {
+  campanhaId?: string
+  negocio?: string
+}
+
+export async function listLeads({ campanhaId, negocio }: LeadListFilters = {}): Promise<LeadRow[]> {
   const leads = await prisma.lead.findMany({
     select: leadRowSelect,
+    where: {
+      ...(negocio ? { negocio } : {}),
+      ...(campanhaId
+        ? {
+            OR: [
+              { campanhas: { some: { campanhaId } } },
+              { eventos: { some: { campanhaId } } },
+            ],
+          }
+        : {}),
+    },
     orderBy: { criadoEm: "desc" },
   })
   if (leads.length === 0) return []
