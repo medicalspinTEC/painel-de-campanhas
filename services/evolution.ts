@@ -550,12 +550,36 @@ export async function sendWhatsAppText(input: {
 
     if (!response.ok) {
       const detalhe = await response.text()
-      const mensagem = detalhe || `Evolution respondeu com status ${response.status}`
+      let mensagemApi = detalhe
+      try {
+        const payload = JSON.parse(detalhe) as {
+          response?: { message?: unknown }
+          message?: unknown
+        }
+        const mensagens = payload.response?.message ?? payload.message
+        if (Array.isArray(mensagens)) {
+          mensagemApi = mensagens.filter((item): item is string => typeof item === "string").join("; ") || detalhe
+        } else if (typeof mensagens === "string") {
+          mensagemApi = mensagens
+        }
+      } catch {
+        // Respostas não JSON continuam disponíveis no log e na mensagem abaixo.
+      }
+
+      const mensagem = /connection closed/i.test(mensagemApi)
+        ? `A conexão WhatsApp da instância "${instanceName}" foi encerrada pela Evolution. Reconecte a instância em Instâncias e tente novamente.`
+        : mensagemApi || `Evolution respondeu com status ${response.status}`
       await recordAppLog({
         nivel: "erro",
         origem: "evolution",
         mensagem: `Evolution retornou HTTP ${response.status} ao enviar mensagem individual.`,
-        detalhes: mensagem,
+        detalhes: detalhe || mensagem,
+        contexto: {
+          etapa: "Envio de mensagem individual",
+          instanciaNome: instanceName,
+          telefone,
+          statusHttp: String(response.status),
+        },
       })
       return { ok: false, erro: mensagem }
     }
