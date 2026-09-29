@@ -9,6 +9,7 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/Lead'
+export type * from './models/ChatInternalNote'
 export type * from './models/Campaign'
 export type * from './models/LeadCampaign'
 export type * from './models/CampaignMessage'

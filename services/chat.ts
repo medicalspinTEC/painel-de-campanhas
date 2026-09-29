@@ -7,7 +7,7 @@ const LIMITE_MENSAGENS_CONVERSA = 250
 
 export interface ChatMessage {
   id: string
-  lado: "lead" | "equipe"
+  lado: "lead" | "equipe" | "interno"
   texto: string
   data: string
   campanhaNome: string | null
@@ -59,6 +59,20 @@ function mapearMensagem(evento: {
     data: evento.data.toISOString(),
     campanhaNome: evento.campanha?.nome ?? null,
   }
+}
+
+function mapearNota(nota: { id: string; texto: string; data: Date }): ChatMessage {
+  return {
+    id: nota.id,
+    lado: "interno",
+    texto: nota.texto,
+    data: nota.data.toISOString(),
+    campanhaNome: null,
+  }
+}
+
+export async function addChatInternalNote(leadId: string, texto: string) {
+  return prisma.chatInternalNote.create({ data: { leadId, texto } })
 }
 
 export async function getChatInbox(conversaId?: string | null): Promise<ChatInboxSnapshot> {
@@ -175,10 +189,20 @@ export async function getChatInbox(conversaId?: string | null): Promise<ChatInbo
         take: LIMITE_MENSAGENS_CONVERSA,
       })
     : []
+  const notasInternas = selecionada
+    ? await prisma.chatInternalNote.findMany({
+        where: { leadId: selecionada.id },
+        select: { id: true, texto: true, data: true },
+        orderBy: { data: "desc" },
+        take: LIMITE_MENSAGENS_CONVERSA,
+      })
+    : []
 
   return {
     conversas,
-    mensagens: eventosDaConversa.reverse().map(mapearMensagem),
+    mensagens: [...eventosDaConversa.map(mapearMensagem), ...notasInternas.map(mapearNota)].sort(
+      (a, b) => a.data.localeCompare(b.data),
+    ),
     conversaSelecionadaId: selecionada?.id ?? null,
   }
 }

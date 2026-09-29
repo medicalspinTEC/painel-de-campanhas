@@ -398,6 +398,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   Lead: 'Lead',
+  ChatInternalNote: 'ChatInternalNote',
   Campaign: 'Campaign',
   LeadCampaign: 'LeadCampaign',
   CampaignMessage: 'CampaignMessage',
@@ -428,7 +429,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "lead" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "inboundEvent" | "instance"
+    modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "inboundEvent" | "instance"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -503,6 +504,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.LeadCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.LeadCountAggregateOutputType> | number
+        }
+      }
+    }
+    ChatInternalNote: {
+      payload: Prisma.$ChatInternalNotePayload<ExtArgs>
+      fields: Prisma.ChatInternalNoteFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChatInternalNoteFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatInternalNotePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChatInternalNoteFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatInternalNotePayload>
+        }
+        findFirst: {
+          args: Prisma.ChatInternalNoteFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatInternalNotePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChatInternalNoteFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatInternalNotePayload>
+        }
+        findMany: {
+          args: Prisma.ChatInternalNoteFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatInternalNotePayload>[]
+        }
+        create: {
+          args: Prisma.ChatInternalNoteCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatInternalNotePayload>
+        }
+        createMany: {
+          args: Prisma.ChatInternalNoteCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChatInternalNoteCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatInternalNotePayload>[]
+        }
+        delete: {
+          args: Prisma.ChatInternalNoteDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatInternalNotePayload>
+        }
+        update: {
+          args: Prisma.ChatInternalNoteUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatInternalNotePayload>
+        }
+        deleteMany: {
+          args: Prisma.ChatInternalNoteDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChatInternalNoteUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChatInternalNoteUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatInternalNotePayload>[]
+        }
+        upsert: {
+          args: Prisma.ChatInternalNoteUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatInternalNotePayload>
+        }
+        aggregate: {
+          args: Prisma.ChatInternalNoteAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChatInternalNote>
+        }
+        groupBy: {
+          args: Prisma.ChatInternalNoteGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatInternalNoteGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChatInternalNoteCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatInternalNoteCountAggregateOutputType> | number
         }
       }
     }
@@ -1676,6 +1751,16 @@ export const LeadScalarFieldEnum = {
 export type LeadScalarFieldEnum = (typeof LeadScalarFieldEnum)[keyof typeof LeadScalarFieldEnum]
 
 
+export const ChatInternalNoteScalarFieldEnum = {
+  id: 'id',
+  texto: 'texto',
+  data: 'data',
+  leadId: 'leadId'
+} as const
+
+export type ChatInternalNoteScalarFieldEnum = (typeof ChatInternalNoteScalarFieldEnum)[keyof typeof ChatInternalNoteScalarFieldEnum]
+
+
 export const CampaignScalarFieldEnum = {
   id: 'id',
   nome: 'nome',
@@ -2249,6 +2334,7 @@ export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions 
 export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
 export type GlobalOmitConfig = {
   lead?: Prisma.LeadOmit
+  chatInternalNote?: Prisma.ChatInternalNoteOmit
   campaign?: Prisma.CampaignOmit
   leadCampaign?: Prisma.LeadCampaignOmit
   campaignMessage?: Prisma.CampaignMessageOmit

@@ -52,6 +52,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   Lead: 'Lead',
+  ChatInternalNote: 'ChatInternalNote',
   Campaign: 'Campaign',
   LeadCampaign: 'LeadCampaign',
   CampaignMessage: 'CampaignMessage',
@@ -104,6 +105,16 @@ export const LeadScalarFieldEnum = {
 } as const
 
 export type LeadScalarFieldEnum = (typeof LeadScalarFieldEnum)[keyof typeof LeadScalarFieldEnum]
+
+
+export const ChatInternalNoteScalarFieldEnum = {
+  id: 'id',
+  texto: 'texto',
+  data: 'data',
+  leadId: 'leadId'
+} as const
+
+export type ChatInternalNoteScalarFieldEnum = (typeof ChatInternalNoteScalarFieldEnum)[keyof typeof ChatInternalNoteScalarFieldEnum]
 
 
 export const CampaignScalarFieldEnum = {

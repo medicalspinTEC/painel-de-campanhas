@@ -99,11 +99,22 @@ model Lead {
 
   eventos TimelineEvent[]
   mensagensAgendadas ScheduledMessage[]
+  notasInternas ChatInternalNote[]
 
   // A listagem ordena por data de criação e filtra por campanha e status.
   @@index([campanhaId])
   @@index([status])
   @@index([criadoEm])
+}
+
+model ChatInternalNote {
+  id     String   @id @default(cuid())
+  texto  String
+  data   DateTime @default(now())
+  leadId String
+  lead   Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, data])
 }
 
 model Campaign {

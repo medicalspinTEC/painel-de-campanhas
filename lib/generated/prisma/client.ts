@@ -47,6 +47,11 @@ export { Prisma }
  */
 export type Lead = Prisma.LeadModel
 /**
+ * Model ChatInternalNote
+ * 
+ */
+export type ChatInternalNote = Prisma.ChatInternalNoteModel
+/**
  * Model Campaign
  * 
  */
