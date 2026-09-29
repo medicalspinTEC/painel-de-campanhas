@@ -18,6 +18,13 @@ export interface ChatConversation {
   nome: string
   telefone: string
   produto: string
+  marca: string
+  persona: string
+  regiao: string
+  negocio: string | null
+  atividade: string | null
+  status: string
+  campanhasNomes: string[]
   atualizadoEm: string
   ultimaMensagem: ChatMessage | null
 }
@@ -62,7 +69,15 @@ export async function getChatInbox(conversaId?: string | null): Promise<ChatInbo
         nome: true,
         telefone: true,
         produto: true,
+        marca: true,
+        persona: true,
+        regiao: true,
+        negocio: true,
+        atividade: true,
+        status: true,
         atualizadoEm: true,
+        campanha: { select: { nome: true } },
+        campanhas: { select: { campanha: { select: { nome: true } } } },
       },
       orderBy: { atualizadoEm: "desc" },
     }),
@@ -75,7 +90,23 @@ export async function getChatInbox(conversaId?: string | null): Promise<ChatInbo
         detalhes: true,
         data: true,
         campanha: { select: { nome: true } },
-        lead: { select: { id: true, nome: true, telefone: true, produto: true, atualizadoEm: true } },
+        lead: {
+          select: {
+            id: true,
+            nome: true,
+            telefone: true,
+            produto: true,
+            marca: true,
+            persona: true,
+            regiao: true,
+            negocio: true,
+            atividade: true,
+            status: true,
+            atualizadoEm: true,
+            campanha: { select: { nome: true } },
+            campanhas: { select: { campanha: { select: { nome: true } } } },
+          },
+        },
       },
       orderBy: { data: "desc" },
       take: LIMITE_EVENTOS_RECENTES,
@@ -89,6 +120,13 @@ export async function getChatInbox(conversaId?: string | null): Promise<ChatInbo
       nome: lead.nome,
       telefone: lead.telefone,
       produto: lead.produto,
+      marca: lead.marca,
+      persona: lead.persona,
+      regiao: lead.regiao,
+      negocio: lead.negocio,
+      atividade: lead.atividade,
+      status: lead.status,
+      campanhasNomes: nomesDasCampanhas(lead.campanha, lead.campanhas),
       atualizadoEm: lead.atualizadoEm.toISOString(),
       ultimaMensagem: null,
     })
@@ -101,6 +139,13 @@ export async function getChatInbox(conversaId?: string | null): Promise<ChatInbo
       nome: lead.nome,
       telefone: lead.telefone,
       produto: lead.produto,
+      marca: lead.marca,
+      persona: lead.persona,
+      regiao: lead.regiao,
+      negocio: lead.negocio,
+      atividade: lead.atividade,
+      status: lead.status,
+      campanhasNomes: nomesDasCampanhas(lead.campanha, lead.campanhas),
       atualizadoEm: lead.atualizadoEm.toISOString(),
       ultimaMensagem: null,
     }
@@ -136,4 +181,11 @@ export async function getChatInbox(conversaId?: string | null): Promise<ChatInbo
     mensagens: eventosDaConversa.reverse().map(mapearMensagem),
     conversaSelecionadaId: selecionada?.id ?? null,
   }
+}
+
+function nomesDasCampanhas(
+  campanha: { nome: string } | null,
+  campanhas: Array<{ campanha: { nome: string } }>,
+): string[] {
+  return [...new Set([campanha?.nome, ...campanhas.map((vinculo) => vinculo.campanha.nome)].filter((nome): nome is string => Boolean(nome)))]
 }

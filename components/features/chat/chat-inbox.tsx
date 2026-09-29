@@ -2,16 +2,24 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react"
 import { toast } from "sonner"
-import { Bell, Check, CheckCheck, Filter, MessageCircle, MoreHorizontal, Paperclip, Search, Send, Smile, UserRound } from "lucide-react"
+import { Bell, CheckCheck, Filter, Megaphone, MessageCircle, MessagesSquare, MoreHorizontal, Search, Send, Smile, UserRound } from "lucide-react"
 
 import { refreshChatInboxAction } from "@/app/actions/chat"
 import { sendLeadMessageAction } from "@/app/actions/leads"
 import { LinkButton } from "@/components/shared/link-button"
+import {
+  Popover,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SelectField } from "@/components/shared/select-field"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { formatRelative } from "@/lib/format"
 import { cn } from "@/lib/utils"
@@ -21,6 +29,12 @@ import type { ChatInboxSnapshot, ChatMessage } from "@/services/chat"
 const INSTANCIA_PADRAO = "__padrao__"
 const INTERVALO_ATUALIZACAO = 8000
 const LIMITE_MENSAGEM = 4096
+const EMOJIS = [
+  "😀", "😃", "😄", "😁", "😅", "😂", "🙂", "😉",
+  "😊", "😍", "🥰", "😘", "😎", "🤔", "🙌", "🙏",
+  "👏", "👍", "👎", "🤝", "💬", "❤️", "💚", "✨",
+  "🎉", "🔥", "✅", "📅", "👋", "💪", "🌷", "☀️",
+]
 
 function iniciais(nome: string) {
   return nome.trim().split(/\s+/).slice(0, 2).map((parte) => parte[0]?.toUpperCase() ?? "").join("") || "L"
@@ -41,7 +55,9 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
   const [mensagens, setMensagens] = useState(inicial.mensagens)
   const [busca, setBusca] = useState("")
   const [somenteRespostas, setSomenteRespostas] = useState(false)
+  const [abaAtiva, setAbaAtiva] = useState<"conversa" | "perfil">("conversa")
   const [texto, setTexto] = useState("")
+  const [seletorEmojiAberto, setSeletorEmojiAberto] = useState(false)
   const [instancia, setInstancia] = useState(INSTANCIA_PADRAO)
   const [enviando, setEnviando] = useState(false)
   const conversaAtiva = conversas.find((conversa) => conversa.id === conversaSelecionadaId) ?? null
@@ -145,6 +161,11 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
     }
   }
 
+  function inserirEmoji(emoji: string) {
+    setTexto((atual) => `${atual}${emoji}`)
+    setSeletorEmojiAberto(false)
+  }
+
   return (
     <div className="flex min-h-[calc(100svh-8rem)] flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -233,63 +254,140 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                 </div>
               </header>
 
-              <div className="flex flex-1 flex-col gap-4 overflow-y-auto bg-[linear-gradient(135deg,oklch(0.97_0.018_160)_0%,var(--background)_45%,oklch(0.97_0.012_75)_100%)] px-4 py-5 dark:bg-[linear-gradient(135deg,oklch(0.2_0.02_160)_0%,var(--background)_55%,oklch(0.21_0.018_75)_100%)] sm:px-6">
-                {mensagens.length ? mensagens.map((mensagem) => (
-                  <div key={mensagem.id} className={cn("flex max-w-[88%] flex-col gap-1 sm:max-w-[75%]", mensagem.lado === "equipe" ? "self-end" : "self-start")}>
-                    <div className={cn("whitespace-pre-wrap wrap-break-word rounded-lg px-3.5 py-2.5 text-sm leading-relaxed shadow-sm", mensagem.lado === "equipe" ? "rounded-br-sm bg-primary text-primary-foreground" : "rounded-bl-sm border bg-card text-card-foreground")}>
-                      {mensagem.texto || "(mensagem sem texto)"}
-                    </div>
-                    <div className={cn("flex items-center gap-1 text-[10px] text-muted-foreground", mensagem.lado === "equipe" && "justify-end")}>
-                      {mensagem.campanhaNome ? <span className="mr-1 max-w-40 truncate">{mensagem.campanhaNome} ·</span> : null}
-                      <span>{horario(mensagem.data)}</span>
-                      {mensagem.lado === "equipe" ? <CheckCheck className="size-3.5" /> : <MessageCircle className="size-3" />}
-                    </div>
-                  </div>
-                )) : (
-                  <div className="m-auto flex max-w-sm flex-col items-center gap-2 py-12 text-center">
-                    <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary"><MessageCircle className="size-5" /></span>
-                    <p className="text-sm font-medium">Inicie a conversa com {conversaAtiva.nome}</p>
-                    <p className="text-xs text-muted-foreground">As mensagens enviadas e as respostas recebidas aparecerão aqui.</p>
-                  </div>
-                )}
-                <div ref={fimDaConversa} />
-              </div>
+              {conversaAtiva.campanhasNomes.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-2 border-b border-emerald-600/20 bg-emerald-600/10 px-4 py-2.5">
+                  <Megaphone className="size-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
+                  <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-200">Campanha vinculada</span>
+                  {conversaAtiva.campanhasNomes.map((nome) => (
+                    <Badge key={nome} className="max-w-full border border-emerald-700/20 bg-emerald-700 text-white">
+                      <span className="truncate">{nome}</span>
+                    </Badge>
+                  ))}
+                </div>
+              ) : null}
 
-              <div className="border-t bg-card p-3 sm:p-4">
-                <div className="mb-2 flex flex-wrap items-center gap-1">
-                  <Button variant="ghost" size="icon" disabled aria-label="Anexar arquivo" title="Anexos ainda não disponíveis"><Paperclip className="size-4" /></Button>
-                  <Button variant="ghost" size="icon" disabled aria-label="Inserir emoji" title="Emojis ainda não disponíveis"><Smile className="size-4" /></Button>
-                  {instancias.length ? (
-                    <SelectField
-                      value={instancia}
-                      onValueChange={setInstancia}
-                      opcoes={opcoesInstancia}
-                      size="sm"
-                      className="ml-auto w-auto min-w-40 max-w-56"
-                      disabled={enviando}
-                    />
-                  ) : <span className="ml-auto text-[11px] text-muted-foreground">Instância padrão</span>}
-                </div>
-                <div className="flex items-end gap-2">
-                  <Textarea
-                    value={texto}
-                    onChange={(event) => setTexto(event.target.value)}
-                    onKeyDown={tratarTecla}
-                    maxLength={LIMITE_MENSAGEM}
-                    placeholder={`Escreva uma mensagem para ${conversaAtiva.nome}...`}
-                    className="min-h-12 max-h-32 resize-y bg-muted/40"
-                    aria-label="Mensagem para o lead"
-                    disabled={enviando}
-                  />
-                  <Button size="icon" onClick={() => void enviarMensagem()} disabled={enviando || !texto.trim()} aria-label="Enviar mensagem" title="Enviar mensagem">
-                    <Send className="size-4" />
-                  </Button>
-                </div>
-                <div className="mt-1 flex justify-between px-1 text-[10px] text-muted-foreground">
-                  <span>Enter para enviar · Shift+Enter para nova linha</span>
-                  <span className="tabular-nums">{texto.length}/{LIMITE_MENSAGEM}</span>
-                </div>
-              </div>
+              <Tabs
+                value={abaAtiva}
+                onValueChange={(valor) => setAbaAtiva(String(valor) as "conversa" | "perfil")}
+                className="min-h-0 flex-1 gap-0"
+              >
+                <TabsList className="h-11 w-full justify-start rounded-none border-b bg-transparent px-3">
+                  <TabsTrigger value="conversa"><MessagesSquare className="size-4" />Conversa</TabsTrigger>
+                  <TabsTrigger value="perfil"><UserRound className="size-4" />Perfil</TabsTrigger>
+                </TabsList>
+                <TabsContent value="conversa" className="flex min-h-0 flex-1 flex-col">
+                  <div className="flex flex-1 flex-col gap-4 overflow-y-auto bg-[linear-gradient(135deg,oklch(0.97_0.018_160)_0%,var(--background)_45%,oklch(0.97_0.012_75)_100%)] px-4 py-5 dark:bg-[linear-gradient(135deg,oklch(0.2_0.02_160)_0%,var(--background)_55%,oklch(0.21_0.018_75)_100%)] sm:px-6">
+                    {mensagens.length ? mensagens.map((mensagem) => (
+                      <div key={mensagem.id} className={cn("flex max-w-[88%] flex-col gap-1 sm:max-w-[75%]", mensagem.lado === "equipe" ? "self-end" : "self-start")}>
+                        <div className={cn("whitespace-pre-wrap wrap-break-word rounded-lg px-3.5 py-2.5 text-sm leading-relaxed shadow-sm", mensagem.lado === "equipe" ? "rounded-br-sm bg-primary text-primary-foreground" : "rounded-bl-sm border bg-card text-card-foreground")}>
+                          {mensagem.texto || "(mensagem sem texto)"}
+                        </div>
+                        <div className={cn("flex items-center gap-1 text-[10px] text-muted-foreground", mensagem.lado === "equipe" && "justify-end")}>
+                          {mensagem.campanhaNome ? <span className="mr-1 max-w-40 truncate">{mensagem.campanhaNome} ·</span> : null}
+                          <span>{horario(mensagem.data)}</span>
+                          {mensagem.lado === "equipe" ? <CheckCheck className="size-3.5" /> : <MessageCircle className="size-3" />}
+                        </div>
+                      </div>
+                    )) : (
+                      <div className="m-auto flex max-w-sm flex-col items-center gap-2 py-12 text-center">
+                        <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary"><MessageCircle className="size-5" /></span>
+                        <p className="text-sm font-medium">Inicie a conversa com {conversaAtiva.nome}</p>
+                        <p className="text-xs text-muted-foreground">As mensagens enviadas e as respostas recebidas aparecerão aqui.</p>
+                      </div>
+                    )}
+                    <div ref={fimDaConversa} />
+                  </div>
+
+                  <div className="border-t bg-card p-3 sm:p-4">
+                    <div className="mb-2 flex flex-wrap items-center gap-1">
+                      <Popover open={seletorEmojiAberto} onOpenChange={setSeletorEmojiAberto}>
+                        <PopoverTrigger
+                          render={
+                            <Button variant="ghost" size="icon" disabled={enviando} aria-label="Abrir emojis" title="Inserir emoji">
+                              <Smile className="size-4" />
+                            </Button>
+                          }
+                        />
+                        <PopoverContent align="start" side="top" className="w-72">
+                          <PopoverHeader>
+                            <PopoverTitle>Escolha um emoji</PopoverTitle>
+                          </PopoverHeader>
+                          <div className="grid grid-cols-8 gap-1">
+                            {EMOJIS.map((emoji) => (
+                              <Button
+                                key={emoji}
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-8 text-lg"
+                                aria-label={`Inserir emoji ${emoji}`}
+                                title={emoji}
+                                onClick={() => inserirEmoji(emoji)}
+                              >
+                                {emoji}
+                              </Button>
+                            ))}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                      {instancias.length ? (
+                        <SelectField
+                          value={instancia}
+                          onValueChange={setInstancia}
+                          opcoes={opcoesInstancia}
+                          size="sm"
+                          className="ml-auto w-auto min-w-40 max-w-56"
+                          disabled={enviando}
+                        />
+                      ) : <span className="ml-auto text-[11px] text-muted-foreground">Instância padrão</span>}
+                    </div>
+                    <div className="flex items-end gap-2">
+                      <Textarea
+                        value={texto}
+                        onChange={(event) => setTexto(event.target.value)}
+                        onKeyDown={tratarTecla}
+                        maxLength={LIMITE_MENSAGEM}
+                        placeholder={`Escreva uma mensagem para ${conversaAtiva.nome}...`}
+                        className="min-h-12 max-h-32 resize-y bg-muted/40"
+                        aria-label="Mensagem para o lead"
+                        disabled={enviando}
+                      />
+                      <Button size="icon" onClick={() => void enviarMensagem()} disabled={enviando || !texto.trim()} aria-label="Enviar mensagem" title="Enviar mensagem">
+                        <Send className="size-4" />
+                      </Button>
+                    </div>
+                    <div className="mt-1 flex justify-between px-1 text-[10px] text-muted-foreground">
+                      <span>Enter para enviar · Shift+Enter para nova linha</span>
+                      <span className="tabular-nums">{texto.length}/{LIMITE_MENSAGEM}</span>
+                    </div>
+                  </div>
+                </TabsContent>
+                <TabsContent value="perfil" className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+                  <div className="mx-auto flex max-w-2xl flex-col gap-6">
+                    <div className="flex items-center gap-4">
+                      <Avatar className="size-14 shrink-0">
+                        <AvatarFallback className="bg-primary/15 text-base font-semibold text-primary">{iniciais(conversaAtiva.nome)}</AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <h3 className="text-base font-semibold">{conversaAtiva.nome}</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">{conversaAtiva.telefone}</p>
+                        <Badge variant="secondary" className="mt-2 capitalize">{conversaAtiva.status.replaceAll("_", " ")}</Badge>
+                      </div>
+                    </div>
+                    <dl className="grid grid-cols-1 gap-x-8 gap-y-5 border-y py-5 sm:grid-cols-2">
+                      <CampoPerfil rotulo="Produto" valor={conversaAtiva.produto} />
+                      <CampoPerfil rotulo="Marca" valor={conversaAtiva.marca} />
+                      <CampoPerfil rotulo="Persona" valor={conversaAtiva.persona} />
+                      <CampoPerfil rotulo="Região" valor={conversaAtiva.regiao} />
+                      <CampoPerfil rotulo="Negócio" valor={conversaAtiva.negocio} />
+                      <CampoPerfil rotulo="Atividade" valor={conversaAtiva.atividade} />
+                    </dl>
+                    <LinkButton variant="outline" className="w-fit" href={`/leads/${conversaAtiva.id}`}>
+                      Ver cadastro completo
+                    </LinkButton>
+                  </div>
+                </TabsContent>
+              </Tabs>
             </>
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
@@ -300,31 +398,16 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
           )}
         </section>
 
-        <aside className="hidden flex-col border-l 2xl:flex">
-          {conversaAtiva ? (
-            <>
-              <div className="flex flex-col items-center border-b px-4 py-6 text-center">
-                <Avatar className="size-16"><AvatarFallback className="bg-primary/15 text-lg font-semibold text-primary">{iniciais(conversaAtiva.nome)}</AvatarFallback></Avatar>
-                <h2 className="mt-3 text-sm font-semibold">{conversaAtiva.nome}</h2>
-                <p className="mt-1 text-xs text-muted-foreground">{conversaAtiva.telefone}</p>
-                <Badge variant="secondary" className="mt-3 gap-1"><UserRound className="size-3" /> Lead cadastrado</Badge>
-              </div>
-              <div className="flex flex-col gap-4 p-4">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground"><UserRound className="size-3.5" /> Dados do lead</div>
-                <dl className="flex flex-col gap-3 text-sm">
-                  <div><dt className="text-xs text-muted-foreground">Interesse</dt><dd className="mt-0.5 font-medium">{conversaAtiva.produto || "Não informado"}</dd></div>
-                  <div><dt className="text-xs text-muted-foreground">Telefone</dt><dd className="mt-0.5 font-medium">{conversaAtiva.telefone}</dd></div>
-                </dl>
-                <div className="border-t pt-4">
-                  <LinkButton variant="outline" className="w-full" href={`/leads/${conversaAtiva.id}`}>
-                    Ver cadastro completo
-                  </LinkButton>
-                </div>
-              </div>
-            </>
-          ) : null}
-        </aside>
       </div>
+    </div>
+  )
+}
+
+function CampoPerfil({ rotulo, valor }: { rotulo: string; valor: string | null }) {
+  return (
+    <div>
+      <dt className="text-xs text-muted-foreground">{rotulo}</dt>
+      <dd className="mt-1 wrap-break-word text-sm font-medium">{valor?.trim() || "Não informado"}</dd>
     </div>
   )
 }
