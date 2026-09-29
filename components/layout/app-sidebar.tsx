@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   BarChart3,
+  MessagesSquare,
   LayoutDashboard,
   LogOut,
   CalendarRange,
@@ -38,6 +39,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 const navPrincipal = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Leads", url: "/leads", icon: Users },
+  { title: "Chat", url: "/chat", icon: MessagesSquare },
   { title: "Campanhas", url: "/campanhas", icon: Megaphone },
   { title: "Segmentação", url: "/segmentacao", icon: Target },
 ]
