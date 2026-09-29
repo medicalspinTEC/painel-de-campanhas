@@ -1807,6 +1807,7 @@ export const SettingsScalarFieldEnum = {
   respeitarJanela: 'respeitarJanela',
   pausarNoFimDeSemana: 'pausarNoFimDeSemana',
   notificarFalhas: 'notificarFalhas',
+  chatPluginAtivo: 'chatPluginAtivo',
   atualizadoEm: 'atualizadoEm'
 } as const
 

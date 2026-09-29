@@ -314,6 +314,7 @@ model Settings {
   respeitarJanela     Boolean @default(true)
   pausarNoFimDeSemana Boolean @default(true)
   notificarFalhas     Boolean @default(true)
+  chatPluginAtivo     Boolean @default(false)
 
   atualizadoEm DateTime @updatedAt
 }

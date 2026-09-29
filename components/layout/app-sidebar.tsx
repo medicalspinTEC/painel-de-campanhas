@@ -60,6 +60,7 @@ interface AppSidebarProps {
   instanceName?: string
   instanceState?: string
   profileImageUrl?: string | null
+  chatAtivo?: boolean
 }
 
 function getStatusMeta(state?: string) {
@@ -95,7 +96,7 @@ function getStatusMeta(state?: string) {
   }
 }
 
-export function AppSidebar({ instanceName, instanceState, profileImageUrl }: AppSidebarProps) {
+export function AppSidebar({ instanceName, instanceState, profileImageUrl, chatAtivo = false }: AppSidebarProps) {
   const pathname = usePathname()
 
   const isActive = (url: string) => pathname === url || pathname.startsWith(`${url}/`)
@@ -127,7 +128,7 @@ export function AppSidebar({ instanceName, instanceState, profileImageUrl }: App
           <SidebarGroupLabel>Gestão</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navPrincipal.map((item) => (
+              {navPrincipal.filter((item) => item.url !== "/chat" || chatAtivo).map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton
                     isActive={isActive(item.url)}

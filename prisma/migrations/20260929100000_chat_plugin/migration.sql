@@ -1,0 +1,2 @@
+ALTER TABLE "Settings"
+ADD COLUMN "chatPluginAtivo" BOOLEAN NOT NULL DEFAULT false;

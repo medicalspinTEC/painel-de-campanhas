@@ -1,9 +1,13 @@
 import { InboundWebhookManager } from "@/components/features/integrations/inbound-webhook-manager"
+import { PluginsManager } from "@/components/features/integrations/plugins-manager"
 import { WebhooksManager } from "@/components/features/integrations/webhooks-manager"
 import { PageHeader } from "@/components/shared/page-header"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { getChatPluginAtivo } from "@/services/settings"
 import { getToken, listEventos } from "@/services/inbound-webhook"
 import { listWebhooks } from "@/services/webhooks"
+import { Plug, Puzzle } from "lucide-react"
 
 export const metadata = {
   title: "Integrações | Painel de Campanhas WhatsApp",
@@ -32,52 +36,72 @@ x-ingest-token: <INGEST_TOKEN>
 }`
 
 export default async function IntegracoesPage() {
-  const [webhooks, tokenInicial, eventosIniciais] = await Promise.all([
+  const [webhooks, tokenInicial, eventosIniciais, chatAtivo] = await Promise.all([
     listWebhooks(),
     getToken(),
     listEventos(50),
+    getChatPluginAtivo(),
   ])
 
   return (
     <div className="flex max-w-4xl flex-col gap-6">
       <PageHeader
         titulo="Integrações"
-        descricao="Conecte o painel a outros sistemas — envie eventos para fora com webhooks de saída ou receba eventos de sistemas externos pelo webhook de entrada."
+        descricao="Gerencie conexões com outros sistemas e ative recursos opcionais do painel."
       />
 
-      <WebhooksManager webhooks={webhooks} />
+      <Tabs defaultValue="integracoes">
+        <TabsList>
+          <TabsTrigger value="integracoes">
+            <Plug className="size-4" />
+            Integrações
+          </TabsTrigger>
+          <TabsTrigger value="plugins">
+            <Puzzle className="size-4" />
+            Plugins
+          </TabsTrigger>
+        </TabsList>
 
-      <InboundWebhookManager tokenInicial={tokenInicial} eventosIniciais={eventosIniciais} />
+        <TabsContent value="integracoes" className="flex flex-col gap-6">
+          <WebhooksManager webhooks={webhooks} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Formato da entrega</CardTitle>
-          <CardDescription>
-            Cada evento gera um POST em JSON. O corpo é assinado com HMAC-SHA256 usando o secret do webhook, então
-            valide o header antes de confiar no payload.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <pre className="overflow-x-auto rounded-md bg-muted p-3 font-mono text-xs leading-relaxed">
-            {EXEMPLO_PAYLOAD}
-          </pre>
-        </CardContent>
-      </Card>
+          <InboundWebhookManager tokenInicial={tokenInicial} eventosIniciais={eventosIniciais} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Quem dispara cada evento</CardTitle>
-          <CardDescription>
-            Os eventos de leads, campanhas e sistema saem automaticamente das ações do painel. Os de mensagem vêm da
-            engine de disparo, que reporta cada envio neste endpoint.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <pre className="overflow-x-auto rounded-md bg-muted p-3 font-mono text-xs leading-relaxed">
-            {EXEMPLO_INGESTAO}
-          </pre>
-        </CardContent>
-      </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Formato da entrega</CardTitle>
+              <CardDescription>
+                Cada evento gera um POST em JSON. O corpo é assinado com HMAC-SHA256 usando o secret do webhook, então
+                valide o header antes de confiar no payload.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <pre className="overflow-x-auto rounded-md bg-muted p-3 font-mono text-xs leading-relaxed">
+                {EXEMPLO_PAYLOAD}
+              </pre>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Quem dispara cada evento</CardTitle>
+              <CardDescription>
+                Os eventos de leads, campanhas e sistema saem automaticamente das ações do painel. Os de mensagem vêm da
+                engine de disparo, que reporta cada envio neste endpoint.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <pre className="overflow-x-auto rounded-md bg-muted p-3 font-mono text-xs leading-relaxed">
+                {EXEMPLO_INGESTAO}
+              </pre>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="plugins">
+          <PluginsManager chatAtivoInicial={chatAtivo} />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

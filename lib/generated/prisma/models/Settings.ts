@@ -54,6 +54,7 @@ export type SettingsMinAggregateOutputType = {
   respeitarJanela: boolean | null
   pausarNoFimDeSemana: boolean | null
   notificarFalhas: boolean | null
+  chatPluginAtivo: boolean | null
   atualizadoEm: Date | null
 }
 
@@ -72,6 +73,7 @@ export type SettingsMaxAggregateOutputType = {
   respeitarJanela: boolean | null
   pausarNoFimDeSemana: boolean | null
   notificarFalhas: boolean | null
+  chatPluginAtivo: boolean | null
   atualizadoEm: Date | null
 }
 
@@ -90,6 +92,7 @@ export type SettingsCountAggregateOutputType = {
   respeitarJanela: number
   pausarNoFimDeSemana: number
   notificarFalhas: number
+  chatPluginAtivo: number
   atualizadoEm: number
   _all: number
 }
@@ -122,6 +125,7 @@ export type SettingsMinAggregateInputType = {
   respeitarJanela?: true
   pausarNoFimDeSemana?: true
   notificarFalhas?: true
+  chatPluginAtivo?: true
   atualizadoEm?: true
 }
 
@@ -140,6 +144,7 @@ export type SettingsMaxAggregateInputType = {
   respeitarJanela?: true
   pausarNoFimDeSemana?: true
   notificarFalhas?: true
+  chatPluginAtivo?: true
   atualizadoEm?: true
 }
 
@@ -158,6 +163,7 @@ export type SettingsCountAggregateInputType = {
   respeitarJanela?: true
   pausarNoFimDeSemana?: true
   notificarFalhas?: true
+  chatPluginAtivo?: true
   atualizadoEm?: true
   _all?: true
 }
@@ -263,6 +269,7 @@ export type SettingsGroupByOutputType = {
   respeitarJanela: boolean
   pausarNoFimDeSemana: boolean
   notificarFalhas: boolean
+  chatPluginAtivo: boolean
   atualizadoEm: Date
   _count: SettingsCountAggregateOutputType | null
   _avg: SettingsAvgAggregateOutputType | null
@@ -304,6 +311,7 @@ export type SettingsWhereInput = {
   respeitarJanela?: Prisma.BoolFilter<"Settings"> | boolean
   pausarNoFimDeSemana?: Prisma.BoolFilter<"Settings"> | boolean
   notificarFalhas?: Prisma.BoolFilter<"Settings"> | boolean
+  chatPluginAtivo?: Prisma.BoolFilter<"Settings"> | boolean
   atualizadoEm?: Prisma.DateTimeFilter<"Settings"> | Date | string
 }
 
@@ -322,6 +330,7 @@ export type SettingsOrderByWithRelationInput = {
   respeitarJanela?: Prisma.SortOrder
   pausarNoFimDeSemana?: Prisma.SortOrder
   notificarFalhas?: Prisma.SortOrder
+  chatPluginAtivo?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
 
@@ -343,6 +352,7 @@ export type SettingsWhereUniqueInput = Prisma.AtLeast<{
   respeitarJanela?: Prisma.BoolFilter<"Settings"> | boolean
   pausarNoFimDeSemana?: Prisma.BoolFilter<"Settings"> | boolean
   notificarFalhas?: Prisma.BoolFilter<"Settings"> | boolean
+  chatPluginAtivo?: Prisma.BoolFilter<"Settings"> | boolean
   atualizadoEm?: Prisma.DateTimeFilter<"Settings"> | Date | string
 }, "id">
 
@@ -361,6 +371,7 @@ export type SettingsOrderByWithAggregationInput = {
   respeitarJanela?: Prisma.SortOrder
   pausarNoFimDeSemana?: Prisma.SortOrder
   notificarFalhas?: Prisma.SortOrder
+  chatPluginAtivo?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
   _count?: Prisma.SettingsCountOrderByAggregateInput
   _avg?: Prisma.SettingsAvgOrderByAggregateInput
@@ -387,6 +398,7 @@ export type SettingsScalarWhereWithAggregatesInput = {
   respeitarJanela?: Prisma.BoolWithAggregatesFilter<"Settings"> | boolean
   pausarNoFimDeSemana?: Prisma.BoolWithAggregatesFilter<"Settings"> | boolean
   notificarFalhas?: Prisma.BoolWithAggregatesFilter<"Settings"> | boolean
+  chatPluginAtivo?: Prisma.BoolWithAggregatesFilter<"Settings"> | boolean
   atualizadoEm?: Prisma.DateTimeWithAggregatesFilter<"Settings"> | Date | string
 }
 
@@ -405,6 +417,7 @@ export type SettingsCreateInput = {
   respeitarJanela?: boolean
   pausarNoFimDeSemana?: boolean
   notificarFalhas?: boolean
+  chatPluginAtivo?: boolean
   atualizadoEm?: Date | string
 }
 
@@ -423,6 +436,7 @@ export type SettingsUncheckedCreateInput = {
   respeitarJanela?: boolean
   pausarNoFimDeSemana?: boolean
   notificarFalhas?: boolean
+  chatPluginAtivo?: boolean
   atualizadoEm?: Date | string
 }
 
@@ -441,6 +455,7 @@ export type SettingsUpdateInput = {
   respeitarJanela?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pausarNoFimDeSemana?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notificarFalhas?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  chatPluginAtivo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -459,6 +474,7 @@ export type SettingsUncheckedUpdateInput = {
   respeitarJanela?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pausarNoFimDeSemana?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notificarFalhas?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  chatPluginAtivo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -477,6 +493,7 @@ export type SettingsCreateManyInput = {
   respeitarJanela?: boolean
   pausarNoFimDeSemana?: boolean
   notificarFalhas?: boolean
+  chatPluginAtivo?: boolean
   atualizadoEm?: Date | string
 }
 
@@ -495,6 +512,7 @@ export type SettingsUpdateManyMutationInput = {
   respeitarJanela?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pausarNoFimDeSemana?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notificarFalhas?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  chatPluginAtivo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -513,6 +531,7 @@ export type SettingsUncheckedUpdateManyInput = {
   respeitarJanela?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pausarNoFimDeSemana?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notificarFalhas?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  chatPluginAtivo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -531,6 +550,7 @@ export type SettingsCountOrderByAggregateInput = {
   respeitarJanela?: Prisma.SortOrder
   pausarNoFimDeSemana?: Prisma.SortOrder
   notificarFalhas?: Prisma.SortOrder
+  chatPluginAtivo?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
 
@@ -555,6 +575,7 @@ export type SettingsMaxOrderByAggregateInput = {
   respeitarJanela?: Prisma.SortOrder
   pausarNoFimDeSemana?: Prisma.SortOrder
   notificarFalhas?: Prisma.SortOrder
+  chatPluginAtivo?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
 
@@ -573,6 +594,7 @@ export type SettingsMinOrderByAggregateInput = {
   respeitarJanela?: Prisma.SortOrder
   pausarNoFimDeSemana?: Prisma.SortOrder
   notificarFalhas?: Prisma.SortOrder
+  chatPluginAtivo?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
 
@@ -599,6 +621,7 @@ export type SettingsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   respeitarJanela?: boolean
   pausarNoFimDeSemana?: boolean
   notificarFalhas?: boolean
+  chatPluginAtivo?: boolean
   atualizadoEm?: boolean
 }, ExtArgs["result"]["settings"]>
 
@@ -617,6 +640,7 @@ export type SettingsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   respeitarJanela?: boolean
   pausarNoFimDeSemana?: boolean
   notificarFalhas?: boolean
+  chatPluginAtivo?: boolean
   atualizadoEm?: boolean
 }, ExtArgs["result"]["settings"]>
 
@@ -635,6 +659,7 @@ export type SettingsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   respeitarJanela?: boolean
   pausarNoFimDeSemana?: boolean
   notificarFalhas?: boolean
+  chatPluginAtivo?: boolean
   atualizadoEm?: boolean
 }, ExtArgs["result"]["settings"]>
 
@@ -653,10 +678,11 @@ export type SettingsSelectScalar = {
   respeitarJanela?: boolean
   pausarNoFimDeSemana?: boolean
   notificarFalhas?: boolean
+  chatPluginAtivo?: boolean
   atualizadoEm?: boolean
 }
 
-export type SettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "atualizadoEm", ExtArgs["result"]["settings"]>
+export type SettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "chatPluginAtivo" | "atualizadoEm", ExtArgs["result"]["settings"]>
 
 export type $SettingsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Settings"
@@ -685,6 +711,7 @@ export type $SettingsPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     respeitarJanela: boolean
     pausarNoFimDeSemana: boolean
     notificarFalhas: boolean
+    chatPluginAtivo: boolean
     atualizadoEm: Date
   }, ExtArgs["result"]["settings"]>
   composites: {}
@@ -1123,6 +1150,7 @@ export interface SettingsFieldRefs {
   readonly respeitarJanela: Prisma.FieldRef<"Settings", 'Boolean'>
   readonly pausarNoFimDeSemana: Prisma.FieldRef<"Settings", 'Boolean'>
   readonly notificarFalhas: Prisma.FieldRef<"Settings", 'Boolean'>
+  readonly chatPluginAtivo: Prisma.FieldRef<"Settings", 'Boolean'>
   readonly atualizadoEm: Prisma.FieldRef<"Settings", 'DateTime'>
 }
     

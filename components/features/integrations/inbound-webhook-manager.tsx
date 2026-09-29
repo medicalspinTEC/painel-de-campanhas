@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useEffect, useState, useTransition } from "react"
 import {
   ArrowDownToLine,
   CheckCircle,
@@ -40,11 +40,6 @@ const EXEMPLO_CURL = (token: string, baseUrl: string) => `curl -X POST ${baseUrl
   -H "x-webhook-token: ${token}" \\
   -d '{"evento":"pedido.criado","dados":{"id":"123","total":99.90}}'`
 
-function getBaseUrl() {
-  if (typeof window === "undefined") return ""
-  return window.location.origin
-}
-
 interface Props {
   tokenInicial: InboundToken | null
   eventosIniciais: InboundEvent[]
@@ -58,7 +53,11 @@ export function InboundWebhookManager({ tokenInicial, eventosIniciais }: Props) 
   const [confirmarGerar, setConfirmarGerar] = useState(false)
   const [expandidoId, setExpandidoId] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
-  const baseUrl = getBaseUrl()
+  const [baseUrl, setBaseUrl] = useState("")
+
+  useEffect(() => {
+    setBaseUrl(window.location.origin)
+  }, [])
 
   function copiar(texto: string, label: string) {
     navigator.clipboard.writeText(texto).then(() => toast.success(`${label} copiado!`))

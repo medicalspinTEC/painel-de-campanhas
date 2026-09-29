@@ -57,6 +57,22 @@ export async function getSettings(): Promise<Settings> {
   }
 }
 
+export async function getChatPluginAtivo(): Promise<boolean> {
+  const row = await prisma.settings.findUnique({
+    where: { id: ID },
+    select: { chatPluginAtivo: true },
+  })
+  return row?.chatPluginAtivo ?? false
+}
+
+export async function setChatPluginAtivo(ativo: boolean): Promise<void> {
+  await prisma.settings.upsert({
+    where: { id: ID },
+    create: { id: ID, chatPluginAtivo: ativo },
+    update: { chatPluginAtivo: ativo },
+  })
+}
+
 export async function saveSettings(input: Settings): Promise<Settings> {
   const row = await prisma.settings.upsert({
     where: { id: ID },

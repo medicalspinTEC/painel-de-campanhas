@@ -1,5 +1,6 @@
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { recordAppLog } from "@/services/app-logs"
+import { getChatPluginAtivo } from "@/services/settings"
 
 /**
  * Consulta o status da instância do WhatsApp (Evolution API). Isolado do
@@ -50,13 +51,17 @@ async function getEvolutionInstanceStatus() {
 }
 
 export async function AppSidebarData() {
-  const status = await getEvolutionInstanceStatus()
+  const [status, chatAtivo] = await Promise.all([
+    getEvolutionInstanceStatus(),
+    getChatPluginAtivo(),
+  ])
 
   return (
     <AppSidebar
       instanceName={status.instanceName}
       instanceState={status.instanceState}
       profileImageUrl={status.profileImageUrl}
+      chatAtivo={chatAtivo}
     />
   )
 }
