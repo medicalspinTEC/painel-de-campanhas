@@ -33,7 +33,7 @@ async function resolveRegisteredInstanceName(requestedName?: string | null): Pro
 
   try {
     const maisRecente = await prisma.instance.findFirst({
-      orderBy: { criadoEm: "desc" },
+      orderBy: [{ atualizadoEm: "desc" }, { criadoEm: "desc" }],
       select: { nome: true },
     })
     if (!maisRecente) {
@@ -147,31 +147,31 @@ export interface InstanceOption {
 }
 
 /**
- * Lista a instância mais recente criada por este painel para uso em seletores.
- * Tenta enriquecer com o estado de conexão vindo da Evolution; se a API estiver
- * indisponível, ainda devolve o nome registrado marcado como "desconectado".
+ * Lista as instâncias cadastradas no app em ordem de uso recente.
+ * A primeira opção aparece no topo dos seletores, mas todas as demais
+ * continuam disponíveis para escolha.
  */
 export async function listInstanceOptions(): Promise<InstanceOption[]> {
-  let nomeMaisRecente: string | null
+  let instancias: { nome: string }[] = []
+
   try {
-    const registrada = await prisma.instance.findFirst({
+    instancias = await prisma.instance.findMany({
       select: { nome: true },
-      orderBy: { criadoEm: "desc" },
+      orderBy: [{ atualizadoEm: "desc" }, { criadoEm: "desc" }],
     })
-    nomeMaisRecente = registrada?.nome ?? null
   } catch {
     return []
   }
 
-  if (!nomeMaisRecente) return []
+  if (instancias.length === 0) return []
 
   const doEvolution = await fetchEvolutionInstances()
   const estadoPorNome = new Map(doEvolution.map((i) => [i.nome, i.estado]))
 
-  return [{
-    nome: nomeMaisRecente,
-    estado: estadoPorNome.get(nomeMaisRecente) ?? "desconectado",
-  }]
+  return instancias.map(({ nome }) => ({
+    nome,
+    estado: estadoPorNome.get(nome) ?? "desconectado",
+  }))
 }
 
 /**
