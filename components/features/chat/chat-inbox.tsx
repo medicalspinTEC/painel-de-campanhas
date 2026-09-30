@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react"
 import { toast } from "sonner"
-import { Bell, CheckCheck, Filter, Megaphone, MessageCircle, MessagesSquare, MoreHorizontal, Search, Send, Smile, StickyNote, UserRound, X } from "lucide-react"
+import { Bell, CheckCheck, Filter, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, MoreHorizontal, Search, Send, Smile, StickyNote, UserRound, X } from "lucide-react"
 
 import { createChatInternalNoteAction, refreshChatInboxAction } from "@/app/actions/chat"
-import { sendLeadMessageAction } from "@/app/actions/leads"
+import { sendLeadMessageAction, setLeadStatusAction } from "@/app/actions/leads"
 import { LinkButton } from "@/components/shared/link-button"
 import {
   Popover,
@@ -58,7 +58,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
   const [busca, setBusca] = useState("")
   const [somenteRespostas, setSomenteRespostas] = useState(false)
   const [abaAtiva, setAbaAtiva] = useState<"conversa" | "perfil">("conversa")
-  const [modoComposicao, setModoComposicao] = useState<"mensagem" | "nota">("mensagem")
+  const [modoComposicao, setModoComposicao] = useState<"mensagem" | "nota" | "resposta">("mensagem")
   const [texto, setTexto] = useState("")
   const [seletorEmojiAberto, setSeletorEmojiAberto] = useState(false)
   const [instancia, setInstancia] = useState(INSTANCIA_PADRAO)
@@ -137,7 +137,9 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
     setEnviando(true)
     const resultado = modoComposicao === "nota"
       ? await createChatInternalNoteAction(leadId, mensagem)
-      : await sendLeadMessageAction(leadId, mensagem, instancia === INSTANCIA_PADRAO ? null : instancia)
+      : modoComposicao === "resposta"
+        ? await setLeadStatusAction(leadId, "respondeu", mensagem)
+        : await sendLeadMessageAction(leadId, mensagem, instancia === INSTANCIA_PADRAO ? null : instancia)
     setEnviando(false)
 
     if (!resultado.ok) {
@@ -146,6 +148,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
     }
 
     setTexto("")
+    if (modoComposicao === "resposta") setModoComposicao("mensagem")
     toast.success(resultado.message)
     try {
       const snapshot = await refreshChatInboxAction(leadId)
@@ -168,7 +171,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
     setSeletorEmojiAberto(false)
   }
 
-  function trocarModoComposicao(modo: "mensagem" | "nota") {
+  function trocarModoComposicao(modo: "mensagem" | "nota" | "resposta") {
     setModoComposicao(modo)
     setTexto("")
   }
@@ -362,12 +365,28 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                       >
                         <StickyNote className="size-4" />
                       </Button>
-                      {modoComposicao === "nota" ? (
+                      <Button
+                        type="button"
+                        variant={modoComposicao === "resposta" ? "secondary" : "ghost"}
+                        size="icon"
+                        aria-label="Registrar resposta do lead"
+                        aria-pressed={modoComposicao === "resposta"}
+                        title="Registrar resposta do lead"
+                        disabled={enviando}
+                        onClick={() => {
+                          if (modoComposicao !== "resposta") trocarModoComposicao("resposta")
+                        }}
+                      >
+                        <MessageSquareReply className="size-4" />
+                      </Button>
+                      {modoComposicao !== "mensagem" ? (
                         <>
-                          <Button type="button" variant="ghost" size="icon" aria-label="Cancelar nota" title="Cancelar nota" disabled={enviando} onClick={() => trocarModoComposicao("mensagem")}>
+                          <Button type="button" variant="ghost" size="icon" aria-label="Cancelar registro" title="Cancelar registro" disabled={enviando} onClick={() => trocarModoComposicao("mensagem")}>
                             <X className="size-4" />
                           </Button>
-                          <span className="ml-auto text-[11px] text-amber-700 dark:text-amber-300">Somente para a equipe</span>
+                          <span className="ml-auto text-[11px] text-amber-700 dark:text-amber-300">
+                            {modoComposicao === "nota" ? "Somente para a equipe" : "Registro manual · não será enviado"}
+                          </span>
                         </>
                       ) : instancias.length ? (
                         <SelectField
@@ -386,17 +405,17 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                         onChange={(event) => setTexto(event.target.value)}
                         onKeyDown={tratarTecla}
                         maxLength={limiteTexto}
-                        placeholder={modoComposicao === "nota" ? "Escreva uma nota interna..." : `Escreva uma mensagem para ${conversaAtiva.nome}...`}
+                        placeholder={modoComposicao === "nota" ? "Escreva uma nota interna..." : modoComposicao === "resposta" ? "Registre o que o lead respondeu..." : `Escreva uma mensagem para ${conversaAtiva.nome}...`}
                         className="min-h-12 max-h-32 resize-y bg-muted/40"
-                        aria-label={modoComposicao === "nota" ? "Nota interna" : "Mensagem para o lead"}
+                        aria-label={modoComposicao === "nota" ? "Nota interna" : modoComposicao === "resposta" ? "Resposta do lead" : "Mensagem para o lead"}
                         disabled={enviando}
                       />
-                      <Button size="icon" onClick={() => void enviarMensagem()} disabled={enviando || !texto.trim()} aria-label={modoComposicao === "nota" ? "Salvar nota interna" : "Enviar mensagem"} title={modoComposicao === "nota" ? "Salvar nota interna" : "Enviar mensagem"}>
-                        {modoComposicao === "nota" ? <StickyNote className="size-4" /> : <Send className="size-4" />}
+                      <Button size="icon" onClick={() => void enviarMensagem()} disabled={enviando || !texto.trim()} aria-label={modoComposicao === "nota" ? "Salvar nota interna" : modoComposicao === "resposta" ? "Registrar resposta" : "Enviar mensagem"} title={modoComposicao === "nota" ? "Salvar nota interna" : modoComposicao === "resposta" ? "Registrar resposta" : "Enviar mensagem"}>
+                        {modoComposicao === "nota" ? <StickyNote className="size-4" /> : modoComposicao === "resposta" ? <CheckCheck className="size-4" /> : <Send className="size-4" />}
                       </Button>
                     </div>
                     <div className="mt-1 flex justify-between px-1 text-[10px] text-muted-foreground">
-                      <span>Enter para {modoComposicao === "nota" ? "salvar nota" : "enviar"} · Shift+Enter para nova linha</span>
+                      <span>Enter para {modoComposicao === "nota" ? "salvar nota" : modoComposicao === "resposta" ? "registrar resposta" : "enviar"} · Shift+Enter para nova linha</span>
                       <span className="tabular-nums">{texto.length}/{limiteTexto}</span>
                     </div>
                   </div>
