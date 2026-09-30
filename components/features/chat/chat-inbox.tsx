@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react"
 import { toast } from "sonner"
-import { Bell, CheckCheck, Filter, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, MoreHorizontal, Search, Send, Smile, StickyNote, UserRound, X } from "lucide-react"
+import { CheckCheck, Filter, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, MoreHorizontal, Search, Send, Smile, StickyNote, UserRound, X } from "lucide-react"
 
 import { createChatInternalNoteAction, refreshChatInboxAction } from "@/app/actions/chat"
 import { sendLeadMessageAction, setLeadStatusAction } from "@/app/actions/leads"
@@ -54,6 +54,7 @@ function preview(mensagem: ChatMessage | null) {
 export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot; instancias: InstanceOption[] }) {
   const [conversas, setConversas] = useState(inicial.conversas)
   const [conversaSelecionadaId, setConversaSelecionadaId] = useState(inicial.conversaSelecionadaId)
+  const [conversaFechada, setConversaFechada] = useState(false)
   const [mensagens, setMensagens] = useState(inicial.mensagens)
   const [busca, setBusca] = useState("")
   const [somenteRespostas, setSomenteRespostas] = useState(false)
@@ -92,9 +93,10 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
         if (ativo && idSelecionadoRef.current === conversaSelecionadaId) {
           setConversas(snapshot.conversas)
           setMensagens(snapshot.mensagens)
-          if (!conversaSelecionadaId && snapshot.conversaSelecionadaId) {
+          if (!conversaSelecionadaId && snapshot.conversaSelecionadaId && !conversaFechada) {
             setConversaSelecionadaId(snapshot.conversaSelecionadaId)
           }
+          if (conversaFechada) setMensagens([])
         }
       } catch {
         // A próxima atualização tenta novamente sem interromper a conversa aberta.
@@ -108,7 +110,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
       ativo = false
       clearTimeout(timer)
     }
-  }, [conversaSelecionadaId])
+  }, [conversaFechada, conversaSelecionadaId])
 
   useEffect(() => {
     fimDaConversa.current?.scrollIntoView({ behavior: "smooth", block: "end" })
@@ -116,6 +118,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
 
   async function selecionarConversa(id: string) {
     idSelecionadoRef.current = id
+    setConversaFechada(false)
     setConversaSelecionadaId(id)
     setMensagens([])
     try {
@@ -259,8 +262,20 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
-                  <Button variant="ghost" size="icon" disabled aria-label="Notificações" title="Notificações em breve"><Bell className="size-4" /></Button>
-                  <Button variant="ghost" size="icon" disabled aria-label="Mais opções" title="Opções em breve"><MoreHorizontal className="size-4" /></Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Sair da conversa"
+                    title="Sair da conversa"
+                    onClick={() => {
+                      idSelecionadoRef.current = null
+                      setConversaSelecionadaId(null)
+                      setConversaFechada(true)
+                      setMensagens([])
+                    }}
+                  >
+                    <X className="size-4" />
+                  </Button>
                 </div>
               </header>
 
@@ -450,8 +465,10 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
               <MessageCircle className="size-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Cadastre um lead para começar uma conversa.</p>
-              <LinkButton variant="outline" href="/leads">Ver leads</LinkButton>
+              <p className="text-sm text-muted-foreground">
+                {conversas.length ? "Selecione um lead para abrir uma conversa." : "Cadastre um lead para começar uma conversa."}
+              </p>
+              {!conversas.length ? <LinkButton variant="outline" href="/leads">Ver leads</LinkButton> : null}
             </div>
           )}
         </section>
