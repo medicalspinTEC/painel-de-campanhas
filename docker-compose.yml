@@ -40,7 +40,6 @@ services:
       # Integrações externas (opcionais — têm defaults no código).
       EVOLUTION_API_URL: ${EVOLUTION_API_URL:-}
       EVOLUTION_API_KEY: ${EVOLUTION_API_KEY:-}
-      EVOLUTION_INSTANCE_NAME: ${EVOLUTION_INSTANCE_NAME:-}
       N8N_DISPAROS_WEBHOOK_URL: ${N8N_DISPAROS_WEBHOOK_URL:-}
       INGEST_TOKEN: ${INGEST_TOKEN:-}
     ports:

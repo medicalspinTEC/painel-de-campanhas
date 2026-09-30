@@ -51,7 +51,7 @@ function linhasResumo({ campanha, vinculados, saidos }: CampaignExportData): [st
     ["Criada em", formatDate(campanha.criadoEm)],
     ["Data limite", campanha.dataFinal ? formatDate(campanha.dataFinal) : "Sem data limite"],
     ["Recorrência", campanha.tipo === "individual" ? "Disparo único, sem repetição" : `${campanha.recorrenciaDias} dias`],
-    ["Instância de envio", campanha.instanciaNome ?? "Padrão do ambiente"],
+    ["Instância de envio", campanha.instanciaNome ?? "Instância mais recente do app"],
     [
       "Filtros de público",
       campanha.tipo === "individual" ? "Seleção manual" : filtros.length ? filtros.join(" · ") : "Todos os leads",

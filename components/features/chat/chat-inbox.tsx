@@ -26,7 +26,6 @@ import { cn } from "@/lib/utils"
 import type { InstanceOption } from "@/services/evolution"
 import type { ChatInboxSnapshot, ChatMessage } from "@/services/chat"
 
-const INSTANCIA_PADRAO = "__padrao__"
 const INTERVALO_ATUALIZACAO = 8000
 const LIMITE_MENSAGEM = 4096
 const LIMITE_NOTA_INTERNA = 5000
@@ -62,7 +61,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
   const [modoComposicao, setModoComposicao] = useState<"mensagem" | "nota" | "resposta">("mensagem")
   const [texto, setTexto] = useState("")
   const [seletorEmojiAberto, setSeletorEmojiAberto] = useState(false)
-  const [instancia, setInstancia] = useState(INSTANCIA_PADRAO)
+  const [instancia, setInstancia] = useState(instancias[0]?.nome ?? "")
   const [enviando, setEnviando] = useState(false)
   const limiteTexto = modoComposicao === "nota" ? LIMITE_NOTA_INTERNA : LIMITE_MENSAGEM
   const conversaAtiva = conversas.find((conversa) => conversa.id === conversaSelecionadaId) ?? null
@@ -74,10 +73,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
     return correspondeBusca && (!somenteRespostas || conversa.ultimaMensagem?.lado === "lead")
   })
   const totalComResposta = conversas.filter((conversa) => conversa.ultimaMensagem?.lado === "lead").length
-  const opcoesInstancia = [
-    { value: INSTANCIA_PADRAO, label: "Instância padrão" },
-    ...instancias.map((item) => ({ value: item.nome, label: `${item.nome} · ${item.estado}` })),
-  ]
+  const opcoesInstancia = instancias.map((item) => ({ value: item.nome, label: `${item.nome} · ${item.estado}` }))
 
   useEffect(() => {
     idSelecionadoRef.current = conversaSelecionadaId
@@ -142,7 +138,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
       ? await createChatInternalNoteAction(leadId, mensagem)
       : modoComposicao === "resposta"
         ? await setLeadStatusAction(leadId, "respondeu", mensagem)
-        : await sendLeadMessageAction(leadId, mensagem, instancia === INSTANCIA_PADRAO ? null : instancia)
+        : await sendLeadMessageAction(leadId, mensagem, instancia || null)
     setEnviando(false)
 
     if (!resultado.ok) {
@@ -412,7 +408,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                           className="ml-auto w-auto min-w-40 max-w-56"
                           disabled={enviando}
                         />
-                      ) : <span className="ml-auto text-[11px] text-muted-foreground">Instância padrão</span>}
+                      ) : <span className="ml-auto text-[11px] text-muted-foreground">Crie uma instância em Instâncias para enviar</span>}
                     </div>
                     <div className="flex items-end gap-2">
                       <Textarea
@@ -425,7 +421,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                         aria-label={modoComposicao === "nota" ? "Nota interna" : modoComposicao === "resposta" ? "Resposta do lead" : "Mensagem para o lead"}
                         disabled={enviando}
                       />
-                      <Button size="icon" onClick={() => void enviarMensagem()} disabled={enviando || !texto.trim()} aria-label={modoComposicao === "nota" ? "Salvar nota interna" : modoComposicao === "resposta" ? "Registrar resposta" : "Enviar mensagem"} title={modoComposicao === "nota" ? "Salvar nota interna" : modoComposicao === "resposta" ? "Registrar resposta" : "Enviar mensagem"}>
+                      <Button size="icon" onClick={() => void enviarMensagem()} disabled={enviando || !texto.trim() || (modoComposicao === "mensagem" && instancias.length === 0)} aria-label={modoComposicao === "nota" ? "Salvar nota interna" : modoComposicao === "resposta" ? "Registrar resposta" : "Enviar mensagem"} title={modoComposicao === "nota" ? "Salvar nota interna" : modoComposicao === "resposta" ? "Registrar resposta" : "Enviar mensagem"}>
                         {modoComposicao === "nota" ? <StickyNote className="size-4" /> : modoComposicao === "resposta" ? <CheckCheck className="size-4" /> : <Send className="size-4" />}
                       </Button>
                     </div>

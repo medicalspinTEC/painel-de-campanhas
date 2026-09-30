@@ -69,7 +69,7 @@ export interface InstanciaOpcao {
   estado: "conectado" | "conectando" | "desconectado"
 }
 
-const INSTANCIA_PADRAO = "__padrao__"
+const SEM_INSTANCIA = "__sem_instancia__"
 
 const ESTADO_INSTANCIA_LABEL: Record<InstanciaOpcao["estado"], string> = {
   conectado: "conectada",
@@ -113,7 +113,11 @@ export function CampaignEditor({
   )
   const [recorrencia, setRecorrencia] = useState(String(campanha?.recorrenciaDias ?? 30))
   const [dataFinal, setDataFinal] = useState(campanha?.dataFinal ? campanha.dataFinal.slice(0, 10) : "")
-  const [instancia, setInstancia] = useState<string>(campanha?.instanciaNome ?? INSTANCIA_PADRAO)
+  const [instancia, setInstancia] = useState<string>(() =>
+    campanha?.instanciaNome && instancias.some((item) => item.nome === campanha.instanciaNome)
+      ? campanha.instanciaNome
+      : instancias[0]?.nome ?? SEM_INSTANCIA,
+  )
   const [produto, setProduto] = useState(campanha?.filtros.produto ?? QUALQUER)
   const [marca, setMarca] = useState(campanha?.filtros.marca ?? QUALQUER)
   const [persona, setPersona] = useState(campanha?.filtros.persona ?? QUALQUER)
@@ -177,22 +181,15 @@ export function CampaignEditor({
     [regioes, leads, campanha],
   )
 
-  // Opções do seletor de instância: a opção "padrão" (usa EVOLUTION_INSTANCE_NAME)
-  // mais cada instância registrada. Se a campanha aponta para uma instância que
-  // não está mais na lista (ex.: removida), mantemos a opção para não perder o valor.
+  // A lista recebida já contém apenas a instância mais recente do app.
   const opcoesInstancia = useMemo(() => {
-    const base = [
-      { value: INSTANCIA_PADRAO, label: "Padrão do ambiente" },
-      ...instancias.map((i) => ({
+    return instancias.length
+      ? instancias.map((i) => ({
         value: i.nome,
         label: `${i.nome} · ${ESTADO_INSTANCIA_LABEL[i.estado]}`,
-      })),
-    ]
-    if (campanha?.instanciaNome && !instancias.some((i) => i.nome === campanha.instanciaNome)) {
-      base.push({ value: campanha.instanciaNome, label: `${campanha.instanciaNome} · indisponível` })
-    }
-    return base
-  }, [instancias, campanha?.instanciaNome])
+      }))
+      : [{ value: SEM_INSTANCIA, label: "Nenhuma instância cadastrada" }]
+  }, [instancias])
 
   function atualizarMensagem(index: number, patch: Partial<MensagemRascunho>) {
     setMensagens((atual) => atual.map((m, i) => (i === index ? { ...m, ...patch } : m)))
@@ -232,7 +229,7 @@ export function CampaignEditor({
       // salvamento: usar horário local converteria 23:59 para o dia seguinte em
       // UTC (fusos negativos), e ao reler o `slice(0, 10)` mostraria +1 dia.
       dataFinal: dataFinal ? `${dataFinal}T23:59:59.999Z` : null,
-      instanciaNome: instancia === INSTANCIA_PADRAO ? null : instancia,
+      instanciaNome: instancia === SEM_INSTANCIA ? null : instancia,
       filtros: {
         produto: produto === QUALQUER ? null : (produto as Campaign["filtros"]["produto"]),
         marca: marca === QUALQUER ? null : (marca as Campaign["filtros"]["marca"]),
@@ -374,7 +371,7 @@ export function CampaignEditor({
               />
               <FieldDescription>
                 {instancias.length === 0
-                  ? "Nenhuma instância criada. Crie uma na página Instâncias ou use a padrão do ambiente."
+                  ? "Nenhuma instância criada. Crie uma na página Instâncias para enviar mensagens."
                   : "WhatsApp que dispara as mensagens desta campanha."}
               </FieldDescription>
             </Field>

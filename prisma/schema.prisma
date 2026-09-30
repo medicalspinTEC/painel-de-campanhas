@@ -137,8 +137,7 @@ model Campaign {
 
   // Instância da Evolution que envia as mensagens desta campanha (igual ao
   // `nome` em Instance / instanceName na Evolution). Nulo = usa a instância
-  // padrão do ambiente (EVOLUTION_INSTANCE_NAME), mantendo compatibilidade
-  // com campanhas criadas antes deste recurso.
+  // mais recente cadastrada no app, para campanhas sem escolha explícita.
   instanciaNome String?
 
   // Marca o momento do último (re)início da campanha. A dedupe de envio só

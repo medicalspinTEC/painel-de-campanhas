@@ -231,7 +231,7 @@ export function createAppMcpServer(): McpServer {
       inputSchema: {
         leadId: z.string(),
         texto: z.string().min(1),
-        instanciaNome: z.string().optional().describe("Instância da Evolution a usar; padrão do ambiente se omitido."),
+        instanciaNome: z.string().optional().describe("Nome opcional para validar cadastro no app; envios sempre usam a instância mais recente."),
       },
     },
     async ({ leadId, texto, instanciaNome }) => {
@@ -285,7 +285,7 @@ export function createAppMcpServer(): McpServer {
         status: z.enum(STATUS_CAMPANHA_VALORES),
         recorrenciaDias: z.number().int().min(0).describe("0 = sem recorrência (dispara a sequência uma única vez)."),
         dataFinal: z.string().nullable().optional().describe("Data ISO opcional em que a campanha encerra sozinha."),
-        instanciaNome: z.string().optional().describe("Instância da Evolution; padrão do ambiente se omitido."),
+        instanciaNome: z.string().optional().describe("Nome opcional para validar cadastro no app; envios sempre usam a instância mais recente."),
         filtroProduto: z.string().optional(),
         filtroMarca: z.string().optional(),
         filtroPersona: z.string().optional(),

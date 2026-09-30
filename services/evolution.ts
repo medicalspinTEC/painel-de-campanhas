@@ -28,6 +28,35 @@ function getEvolutionCredentials() {
   return { apiUrl, apiKey }
 }
 
+async function resolveRegisteredInstanceName(requestedName?: string | null): Promise<{ name: string } | { error: string }> {
+  const nome = requestedName?.trim()
+
+  try {
+    const maisRecente = await prisma.instance.findFirst({
+      orderBy: { criadoEm: "desc" },
+      select: { nome: true },
+    })
+    if (!maisRecente) {
+      return { error: "Nenhuma instância criada no app. Cadastre uma em Instâncias para enviar mensagens." }
+    }
+
+    if (nome) {
+      const solicitada = await prisma.instance.findUnique({ where: { nome }, select: { nome: true } })
+      if (!solicitada) return { error: `A instância "${nome}" não está cadastrada neste app.` }
+    }
+
+    return { name: maisRecente.nome }
+  } catch (error) {
+    await recordAppLog({
+      nivel: "erro",
+      origem: "evolution",
+      mensagem: "Falha ao consultar as instâncias cadastradas no app.",
+      detalhes: error,
+    })
+    return { error: "Não foi possível consultar as instâncias cadastradas no app." }
+  }
+}
+
 /** Traduz o status de conexão da Evolution para o vocabulário do painel. */
 function mapConnectionStatus(status?: string): EvolutionInstanceState {
   switch (status) {
@@ -118,32 +147,31 @@ export interface InstanceOption {
 }
 
 /**
- * Lista as instâncias criadas por este painel para uso em seletores (ex.: ao
- * escolher qual instância envia as mensagens de uma campanha). Tenta enriquecer
- * com o estado de conexão vindo da Evolution; se a API estiver indisponível,
- * ainda devolve os nomes registrados no banco marcados como "desconectado".
+ * Lista a instância mais recente criada por este painel para uso em seletores.
+ * Tenta enriquecer com o estado de conexão vindo da Evolution; se a API estiver
+ * indisponível, ainda devolve o nome registrado marcado como "desconectado".
  */
 export async function listInstanceOptions(): Promise<InstanceOption[]> {
-  let nomesRegistrados: string[]
+  let nomeMaisRecente: string | null
   try {
-    const registradas = await prisma.instance.findMany({
+    const registrada = await prisma.instance.findFirst({
       select: { nome: true },
-      orderBy: { criadoEm: "asc" },
+      orderBy: { criadoEm: "desc" },
     })
-    nomesRegistrados = registradas.map((i) => i.nome)
+    nomeMaisRecente = registrada?.nome ?? null
   } catch {
     return []
   }
 
-  if (nomesRegistrados.length === 0) return []
+  if (!nomeMaisRecente) return []
 
   const doEvolution = await fetchEvolutionInstances()
   const estadoPorNome = new Map(doEvolution.map((i) => [i.nome, i.estado]))
 
-  return nomesRegistrados.map((nome) => ({
-    nome,
-    estado: estadoPorNome.get(nome) ?? "desconectado",
-  }))
+  return [{
+    nome: nomeMaisRecente,
+    estado: estadoPorNome.get(nomeMaisRecente) ?? "desconectado",
+  }]
 }
 
 /**
@@ -522,19 +550,15 @@ async function shouldSendMessage(leadId: string, campanhaId: string, mensagemId:
 export async function sendWhatsAppText(input: {
   telefone: string
   texto: string
-  /** Instância que envia a mensagem; ausente/vazia cai na instância padrão do ambiente. */
+  /** Nome opcional para validar cadastro; o envio sempre usa a mais recente do app. */
   instanciaNome?: string | null
 }): Promise<EvolutionSendResult> {
   const { apiUrl, apiKey } = getEvolutionCredentials()
-  const instanceName = input.instanciaNome?.trim() || process.env.EVOLUTION_INSTANCE_NAME?.trim()
+  if (!apiKey) return { ok: false, erro: "EVOLUTION_API_KEY não configurada no ambiente." }
 
-  if (!instanceName || !apiKey) {
-    return {
-      ok: false,
-      erro:
-        "Credenciais da Evolution não configuradas (EVOLUTION_API_KEY ausente, ou nenhuma instância escolhida e EVOLUTION_INSTANCE_NAME também ausente).",
-    }
-  }
+  const resolvida = await resolveRegisteredInstanceName(input.instanciaNome)
+  if ("error" in resolvida) return { ok: false, erro: resolvida.error }
+  const instanceName = resolvida.name
 
   const telefone = normalizePhoneForEvolution(input.telefone)
   if (!telefone) {
@@ -605,9 +629,8 @@ export async function sendCampaignMessageToLead(input: {
   texto: string
   telefone: string
   /**
-   * Instância da Evolution que deve enviar a mensagem. Quando ausente (ou vazia)
-   * caímos na instância padrão do ambiente (EVOLUTION_INSTANCE_NAME), mantendo o
-   * comportamento antigo para campanhas que não escolheram uma instância.
+  * Nome opcional para validar cadastro; o envio sempre usa a instância mais
+  * recente criada no app.
    */
   instanciaNome?: string | null
   /** Descrição registrada na timeline em caso de sucesso. */
@@ -619,13 +642,8 @@ export async function sendCampaignMessageToLead(input: {
   const descricaoFalha = input.descricaoFalha ?? "Falha ao enviar mensagem da campanha via Evolution."
   const apiUrl = (process.env.EVOLUTION_API_URL ?? "https://evo-j0o08ok8sgwc4cog04w0owok.95.217.164.173.sslip.io").replace(/\/$/, "")
   const apiKey = process.env.EVOLUTION_API_KEY?.trim()
-  // Prioriza a instância escolhida na campanha; se não houver, usa a padrão do
-  // ambiente. Assim campanhas antigas (sem instância) seguem funcionando.
-  const instanceName = input.instanciaNome?.trim() || process.env.EVOLUTION_INSTANCE_NAME?.trim()
-
-  if (!instanceName || !apiKey) {
-    const mensagem =
-      "Credenciais da Evolution não configuradas (EVOLUTION_API_KEY ausente, ou nenhuma instância definida na campanha e EVOLUTION_INSTANCE_NAME também ausente)."
+  if (!apiKey) {
+    const mensagem = "EVOLUTION_API_KEY não configurada no ambiente."
     await recordAppLog({
       nivel: "critico",
       origem: "evolution",
@@ -641,6 +659,25 @@ export async function sendCampaignMessageToLead(input: {
     })
     return { ok: false, erro: mensagem }
   }
+
+  const resolvida = await resolveRegisteredInstanceName(input.instanciaNome)
+  if ("error" in resolvida) {
+    await recordAppLog({
+      nivel: "critico",
+      origem: "evolution",
+      mensagem: resolvida.error,
+      detalhes: `leadId=${input.leadId} campanhaId=${input.campanhaId}`,
+      contexto: {
+        etapa: "Validação da instância (sendCampaignMessageToLead)",
+        leadId: input.leadId,
+        campanhaId: input.campanhaId,
+        mensagemId: input.mensagemId ?? undefined,
+        instanciaNome: input.instanciaNome ?? undefined,
+      },
+    })
+    return { ok: false, erro: resolvida.error }
+  }
+  const instanceName = resolvida.name
 
   const telefone = normalizePhoneForEvolution(input.telefone)
   if (!telefone) {

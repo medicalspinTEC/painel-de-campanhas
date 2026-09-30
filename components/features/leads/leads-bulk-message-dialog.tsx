@@ -21,9 +21,6 @@ import type { EvolutionInstanceState, InstanceOption } from "@/services/evolutio
 
 const LIMITE = 4096
 
-/** Valor usado no seletor para "sem instância escolhida" (cai na padrão do ambiente). */
-const INSTANCIA_PADRAO = "__padrao__"
-
 const ESTADO_INSTANCIA_LABEL: Record<EvolutionInstanceState, string> = {
   conectado: "conectado",
   conectando: "conectando",
@@ -48,14 +45,14 @@ export function LeadsBulkMessageDialog({
 }) {
   const [open, setOpen] = useState(false)
   const [texto, setTexto] = useState("")
-  const [instancia, setInstancia] = useState<string>(INSTANCIA_PADRAO)
+  const [instancia, setInstancia] = useState<string>(instancias[0]?.nome ?? "")
   const [agendadoPara, setAgendadoPara] = useState("")
   const [pendente, iniciar] = useTransition()
 
-  const opcoesInstancia: OpcaoSelect[] = [
-    { value: INSTANCIA_PADRAO, label: "Padrão do ambiente" },
-    ...instancias.map((i) => ({ value: i.nome, label: `${i.nome} · ${ESTADO_INSTANCIA_LABEL[i.estado]}` })),
-  ]
+  const opcoesInstancia: OpcaoSelect[] = instancias.map((i) => ({
+    value: i.nome,
+    label: `${i.nome} · ${ESTADO_INSTANCIA_LABEL[i.estado]}`,
+  }))
 
   function fechar(next: boolean) {
     if (pendente) return
@@ -74,7 +71,7 @@ export function LeadsBulkMessageDialog({
       const resultado = await sendLeadsMessageAction(
         leadIds,
         textoLimpo,
-        instancia === INSTANCIA_PADRAO ? null : instancia,
+        instancia || null,
         agendadoPara || null,
       )
       if (resultado.ok) {
@@ -114,7 +111,9 @@ export function LeadsBulkMessageDialog({
                 opcoes={opcoesInstancia}
                 className="w-full"
               />
-            ) : null}
+            ) : (
+              <p className="text-sm text-muted-foreground">Crie uma instância em Instâncias para enviar mensagens.</p>
+            )}
             <Textarea
               autoFocus
               value={texto}
@@ -146,7 +145,7 @@ export function LeadsBulkMessageDialog({
             <Button variant="ghost" onClick={() => fechar(false)} disabled={pendente}>
               Cancelar
             </Button>
-            <Button onClick={enviar} disabled={pendente || !texto.trim()}>
+            <Button onClick={enviar} disabled={pendente || !texto.trim() || instancias.length === 0}>
               <Send className="size-4" />
               {pendente ? "Processando…" : agendadoPara ? "Agendar mensagens" : `Enviar para ${formatNumber(leadIds.length)}`}
             </Button>

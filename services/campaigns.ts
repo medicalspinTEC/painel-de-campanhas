@@ -309,7 +309,7 @@ export interface CampaignInput {
   tipo?: CampaignTipo
   recorrenciaDias: number
   dataFinal: string | null
-  /** Instância que envia as mensagens. Nulo/ausente = padrão do ambiente. */
+  /** Instância que envia as mensagens. Nulo/ausente = instância mais recente do app. */
   instanciaNome?: string | null
   filtros: Campaign["filtros"]
   leadIds?: string[]

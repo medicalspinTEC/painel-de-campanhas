@@ -1,4 +1,5 @@
 import { AppSidebar } from "@/components/layout/app-sidebar"
+import { prisma } from "@/lib/prisma"
 import { recordAppLog } from "@/services/app-logs"
 import { getChatPluginAtivo } from "@/services/settings"
 
@@ -14,9 +15,16 @@ async function getEvolutionInstanceStatus() {
     "",
   )
   const apiKey = process.env.EVOLUTION_API_KEY
-  const instanceName = process.env.EVOLUTION_INSTANCE_NAME
+  const profileImageUrl = process.env.EVOLUTION_PROFILE_IMAGE_URL?.trim() || null
 
   try {
+    const instanciaRegistrada = await prisma.instance.findFirst({
+      orderBy: { criadoEm: "desc" },
+      select: { nome: true },
+    })
+    const instanceName = instanciaRegistrada?.nome
+    if (!instanceName) return { instanceName: undefined, instanceState: "unknown", profileImageUrl }
+
     const response = await fetch(`${apiUrl}/instance/connectionState/${instanceName}`, {
       headers: { apikey: apiKey ?? "" },
       next: { revalidate: 15 },
@@ -33,7 +41,7 @@ async function getEvolutionInstanceStatus() {
     return {
       instanceName: payload.instance?.instanceName ?? instanceName,
       instanceState: payload.instance?.state ?? "unknown",
-      profileImageUrl: process.env.EVOLUTION_PROFILE_IMAGE_URL?.trim() || null,
+      profileImageUrl,
     }
   } catch (error) {
     await recordAppLog({
@@ -43,9 +51,9 @@ async function getEvolutionInstanceStatus() {
       detalhes: error,
     })
     return {
-      instanceName,
+      instanceName: undefined,
       instanceState: "unknown",
-      profileImageUrl: null,
+      profileImageUrl,
     }
   }
 }
