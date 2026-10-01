@@ -173,7 +173,7 @@ export function InstanciasManager({ instanciasIniciais }: { instanciasIniciais: 
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <ResumoCard icon={Smartphone} label="Instâncias" valor={totais.total} />
         <ResumoCard icon={Signal} label="Conectadas" valor={totais.conectadas} />
       </div>

@@ -45,7 +45,7 @@ export default async function IntegracoesPage() {
   ])
 
   return (
-    <div className="flex max-w-4xl flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <PageHeader
         titulo="Integrações"
         descricao="Gerencie conexões com outros sistemas e ative recursos opcionais do painel."

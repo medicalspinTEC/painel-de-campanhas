@@ -17,7 +17,7 @@ import { listEvents } from "@/services/events"
 async function KpiGrid() {
   const kpis = await getKpis()
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
       <KpiCard titulo="Leads ativos" valor={formatNumber(kpis.leadsAtivos)} variacao={kpis.variacao.leadsAtivos} icon={Users} />
       <KpiCard
         titulo="Campanhas ativas"

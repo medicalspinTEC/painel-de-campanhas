@@ -10,7 +10,7 @@ export default async function InstanciasPage() {
   const instancias = await fetchEvolutionInstances()
 
   return (
-    <div className="flex max-w-5xl flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <PageHeader
         titulo="Instâncias"
         descricao="Crie e conecte instâncias de WhatsApp usadas nos disparos. Cada instância é pareada por QR Code e pode ser conectada ou desconectada de forma independente."
