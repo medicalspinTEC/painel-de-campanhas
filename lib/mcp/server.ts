@@ -16,6 +16,7 @@ import {
   sendLeadMessage,
   setLeadStatus,
   updateLeadNotes,
+  countLeads,
   type LeadInput,
 } from "@/services/leads"
 import {
@@ -148,7 +149,7 @@ export function createAppMcpServer(): McpServer {
     {
       title: "Listar leads",
       description:
-        "Lista leads com todos os campos e agregações de mensagens e respostas. Aceita filtro opcional por campanha (inclui vínculos atuais e histórico), status e termo de busca por nome ou telefone.",
+        "Lista até 50 leads por página com agregações de mensagens e respostas. Informe pagina (padrão: 1); o resultado indica quando existe próxima página. Aceita filtros por campanha, status e termo de busca por nome ou telefone.",
       inputSchema: {
         campanhaId: z.string().optional().describe("Filtra leads associados à campanha, incluindo histórico de eventos."),
         status: z
@@ -156,18 +157,29 @@ export function createAppMcpServer(): McpServer {
           .optional()
           .describe("Filtra pelo status do lead."),
         busca: z.string().optional().describe("Filtra por nome ou telefone contendo este texto."),
+        pagina: z.number().int().min(1).optional().describe("Página de resultados; padrão: 1."),
       },
     },
-    async ({ campanhaId, status, busca }) => {
-      let leads = await listLeads({ campanhaId })
-      if (status) leads = leads.filter((lead) => lead.status === status)
-      if (busca?.trim()) {
-        const termo = busca.trim().toLowerCase()
-        leads = leads.filter(
-          (lead) => lead.nome.toLowerCase().includes(termo) || lead.telefone.includes(termo),
-        )
-      }
-      return jsonResult({ ok: true, total: leads.length, leads })
+    async ({ campanhaId, status, busca, pagina }) => {
+      const paginaAtual = pagina ?? 1
+      const limite = 50
+      const filtros = { campanhaId, status, busca }
+      const [leadsConsultados, total] = await Promise.all([
+        listLeads({ ...filtros, pagina: paginaAtual, limite: limite + 1 }),
+        countLeads(filtros),
+      ])
+      const temProximaPagina = leadsConsultados.length > limite
+      const leads = leadsConsultados.slice(0, limite)
+      return jsonResult({
+        ok: true,
+        pagina: paginaAtual,
+        limite,
+        total,
+        quantidade: leads.length,
+        temProximaPagina,
+        proximaPagina: temProximaPagina ? paginaAtual + 1 : null,
+        leads,
+      })
     },
   )
 

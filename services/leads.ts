@@ -202,23 +202,49 @@ async function campanhasRespondidasPorLead(
 export interface LeadListFilters {
   campanhaId?: string
   negocio?: string
+  status?: LeadStatus
+  busca?: string
+  pagina?: number
+  limite?: number
 }
 
-export async function listLeads({ campanhaId, negocio }: LeadListFilters = {}): Promise<LeadRow[]> {
+function montarFiltroLead({ campanhaId, negocio, status, busca }: LeadListFilters = {}) {
+  const termoBusca = busca?.trim()
+  return {
+    ...(negocio ? { negocio } : {}),
+    ...(status ? { status } : {}),
+    AND: [
+      ...(campanhaId
+        ? [
+            {
+              OR: [
+                { campanhas: { some: { campanhaId } } },
+                { eventos: { some: { campanhaId } } },
+              ],
+            },
+          ]
+        : []),
+      ...(termoBusca
+        ? [
+            {
+              OR: [
+                { nome: { contains: termoBusca, mode: "insensitive" as const } },
+                { telefone: { contains: termoBusca } },
+              ],
+            },
+          ]
+        : []),
+    ],
+  }
+}
+
+export async function listLeads({ campanhaId, negocio, status, busca, pagina, limite }: LeadListFilters = {}): Promise<LeadRow[]> {
   const leads = await prisma.lead.findMany({
     select: leadRowSelect,
-    where: {
-      ...(negocio ? { negocio } : {}),
-      ...(campanhaId
-        ? {
-            OR: [
-              { campanhas: { some: { campanhaId } } },
-              { eventos: { some: { campanhaId } } },
-            ],
-          }
-        : {}),
-    },
-    orderBy: { criadoEm: "desc" },
+    where: montarFiltroLead({ campanhaId, negocio, status, busca }),
+    orderBy: [{ criadoEm: "desc" }, { id: "desc" }],
+    ...(pagina !== undefined && limite !== undefined ? { skip: (pagina - 1) * limite } : {}),
+    ...(limite !== undefined ? { take: limite } : {}),
   })
   if (leads.length === 0) return []
 
@@ -253,6 +279,10 @@ export async function listLeads({ campanhaId, negocio }: LeadListFilters = {}): 
       campanhasRespondidas.get(lead.id),
     ),
   )
+}
+
+export async function countLeads(filters: Pick<LeadListFilters, "campanhaId" | "negocio" | "status" | "busca"> = {}): Promise<number> {
+  return prisma.lead.count({ where: montarFiltroLead(filters) })
 }
 
 export interface LeadSearchItem {
