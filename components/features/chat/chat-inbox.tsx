@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useRef, useState, type KeyboardEvent } from "react"
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react"
 import { toast } from "sonner"
-import { CheckCheck, Filter, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, MoreHorizontal, Search, Send, Smile, StickyNote, UserRound, X } from "lucide-react"
+import { ArrowLeft, CheckCheck, Filter, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Search, Send, Smile, StickyNote, UserRound, X } from "lucide-react"
 
-import { createChatInternalNoteAction, refreshChatInboxAction } from "@/app/actions/chat"
+import { createChatInternalNoteAction, loadChatMessagesAction, refreshChatInboxAction } from "@/app/actions/chat"
 import { sendLeadMessageAction, setLeadStatusAction } from "@/app/actions/leads"
 import { LinkButton } from "@/components/shared/link-button"
 import {
@@ -29,6 +29,7 @@ import type { ChatInboxSnapshot, ChatMessage } from "@/services/chat"
 const INTERVALO_ATUALIZACAO = 8000
 const LIMITE_MENSAGEM = 4096
 const LIMITE_NOTA_INTERNA = 5000
+const CHAVE_VISTAS = "chat-conversas-vistas"
 const EMOJIS = [
   "😀", "😃", "😄", "😁", "😅", "😂", "🙂", "😉",
   "😊", "😍", "🥰", "😘", "😎", "🤔", "🙌", "🙏",
@@ -42,6 +43,30 @@ function iniciais(nome: string) {
 
 function horario(data: string) {
   return new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date(data))
+}
+
+function mesmoDia(a: string, b: string) {
+  return new Date(a).toDateString() === new Date(b).toDateString()
+}
+
+function rotuloDia(data: string) {
+  const agora = new Date()
+  const ontem = new Date()
+  ontem.setDate(agora.getDate() - 1)
+  const alvo = new Date(data)
+  if (alvo.toDateString() === agora.toDateString()) return "Hoje"
+  if (alvo.toDateString() === ontem.toDateString()) return "Ontem"
+  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long", year: "numeric" }).format(alvo)
+}
+
+function dataLista(data: string) {
+  const agora = new Date()
+  const ontem = new Date()
+  ontem.setDate(agora.getDate() - 1)
+  const alvo = new Date(data)
+  if (alvo.toDateString() === agora.toDateString()) return horario(data)
+  if (alvo.toDateString() === ontem.toDateString()) return "Ontem"
+  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" }).format(alvo)
 }
 
 function preview(mensagem: ChatMessage | null) {
@@ -63,10 +88,27 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
   const [seletorEmojiAberto, setSeletorEmojiAberto] = useState(false)
   const [instancia, setInstancia] = useState(instancias[0]?.nome ?? "")
   const [enviando, setEnviando] = useState(false)
+  const [vistas, setVistas] = useState<Record<string, string>>({})
+  const [vistasCarregadas, setVistasCarregadas] = useState(false)
   const limiteTexto = modoComposicao === "nota" ? LIMITE_NOTA_INTERNA : LIMITE_MENSAGEM
   const conversaAtiva = conversas.find((conversa) => conversa.id === conversaSelecionadaId) ?? null
-  const fimDaConversa = useRef<HTMLDivElement>(null)
   const idSelecionadoRef = useRef(conversaSelecionadaId)
+  const areaMensagensRef = useRef<HTMLDivElement | null>(null)
+  const pertoDoFimRef = useRef(true)
+  const conversaDoScrollRef = useRef<string | null>(null)
+  const ultimoIdRef = useRef<string | null>(null)
+  const assinaturaConversasRef = useRef(JSON.stringify(inicial.conversas))
+  const assinaturaMensagensRef = useRef(JSON.stringify(inicial.mensagens))
+  const cacheMensagensRef = useRef(new Map<string, ChatMessage[]>())
+
+  // Ao (re)montar a área de mensagens — abrir a conversa ou voltar da aba Perfil — ela começa no fim.
+  const definirAreaMensagens = useCallback((elemento: HTMLDivElement | null) => {
+    areaMensagensRef.current = elemento
+    if (elemento) {
+      elemento.scrollTop = elemento.scrollHeight
+      pertoDoFimRef.current = true
+    }
+  }, [])
 
   const conversasVisiveis = conversas.filter((conversa) => {
     const correspondeBusca = `${conversa.nome} ${conversa.telefone} ${conversa.produto}`.toLowerCase().includes(busca.toLowerCase())
@@ -80,49 +122,136 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
   }, [conversaSelecionadaId])
 
   useEffect(() => {
+    // Recupera até onde cada conversa já foi vista neste navegador.
+    try {
+      const salvo = window.localStorage.getItem(CHAVE_VISTAS)
+      if (salvo) setVistas(JSON.parse(salvo) as Record<string, string>)
+    } catch {
+      // Sem acesso ao armazenamento: o aviso some apenas até recarregar a página.
+    }
+    setVistasCarregadas(true)
+  }, [])
+
+  const idAberto = conversaAtiva?.id ?? null
+  const dataUltimaAberta = conversaAtiva?.ultimaMensagem?.data ?? null
+
+  useEffect(() => {
+    // Conversa aberta = mensagens vistas, inclusive as que chegam com ela aberta.
+    if (!vistasCarregadas || !idAberto || !dataUltimaAberta) return
+    setVistas((atual) => {
+      if (atual[idAberto] && new Date(atual[idAberto]) >= new Date(dataUltimaAberta)) return atual
+      const proximo = { ...atual, [idAberto]: dataUltimaAberta }
+      try {
+        window.localStorage.setItem(CHAVE_VISTAS, JSON.stringify(proximo))
+      } catch {
+        // Ignora falhas de armazenamento.
+      }
+      return proximo
+    })
+  }, [vistasCarregadas, idAberto, dataUltimaAberta])
+
+  useEffect(() => {
+    // No celular a lista ocupa a tela inteira; a conversa abre ao tocar em um lead.
+    if (window.matchMedia("(max-width: 1023px)").matches) {
+      idSelecionadoRef.current = null
+      setConversaSelecionadaId(null)
+      setConversaFechada(true)
+      mostrarMensagens([])
+    }
+  }, [])
+
+  useEffect(() => {
     let ativo = true
-    let timer: ReturnType<typeof setTimeout>
+    let timer: ReturnType<typeof setTimeout> | undefined
 
     async function atualizar() {
-      try {
-        const snapshot = await refreshChatInboxAction(conversaSelecionadaId)
-        if (ativo && idSelecionadoRef.current === conversaSelecionadaId) {
-          setConversas(snapshot.conversas)
-          setMensagens(snapshot.mensagens)
-          if (!conversaSelecionadaId && snapshot.conversaSelecionadaId && !conversaFechada) {
-            setConversaSelecionadaId(snapshot.conversaSelecionadaId)
+      clearTimeout(timer)
+      // Com a aba em segundo plano não há por que consultar o banco.
+      if (document.visibilityState === "visible") {
+        try {
+          const snapshot = await refreshChatInboxAction(conversaSelecionadaId, conversaFechada)
+          if (ativo && idSelecionadoRef.current === conversaSelecionadaId) {
+            const mesmaConversa = snapshot.conversaSelecionadaId === conversaSelecionadaId
+            aplicarSnapshot(snapshot, !conversaFechada && (mesmaConversa || !conversaSelecionadaId))
+            if (!conversaSelecionadaId && snapshot.conversaSelecionadaId && !conversaFechada) {
+              setConversaSelecionadaId(snapshot.conversaSelecionadaId)
+            }
           }
-          if (conversaFechada) setMensagens([])
+        } catch {
+          // A próxima atualização tenta novamente sem interromper a conversa aberta.
         }
-      } catch {
-        // A próxima atualização tenta novamente sem interromper a conversa aberta.
-      } finally {
-        if (ativo) timer = setTimeout(atualizar, INTERVALO_ATUALIZACAO)
       }
+      if (ativo) timer = setTimeout(atualizar, INTERVALO_ATUALIZACAO)
+    }
+
+    function aoVoltarParaAba() {
+      if (document.visibilityState === "visible") void atualizar()
     }
 
     timer = setTimeout(atualizar, INTERVALO_ATUALIZACAO)
+    document.addEventListener("visibilitychange", aoVoltarParaAba)
     return () => {
       ativo = false
       clearTimeout(timer)
+      document.removeEventListener("visibilitychange", aoVoltarParaAba)
     }
   }, [conversaFechada, conversaSelecionadaId])
 
   useEffect(() => {
-    fimDaConversa.current?.scrollIntoView({ behavior: "smooth", block: "end" })
-  }, [mensagens])
+    // Só rola quando faz sentido: ao trocar de conversa, ou quando chega mensagem
+    // nova e a pessoa já está no fim. Atualizações sem novidade não mexem na rolagem.
+    const area = areaMensagensRef.current
+    if (!area || mensagens.length === 0) return
+    const ultimoId = mensagens[mensagens.length - 1].id
+    const trocouDeConversa = conversaDoScrollRef.current !== conversaSelecionadaId
+    const chegouMensagemNova = ultimoIdRef.current !== ultimoId
+    conversaDoScrollRef.current = conversaSelecionadaId
+    ultimoIdRef.current = ultimoId
+
+    if (trocouDeConversa) {
+      area.scrollTop = area.scrollHeight
+      pertoDoFimRef.current = true
+    } else if (chegouMensagemNova && pertoDoFimRef.current) {
+      area.scrollTo({ top: area.scrollHeight, behavior: "smooth" })
+    }
+  }, [mensagens, conversaSelecionadaId])
+
+  function aoRolarMensagens() {
+    const area = areaMensagensRef.current
+    if (!area) return
+    pertoDoFimRef.current = area.scrollHeight - area.scrollTop - area.clientHeight < 120
+  }
+
+  /** Só troca o estado quando o conteúdo realmente mudou (evita re-render e salto na tela). */
+  function mostrarMensagens(lista: ChatMessage[]) {
+    const assinatura = JSON.stringify(lista)
+    if (assinatura === assinaturaMensagensRef.current) return
+    assinaturaMensagensRef.current = assinatura
+    setMensagens(lista)
+  }
+
+  function aplicarSnapshot(snapshot: ChatInboxSnapshot, comMensagens: boolean) {
+    const assinatura = JSON.stringify(snapshot.conversas)
+    if (assinatura !== assinaturaConversasRef.current) {
+      assinaturaConversasRef.current = assinatura
+      setConversas(snapshot.conversas)
+    }
+    if (comMensagens && snapshot.conversaSelecionadaId) {
+      cacheMensagensRef.current.set(snapshot.conversaSelecionadaId, snapshot.mensagens)
+      mostrarMensagens(snapshot.mensagens)
+    }
+  }
 
   async function selecionarConversa(id: string) {
     idSelecionadoRef.current = id
     setConversaFechada(false)
     setConversaSelecionadaId(id)
-    setMensagens([])
+    // Conversa já aberta antes aparece na hora; o histórico novo chega logo depois.
+    mostrarMensagens(cacheMensagensRef.current.get(id) ?? [])
     try {
-      const snapshot = await refreshChatInboxAction(id)
-      if (idSelecionadoRef.current === id) {
-        setConversas(snapshot.conversas)
-        setMensagens(snapshot.mensagens)
-      }
+      const lista = await loadChatMessagesAction(id)
+      cacheMensagensRef.current.set(id, lista)
+      if (idSelecionadoRef.current === id) mostrarMensagens(lista)
     } catch {
       toast.error("Não foi possível carregar o histórico desta conversa.")
     }
@@ -149,10 +278,10 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
     setTexto("")
     if (modoComposicao === "resposta") setModoComposicao("mensagem")
     toast.success(resultado.message)
+    pertoDoFimRef.current = true
     try {
       const snapshot = await refreshChatInboxAction(leadId)
-      setConversas(snapshot.conversas)
-      setMensagens(snapshot.mensagens)
+      aplicarSnapshot(snapshot, idSelecionadoRef.current === leadId)
     } catch {
       toast.message("Mensagem enviada. O histórico será atualizado em instantes.")
     }
@@ -163,6 +292,13 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
       event.preventDefault()
       void enviarMensagem()
     }
+  }
+
+  function sairDaConversa() {
+    idSelecionadoRef.current = null
+    setConversaSelecionadaId(null)
+    setConversaFechada(true)
+    mostrarMensagens([])
   }
 
   function inserirEmoji(emoji: string) {
@@ -176,27 +312,19 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
   }
 
   return (
-    <div className="flex h-[calc(100svh-8rem)] min-h-160 flex-col gap-4 lg:min-h-128">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-xl font-semibold text-balance md:text-2xl">Chat</h1>
-          <p className="text-sm text-muted-foreground">Conversas com leads em um só lugar.</p>
-        </div>
-        <Badge variant="outline" className="w-fit gap-1.5 border-emerald-600/25 bg-emerald-600/10 text-emerald-700 dark:text-emerald-300">
-          <span className="size-1.5 rounded-full bg-emerald-600" /> Atualização automática
-        </Badge>
-      </div>
+    <div className="flex h-[calc(100svh-6.5rem)] min-h-176 flex-col gap-3 lg:min-h-144">      
 
-      <div className="grid min-h-0 flex-1 grid-rows-[minmax(12rem,0.4fr)_minmax(0,0.6fr)] grid-cols-1 overflow-hidden rounded-lg border bg-card lg:grid-rows-1 lg:grid-cols-[minmax(260px,310px)_minmax(0,1fr)] 2xl:grid-cols-[300px_minmax(0,1fr)_250px]">
-        <aside className="flex min-h-0 flex-col border-b lg:border-b-0 lg:border-r">
-          <div className="flex items-center justify-between gap-2 px-4 pb-3 pt-4">
+      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-1 overflow-hidden rounded-lg border bg-card shadow-sm lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)]">
+        <aside className={cn("min-h-0 flex-col bg-card lg:flex lg:border-r", conversaAtiva ? "hidden" : "flex")}>
+          <div className="flex min-h-18 items-center justify-between gap-2 border-b bg-card px-4 py-3">
             <div>
-              <h2 className="text-sm font-semibold">Leads e conversas</h2>
-              <p className="mt-0.5 text-xs text-muted-foreground">{conversas.length} leads cadastrados</p>
+              <h2 className="text-base font-semibold">Leads e conversas</h2>
+              <p className="text-xs text-muted-foreground">{conversas.length} leads cadastrados</p>
             </div>
             <Button
               variant={somenteRespostas ? "secondary" : "ghost"}
               size="icon"
+              className="rounded-full"
               aria-label="Alternar filtro de respostas"
               aria-pressed={somenteRespostas}
               title="Alternar filtro de respostas"
@@ -205,78 +333,104 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
               <Filter className="size-4" />
             </Button>
           </div>
-          <div className="px-3 pb-3">
+          <div className="px-3 py-3">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={busca} onChange={(event) => setBusca(event.target.value)} placeholder="Buscar lead..." className="pl-8" aria-label="Buscar leads" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={busca}
+                onChange={(event) => setBusca(event.target.value)}
+                placeholder="Buscar lead..."
+                className="h-7 rounded-lg border-transparent bg-muted pl-9 focus-visible:bg-card"
+                aria-label="Buscar leads"
+              />
             </div>
           </div>
-          <div className="flex gap-1 px-3 pb-2">
-            <Button variant={!somenteRespostas ? "secondary" : "ghost"} size="sm" onClick={() => setSomenteRespostas(false)}>Todos</Button>
-            <Button variant={somenteRespostas ? "secondary" : "ghost"} size="sm" onClick={() => setSomenteRespostas(true)}>
+          <div className="flex gap-1.5 px-3 pb-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn("rounded-full border", !somenteRespostas ? "border-primary/30 bg-primary/15 text-primary hover:bg-primary/20" : "text-muted-foreground")}
+              onClick={() => setSomenteRespostas(false)}
+            >
+              Todos
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn("rounded-full border", somenteRespostas ? "border-primary/30 bg-primary/15 text-primary hover:bg-primary/20" : "text-muted-foreground")}
+              onClick={() => setSomenteRespostas(true)}
+            >
               Com resposta <span className="ml-1 tabular-nums">{totalComResposta}</span>
             </Button>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto">
-            {conversasVisiveis.length ? conversasVisiveis.map((conversa) => (
-              <button
-                key={conversa.id}
-                type="button"
-                onClick={() => void selecionarConversa(conversa.id)}
-                className={cn("flex w-full items-start gap-3 border-t px-4 py-3 text-left transition-colors hover:bg-muted/60", conversaSelecionadaId === conversa.id && "bg-accent/70")}
-              >
-                <Avatar className="mt-0.5 size-10 shrink-0">
-                  <AvatarFallback className={cn("text-xs font-semibold", conversa.ultimaMensagem?.lado === "lead" ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground")}>
-                    {iniciais(conversa.nome)}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center justify-between gap-2">
-                    <span className="truncate text-sm font-medium">{conversa.nome}</span>
-                    <span className="shrink-0 text-[11px] text-muted-foreground">
-                      {conversa.ultimaMensagem ? formatRelative(conversa.ultimaMensagem.data) : "Novo"}
+            {conversasVisiveis.length ? conversasVisiveis.map((conversa) => {
+              const respondeu = conversa.ultimaMensagem?.lado === "lead"
+              const naoLida = respondeu && vistasCarregadas && conversaSelecionadaId !== conversa.id &&
+                (!vistas[conversa.id] || new Date(conversa.ultimaMensagem!.data) > new Date(vistas[conversa.id]))
+              return (
+                <button
+                  key={conversa.id}
+                  type="button"
+                  onClick={() => void selecionarConversa(conversa.id)}
+                  className={cn("group flex w-full items-center gap-3.5 px-4 text-left transition-colors hover:bg-muted/60", conversaSelecionadaId === conversa.id && "bg-muted")}
+                >
+                  <Avatar className="size-10 shrink-0">
+                    <AvatarFallback className={cn("text-sm font-semibold", respondeu ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground")}>
+                      {iniciais(conversa.nome)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="min-w-0 flex-1 border-b py-4 group-last:border-b-0">
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="truncate text-base font-medium">{conversa.nome}</span>
+                      <span
+                        className={cn("shrink-0 text-[11px]", naoLida ? "font-medium text-primary" : "text-muted-foreground")}
+                        title={conversa.ultimaMensagem ? formatRelative(conversa.ultimaMensagem.data) : undefined}
+                        suppressHydrationWarning
+                      >
+                        {conversa.ultimaMensagem ? dataLista(conversa.ultimaMensagem.data) : "Novo"}
+                      </span>
+                    </span>
+                    <span className="mt-0.5 flex items-center justify-between gap-2">
+                      <span className="flex min-w-0 items-center gap-1 text-sm text-muted-foreground">
+                        {conversa.ultimaMensagem?.lado === "equipe" ? <CheckCheck className="size-4 shrink-0" /> : null}
+                        {conversa.ultimaMensagem?.lado === "interno" ? <StickyNote className="size-3.5 shrink-0" /> : null}
+                        <span className="truncate">{preview(conversa.ultimaMensagem)}</span>
+                      </span>
+                      {naoLida ? <span className="size-2.5 shrink-0 rounded-full bg-primary" aria-label="Resposta não lida" /> : null}
                     </span>
                   </span>
-                  <span className="mt-1 block truncate text-xs text-muted-foreground">{preview(conversa.ultimaMensagem)}</span>
-                </span>
-              </button>
-            )) : (
+                </button>
+              )
+            }) : (
               <p className="px-4 py-8 text-center text-sm text-muted-foreground">Nenhum lead encontrado.</p>
             )}
           </div>
         </aside>
 
-        <section className="flex min-h-0 min-w-0 flex-col">
+        <section className={cn("min-h-0 min-w-0 flex-col lg:flex", conversaAtiva ? "flex" : "hidden")}>
           {conversaAtiva ? (
             <>
-              <header className="flex min-h-16 items-center justify-between gap-3 border-b px-4 py-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <Avatar className="size-9 shrink-0"><AvatarFallback className="bg-primary/15 text-xs font-semibold text-primary">{iniciais(conversaAtiva.nome)}</AvatarFallback></Avatar>
+              <header className="flex min-h-18 items-center justify-between gap-3 border-b bg-card px-3 py-2.5 sm:px-5">
+                <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                  <Button variant="ghost" size="icon" className="-ml-1 rounded-full lg:hidden" aria-label="Voltar para a lista de conversas" title="Voltar" onClick={sairDaConversa}>
+                    <ArrowLeft className="size-5" />
+                  </Button>
+                  <Avatar className="size-10 shrink-0"><AvatarFallback className="bg-primary/15 text-sm font-semibold text-primary">{iniciais(conversaAtiva.nome)}</AvatarFallback></Avatar>
                   <div className="min-w-0">
-                    <h2 className="truncate text-sm font-semibold">{conversaAtiva.nome}</h2>
+                    <h2 className="truncate text-[15px] font-semibold leading-tight">{conversaAtiva.nome}</h2>
                     <p className="truncate text-xs text-muted-foreground">{conversaAtiva.telefone}</p>
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Sair da conversa"
-                    title="Sair da conversa"
-                    onClick={() => {
-                      idSelecionadoRef.current = null
-                      setConversaSelecionadaId(null)
-                      setConversaFechada(true)
-                      setMensagens([])
-                    }}
-                  >
+                  <Button variant="ghost" size="icon" className="rounded-full" aria-label="Sair da conversa" title="Sair da conversa" onClick={sairDaConversa}>
                     <X className="size-4" />
                   </Button>
                 </div>
               </header>
 
               {conversaAtiva.campanhasNomes.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-2 border-b border-emerald-600/20 bg-emerald-600/10 px-4 py-2.5">
+                <div className="flex flex-wrap items-center gap-2 border-y border-emerald-600/20 bg-emerald-600/10 px-4 py-2">
                   <Megaphone className="size-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
                   <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-200">Campanha vinculada</span>
                   {conversaAtiva.campanhasNomes.map((nome) => (
@@ -292,51 +446,71 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                 onValueChange={(valor) => setAbaAtiva(String(valor) as "conversa" | "perfil")}
                 className="min-h-0 flex-1 gap-0"
               >
-                <TabsList className="h-11 w-full justify-start rounded-none border-b bg-transparent px-3">
+                <TabsList className="h-11 w-full justify-start rounded-none border-b bg-card px-3">
                   <TabsTrigger value="conversa"><MessagesSquare className="size-4" />Conversa</TabsTrigger>
                   <TabsTrigger value="perfil"><UserRound className="size-4" />Perfil</TabsTrigger>
                 </TabsList>
                 <TabsContent value="conversa" className="flex min-h-0 flex-1 flex-col">
-                  <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto bg-[linear-gradient(135deg,oklch(0.97_0.018_160)_0%,var(--background)_45%,oklch(0.97_0.012_75)_100%)] px-4 py-5 dark:bg-[linear-gradient(135deg,oklch(0.2_0.02_160)_0%,var(--background)_55%,oklch(0.21_0.018_75)_100%)] sm:px-6">
-                    {mensagens.length ? mensagens.map((mensagem) => (
-                      <div key={mensagem.id} className={cn("flex max-w-[88%] flex-col gap-1 sm:max-w-[75%]", mensagem.lado === "equipe" ? "self-end" : mensagem.lado === "interno" ? "w-full self-center sm:max-w-[85%]" : "self-start")}>
-                        <div
-                          className={cn(
-                            "chat-message-content whitespace-pre-wrap wrap-break-word rounded-lg px-3.5 py-2.5 text-sm leading-relaxed shadow-sm",
-                            mensagem.lado === "equipe"
-                              ? "rounded-br-sm bg-primary text-primary-foreground"
-                              : mensagem.lado === "interno"
-                                ? "border border-amber-500/30 bg-amber-50 text-amber-950 dark:bg-amber-950/40 dark:text-amber-100"
-                                : "rounded-bl-sm border bg-card text-card-foreground",
-                          )}
-                          style={{ fontFamily: 'var(--font-sans), "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif' }}
-                        >
-                          {mensagem.lado === "interno" ? <span className="mb-1 block text-xs font-semibold">Nota interna</span> : null}
-                          {mensagem.texto || "(mensagem sem texto)"}
+                  <div ref={definirAreaMensagens} onScroll={aoRolarMensagens} className="wa-wallpaper flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 py-6 sm:px-8 lg:px-12">
+                    {mensagens.length ? mensagens.map((mensagem, indice) => {
+                      const anterior = indice > 0 ? mensagens[indice - 1] : null
+                      const novoDia = !anterior || !mesmoDia(anterior.data, mensagem.data)
+                      const inicioDoGrupo = novoDia || anterior?.lado !== mensagem.lado
+                      const interna = mensagem.lado === "interno"
+                      const enviada = mensagem.lado === "equipe"
+                      return (
+                        <div key={mensagem.id} className="flex flex-col">
+                          {novoDia ? (
+                            <span className="my-4 self-center rounded-full border bg-(--wa-pill) px-4 py-1 text-xs text-(--wa-pill-fg) shadow-sm" suppressHydrationWarning>
+                              {rotuloDia(mensagem.data)}
+                            </span>
+                          ) : null}
+                          <div
+                            className={cn(
+                              "flex max-w-[92%] flex-col sm:max-w-[78%]",
+                              inicioDoGrupo && !novoDia && "mt-4",
+                              !inicioDoGrupo && "mt-1",
+                              enviada ? "self-end" : interna ? "w-full max-w-[92%] self-center sm:max-w-[80%]" : "self-start",
+                            )}
+                          >
+                            <div
+                              className={cn(
+                                "wa-bubble chat-message-content",
+                                enviada ? "wa-bubble-out" : interna ? "wa-bubble-note" : "wa-bubble-in",
+                              )}
+                              style={{ fontFamily: 'var(--font-sans), "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif' }}
+                            >
+                              {interna ? (
+                                <span className="mb-0.5 flex items-center gap-1 text-xs font-semibold"><StickyNote className="size-3" />Nota interna</span>
+                              ) : null}
+                              {mensagem.campanhaNome ? (
+                                <span className="mb-0.5 block max-w-56 truncate text-xs font-semibold text-primary">{mensagem.campanhaNome}</span>
+                              ) : null}
+                              <span className="whitespace-pre-wrap wrap-break-word">{mensagem.texto || "(mensagem sem texto)"}</span>
+                              <span className="relative top-1 float-right ml-3 mt-1 flex items-center gap-1 text-[11px] leading-none text-(--wa-meta)" suppressHydrationWarning>
+                                {horario(mensagem.data)}
+                                {enviada ? <CheckCheck className="size-3.5" /> : interna ? <StickyNote className="size-3" /> : <MessageCircle className="size-3" />}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <div className={cn("flex items-center gap-1 text-[10px] text-muted-foreground", mensagem.lado === "equipe" && "justify-end")}>
-                          {mensagem.campanhaNome ? <span className="mr-1 max-w-40 truncate">{mensagem.campanhaNome} ·</span> : null}
-                          <span>{horario(mensagem.data)}</span>
-                          {mensagem.lado === "equipe" ? <CheckCheck className="size-3.5" /> : mensagem.lado === "interno" ? <StickyNote className="size-3" /> : <MessageCircle className="size-3" />}
-                        </div>
-                      </div>
-                    )) : (
-                      <div className="m-auto flex max-w-sm flex-col items-center gap-2 py-12 text-center">
+                      )
+                    }) : (
+                      <div className="m-auto flex max-w-sm flex-col items-center gap-2 rounded-lg bg-(--wa-pill) px-6 py-8 text-center shadow-sm">
                         <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary"><MessageCircle className="size-5" /></span>
                         <p className="text-sm font-medium">Inicie a conversa com {conversaAtiva.nome}</p>
                         <p className="text-xs text-muted-foreground">As mensagens enviadas e as respostas recebidas aparecerão aqui.</p>
                       </div>
                     )}
-                    <div ref={fimDaConversa} />
                   </div>
 
-                  <div className="border-t bg-card p-3 sm:p-4">
-                    <div className="mb-2 flex flex-wrap items-center gap-1">
+                  <div className={cn("border-t px-4 py-4 sm:px-6", modoComposicao === "mensagem" ? "bg-card" : "bg-amber-50 dark:bg-amber-950/25")}>
+                    <div className="mb-3 flex flex-wrap items-center gap-1.5">
                       <Popover open={seletorEmojiAberto} onOpenChange={setSeletorEmojiAberto}>
                         <PopoverTrigger
                           render={
-                            <Button variant="ghost" size="icon" disabled={enviando} aria-label="Abrir emojis" title="Inserir emoji">
-                              <Smile className="size-4" />
+                            <Button variant="ghost" size="icon" className="rounded-full" disabled={enviando} aria-label="Abrir emojis" title="Inserir emoji">
+                              <Smile className="size-5" />
                             </Button>
                           }
                         />
@@ -366,6 +540,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                         type="button"
                         variant={modoComposicao === "nota" ? "secondary" : "ghost"}
                         size="icon"
+                        className="rounded-full"
                         aria-label="Nota interna"
                         aria-pressed={modoComposicao === "nota"}
                         title="Nota interna"
@@ -380,6 +555,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                         type="button"
                         variant={modoComposicao === "resposta" ? "secondary" : "ghost"}
                         size="icon"
+                        className="rounded-full"
                         aria-label="Registrar resposta do lead"
                         aria-pressed={modoComposicao === "resposta"}
                         title="Registrar resposta do lead"
@@ -392,10 +568,10 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                       </Button>
                       {modoComposicao !== "mensagem" ? (
                         <>
-                          <Button type="button" variant="ghost" size="icon" aria-label="Cancelar registro" title="Cancelar registro" disabled={enviando} onClick={() => trocarModoComposicao("mensagem")}>
+                          <Button type="button" variant="ghost" size="icon" className="rounded-full" aria-label="Cancelar registro" title="Cancelar registro" disabled={enviando} onClick={() => trocarModoComposicao("mensagem")}>
                             <X className="size-4" />
                           </Button>
-                          <span className="ml-auto text-[11px] text-amber-700 dark:text-amber-300">
+                          <span className="ml-auto text-[11px] font-medium text-amber-800 dark:text-amber-300">
                             {modoComposicao === "nota" ? "Somente para a equipe" : "Registro manual · não será enviado"}
                           </span>
                         </>
@@ -405,7 +581,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                           onValueChange={setInstancia}
                           opcoes={opcoesInstancia}
                           size="sm"
-                          className="ml-auto w-auto min-w-40 max-w-56"
+                          className="ml-auto w-auto min-w-40 max-w-56 rounded-full bg-card"
                           disabled={enviando}
                         />
                       ) : <span className="ml-auto text-[11px] text-muted-foreground">Crie uma instância em Instâncias para enviar</span>}
@@ -417,25 +593,32 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                         onKeyDown={tratarTecla}
                         maxLength={limiteTexto}
                         placeholder={modoComposicao === "nota" ? "Escreva uma nota interna..." : modoComposicao === "resposta" ? "Registre o que o lead respondeu..." : `Escreva uma mensagem para ${conversaAtiva.nome}...`}
-                        className="min-h-12 max-h-32 resize-y bg-muted/40"
+                        className="max-h-48 min-h-14 resize-none rounded-2xl border-input bg-muted/50 px-5 py-4 text-base leading-snug md:text-base dark:bg-muted/40"
                         aria-label={modoComposicao === "nota" ? "Nota interna" : modoComposicao === "resposta" ? "Resposta do lead" : "Mensagem para o lead"}
                         disabled={enviando}
                       />
-                      <Button size="icon" onClick={() => void enviarMensagem()} disabled={enviando || !texto.trim() || (modoComposicao === "mensagem" && instancias.length === 0)} aria-label={modoComposicao === "nota" ? "Salvar nota interna" : modoComposicao === "resposta" ? "Registrar resposta" : "Enviar mensagem"} title={modoComposicao === "nota" ? "Salvar nota interna" : modoComposicao === "resposta" ? "Registrar resposta" : "Enviar mensagem"}>
-                        {modoComposicao === "nota" ? <StickyNote className="size-4" /> : modoComposicao === "resposta" ? <CheckCheck className="size-4" /> : <Send className="size-4" />}
+                      <Button
+                        size="icon"
+                        className="size-14 shrink-0 rounded-full"
+                        onClick={() => void enviarMensagem()}
+                        disabled={enviando || !texto.trim() || (modoComposicao === "mensagem" && instancias.length === 0)}
+                        aria-label={modoComposicao === "nota" ? "Salvar nota interna" : modoComposicao === "resposta" ? "Registrar resposta" : "Enviar mensagem"}
+                        title={modoComposicao === "nota" ? "Salvar nota interna" : modoComposicao === "resposta" ? "Registrar resposta" : "Enviar mensagem"}
+                      >
+                        {modoComposicao === "nota" ? <StickyNote className="size-5" /> : modoComposicao === "resposta" ? <CheckCheck className="size-5" /> : <Send className="size-6" />}
                       </Button>
                     </div>
-                    <div className="mt-1 flex justify-between px-1 text-[10px] text-muted-foreground">
+                    <div className="mt-2 flex justify-between gap-3 px-2 text-[11px] text-muted-foreground">
                       <span>Enter para {modoComposicao === "nota" ? "salvar nota" : modoComposicao === "resposta" ? "registrar resposta" : "enviar"} · Shift+Enter para nova linha</span>
-                      <span className="tabular-nums">{texto.length}/{limiteTexto}</span>
+                      <span className="shrink-0 tabular-nums">{texto.length}/{limiteTexto}</span>
                     </div>
                   </div>
                 </TabsContent>
                 <TabsContent value="perfil" className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
                   <div className="mx-auto flex max-w-2xl flex-col gap-6">
                     <div className="flex items-center gap-4">
-                      <Avatar className="size-14 shrink-0">
-                        <AvatarFallback className="bg-primary/15 text-base font-semibold text-primary">{iniciais(conversaAtiva.nome)}</AvatarFallback>
+                      <Avatar className="size-16 shrink-0">
+                        <AvatarFallback className="bg-primary/15 text-lg font-semibold text-primary">{iniciais(conversaAtiva.nome)}</AvatarFallback>
                       </Avatar>
                       <div className="min-w-0">
                         <h3 className="text-base font-semibold">{conversaAtiva.nome}</h3>
@@ -459,16 +642,17 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
               </Tabs>
             </>
           ) : (
-            <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
-              <MessageCircle className="size-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                {conversas.length ? "Selecione um lead para abrir uma conversa." : "Cadastre um lead para começar uma conversa."}
-              </p>
-              {!conversas.length ? <LinkButton variant="outline" href="/leads">Ver leads</LinkButton> : null}
+            <div className="wa-wallpaper flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
+              <div className="flex flex-col items-center gap-3 rounded-lg bg-(--wa-pill) px-8 py-8 shadow-sm">
+                <MessageCircle className="size-8 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  {conversas.length ? "Selecione um lead para abrir uma conversa." : "Cadastre um lead para começar uma conversa."}
+                </p>
+                {!conversas.length ? <LinkButton variant="outline" href="/leads">Ver leads</LinkButton> : null}
+              </div>
             </div>
           )}
         </section>
-
       </div>
     </div>
   )

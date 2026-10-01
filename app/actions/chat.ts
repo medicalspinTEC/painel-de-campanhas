@@ -1,9 +1,14 @@
 "use server"
 
-import { addChatInternalNote, getChatInbox } from "@/services/chat"
+import { addChatInternalNote, getChatInbox, getChatMessages } from "@/services/chat"
 
-export async function refreshChatInboxAction(conversaId?: string | null) {
-  return getChatInbox(conversaId)
+export async function refreshChatInboxAction(conversaId?: string | null, semMensagens = false) {
+  return getChatInbox(conversaId, { semMensagens })
+}
+
+/** Só o histórico de uma conversa: abrir um lead não precisa recarregar a lista inteira. */
+export async function loadChatMessagesAction(leadId: string) {
+  return getChatMessages(leadId)
 }
 
 export async function createChatInternalNoteAction(leadId: string, texto: string) {

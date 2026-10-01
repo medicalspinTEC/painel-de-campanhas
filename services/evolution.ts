@@ -100,6 +100,8 @@ export async function fetchEvolutionInstances(): Promise<EvolutionInstance[]> {
     const response = await fetch(`${apiUrl}/instance/fetchInstances`, {
       headers: { apikey: apiKey },
       cache: "no-store",
+      // Evolution lenta não pode travar a abertura das páginas.
+      signal: AbortSignal.timeout(3000),
     })
 
     if (!response.ok) {

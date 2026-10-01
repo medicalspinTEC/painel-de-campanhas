@@ -126,3 +126,64 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ───────── Chat (usa as cores do tema do app) ───────── */
+:root {
+  --wa-wallpaper: color-mix(in oklch, var(--muted) 70%, var(--background));
+  --wa-panel: var(--muted);
+  --wa-in: var(--card);
+  --wa-in-fg: var(--card-foreground);
+  --wa-out: color-mix(in oklch, var(--primary) 14%, var(--card));
+  --wa-out-fg: var(--card-foreground);
+  --wa-meta: var(--muted-foreground);
+  --wa-note: oklch(0.97 0.05 95);
+  --wa-note-fg: oklch(0.38 0.07 80);
+  --wa-pill: color-mix(in oklch, var(--card) 92%, transparent);
+  --wa-pill-fg: var(--muted-foreground);
+}
+
+.dark {
+  --wa-wallpaper: color-mix(in oklch, var(--background) 85%, black);
+  --wa-out: color-mix(in oklch, var(--primary) 24%, var(--card));
+  --wa-note: oklch(0.3 0.04 85);
+  --wa-note-fg: oklch(0.9 0.06 90);
+}
+
+.wa-wallpaper {
+  background-color: var(--wa-wallpaper);
+}
+
+.wa-bubble {
+  position: relative;
+  border-radius: 1rem;
+  padding: 0.55rem 0.8rem 0.45rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+}
+
+.wa-bubble::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
+.wa-bubble-in {
+  background: var(--wa-in);
+  color: var(--wa-in-fg);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 0.3rem;
+}
+
+.wa-bubble-out {
+  background: var(--wa-out);
+  color: var(--wa-out-fg);
+  border: 1px solid color-mix(in oklch, var(--primary) 22%, transparent);
+  border-bottom-right-radius: 0.3rem;
+}
+
+.wa-bubble-note {
+  background: var(--wa-note);
+  color: var(--wa-note-fg);
+  border: 1px dashed color-mix(in oklch, var(--wa-note-fg) 40%, transparent);
+}
