@@ -89,6 +89,27 @@ export async function setKanbanPluginAtivo(ativo: boolean): Promise<void> {
   })
 }
 
+export async function getAssistentePluginAtivo(): Promise<boolean> {
+  try {
+    const row = await prisma.settings.findUnique({
+      where: { id: ID },
+      select: { assistentePluginAtivo: true },
+    })
+    return row?.assistentePluginAtivo ?? false
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "P2022") return false
+    throw error
+  }
+}
+
+export async function setAssistentePluginAtivo(ativo: boolean): Promise<void> {
+  await prisma.settings.upsert({
+    where: { id: ID },
+    create: { id: ID, assistentePluginAtivo: ativo },
+    update: { assistentePluginAtivo: ativo },
+  })
+}
+
 export async function saveSettings(input: Settings): Promise<Settings> {
   const row = await prisma.settings.upsert({
     where: { id: ID },

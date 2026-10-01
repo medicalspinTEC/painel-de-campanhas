@@ -2,7 +2,13 @@
 
 import { revalidatePath } from "next/cache"
 
-import { saveSettings, setChatPluginAtivo, setKanbanPluginAtivo, type Settings } from "@/services/settings"
+import {
+  saveSettings,
+  setAssistentePluginAtivo,
+  setChatPluginAtivo,
+  setKanbanPluginAtivo,
+  type Settings,
+} from "@/services/settings"
 import { recordAppLog } from "@/services/app-logs"
 
 export type SettingsActionResult = { ok: boolean; message: string }
@@ -78,4 +84,20 @@ export async function setKanbanPluginAtivoAction(ativo: boolean): Promise<Settin
   revalidatePath("/kanban")
   revalidatePath("/", "layout")
   return { ok: true, message: ativo ? "Plugin Kanban ativado." : "Plugin Kanban desativado.", ativo }
+}
+
+export async function setAssistentePluginAtivoAction(ativo: boolean): Promise<SettingsActionResult & { ativo?: boolean }> {
+  if (typeof ativo !== "boolean") return { ok: false, message: "Estado inválido para o plugin." }
+
+  try {
+    await setAssistentePluginAtivo(ativo)
+  } catch (error) {
+    await recordAppLog({ origem: "settings", mensagem: "Falha ao atualizar o plugin Assistente.", detalhes: error })
+    return { ok: false, message: "Não foi possível atualizar o plugin Assistente." }
+  }
+
+  revalidatePath("/integracoes")
+  revalidatePath("/assistente")
+  revalidatePath("/", "layout")
+  return { ok: true, message: ativo ? "Plugin Assistente ativado." : "Plugin Assistente desativado.", ativo }
 }

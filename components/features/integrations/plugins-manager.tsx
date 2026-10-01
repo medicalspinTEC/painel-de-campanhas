@@ -2,10 +2,14 @@
 
 import { useState, useTransition, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronRight, Columns3, MessageCircle, Puzzle } from "lucide-react"
+import { ChevronRight, ClipboardList, Columns3, MessageCircle, Puzzle } from "lucide-react"
 import { toast } from "sonner"
 
-import { setChatPluginAtivoAction, setKanbanPluginAtivoAction } from "@/app/actions/settings"
+import {
+  setAssistentePluginAtivoAction,
+  setChatPluginAtivoAction,
+  setKanbanPluginAtivoAction,
+} from "@/app/actions/settings"
 import { LinkButton } from "@/components/shared/link-button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -17,7 +21,7 @@ import {
 } from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
 
-type PluginId = "chat" | "kanban"
+type PluginId = "chat" | "kanban" | "assistente"
 
 function PluginCard({
   titulo,
@@ -68,13 +72,16 @@ type PluginDetails = {
 export function PluginsManager({
   chatAtivoInicial,
   kanbanAtivoInicial,
+  assistenteAtivoInicial,
 }: {
   chatAtivoInicial: boolean
   kanbanAtivoInicial: boolean
+  assistenteAtivoInicial: boolean
 }) {
   const router = useRouter()
   const [chatAtivo, setChatAtivo] = useState(chatAtivoInicial)
   const [kanbanAtivo, setKanbanAtivo] = useState(kanbanAtivoInicial)
+  const [assistenteAtivo, setAssistenteAtivo] = useState(assistenteAtivoInicial)
   const [pending, startTransition] = useTransition()
   const [pluginSelecionado, setPluginSelecionado] = useState<PluginId | null>(null)
 
@@ -106,6 +113,20 @@ export function PluginsManager({
     })
   }
 
+  function alterarAssistente(ativo: boolean) {
+    startTransition(async () => {
+      const resultado = await setAssistentePluginAtivoAction(ativo)
+      if (!resultado.ok) {
+        toast.error(resultado.message)
+        return
+      }
+
+      setAssistenteAtivo(ativo)
+      toast.success(resultado.message)
+      router.refresh()
+    })
+  }
+
   const detalhes: PluginDetails | null =
     pluginSelecionado === "chat"
       ? {
@@ -131,6 +152,19 @@ export function PluginsManager({
             acaoLabel: "Abrir Kanban",
             acaoIcon: <Columns3 className="size-4" />,
           }
+        : pluginSelecionado === "assistente"
+          ? {
+              id: "assistente",
+              titulo: "Assistente",
+              descricao:
+                "Agente determinístico do app, sem IA. No momento, consulta leads cuja última mensagem enviada há mais de 24 horas ainda não teve resposta.",
+              ativo: assistenteAtivo,
+              onChange: alterarAssistente,
+              icon: ClipboardList,
+              href: "/assistente",
+              acaoLabel: "Abrir Assistente",
+              acaoIcon: <ClipboardList className="size-4" />,
+            }
         : null
 
   return (
@@ -152,6 +186,12 @@ export function PluginsManager({
           ativo={kanbanAtivo}
           icon={Columns3}
           onClick={() => setPluginSelecionado("kanban")}
+        />
+        <PluginCard
+          titulo="Assistente"
+          ativo={assistenteAtivo}
+          icon={ClipboardList}
+          onClick={() => setPluginSelecionado("assistente")}
         />
       </div>
 

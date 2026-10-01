@@ -2,6 +2,7 @@ import { AppHeader } from "@/components/layout/app-header"
 import { listCampaignsForSearch } from "@/services/campaigns"
 import { listEvents } from "@/services/events"
 import { listLeadsForSearch } from "@/services/leads"
+import { getAssistentePluginAtivo } from "@/services/settings"
 
 /**
  * Busca os dados do cabeçalho (busca global + notificações) separado do
@@ -10,10 +11,11 @@ import { listLeadsForSearch } from "@/services/leads"
  * por estas três consultas em toda navegação.
  */
 export async function AppHeaderData() {
-  const [leads, campanhas, notificacoes] = await Promise.all([
+  const [leads, campanhas, notificacoes, assistenteAtivo] = await Promise.all([
     listLeadsForSearch(40),
     listCampaignsForSearch(40),
     listEvents(30),
+    getAssistentePluginAtivo(),
   ])
 
   return (
@@ -31,6 +33,7 @@ export async function AppHeaderData() {
         href: `/campanhas/${c.id}`,
       }))}
       notificacoes={notificacoes}
+      assistenteAtivo={assistenteAtivo}
     />
   )
 }

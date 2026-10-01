@@ -217,7 +217,7 @@ export const AppLogNivel: typeof $Enums.AppLogNivel
  */
 export class PrismaClient<
   ClientOptions extends Prisma.PrismaClientOptions = Prisma.PrismaClientOptions,
-  U = 'log' extends keyof ClientOptions ? ClientOptions['log'] extends Array<Prisma.LogLevel | Prisma.LogDefinition> ? Prisma.GetEvents<ClientOptions['log']> : never : never,
+  const U = 'log' extends keyof ClientOptions ? ClientOptions['log'] extends Array<Prisma.LogLevel | Prisma.LogDefinition> ? Prisma.GetEvents<ClientOptions['log']> : never : never,
   ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
 > {
   [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['other'] }
@@ -249,13 +249,6 @@ export class PrismaClient<
    * Disconnect from the database
    */
   $disconnect(): $Utils.JsPromise<void>;
-
-  /**
-   * Add a middleware
-   * @deprecated since 4.16.0. For new code, prefer client extensions instead.
-   * @see https://pris.ly/d/extensions
-   */
-  $use(cb: Prisma.Middleware): void
 
 /**
    * Executes a prepared raw query and returns the number of affected rows.
@@ -553,8 +546,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.12.0
-   * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
+   * Prisma Client JS version: 6.19.3
+   * Query Engine version: c2990dca591cba766e3b7ef5d9e8a84796e47ab7
    */
   export type PrismaVersion = {
     client: string
@@ -567,6 +560,7 @@ export namespace Prisma {
    */
 
 
+  export import Bytes = runtime.Bytes
   export import JsonObject = runtime.JsonObject
   export import JsonArray = runtime.JsonArray
   export import JsonValue = runtime.JsonValue
@@ -2275,16 +2269,24 @@ export namespace Prisma {
     /**
      * @example
      * ```
-     * // Defaults to stdout
+     * // Shorthand for `emit: 'stdout'`
      * log: ['query', 'info', 'warn', 'error']
      * 
-     * // Emit as events
+     * // Emit as events only
      * log: [
-     *   { emit: 'stdout', level: 'query' },
-     *   { emit: 'stdout', level: 'info' },
-     *   { emit: 'stdout', level: 'warn' }
-     *   { emit: 'stdout', level: 'error' }
+     *   { emit: 'event', level: 'query' },
+     *   { emit: 'event', level: 'info' },
+     *   { emit: 'event', level: 'warn' }
+     *   { emit: 'event', level: 'error' }
      * ]
+     * 
+     * / Emit as events and log to stdout
+     * og: [
+     *  { emit: 'stdout', level: 'query' },
+     *  { emit: 'stdout', level: 'info' },
+     *  { emit: 'stdout', level: 'warn' }
+     *  { emit: 'stdout', level: 'error' }
+     * 
      * ```
      * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/logging#the-log-option).
      */
@@ -2346,10 +2348,15 @@ export namespace Prisma {
     emit: 'stdout' | 'event'
   }
 
-  export type GetLogType<T extends LogLevel | LogDefinition> = T extends LogDefinition ? T['emit'] extends 'event' ? T['level'] : never : never
-  export type GetEvents<T extends any> = T extends Array<LogLevel | LogDefinition> ?
-    GetLogType<T[0]> | GetLogType<T[1]> | GetLogType<T[2]> | GetLogType<T[3]>
-    : never
+  export type CheckIsLogLevel<T> = T extends LogLevel ? T : never;
+
+  export type GetLogType<T> = CheckIsLogLevel<
+    T extends LogDefinition ? T['level'] : T
+  >;
+
+  export type GetEvents<T extends any[]> = T extends Array<LogLevel | LogDefinition>
+    ? GetLogType<T[number]>
+    : never;
 
   export type QueryEvent = {
     timestamp: Date
@@ -2389,25 +2396,6 @@ export namespace Prisma {
     | 'runCommandRaw'
     | 'findRaw'
     | 'groupBy'
-
-  /**
-   * These options are being passed into the middleware as "params"
-   */
-  export type MiddlewareParams = {
-    model?: ModelName
-    action: PrismaAction
-    args: any
-    dataPath: string[]
-    runInTransaction: boolean
-  }
-
-  /**
-   * The `T` type makes sure, that the `return proceed` is not forgotten in the middleware implementation
-   */
-  export type Middleware<T = any> = (
-    params: MiddlewareParams,
-    next: (params: MiddlewareParams) => $Utils.JsPromise<T>,
-  ) => $Utils.JsPromise<T>
 
   // tested in getLogLevel.test.ts
   export function getLogLevel(log: Array<LogLevel | LogDefinition>): LogLevel | undefined;
@@ -13823,6 +13811,7 @@ export namespace Prisma {
     notificarFalhas: boolean | null
     chatPluginAtivo: boolean | null
     kanbanPluginAtivo: boolean | null
+    assistentePluginAtivo: boolean | null
     atualizadoEm: Date | null
   }
 
@@ -13843,6 +13832,7 @@ export namespace Prisma {
     notificarFalhas: boolean | null
     chatPluginAtivo: boolean | null
     kanbanPluginAtivo: boolean | null
+    assistentePluginAtivo: boolean | null
     atualizadoEm: Date | null
   }
 
@@ -13863,6 +13853,7 @@ export namespace Prisma {
     notificarFalhas: number
     chatPluginAtivo: number
     kanbanPluginAtivo: number
+    assistentePluginAtivo: number
     atualizadoEm: number
     _all: number
   }
@@ -13897,6 +13888,7 @@ export namespace Prisma {
     notificarFalhas?: true
     chatPluginAtivo?: true
     kanbanPluginAtivo?: true
+    assistentePluginAtivo?: true
     atualizadoEm?: true
   }
 
@@ -13917,6 +13909,7 @@ export namespace Prisma {
     notificarFalhas?: true
     chatPluginAtivo?: true
     kanbanPluginAtivo?: true
+    assistentePluginAtivo?: true
     atualizadoEm?: true
   }
 
@@ -13937,6 +13930,7 @@ export namespace Prisma {
     notificarFalhas?: true
     chatPluginAtivo?: true
     kanbanPluginAtivo?: true
+    assistentePluginAtivo?: true
     atualizadoEm?: true
     _all?: true
   }
@@ -14044,6 +14038,7 @@ export namespace Prisma {
     notificarFalhas: boolean
     chatPluginAtivo: boolean
     kanbanPluginAtivo: boolean
+    assistentePluginAtivo: boolean
     atualizadoEm: Date
     _count: SettingsCountAggregateOutputType | null
     _avg: SettingsAvgAggregateOutputType | null
@@ -14083,6 +14078,7 @@ export namespace Prisma {
     notificarFalhas?: boolean
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
+    assistentePluginAtivo?: boolean
     atualizadoEm?: boolean
   }, ExtArgs["result"]["settings"]>
 
@@ -14103,6 +14099,7 @@ export namespace Prisma {
     notificarFalhas?: boolean
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
+    assistentePluginAtivo?: boolean
     atualizadoEm?: boolean
   }, ExtArgs["result"]["settings"]>
 
@@ -14123,6 +14120,7 @@ export namespace Prisma {
     notificarFalhas?: boolean
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
+    assistentePluginAtivo?: boolean
     atualizadoEm?: boolean
   }, ExtArgs["result"]["settings"]>
 
@@ -14143,10 +14141,11 @@ export namespace Prisma {
     notificarFalhas?: boolean
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
+    assistentePluginAtivo?: boolean
     atualizadoEm?: boolean
   }
 
-  export type SettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "chatPluginAtivo" | "kanbanPluginAtivo" | "atualizadoEm", ExtArgs["result"]["settings"]>
+  export type SettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "chatPluginAtivo" | "kanbanPluginAtivo" | "assistentePluginAtivo" | "atualizadoEm", ExtArgs["result"]["settings"]>
 
   export type $SettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Settings"
@@ -14177,6 +14176,7 @@ export namespace Prisma {
       notificarFalhas: boolean
       chatPluginAtivo: boolean
       kanbanPluginAtivo: boolean
+      assistentePluginAtivo: boolean
       atualizadoEm: Date
     }, ExtArgs["result"]["settings"]>
     composites: {}
@@ -14617,6 +14617,7 @@ export namespace Prisma {
     readonly notificarFalhas: FieldRef<"Settings", 'Boolean'>
     readonly chatPluginAtivo: FieldRef<"Settings", 'Boolean'>
     readonly kanbanPluginAtivo: FieldRef<"Settings", 'Boolean'>
+    readonly assistentePluginAtivo: FieldRef<"Settings", 'Boolean'>
     readonly atualizadoEm: FieldRef<"Settings", 'DateTime'>
   }
     
@@ -21440,6 +21441,7 @@ export namespace Prisma {
     notificarFalhas: 'notificarFalhas',
     chatPluginAtivo: 'chatPluginAtivo',
     kanbanPluginAtivo: 'kanbanPluginAtivo',
+    assistentePluginAtivo: 'assistentePluginAtivo',
     atualizadoEm: 'atualizadoEm'
   };
 
@@ -22509,6 +22511,7 @@ export namespace Prisma {
     notificarFalhas?: BoolFilter<"Settings"> | boolean
     chatPluginAtivo?: BoolFilter<"Settings"> | boolean
     kanbanPluginAtivo?: BoolFilter<"Settings"> | boolean
+    assistentePluginAtivo?: BoolFilter<"Settings"> | boolean
     atualizadoEm?: DateTimeFilter<"Settings"> | Date | string
   }
 
@@ -22529,6 +22532,7 @@ export namespace Prisma {
     notificarFalhas?: SortOrder
     chatPluginAtivo?: SortOrder
     kanbanPluginAtivo?: SortOrder
+    assistentePluginAtivo?: SortOrder
     atualizadoEm?: SortOrder
   }
 
@@ -22552,6 +22556,7 @@ export namespace Prisma {
     notificarFalhas?: BoolFilter<"Settings"> | boolean
     chatPluginAtivo?: BoolFilter<"Settings"> | boolean
     kanbanPluginAtivo?: BoolFilter<"Settings"> | boolean
+    assistentePluginAtivo?: BoolFilter<"Settings"> | boolean
     atualizadoEm?: DateTimeFilter<"Settings"> | Date | string
   }, "id">
 
@@ -22572,6 +22577,7 @@ export namespace Prisma {
     notificarFalhas?: SortOrder
     chatPluginAtivo?: SortOrder
     kanbanPluginAtivo?: SortOrder
+    assistentePluginAtivo?: SortOrder
     atualizadoEm?: SortOrder
     _count?: SettingsCountOrderByAggregateInput
     _avg?: SettingsAvgOrderByAggregateInput
@@ -22600,6 +22606,7 @@ export namespace Prisma {
     notificarFalhas?: BoolWithAggregatesFilter<"Settings"> | boolean
     chatPluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
     kanbanPluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
+    assistentePluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
     atualizadoEm?: DateTimeWithAggregatesFilter<"Settings"> | Date | string
   }
 
@@ -23845,6 +23852,7 @@ export namespace Prisma {
     notificarFalhas?: boolean
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
+    assistentePluginAtivo?: boolean
     atualizadoEm?: Date | string
   }
 
@@ -23865,6 +23873,7 @@ export namespace Prisma {
     notificarFalhas?: boolean
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
+    assistentePluginAtivo?: boolean
     atualizadoEm?: Date | string
   }
 
@@ -23885,6 +23894,7 @@ export namespace Prisma {
     notificarFalhas?: BoolFieldUpdateOperationsInput | boolean
     chatPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -23905,6 +23915,7 @@ export namespace Prisma {
     notificarFalhas?: BoolFieldUpdateOperationsInput | boolean
     chatPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -23925,6 +23936,7 @@ export namespace Prisma {
     notificarFalhas?: boolean
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
+    assistentePluginAtivo?: boolean
     atualizadoEm?: Date | string
   }
 
@@ -23945,6 +23957,7 @@ export namespace Prisma {
     notificarFalhas?: BoolFieldUpdateOperationsInput | boolean
     chatPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -23965,6 +23978,7 @@ export namespace Prisma {
     notificarFalhas?: BoolFieldUpdateOperationsInput | boolean
     chatPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -25081,6 +25095,7 @@ export namespace Prisma {
     notificarFalhas?: SortOrder
     chatPluginAtivo?: SortOrder
     kanbanPluginAtivo?: SortOrder
+    assistentePluginAtivo?: SortOrder
     atualizadoEm?: SortOrder
   }
 
@@ -25107,6 +25122,7 @@ export namespace Prisma {
     notificarFalhas?: SortOrder
     chatPluginAtivo?: SortOrder
     kanbanPluginAtivo?: SortOrder
+    assistentePluginAtivo?: SortOrder
     atualizadoEm?: SortOrder
   }
 
@@ -25127,6 +25143,7 @@ export namespace Prisma {
     notificarFalhas?: SortOrder
     chatPluginAtivo?: SortOrder
     kanbanPluginAtivo?: SortOrder
+    assistentePluginAtivo?: SortOrder
     atualizadoEm?: SortOrder
   }
 

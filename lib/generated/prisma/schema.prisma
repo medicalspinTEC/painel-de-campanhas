@@ -324,11 +324,12 @@ model Settings {
   /// Unidade do período de espera: "minutos" ou "horas".
   periodoEsperaUnidade String @default("horas")
 
-  respeitarJanela     Boolean @default(true)
-  pausarNoFimDeSemana Boolean @default(true)
-  notificarFalhas     Boolean @default(true)
-  chatPluginAtivo     Boolean @default(false)
-  kanbanPluginAtivo   Boolean @default(false)
+  respeitarJanela       Boolean @default(true)
+  pausarNoFimDeSemana   Boolean @default(true)
+  notificarFalhas       Boolean @default(true)
+  chatPluginAtivo       Boolean @default(false)
+  kanbanPluginAtivo     Boolean @default(false)
+  assistentePluginAtivo Boolean @default(false)
 
   atualizadoEm DateTime @updatedAt
 }

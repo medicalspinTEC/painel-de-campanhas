@@ -1,5 +1,5 @@
 {
-  "name": "prisma-client-4c6c0d3c561820adaaf7d31335c1028f7fcc83cce5fc318019e545cef154a7db",
+  "name": "prisma-client-2fc0b48b32f7e8b73ef7e1ab1966a632706b3817da828ff29fa0efc3c9541446",
   "main": "index.js",
   "types": "index.d.ts",
   "browser": "default.js",
@@ -125,6 +125,12 @@
       "import": "./runtime/react-native.js",
       "default": "./runtime/react-native.js"
     },
+    "./runtime/index-browser": {
+      "types": "./runtime/index-browser.d.ts",
+      "require": "./runtime/index-browser.js",
+      "import": "./runtime/index-browser.mjs",
+      "default": "./runtime/index-browser.mjs"
+    },
     "./generator-build": {
       "require": "./generator-build/index.js",
       "import": "./generator-build/index.js",
@@ -145,7 +151,7 @@
     },
     "./*": "./*"
   },
-  "version": "6.12.0",
+  "version": "6.19.3",
   "sideEffects": false,
   "imports": {
     "#wasm-engine-loader": {

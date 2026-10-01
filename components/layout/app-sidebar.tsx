@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   BarChart3,
+  ClipboardList,
   Columns3,
   MessagesSquare,
   LayoutDashboard,
@@ -17,6 +18,8 @@ import {
   TriangleAlert,
   Users,
   Zap,
+  Bot,
+  SquareKanban,
 } from "lucide-react"
 
 import { logoutAction } from "@/app/actions/auth"
@@ -40,8 +43,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 const navPrincipal = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Leads", url: "/leads", icon: Users },
-  { title: "Kanban", url: "/kanban", icon: Columns3 },
+  { title: "Kanban", url: "/kanban", icon: SquareKanban },
   { title: "Chat", url: "/chat", icon: MessagesSquare },
+  { title: "Assistente", url: "/assistente", icon: Bot },
   { title: "Campanhas", url: "/campanhas", icon: Megaphone },
   { title: "Segmentação", url: "/segmentacao", icon: Target },
 ]
@@ -64,6 +68,7 @@ interface AppSidebarProps {
   profileImageUrl?: string | null
   chatAtivo?: boolean
   kanbanAtivo?: boolean
+  assistenteAtivo?: boolean
 }
 
 function getStatusMeta(state?: string) {
@@ -99,7 +104,14 @@ function getStatusMeta(state?: string) {
   }
 }
 
-export function AppSidebar({ instanceName, instanceState, profileImageUrl, chatAtivo = false, kanbanAtivo = false }: AppSidebarProps) {
+export function AppSidebar({
+  instanceName,
+  instanceState,
+  profileImageUrl,
+  chatAtivo = false,
+  kanbanAtivo = false,
+  assistenteAtivo = false,
+}: AppSidebarProps) {
   const pathname = usePathname()
 
   const isActive = (url: string) => pathname === url || pathname.startsWith(`${url}/`)
@@ -131,7 +143,14 @@ export function AppSidebar({ instanceName, instanceState, profileImageUrl, chatA
           <SidebarGroupLabel>Gestão</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navPrincipal.filter((item) => (item.url !== "/chat" || chatAtivo) && (item.url !== "/kanban" || kanbanAtivo)).map((item) => (
+              {navPrincipal
+                .filter(
+                  (item) =>
+                    (item.url !== "/chat" || chatAtivo) &&
+                    (item.url !== "/kanban" || kanbanAtivo) &&
+                    (item.url !== "/assistente" || assistenteAtivo),
+                )
+                .map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton
                     isActive={isActive(item.url)}

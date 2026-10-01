@@ -329,6 +329,7 @@ model Settings {
   notificarFalhas     Boolean @default(true)
   chatPluginAtivo     Boolean @default(false)
   kanbanPluginAtivo   Boolean @default(false)
+  assistentePluginAtivo Boolean @default(false)
 
   atualizadoEm DateTime @updatedAt
 }
