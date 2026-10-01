@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   BarChart3,
+  Columns3,
   MessagesSquare,
   LayoutDashboard,
   LogOut,
@@ -39,6 +40,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 const navPrincipal = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Leads", url: "/leads", icon: Users },
+  { title: "Kanban", url: "/kanban", icon: Columns3 },
   { title: "Chat", url: "/chat", icon: MessagesSquare },
   { title: "Campanhas", url: "/campanhas", icon: Megaphone },
   { title: "Segmentação", url: "/segmentacao", icon: Target },
@@ -61,6 +63,7 @@ interface AppSidebarProps {
   instanceState?: string
   profileImageUrl?: string | null
   chatAtivo?: boolean
+  kanbanAtivo?: boolean
 }
 
 function getStatusMeta(state?: string) {
@@ -96,7 +99,7 @@ function getStatusMeta(state?: string) {
   }
 }
 
-export function AppSidebar({ instanceName, instanceState, profileImageUrl, chatAtivo = false }: AppSidebarProps) {
+export function AppSidebar({ instanceName, instanceState, profileImageUrl, chatAtivo = false, kanbanAtivo = false }: AppSidebarProps) {
   const pathname = usePathname()
 
   const isActive = (url: string) => pathname === url || pathname.startsWith(`${url}/`)
@@ -128,7 +131,7 @@ export function AppSidebar({ instanceName, instanceState, profileImageUrl, chatA
           <SidebarGroupLabel>Gestão</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navPrincipal.filter((item) => item.url !== "/chat" || chatAtivo).map((item) => (
+              {navPrincipal.filter((item) => (item.url !== "/chat" || chatAtivo) && (item.url !== "/kanban" || kanbanAtivo)).map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton
                     isActive={isActive(item.url)}

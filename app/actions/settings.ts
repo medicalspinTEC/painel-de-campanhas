@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 
-import { saveSettings, setChatPluginAtivo, type Settings } from "@/services/settings"
+import { saveSettings, setChatPluginAtivo, setKanbanPluginAtivo, type Settings } from "@/services/settings"
 import { recordAppLog } from "@/services/app-logs"
 
 export type SettingsActionResult = { ok: boolean; message: string }
@@ -62,4 +62,20 @@ export async function setChatPluginAtivoAction(ativo: boolean): Promise<Settings
   revalidatePath("/chat")
   revalidatePath("/", "layout")
   return { ok: true, message: ativo ? "Plugin Chat ativado." : "Plugin Chat desativado.", ativo }
+}
+
+export async function setKanbanPluginAtivoAction(ativo: boolean): Promise<SettingsActionResult & { ativo?: boolean }> {
+  if (typeof ativo !== "boolean") return { ok: false, message: "Estado inválido para o plugin." }
+
+  try {
+    await setKanbanPluginAtivo(ativo)
+  } catch (error) {
+    await recordAppLog({ origem: "settings", mensagem: "Falha ao atualizar o plugin de kanban.", detalhes: error })
+    return { ok: false, message: "Não foi possível atualizar o plugin de kanban." }
+  }
+
+  revalidatePath("/integracoes")
+  revalidatePath("/kanban")
+  revalidatePath("/", "layout")
+  return { ok: true, message: ativo ? "Plugin Kanban ativado." : "Plugin Kanban desativado.", ativo }
 }

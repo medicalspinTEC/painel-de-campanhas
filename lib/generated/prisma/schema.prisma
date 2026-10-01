@@ -99,9 +99,9 @@ model Lead {
   criadoEm          DateTime  @default(now())
   atualizadoEm      DateTime  @updatedAt
 
-  eventos TimelineEvent[]
+  eventos            TimelineEvent[]
   mensagensAgendadas ScheduledMessage[]
-  notasInternas ChatInternalNote[]
+  notasInternas      ChatInternalNote[]
 
   // A listagem ordena por data de criação e filtra por campanha e status.
   @@index([campanhaId])
@@ -156,10 +156,10 @@ model Campaign {
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
-  mensagens    CampaignMessage[]
-  leads        Lead[]
+  mensagens     CampaignMessage[]
+  leads         Lead[]
   leadCampaigns LeadCampaign[]
-  eventos      TimelineEvent[]
+  eventos       TimelineEvent[]
 
   @@index([status])
   @@index([criadoEm])
@@ -225,7 +225,7 @@ model ScheduledMessage {
   enviadoEm         DateTime?
 
   leadId String
-  lead   Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   @@index([status, agendadoPara])
   @@index([leadId, agendadoPara])
@@ -311,13 +311,13 @@ model Settings {
   numero     String @default("")
   assinatura String @default("")
 
-  fuso                String  @default("America/Sao_Paulo")
-  janelaInicio        String  @default("09:00")
-  janelaFim           String  @default("20:00")
-  limiteDiario        Int     @default(300)
+  fuso         String @default("America/Sao_Paulo")
+  janelaInicio String @default("09:00")
+  janelaFim    String @default("20:00")
+  limiteDiario Int    @default(300)
 
   /// Máximo de mensagens enviadas em cada lote (por período de espera).
-  maxEnviosPorPeriodo Int @default(50)
+  maxEnviosPorPeriodo  Int    @default(50)
   /// Tempo de espera entre um lote e o próximo: valor numérico + unidade.
   periodoEsperaValor   Int    @default(1)
   /// Unidade do período de espera: "minutos" ou "horas".
@@ -357,12 +357,12 @@ model Webhook {
 /// Erros e avisos de sistema — Evolution API, banco de dados, actions etc.
 /// Separado de TimelineEvent porque não pertence ao contexto de um lead.
 model AppLog {
-  id      String      @id @default(cuid())
-  nivel   AppLogNivel @default(erro)
-  origem  String      /// Ex: "evolution", "campaigns", "leads", "webhooks"
+  id       String      @id @default(cuid())
+  nivel    AppLogNivel @default(erro)
+  origem   String /// Ex: "evolution", "campaigns", "leads", "webhooks"
   mensagem String
-  detalhes String?    /// Stack trace, resposta HTTP, etc.
-  data    DateTime    @default(now())
+  detalhes String? /// Stack trace, resposta HTTP, etc.
+  data     DateTime    @default(now())
 
   @@index([data])
   @@index([nivel, data])
@@ -398,21 +398,21 @@ model TimelineEvent {
 /// Permite que sistemas externos enviem eventos para este painel via POST.
 model InboundWebhookToken {
   id    String  @id @default("default")
-  token String  /// Valor gerado: whin_<64 chars hex>
+  token String /// Valor gerado: whin_<64 chars hex>
   ativo Boolean @default(true)
 
-  ultimoUsoEm DateTime?
-  criadoEm    DateTime  @default(now())
-  atualizadoEm DateTime @updatedAt
+  ultimoUsoEm  DateTime?
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
 }
 
 /// Eventos recebidos pelo webhook de entrada (/api/webhook/entrada).
 /// Armazenados para auditoria e visibilidade na UI.
 model InboundEvent {
-  id      String   @id @default(cuid())
-  evento  String   /// Nome do evento enviado pelo sistema externo.
-  origem  String?  /// IP/host de origem capturado do header x-forwarded-for.
-  payload Json     /// Corpo completo recebido (dados livres).
+  id         String   @id @default(cuid())
+  evento     String /// Nome do evento enviado pelo sistema externo.
+  origem     String? /// IP/host de origem capturado do header x-forwarded-for.
+  payload    Json /// Corpo completo recebido (dados livres).
   recebidoEm DateTime @default(now())
 
   @@index([recebidoEm])
@@ -424,9 +424,9 @@ model InboundEvent {
 /// apenas o `nome` (chave de negócio, igual ao instanceName na Evolution) das
 /// que foram criadas por aqui, para que a listagem mostre somente essas.
 model Instance {
-  id       String  @id @default(cuid())
-  nome     String  @unique
-  numero   String?
+  id     String  @id @default(cuid())
+  nome   String  @unique
+  numero String?
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt

@@ -19,6 +19,7 @@ import { assignCampaignAction, deleteLeadAction, deleteLeadsAction, setLeadStatu
 import { LeadFormDialog, type CampanhaOpcao } from "@/components/features/leads/lead-form-dialog"
 import { LeadsBulkMessageDialog } from "@/components/features/leads/leads-bulk-message-dialog"
 import { LeadsImportDialog } from "@/components/features/leads/leads-import-dialog"
+import { LeadRespostaDialog } from "@/components/shared/lead-resposta-dialog"
 import { SelectField, opcoesComExtras } from "@/components/shared/select-field"
 import {
   AlertDialog,
@@ -109,7 +110,6 @@ export function LeadsTable({
   const [leadEditando, setLeadEditando] = useState<LeadRow | null>(null)
   const [alterandoStatusId, setAlterandoStatusId] = useState<string | null>(null)
   const [respostaAlvo, setRespostaAlvo] = useState<LeadRow | null>(null)
-  const [respostaTexto, setRespostaTexto] = useState("")
   const [exclusao, setExclusao] = useState<{ tipo: "um"; lead: LeadRow } | { tipo: "lote"; ids: string[] } | null>(null)
   // Campanha individual precisa de uma mensagem por vínculo — abrimos este
   // card antes de vincular, em vez de mandar direto pelo select abaixo.
@@ -217,7 +217,6 @@ export function LeadsTable({
     // que o lead disse — por isso perguntamos antes de aplicar, em vez de trocar
     // direto como os demais status.
     if (status === "respondeu") {
-      setRespostaTexto("")
       setRespostaAlvo(lead)
       return
     }
@@ -243,12 +242,11 @@ export function LeadsTable({
     })
   }
 
-  function confirmarResposta() {
+  function confirmarResposta(resposta: string | undefined) {
     if (!respostaAlvo) return
     const lead = respostaAlvo
-    const texto = respostaTexto.trim()
     setRespostaAlvo(null)
-    aplicarStatus(lead, "respondeu", texto.length > 0 ? texto : undefined)
+    aplicarStatus(lead, "respondeu", resposta)
   }
 
   function excluir() {
@@ -609,33 +607,12 @@ export function LeadsTable({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={Boolean(respostaAlvo)} onOpenChange={(aberto) => !aberto && setRespostaAlvo(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Marcar {respostaAlvo?.nome} como respondido</DialogTitle>
-            <DialogDescription>
-              O lead sai da campanha automaticamente. Se quiser, digite o que ele respondeu para registrar no
-              histórico — é opcional.
-            </DialogDescription>
-          </DialogHeader>
-          <Textarea
-            autoFocus
-            value={respostaTexto}
-            onChange={(event) => setRespostaTexto(event.target.value)}
-            placeholder="O que o lead respondeu? (opcional)"
-            className="min-h-24 resize-y"
-            aria-label="Resposta do lead"
-          />
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setRespostaAlvo(null)} disabled={pending}>
-              Cancelar
-            </Button>
-            <Button onClick={confirmarResposta} disabled={pending}>
-              {pending ? "Salvando…" : "Marcar como respondido"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <LeadRespostaDialog
+        leadNome={respostaAlvo?.nome ?? null}
+        pendente={pending}
+        onConfirmar={confirmarResposta}
+        onCancelar={() => setRespostaAlvo(null)}
+      />
 
       <AlertDialog open={Boolean(exclusao)} onOpenChange={(aberto) => !aberto && setExclusao(null)}>
         <AlertDialogContent>

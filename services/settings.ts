@@ -73,6 +73,22 @@ export async function setChatPluginAtivo(ativo: boolean): Promise<void> {
   })
 }
 
+export async function getKanbanPluginAtivo(): Promise<boolean> {
+  const row = await prisma.settings.findUnique({
+    where: { id: ID },
+    select: { kanbanPluginAtivo: true },
+  })
+  return row?.kanbanPluginAtivo ?? false
+}
+
+export async function setKanbanPluginAtivo(ativo: boolean): Promise<void> {
+  await prisma.settings.upsert({
+    where: { id: ID },
+    create: { id: ID, kanbanPluginAtivo: ativo },
+    update: { kanbanPluginAtivo: ativo },
+  })
+}
+
 export async function saveSettings(input: Settings): Promise<Settings> {
   const row = await prisma.settings.upsert({
     where: { id: ID },
