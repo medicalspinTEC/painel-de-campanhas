@@ -15,7 +15,12 @@ export type Settings = {
   respeitarJanela: boolean
   pausarNoFimDeSemana: boolean
   notificarFalhas: boolean
+  corPrincipal: string
+  corSecundaria: string
+  corTerciaria: string
 }
+
+export type AppThemeColors = Pick<Settings, "corPrincipal" | "corSecundaria" | "corTerciaria">
 
 /** Id fixo da linha única de configurações. */
 const ID = "default"
@@ -34,6 +39,9 @@ export const SETTINGS_PADRAO: Settings = {
   respeitarJanela: true,
   pausarNoFimDeSemana: true,
   notificarFalhas: true,
+  corPrincipal: "#00815a",
+  corSecundaria: "#f0f5f2",
+  corTerciaria: "#e3f5ec",
 }
 
 export async function getSettings(): Promise<Settings> {
@@ -54,6 +62,21 @@ export async function getSettings(): Promise<Settings> {
     respeitarJanela: row.respeitarJanela,
     pausarNoFimDeSemana: row.pausarNoFimDeSemana,
     notificarFalhas: row.notificarFalhas,
+    corPrincipal: row.corPrincipal,
+    corSecundaria: row.corSecundaria,
+    corTerciaria: row.corTerciaria,
+  }
+}
+
+export async function getAppThemeColors(): Promise<AppThemeColors> {
+  const row = await prisma.settings.findUnique({
+    where: { id: ID },
+    select: { corPrincipal: true, corSecundaria: true, corTerciaria: true },
+  })
+  return row ?? {
+    corPrincipal: SETTINGS_PADRAO.corPrincipal,
+    corSecundaria: SETTINGS_PADRAO.corSecundaria,
+    corTerciaria: SETTINGS_PADRAO.corTerciaria,
   }
 }
 
@@ -133,5 +156,8 @@ export async function saveSettings(input: Settings): Promise<Settings> {
     respeitarJanela: row.respeitarJanela,
     pausarNoFimDeSemana: row.pausarNoFimDeSemana,
     notificarFalhas: row.notificarFalhas,
+    corPrincipal: row.corPrincipal,
+    corSecundaria: row.corSecundaria,
+    corTerciaria: row.corTerciaria,
   }
 }

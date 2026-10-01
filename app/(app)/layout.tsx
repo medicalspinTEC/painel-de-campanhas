@@ -4,6 +4,7 @@ import { AppHeaderData } from "@/components/layout/app-header-data"
 import { AppHeaderSkeleton } from "@/components/layout/app-header-skeleton"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { AppSidebarData } from "@/components/layout/app-sidebar-data"
+import { AppThemeColorsData } from "@/components/layout/app-theme-colors-data"
 import { DatabaseSetupNotice } from "@/components/layout/database-setup-notice"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { checkDatabaseConnection, isDatabaseConfigured } from "@/lib/prisma"
@@ -68,6 +69,9 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <SidebarProvider>
+      <Suspense fallback={null}>
+        <AppThemeColorsData />
+      </Suspense>
       <Suspense fallback={<AppSidebar instanceState="unknown" />}>
         <AppSidebarData />
       </Suspense>

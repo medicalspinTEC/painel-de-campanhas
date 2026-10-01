@@ -1,0 +1,4 @@
+ALTER TABLE "Settings"
+ADD COLUMN "corPrincipal" TEXT NOT NULL DEFAULT '#00815a',
+ADD COLUMN "corSecundaria" TEXT NOT NULL DEFAULT '#f0f5f2',
+ADD COLUMN "corTerciaria" TEXT NOT NULL DEFAULT '#e3f5ec';

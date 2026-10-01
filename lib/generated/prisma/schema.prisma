@@ -330,6 +330,9 @@ model Settings {
   chatPluginAtivo       Boolean @default(false)
   kanbanPluginAtivo     Boolean @default(false)
   assistentePluginAtivo Boolean @default(false)
+  corPrincipal          String  @default("#00815a")
+  corSecundaria         String  @default("#f0f5f2")
+  corTerciaria          String  @default("#e3f5ec")
 
   atualizadoEm DateTime @updatedAt
 }

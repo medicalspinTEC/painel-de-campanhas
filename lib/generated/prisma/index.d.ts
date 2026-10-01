@@ -13812,6 +13812,9 @@ export namespace Prisma {
     chatPluginAtivo: boolean | null
     kanbanPluginAtivo: boolean | null
     assistentePluginAtivo: boolean | null
+    corPrincipal: string | null
+    corSecundaria: string | null
+    corTerciaria: string | null
     atualizadoEm: Date | null
   }
 
@@ -13833,6 +13836,9 @@ export namespace Prisma {
     chatPluginAtivo: boolean | null
     kanbanPluginAtivo: boolean | null
     assistentePluginAtivo: boolean | null
+    corPrincipal: string | null
+    corSecundaria: string | null
+    corTerciaria: string | null
     atualizadoEm: Date | null
   }
 
@@ -13854,6 +13860,9 @@ export namespace Prisma {
     chatPluginAtivo: number
     kanbanPluginAtivo: number
     assistentePluginAtivo: number
+    corPrincipal: number
+    corSecundaria: number
+    corTerciaria: number
     atualizadoEm: number
     _all: number
   }
@@ -13889,6 +13898,9 @@ export namespace Prisma {
     chatPluginAtivo?: true
     kanbanPluginAtivo?: true
     assistentePluginAtivo?: true
+    corPrincipal?: true
+    corSecundaria?: true
+    corTerciaria?: true
     atualizadoEm?: true
   }
 
@@ -13910,6 +13922,9 @@ export namespace Prisma {
     chatPluginAtivo?: true
     kanbanPluginAtivo?: true
     assistentePluginAtivo?: true
+    corPrincipal?: true
+    corSecundaria?: true
+    corTerciaria?: true
     atualizadoEm?: true
   }
 
@@ -13931,6 +13946,9 @@ export namespace Prisma {
     chatPluginAtivo?: true
     kanbanPluginAtivo?: true
     assistentePluginAtivo?: true
+    corPrincipal?: true
+    corSecundaria?: true
+    corTerciaria?: true
     atualizadoEm?: true
     _all?: true
   }
@@ -14039,6 +14057,9 @@ export namespace Prisma {
     chatPluginAtivo: boolean
     kanbanPluginAtivo: boolean
     assistentePluginAtivo: boolean
+    corPrincipal: string
+    corSecundaria: string
+    corTerciaria: string
     atualizadoEm: Date
     _count: SettingsCountAggregateOutputType | null
     _avg: SettingsAvgAggregateOutputType | null
@@ -14079,6 +14100,9 @@ export namespace Prisma {
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
+    corPrincipal?: boolean
+    corSecundaria?: boolean
+    corTerciaria?: boolean
     atualizadoEm?: boolean
   }, ExtArgs["result"]["settings"]>
 
@@ -14100,6 +14124,9 @@ export namespace Prisma {
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
+    corPrincipal?: boolean
+    corSecundaria?: boolean
+    corTerciaria?: boolean
     atualizadoEm?: boolean
   }, ExtArgs["result"]["settings"]>
 
@@ -14121,6 +14148,9 @@ export namespace Prisma {
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
+    corPrincipal?: boolean
+    corSecundaria?: boolean
+    corTerciaria?: boolean
     atualizadoEm?: boolean
   }, ExtArgs["result"]["settings"]>
 
@@ -14142,10 +14172,13 @@ export namespace Prisma {
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
+    corPrincipal?: boolean
+    corSecundaria?: boolean
+    corTerciaria?: boolean
     atualizadoEm?: boolean
   }
 
-  export type SettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "chatPluginAtivo" | "kanbanPluginAtivo" | "assistentePluginAtivo" | "atualizadoEm", ExtArgs["result"]["settings"]>
+  export type SettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "chatPluginAtivo" | "kanbanPluginAtivo" | "assistentePluginAtivo" | "corPrincipal" | "corSecundaria" | "corTerciaria" | "atualizadoEm", ExtArgs["result"]["settings"]>
 
   export type $SettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Settings"
@@ -14177,6 +14210,9 @@ export namespace Prisma {
       chatPluginAtivo: boolean
       kanbanPluginAtivo: boolean
       assistentePluginAtivo: boolean
+      corPrincipal: string
+      corSecundaria: string
+      corTerciaria: string
       atualizadoEm: Date
     }, ExtArgs["result"]["settings"]>
     composites: {}
@@ -14618,6 +14654,9 @@ export namespace Prisma {
     readonly chatPluginAtivo: FieldRef<"Settings", 'Boolean'>
     readonly kanbanPluginAtivo: FieldRef<"Settings", 'Boolean'>
     readonly assistentePluginAtivo: FieldRef<"Settings", 'Boolean'>
+    readonly corPrincipal: FieldRef<"Settings", 'String'>
+    readonly corSecundaria: FieldRef<"Settings", 'String'>
+    readonly corTerciaria: FieldRef<"Settings", 'String'>
     readonly atualizadoEm: FieldRef<"Settings", 'DateTime'>
   }
     
@@ -21442,6 +21481,9 @@ export namespace Prisma {
     chatPluginAtivo: 'chatPluginAtivo',
     kanbanPluginAtivo: 'kanbanPluginAtivo',
     assistentePluginAtivo: 'assistentePluginAtivo',
+    corPrincipal: 'corPrincipal',
+    corSecundaria: 'corSecundaria',
+    corTerciaria: 'corTerciaria',
     atualizadoEm: 'atualizadoEm'
   };
 
@@ -22512,6 +22554,9 @@ export namespace Prisma {
     chatPluginAtivo?: BoolFilter<"Settings"> | boolean
     kanbanPluginAtivo?: BoolFilter<"Settings"> | boolean
     assistentePluginAtivo?: BoolFilter<"Settings"> | boolean
+    corPrincipal?: StringFilter<"Settings"> | string
+    corSecundaria?: StringFilter<"Settings"> | string
+    corTerciaria?: StringFilter<"Settings"> | string
     atualizadoEm?: DateTimeFilter<"Settings"> | Date | string
   }
 
@@ -22533,6 +22578,9 @@ export namespace Prisma {
     chatPluginAtivo?: SortOrder
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
+    corPrincipal?: SortOrder
+    corSecundaria?: SortOrder
+    corTerciaria?: SortOrder
     atualizadoEm?: SortOrder
   }
 
@@ -22557,6 +22605,9 @@ export namespace Prisma {
     chatPluginAtivo?: BoolFilter<"Settings"> | boolean
     kanbanPluginAtivo?: BoolFilter<"Settings"> | boolean
     assistentePluginAtivo?: BoolFilter<"Settings"> | boolean
+    corPrincipal?: StringFilter<"Settings"> | string
+    corSecundaria?: StringFilter<"Settings"> | string
+    corTerciaria?: StringFilter<"Settings"> | string
     atualizadoEm?: DateTimeFilter<"Settings"> | Date | string
   }, "id">
 
@@ -22578,6 +22629,9 @@ export namespace Prisma {
     chatPluginAtivo?: SortOrder
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
+    corPrincipal?: SortOrder
+    corSecundaria?: SortOrder
+    corTerciaria?: SortOrder
     atualizadoEm?: SortOrder
     _count?: SettingsCountOrderByAggregateInput
     _avg?: SettingsAvgOrderByAggregateInput
@@ -22607,6 +22661,9 @@ export namespace Prisma {
     chatPluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
     kanbanPluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
     assistentePluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
+    corPrincipal?: StringWithAggregatesFilter<"Settings"> | string
+    corSecundaria?: StringWithAggregatesFilter<"Settings"> | string
+    corTerciaria?: StringWithAggregatesFilter<"Settings"> | string
     atualizadoEm?: DateTimeWithAggregatesFilter<"Settings"> | Date | string
   }
 
@@ -23853,6 +23910,9 @@ export namespace Prisma {
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
+    corPrincipal?: string
+    corSecundaria?: string
+    corTerciaria?: string
     atualizadoEm?: Date | string
   }
 
@@ -23874,6 +23934,9 @@ export namespace Prisma {
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
+    corPrincipal?: string
+    corSecundaria?: string
+    corTerciaria?: string
     atualizadoEm?: Date | string
   }
 
@@ -23895,6 +23958,9 @@ export namespace Prisma {
     chatPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    corPrincipal?: StringFieldUpdateOperationsInput | string
+    corSecundaria?: StringFieldUpdateOperationsInput | string
+    corTerciaria?: StringFieldUpdateOperationsInput | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -23916,6 +23982,9 @@ export namespace Prisma {
     chatPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    corPrincipal?: StringFieldUpdateOperationsInput | string
+    corSecundaria?: StringFieldUpdateOperationsInput | string
+    corTerciaria?: StringFieldUpdateOperationsInput | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -23937,6 +24006,9 @@ export namespace Prisma {
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
+    corPrincipal?: string
+    corSecundaria?: string
+    corTerciaria?: string
     atualizadoEm?: Date | string
   }
 
@@ -23958,6 +24030,9 @@ export namespace Prisma {
     chatPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    corPrincipal?: StringFieldUpdateOperationsInput | string
+    corSecundaria?: StringFieldUpdateOperationsInput | string
+    corTerciaria?: StringFieldUpdateOperationsInput | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -23979,6 +24054,9 @@ export namespace Prisma {
     chatPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    corPrincipal?: StringFieldUpdateOperationsInput | string
+    corSecundaria?: StringFieldUpdateOperationsInput | string
+    corTerciaria?: StringFieldUpdateOperationsInput | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -25096,6 +25174,9 @@ export namespace Prisma {
     chatPluginAtivo?: SortOrder
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
+    corPrincipal?: SortOrder
+    corSecundaria?: SortOrder
+    corTerciaria?: SortOrder
     atualizadoEm?: SortOrder
   }
 
@@ -25123,6 +25204,9 @@ export namespace Prisma {
     chatPluginAtivo?: SortOrder
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
+    corPrincipal?: SortOrder
+    corSecundaria?: SortOrder
+    corTerciaria?: SortOrder
     atualizadoEm?: SortOrder
   }
 
@@ -25144,6 +25228,9 @@ export namespace Prisma {
     chatPluginAtivo?: SortOrder
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
+    corPrincipal?: SortOrder
+    corSecundaria?: SortOrder
+    corTerciaria?: SortOrder
     atualizadoEm?: SortOrder
   }
 

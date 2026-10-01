@@ -1,10 +1,12 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useEffect, useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { Info } from "lucide-react"
 import { toast } from "sonner"
 
 import { saveSettingsAction } from "@/app/actions/settings"
+import { aplicarAppThemeColors } from "@/components/layout/app-theme-colors"
 import type { Settings } from "@/services/settings"
 import { SelectField } from "@/components/shared/select-field"
 import { Button } from "@/components/ui/button"
@@ -28,6 +30,7 @@ const UNIDADES_ESPERA = [
 ]
 
 export function SettingsForm({ inicial }: { inicial: Settings }) {
+  const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [remetente, setRemetente] = useState(inicial.remetente)
   const [numero, setNumero] = useState(inicial.numero)
@@ -42,6 +45,14 @@ export function SettingsForm({ inicial }: { inicial: Settings }) {
   const [respeitarJanela, setRespeitarJanela] = useState(inicial.respeitarJanela)
   const [pausarNoFimDeSemana, setPausarNoFimDeSemana] = useState(inicial.pausarNoFimDeSemana)
   const [notificarFalhas, setNotificarFalhas] = useState(inicial.notificarFalhas)
+  const [corPrincipal, setCorPrincipal] = useState(inicial.corPrincipal)
+  const [corSecundaria, setCorSecundaria] = useState(inicial.corSecundaria)
+  const [corTerciaria, setCorTerciaria] = useState(inicial.corTerciaria)
+
+  useEffect(
+    () => aplicarAppThemeColors({ corPrincipal, corSecundaria, corTerciaria }),
+    [corPrincipal, corSecundaria, corTerciaria],
+  )
 
   function salvar() {
     startTransition(async () => {
@@ -60,8 +71,14 @@ export function SettingsForm({ inicial }: { inicial: Settings }) {
         respeitarJanela,
         pausarNoFimDeSemana,
         notificarFalhas,
+        corPrincipal,
+        corSecundaria,
+        corTerciaria,
       })
-      if (resultado.ok) toast.success(resultado.message)
+      if (resultado.ok) {
+        toast.success(resultado.message)
+        router.refresh()
+      }
       else toast.error(resultado.message)
     })
   }
@@ -206,6 +223,18 @@ export function SettingsForm({ inicial }: { inicial: Settings }) {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>Cores do aplicativo</CardTitle>
+          <CardDescription>Personalize as cores principais usadas em botões, destaques e navegação.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <CampoCor id="cor-principal" titulo="Cor principal" valor={corPrincipal} onChange={setCorPrincipal} />
+          <CampoCor id="cor-secundaria" titulo="Cor secundária" valor={corSecundaria} onChange={setCorSecundaria} />
+          <CampoCor id="cor-terciaria" titulo="Terceira cor" valor={corTerciaria} onChange={setCorTerciaria} />
+        </CardContent>
+      </Card>
+
       <div className="flex justify-end">
         <Button onClick={salvar} disabled={pending}>
           {pending ? <Spinner /> : null}
@@ -213,6 +242,43 @@ export function SettingsForm({ inicial }: { inicial: Settings }) {
         </Button>
       </div>
     </div>
+  )
+}
+
+function CampoCor({
+  id,
+  titulo,
+  valor,
+  onChange,
+}: {
+  id: string
+  titulo: string
+  valor: string
+  onChange: (valor: string) => void
+}) {
+  return (
+    <Field>
+      <FieldLabel htmlFor={`${id}-hex`}>{titulo}</FieldLabel>
+      <div className="flex items-center gap-2">
+        <Input
+          id={`${id}-picker`}
+          type="color"
+          value={/^#[\da-f]{6}$/i.test(valor) ? valor : "#000000"}
+          aria-label={`Selecionar ${titulo.toLowerCase()}`}
+          onChange={(event) => onChange(event.target.value)}
+          className="size-10 cursor-pointer p-1"
+        />
+        <Input
+          id={`${id}-hex`}
+          value={valor}
+          onChange={(event) => onChange(event.target.value)}
+          maxLength={7}
+          placeholder="#RRGGBB"
+          className="font-mono uppercase"
+        />
+      </div>
+      <FieldDescription>Formato hexadecimal, por exemplo #00815A.</FieldDescription>
+    </Field>
   )
 }
 
