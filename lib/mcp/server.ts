@@ -1,7 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { z } from "zod"
 
 import { validarTelefoneBR } from "@/lib/telefone"
+import { recordAppLog } from "@/services/app-logs"
 import { listProdutos } from "@/services/produtos"
 import { getKpis } from "@/services/analytics"
 import { getEvent, listEvents, listLeadResponses } from "@/services/events"
@@ -24,6 +26,7 @@ import {
   type CampaignInput,
 } from "@/services/campaigns"
 import type { CampaignStatus, LeadStatus } from "@/types"
+import { emitWebhookEvent } from "@/services/webhooks"
 
 /**
  * Servidor MCP (Model Context Protocol) do painel.
@@ -67,6 +70,67 @@ function errorResult(mensagem: string, extra?: Record<string, unknown>) {
   }
 }
 
+async function registrarAuditoriaMcp(
+  ferramenta: string,
+  argumentos: unknown,
+  sucesso: boolean,
+  erro?: string,
+): Promise<void> {
+  const executadoEm = new Date().toISOString()
+  let argumentosJson = "{}"
+  try {
+    argumentosJson = JSON.stringify(argumentos) ?? "{}"
+  } catch {
+    argumentosJson = "[argumentos não serializáveis]"
+  }
+  const argumentosLimitados =
+    argumentosJson.length > 4000 ? `${argumentosJson.slice(0, 4000)} [truncado]` : argumentosJson
+  const dados = {
+    ferramenta,
+    argumentos: argumentosLimitados,
+    sucesso,
+    ...(erro ? { erro: erro.slice(0, 1000) } : {}),
+    executadoEm,
+  }
+
+  try {
+    await Promise.all([
+      recordAppLog({
+        nivel: sucesso ? "info" : "aviso",
+        origem: "mcp",
+        mensagem: `Ferramenta MCP ${ferramenta} executada${sucesso ? "" : " com falha"}.`,
+        detalhes: dados,
+      }),
+      emitWebhookEvent("mcp.acao_executada", dados),
+    ])
+  } catch (error) {
+    console.error("[mcp] Falha ao registrar auditoria da ferramenta:", error)
+  }
+}
+
+function registerAuditedTool<const Args extends z.ZodRawShape>(
+  server: McpServer,
+  name: string,
+  config: {
+    title?: string
+    description?: string
+    inputSchema: Args
+  },
+  callback: ToolCallback<Args>,
+): void {
+  const auditedCallback = async (args: unknown, extra: unknown) => {
+    try {
+      const resultado = await callback(args as never, extra as never)
+      await registrarAuditoriaMcp(name, args, !resultado.isError, resultado.isError ? "A ferramenta retornou erro." : undefined)
+      return resultado
+    } catch (error) {
+      await registrarAuditoriaMcp(name, args, false, error instanceof Error ? error.message : String(error))
+      throw error
+    }
+  }
+  server.registerTool<Args, Args>(name, config, auditedCallback as unknown as ToolCallback<Args>)
+}
+
 export function createAppMcpServer(): McpServer {
   const server = new McpServer({
     name: "engine-followup",
@@ -78,7 +142,8 @@ export function createAppMcpServer(): McpServer {
   // Leads
   // ---------------------------------------------------------------------
 
-  server.registerTool(
+  registerAuditedTool(
+    server,
     "listar_leads",
     {
       title: "Listar leads",
@@ -106,7 +171,8 @@ export function createAppMcpServer(): McpServer {
     },
   )
 
-  server.registerTool(
+  registerAuditedTool(
+    server,
     "buscar_negocio_bdr",
     {
       title: "Buscar negócio no BDR",
@@ -125,7 +191,8 @@ export function createAppMcpServer(): McpServer {
     },
   )
 
-  server.registerTool(
+  registerAuditedTool(
+    server,
     "obter_lead",
     {
       title: "Obter lead",
@@ -140,7 +207,8 @@ export function createAppMcpServer(): McpServer {
     },
   )
 
-  server.registerTool(
+  registerAuditedTool(
+    server,
     "criar_lead",
     {
       title: "Criar lead",
@@ -189,7 +257,8 @@ export function createAppMcpServer(): McpServer {
     },
   )
 
-  server.registerTool(
+  registerAuditedTool(
+    server,
     "atualizar_status_lead",
     {
       title: "Atualizar status do lead",
@@ -208,7 +277,8 @@ export function createAppMcpServer(): McpServer {
     },
   )
 
-  server.registerTool(
+  registerAuditedTool(
+    server,
     "anotar_lead",
     {
       title: "Anotar lead",
@@ -222,7 +292,8 @@ export function createAppMcpServer(): McpServer {
     },
   )
 
-  server.registerTool(
+  registerAuditedTool(
+    server,
     "enviar_mensagem_lead",
     {
       title: "Enviar mensagem avulsa a um lead",
@@ -245,7 +316,8 @@ export function createAppMcpServer(): McpServer {
   // Campanhas
   // ---------------------------------------------------------------------
 
-  server.registerTool(
+  registerAuditedTool(
+    server,
     "listar_campanhas",
     {
       title: "Listar campanhas",
@@ -259,7 +331,8 @@ export function createAppMcpServer(): McpServer {
     },
   )
 
-  server.registerTool(
+  registerAuditedTool(
+    server,
     "obter_campanha",
     {
       title: "Obter campanha",
@@ -273,7 +346,8 @@ export function createAppMcpServer(): McpServer {
     },
   )
 
-  server.registerTool(
+  registerAuditedTool(
+    server,
     "criar_campanha",
     {
       title: "Criar campanha",
@@ -338,7 +412,8 @@ export function createAppMcpServer(): McpServer {
     },
   )
 
-  server.registerTool(
+  registerAuditedTool(
+    server,
     "definir_status_campanha",
     {
       title: "Definir status da campanha",
@@ -356,7 +431,8 @@ export function createAppMcpServer(): McpServer {
   // Produtos, indicadores e eventos
   // ---------------------------------------------------------------------
 
-  server.registerTool(
+  registerAuditedTool(
+    server,
     "listar_produtos",
     {
       title: "Listar produtos",
@@ -369,7 +445,8 @@ export function createAppMcpServer(): McpServer {
     },
   )
 
-  server.registerTool(
+  registerAuditedTool(
+    server,
     "obter_indicadores",
     {
       title: "Obter indicadores do painel",
@@ -380,7 +457,8 @@ export function createAppMcpServer(): McpServer {
     async () => jsonResult({ ok: true, indicadores: await getKpis() }),
   )
 
-  server.registerTool(
+  registerAuditedTool(
+    server,
     "listar_respostas_lead",
     {
       title: "Listar respostas recebidas",
@@ -398,7 +476,8 @@ export function createAppMcpServer(): McpServer {
     },
   )
 
-  server.registerTool(
+  registerAuditedTool(
+    server,
     "obter_envio",
     {
       title: "Obter envio",

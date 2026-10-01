@@ -123,6 +123,12 @@ export const WEBHOOK_EVENTS: WebhookEventDef[] = [
     descricao: "Disparo manual feito a partir desta página.",
     grupo: "Sistema",
   },
+  {
+    key: "mcp.acao_executada",
+    label: "Ação MCP executada",
+    descricao: "Uma ferramenta MCP foi executada, com registro do resultado.",
+    grupo: "Sistema",
+  },
 ]
 
 export const WEBHOOK_EVENT_GROUPS: WebhookEventGroup[] = ["Leads", "Campanhas", "Mensagens", "Sistema"]
