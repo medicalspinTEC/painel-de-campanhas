@@ -330,6 +330,9 @@ model Settings {
   chatPluginAtivo     Boolean @default(false)
   kanbanPluginAtivo   Boolean @default(false)
   assistentePluginAtivo Boolean @default(false)
+  /// Tema pronto do painel (ver lib/temas.ts). Vale para o modo claro e o escuro.
+  temaApp            String  @default("esmeralda")
+  /// Legado: cores avulsas substituídas por `temaApp`. Não são mais lidas nem gravadas.
   corPrincipal       String  @default("#00815a")
   corSecundaria      String  @default("#f0f5f2")
   corTerciaria       String  @default("#e3f5ec")

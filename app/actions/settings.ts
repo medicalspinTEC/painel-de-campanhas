@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 
+import { isTemaApp } from "@/lib/temas"
 import {
   saveSettings,
   setAssistentePluginAtivo,
@@ -14,7 +15,6 @@ import { recordAppLog } from "@/services/app-logs"
 export type SettingsActionResult = { ok: boolean; message: string }
 
 const HORARIO = /^([01]\d|2[0-3]):[0-5]\d$/
-const COR_HEX = /^#[0-9a-fA-F]{6}$/
 
 export async function saveSettingsAction(input: Settings): Promise<SettingsActionResult> {
   const remetente = input.remetente.trim()
@@ -38,8 +38,8 @@ export async function saveSettingsAction(input: Settings): Promise<SettingsActio
   if (input.periodoEsperaUnidade !== "minutos" && input.periodoEsperaUnidade !== "horas") {
     return { ok: false, message: "Selecione uma unidade válida para o tempo de espera." }
   }
-  if (![input.corPrincipal, input.corSecundaria, input.corTerciaria].every((cor) => COR_HEX.test(cor))) {
-    return { ok: false, message: "Informe cores válidas no formato hexadecimal (#RRGGBB)." }
+  if (!isTemaApp(input.temaApp)) {
+    return { ok: false, message: "Selecione um dos temas disponíveis." }
   }
 
   try {

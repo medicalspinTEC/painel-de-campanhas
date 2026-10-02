@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { TEMA_PADRAO, temaOuPadrao, type TemaApp } from "@/lib/temas"
 import { emitWebhookEvent } from "@/services/webhooks"
 
 export type Settings = {
@@ -15,12 +16,8 @@ export type Settings = {
   respeitarJanela: boolean
   pausarNoFimDeSemana: boolean
   notificarFalhas: boolean
-  corPrincipal: string
-  corSecundaria: string
-  corTerciaria: string
+  temaApp: TemaApp
 }
-
-export type AppThemeColors = Pick<Settings, "corPrincipal" | "corSecundaria" | "corTerciaria">
 
 /** Id fixo da linha única de configurações. */
 const ID = "default"
@@ -39,9 +36,7 @@ export const SETTINGS_PADRAO: Settings = {
   respeitarJanela: true,
   pausarNoFimDeSemana: true,
   notificarFalhas: true,
-  corPrincipal: "#00815a",
-  corSecundaria: "#f0f5f2",
-  corTerciaria: "#e3f5ec",
+  temaApp: TEMA_PADRAO,
 }
 
 export async function getSettings(): Promise<Settings> {
@@ -62,21 +57,21 @@ export async function getSettings(): Promise<Settings> {
     respeitarJanela: row.respeitarJanela,
     pausarNoFimDeSemana: row.pausarNoFimDeSemana,
     notificarFalhas: row.notificarFalhas,
-    corPrincipal: row.corPrincipal,
-    corSecundaria: row.corSecundaria,
-    corTerciaria: row.corTerciaria,
+    temaApp: temaOuPadrao(row.temaApp),
   }
 }
 
-export async function getAppThemeColors(): Promise<AppThemeColors> {
-  const row = await prisma.settings.findUnique({
-    where: { id: ID },
-    select: { corPrincipal: true, corSecundaria: true, corTerciaria: true },
-  })
-  return row ?? {
-    corPrincipal: SETTINGS_PADRAO.corPrincipal,
-    corSecundaria: SETTINGS_PADRAO.corSecundaria,
-    corTerciaria: SETTINGS_PADRAO.corTerciaria,
+export async function getAppTema(): Promise<TemaApp> {
+  try {
+    const row = await prisma.settings.findUnique({
+      where: { id: ID },
+      select: { temaApp: true },
+    })
+    return temaOuPadrao(row?.temaApp)
+  } catch (error) {
+    // P2022: a coluna ainda não existe (migration pendente) — segue com o tema padrão.
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "P2022") return TEMA_PADRAO
+    throw error
   }
 }
 
@@ -156,8 +151,6 @@ export async function saveSettings(input: Settings): Promise<Settings> {
     respeitarJanela: row.respeitarJanela,
     pausarNoFimDeSemana: row.pausarNoFimDeSemana,
     notificarFalhas: row.notificarFalhas,
-    corPrincipal: row.corPrincipal,
-    corSecundaria: row.corSecundaria,
-    corTerciaria: row.corTerciaria,
+    temaApp: temaOuPadrao(row.temaApp),
   }
 }

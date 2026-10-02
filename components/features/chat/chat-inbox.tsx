@@ -430,11 +430,11 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
               </header>
 
               {conversaAtiva.campanhasNomes.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-2 border-y border-emerald-600/20 bg-emerald-600/10 px-4 py-2">
-                  <Megaphone className="size-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
-                  <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-200">Campanha vinculada</span>
+                <div className="flex flex-wrap items-center gap-2 border-y border-primary/20 bg-primary/10 px-4 py-2">
+                  <Megaphone className="size-4 shrink-0 text-primary" />
+                  <span className="text-xs font-semibold text-foreground">Campanha vinculada</span>
                   {conversaAtiva.campanhasNomes.map((nome) => (
-                    <Badge key={nome} className="max-w-full border border-emerald-700/20 bg-emerald-700 text-white">
+                    <Badge key={nome} className="max-w-full">
                       <span className="truncate">{nome}</span>
                     </Badge>
                   ))}

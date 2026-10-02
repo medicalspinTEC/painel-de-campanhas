@@ -1,7 +1,9 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { cookies } from 'next/headers'
 import { ThemeProvider } from '@/components/theme-provider'
+import { TEMA_COOKIE, temaOuPadrao } from '@/lib/temas'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
@@ -40,13 +42,15 @@ export const viewport: Viewport = {
   ],
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const tema = temaOuPadrao((await cookies()).get(TEMA_COOKIE)?.value)
+
   return (
-    <html lang="pt-BR" suppressHydrationWarning className="bg-background">
+    <html lang="pt-BR" suppressHydrationWarning data-tema={tema} className="bg-background">
       <body className="font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {children}
