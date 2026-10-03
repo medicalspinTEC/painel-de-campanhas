@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react"
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react"
 import { toast } from "sonner"
 import { ArrowLeft, CheckCheck, Filter, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Search, Send, Smile, StickyNote, UserRound, X } from "lucide-react"
 
@@ -31,6 +31,10 @@ const INTERVALO_ATUALIZACAO = 8000
 const LIMITE_MENSAGEM = 4096
 const LIMITE_NOTA_INTERNA = 5000
 const CHAVE_VISTAS = "chat-conversas-vistas"
+const CHAVE_LARGURA_LISTA = "chat-largura-lista"
+const LARGURA_LISTA_PADRAO = 360
+const LARGURA_LISTA_MIN = 260
+const LARGURA_CONVERSA_MIN = 360
 const EMOJIS = [
   "😀", "😃", "😄", "😁", "😅", "😂", "🙂", "😉",
   "😊", "😍", "🥰", "😘", "😎", "🤔", "🙌", "🙏",
@@ -82,6 +86,9 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
   const [conversaFechada, setConversaFechada] = useState(false)
   const [mensagens, setMensagens] = useState(inicial.mensagens)
   const [busca, setBusca] = useState("")
+  const [larguraLista, setLarguraLista] = useState(LARGURA_LISTA_PADRAO)
+  const [arrastando, setArrastando] = useState(false)
+  const painelRef = useRef<HTMLDivElement>(null)
   const [somenteRespostas, setSomenteRespostas] = useState(false)
   const [abaAtiva, setAbaAtiva] = useState<"conversa" | "perfil">("conversa")
   const [modoComposicao, setModoComposicao] = useState<"mensagem" | "nota" | "resposta">("mensagem")
@@ -131,6 +138,23 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
       // Sem acesso ao armazenamento: o aviso some apenas até recarregar a página.
     }
     setVistasCarregadas(true)
+    try {
+      const largura = Number(window.localStorage.getItem(CHAVE_LARGURA_LISTA))
+      if (Number.isFinite(largura) && largura > 0) setLarguraLista(limitarLargura(largura))
+    } catch {
+      // Usa a largura padrão.
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Mantém a lista dentro dos limites quando a janela é redimensionada.
+  useEffect(() => {
+    function ajustar() {
+      setLarguraLista((atual) => limitarLargura(atual))
+    }
+    window.addEventListener("resize", ajustar)
+    return () => window.removeEventListener("resize", ajustar)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const idAberto = conversaAtiva?.id ?? null
@@ -302,6 +326,59 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
     mostrarMensagens([])
   }
 
+  function limitarLargura(valor: number) {
+    const total = painelRef.current?.clientWidth ?? 1200
+    const maximo = Math.max(LARGURA_LISTA_MIN, total - LARGURA_CONVERSA_MIN)
+    return Math.min(Math.max(valor, LARGURA_LISTA_MIN), maximo)
+  }
+
+  function salvarLargura(valor: number) {
+    try {
+      window.localStorage.setItem(CHAVE_LARGURA_LISTA, String(Math.round(valor)))
+    } catch {
+      // Sem armazenamento: a largura vale só até recarregar.
+    }
+  }
+
+  function iniciarRedimensionamento(event: ReactPointerEvent<HTMLDivElement>) {
+    event.preventDefault()
+    event.currentTarget.setPointerCapture(event.pointerId)
+    setArrastando(true)
+  }
+
+  function redimensionar(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!arrastando || !painelRef.current) return
+    const esquerda = painelRef.current.getBoundingClientRect().left
+    setLarguraLista(limitarLargura(event.clientX - esquerda))
+  }
+
+  function finalizarRedimensionamento(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!arrastando) return
+    event.currentTarget.releasePointerCapture(event.pointerId)
+    setArrastando(false)
+    salvarLargura(larguraLista)
+  }
+
+  function redimensionarPorTeclado(event: KeyboardEvent<HTMLDivElement>) {
+    const passo = event.shiftKey ? 48 : 16
+    let nova: number | null = null
+    if (event.key === "ArrowLeft") nova = larguraLista - passo
+    else if (event.key === "ArrowRight") nova = larguraLista + passo
+    else if (event.key === "Home") nova = LARGURA_LISTA_MIN
+    else if (event.key === "End") nova = Number.MAX_SAFE_INTEGER
+    if (nova === null) return
+    event.preventDefault()
+    const limitada = limitarLargura(nova)
+    setLarguraLista(limitada)
+    salvarLargura(limitada)
+  }
+
+  function restaurarLargura() {
+    const padrao = limitarLargura(LARGURA_LISTA_PADRAO)
+    setLarguraLista(padrao)
+    salvarLargura(padrao)
+  }
+
   function inserirEmoji(emoji: string) {
     setTexto((atual) => `${atual}${emoji}`)
     setSeletorEmojiAberto(false)
@@ -315,7 +392,38 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
   return (
     <div className="flex h-[calc(100svh-6.5rem)] min-h-176 flex-col gap-3 lg:min-h-144">      
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-1 overflow-hidden rounded-lg border bg-card shadow-sm lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)]">
+      <div
+        ref={painelRef}
+        style={{ "--largura-lista": `${larguraLista}px` } as CSSProperties}
+        className={cn(
+          "relative grid min-h-0 flex-1 grid-cols-1 grid-rows-1 overflow-hidden rounded-lg border bg-card shadow-sm lg:grid-cols-[var(--largura-lista)_minmax(0,1fr)]",
+          arrastando && "select-none lg:cursor-col-resize",
+        )}
+      >
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Redimensionar a lista de conversas"
+          aria-valuenow={Math.round(larguraLista)}
+          aria-valuemin={LARGURA_LISTA_MIN}
+          tabIndex={0}
+          title="Arraste para ajustar a largura · duplo clique para restaurar"
+          onPointerDown={iniciarRedimensionamento}
+          onPointerMove={redimensionar}
+          onPointerUp={finalizarRedimensionamento}
+          onPointerCancel={finalizarRedimensionamento}
+          onKeyDown={redimensionarPorTeclado}
+          onDoubleClick={restaurarLargura}
+          style={{ left: "calc(var(--largura-lista) - 4px)" }}
+          className="group absolute inset-y-0 z-20 hidden w-2 cursor-col-resize touch-none lg:block"
+        >
+          <span
+            className={cn(
+              "mx-auto block h-full w-0.5 transition-colors group-hover:bg-primary/50 group-focus-visible:bg-primary",
+              arrastando && "bg-primary",
+            )}
+          />
+        </div>
         <aside className={cn("min-h-0 flex-col bg-card lg:flex lg:border-r", conversaAtiva ? "hidden" : "flex")}>
           <div className="flex min-h-18 items-center justify-between gap-2 border-b bg-card px-4 py-3">
             <div>
