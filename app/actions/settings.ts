@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 
 import { isTemaApp } from "@/lib/temas"
 import {
+  saveAppMarca,
   saveSettings,
   setAssistentePluginAtivo,
   setChatPluginAtivo,
@@ -105,4 +106,35 @@ export async function setAssistentePluginAtivoAction(ativo: boolean): Promise<Se
   revalidatePath("/assistente")
   revalidatePath("/", "layout")
   return { ok: true, message: ativo ? "Plugin Assistente ativado." : "Plugin Assistente desativado.", ativo }
+}
+
+const LIMITE_NOME_MARCA = 40
+const LIMITE_LOGO_CHARS = 200_000
+const LOGO_DATA_URL = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/
+
+/** Nome e logo exibidos no topo da sidebar. `logo: null` volta à logo padrão. */
+export async function saveAppMarcaAction(input: { nome: string; logo: string | null }): Promise<SettingsActionResult> {
+  const nome = String(input?.nome ?? "").trim()
+  const logo = input?.logo ?? null
+
+  if (!nome) return { ok: false, message: "Informe o nome exibido na sidebar." }
+  if (nome.length > LIMITE_NOME_MARCA) {
+    return { ok: false, message: `O nome pode ter no máximo ${LIMITE_NOME_MARCA} caracteres.` }
+  }
+  if (logo !== null) {
+    if (typeof logo !== "string" || logo.length > LIMITE_LOGO_CHARS || !LOGO_DATA_URL.test(logo)) {
+      return { ok: false, message: "Envie uma imagem PNG, JPG ou WebP válida (até ~150 KB após o ajuste)." }
+    }
+  }
+
+  try {
+    await saveAppMarca({ nome, logo })
+  } catch (error) {
+    await recordAppLog({ origem: "settings", mensagem: "Falha ao salvar nome e logo da sidebar.", detalhes: error })
+    return { ok: false, message: "Não foi possível salvar. Verifique se a migration mais recente foi aplicada." }
+  }
+
+  revalidatePath("/configuracoes")
+  revalidatePath("/", "layout")
+  return { ok: true, message: "Identidade do painel atualizada." }
 }

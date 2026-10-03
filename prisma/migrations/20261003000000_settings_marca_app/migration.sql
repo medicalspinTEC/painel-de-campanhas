@@ -1,0 +1,3 @@
+ALTER TABLE "Settings"
+ADD COLUMN "appNome" TEXT NOT NULL DEFAULT 'Medical Spin',
+ADD COLUMN "appLogo" TEXT;

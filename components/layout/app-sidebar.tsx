@@ -69,6 +69,8 @@ interface AppSidebarProps {
   chatAtivo?: boolean
   kanbanAtivo?: boolean
   assistenteAtivo?: boolean
+  appNome?: string
+  appLogo?: string | null
 }
 
 function getStatusMeta(state?: string) {
@@ -111,6 +113,8 @@ export function AppSidebar({
   chatAtivo = false,
   kanbanAtivo = false,
   assistenteAtivo = false,
+  appNome = "Medical Spin",
+  appLogo = null,
 }: AppSidebarProps) {
   const pathname = usePathname()
 
@@ -129,11 +133,15 @@ export function AppSidebar({
       <SidebarHeader>
         <div className="flex items-center gap-2.5 px-2 py-1.5 group-data-[collapsible=icon]:px-0">
           <div className="flex size-8 shrink-0 items-center justify-center rounded-lg text-primary-foreground">
-            <img src="/icon-light-32x32.png" alt="" />
+            {appLogo ? (
+              <img src={appLogo} alt="" className="size-8 rounded-lg object-cover" />
+            ) : (
+              <img src="/icon-light-32x32.png" alt="" />
+            )}
           </div>
           <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
-            <span className="truncate text-sm font-semibold leading-tight">Medical Spin</span>
-            <span className="truncate text-xs text-muted-foreground leading-tight">Follow-up WhatsApp v1.3.0</span>
+            <span className="truncate text-sm font-semibold leading-tight">{appNome}</span>
+            <span className="truncate text-xs text-muted-foreground leading-tight">Follow-up WhatsApp v1.8.0</span>
           </div>
         </div>
       </SidebarHeader>

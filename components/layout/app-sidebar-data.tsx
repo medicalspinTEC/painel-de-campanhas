@@ -1,7 +1,7 @@
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { prisma } from "@/lib/prisma"
 import { recordAppLog } from "@/services/app-logs"
-import { getAssistentePluginAtivo, getChatPluginAtivo, getKanbanPluginAtivo } from "@/services/settings"
+import { getAppMarca, getAssistentePluginAtivo, getChatPluginAtivo, getKanbanPluginAtivo } from "@/services/settings"
 
 /**
  * Consulta o status da instância do WhatsApp (Evolution API). Isolado do
@@ -59,11 +59,12 @@ async function getEvolutionInstanceStatus() {
 }
 
 export async function AppSidebarData() {
-  const [status, chatAtivo, kanbanAtivo, assistenteAtivo] = await Promise.all([
+  const [status, chatAtivo, kanbanAtivo, assistenteAtivo, marca] = await Promise.all([
     getEvolutionInstanceStatus(),
     getChatPluginAtivo(),
     getKanbanPluginAtivo(),
     getAssistentePluginAtivo(),
+    getAppMarca(),
   ])
 
   return (
@@ -74,6 +75,8 @@ export async function AppSidebarData() {
       chatAtivo={chatAtivo}
       kanbanAtivo={kanbanAtivo}
       assistenteAtivo={assistenteAtivo}
+      appNome={marca.nome}
+      appLogo={marca.logo}
     />
   )
 }

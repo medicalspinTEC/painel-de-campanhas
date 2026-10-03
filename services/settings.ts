@@ -154,3 +154,37 @@ export async function saveSettings(input: Settings): Promise<Settings> {
     temaApp: temaOuPadrao(row.temaApp),
   }
 }
+
+// ---------------------------------------------------------------------------
+// Marca do painel (nome + logo da sidebar)
+// ---------------------------------------------------------------------------
+
+export type AppMarca = { nome: string; logo: string | null }
+
+export const MARCA_PADRAO: AppMarca = { nome: "Medical Spin", logo: null }
+
+function colunaAusente(error: unknown): boolean {
+  // P2022: a coluna ainda não existe (migration pendente).
+  return typeof error === "object" && error !== null && "code" in error && error.code === "P2022"
+}
+
+export async function getAppMarca(): Promise<AppMarca> {
+  try {
+    const row = await prisma.settings.findUnique({
+      where: { id: ID },
+      select: { appNome: true, appLogo: true },
+    })
+    return { nome: row?.appNome?.trim() || MARCA_PADRAO.nome, logo: row?.appLogo ?? null }
+  } catch (error) {
+    if (colunaAusente(error)) return MARCA_PADRAO
+    throw error
+  }
+}
+
+export async function saveAppMarca(marca: AppMarca): Promise<void> {
+  await prisma.settings.upsert({
+    where: { id: ID },
+    create: { id: ID, appNome: marca.nome, appLogo: marca.logo },
+    update: { appNome: marca.nome, appLogo: marca.logo },
+  })
+}

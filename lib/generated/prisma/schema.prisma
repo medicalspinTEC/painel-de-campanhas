@@ -332,6 +332,10 @@ model Settings {
   assistentePluginAtivo Boolean @default(false)
   /// Tema pronto do painel (ver lib/temas.ts). Vale para o modo claro e o escuro.
   temaApp               String  @default("esmeralda")
+  /// Nome exibido no topo da sidebar (o subtítulo com a versão é fixo).
+  appNome               String  @default("Medical Spin")
+  /// Logo da sidebar como data URL (imagem já reduzida no navegador). Nulo = logo padrão.
+  appLogo               String?
   /// Legado: cores avulsas substituídas por `temaApp`. Não são mais lidas nem gravadas.
   corPrincipal          String  @default("#00815a")
   corSecundaria         String  @default("#f0f5f2")

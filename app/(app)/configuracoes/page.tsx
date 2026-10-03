@@ -1,13 +1,14 @@
+import { MarcaForm } from "@/components/features/settings/marca-form"
 import { SettingsForm } from "@/components/features/settings/settings-form"
 import { PageHeader } from "@/components/shared/page-header"
-import { getSettings } from "@/services/settings"
+import { getAppMarca, getSettings } from "@/services/settings"
 
 export const metadata = {
   title: "Configurações | Painel de Campanhas WhatsApp",
 }
 
 export default async function ConfiguracoesPage() {
-  const settings = await getSettings()
+  const [settings, marca] = await Promise.all([getSettings(), getAppMarca()])
 
   return (
     <div className="flex flex-col gap-6">
@@ -15,6 +16,7 @@ export default async function ConfiguracoesPage() {
         titulo="Configurações"
         descricao="Ajuste a identidade do remetente, a janela de disparo e as políticas da engine."
       />
+      <MarcaForm inicial={marca} />
       <SettingsForm inicial={settings} />
     </div>
   )

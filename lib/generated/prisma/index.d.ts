@@ -13813,6 +13813,8 @@ export namespace Prisma {
     kanbanPluginAtivo: boolean | null
     assistentePluginAtivo: boolean | null
     temaApp: string | null
+    appNome: string | null
+    appLogo: string | null
     corPrincipal: string | null
     corSecundaria: string | null
     corTerciaria: string | null
@@ -13838,6 +13840,8 @@ export namespace Prisma {
     kanbanPluginAtivo: boolean | null
     assistentePluginAtivo: boolean | null
     temaApp: string | null
+    appNome: string | null
+    appLogo: string | null
     corPrincipal: string | null
     corSecundaria: string | null
     corTerciaria: string | null
@@ -13863,6 +13867,8 @@ export namespace Prisma {
     kanbanPluginAtivo: number
     assistentePluginAtivo: number
     temaApp: number
+    appNome: number
+    appLogo: number
     corPrincipal: number
     corSecundaria: number
     corTerciaria: number
@@ -13902,6 +13908,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: true
     assistentePluginAtivo?: true
     temaApp?: true
+    appNome?: true
+    appLogo?: true
     corPrincipal?: true
     corSecundaria?: true
     corTerciaria?: true
@@ -13927,6 +13935,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: true
     assistentePluginAtivo?: true
     temaApp?: true
+    appNome?: true
+    appLogo?: true
     corPrincipal?: true
     corSecundaria?: true
     corTerciaria?: true
@@ -13952,6 +13962,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: true
     assistentePluginAtivo?: true
     temaApp?: true
+    appNome?: true
+    appLogo?: true
     corPrincipal?: true
     corSecundaria?: true
     corTerciaria?: true
@@ -14064,6 +14076,8 @@ export namespace Prisma {
     kanbanPluginAtivo: boolean
     assistentePluginAtivo: boolean
     temaApp: string
+    appNome: string
+    appLogo: string | null
     corPrincipal: string
     corSecundaria: string
     corTerciaria: string
@@ -14108,6 +14122,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
     temaApp?: boolean
+    appNome?: boolean
+    appLogo?: boolean
     corPrincipal?: boolean
     corSecundaria?: boolean
     corTerciaria?: boolean
@@ -14133,6 +14149,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
     temaApp?: boolean
+    appNome?: boolean
+    appLogo?: boolean
     corPrincipal?: boolean
     corSecundaria?: boolean
     corTerciaria?: boolean
@@ -14158,6 +14176,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
     temaApp?: boolean
+    appNome?: boolean
+    appLogo?: boolean
     corPrincipal?: boolean
     corSecundaria?: boolean
     corTerciaria?: boolean
@@ -14183,13 +14203,15 @@ export namespace Prisma {
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
     temaApp?: boolean
+    appNome?: boolean
+    appLogo?: boolean
     corPrincipal?: boolean
     corSecundaria?: boolean
     corTerciaria?: boolean
     atualizadoEm?: boolean
   }
 
-  export type SettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "chatPluginAtivo" | "kanbanPluginAtivo" | "assistentePluginAtivo" | "temaApp" | "corPrincipal" | "corSecundaria" | "corTerciaria" | "atualizadoEm", ExtArgs["result"]["settings"]>
+  export type SettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "chatPluginAtivo" | "kanbanPluginAtivo" | "assistentePluginAtivo" | "temaApp" | "appNome" | "appLogo" | "corPrincipal" | "corSecundaria" | "corTerciaria" | "atualizadoEm", ExtArgs["result"]["settings"]>
 
   export type $SettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Settings"
@@ -14225,6 +14247,14 @@ export namespace Prisma {
        * Tema pronto do painel (ver lib/temas.ts). Vale para o modo claro e o escuro.
        */
       temaApp: string
+      /**
+       * Nome exibido no topo da sidebar (o subtítulo com a versão é fixo).
+       */
+      appNome: string
+      /**
+       * Logo da sidebar como data URL (imagem já reduzida no navegador). Nulo = logo padrão.
+       */
+      appLogo: string | null
       /**
        * Legado: cores avulsas substituídas por `temaApp`. Não são mais lidas nem gravadas.
        */
@@ -14673,6 +14703,8 @@ export namespace Prisma {
     readonly kanbanPluginAtivo: FieldRef<"Settings", 'Boolean'>
     readonly assistentePluginAtivo: FieldRef<"Settings", 'Boolean'>
     readonly temaApp: FieldRef<"Settings", 'String'>
+    readonly appNome: FieldRef<"Settings", 'String'>
+    readonly appLogo: FieldRef<"Settings", 'String'>
     readonly corPrincipal: FieldRef<"Settings", 'String'>
     readonly corSecundaria: FieldRef<"Settings", 'String'>
     readonly corTerciaria: FieldRef<"Settings", 'String'>
@@ -21501,6 +21533,8 @@ export namespace Prisma {
     kanbanPluginAtivo: 'kanbanPluginAtivo',
     assistentePluginAtivo: 'assistentePluginAtivo',
     temaApp: 'temaApp',
+    appNome: 'appNome',
+    appLogo: 'appLogo',
     corPrincipal: 'corPrincipal',
     corSecundaria: 'corSecundaria',
     corTerciaria: 'corTerciaria',
@@ -22575,6 +22609,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: BoolFilter<"Settings"> | boolean
     assistentePluginAtivo?: BoolFilter<"Settings"> | boolean
     temaApp?: StringFilter<"Settings"> | string
+    appNome?: StringFilter<"Settings"> | string
+    appLogo?: StringNullableFilter<"Settings"> | string | null
     corPrincipal?: StringFilter<"Settings"> | string
     corSecundaria?: StringFilter<"Settings"> | string
     corTerciaria?: StringFilter<"Settings"> | string
@@ -22600,6 +22636,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
     temaApp?: SortOrder
+    appNome?: SortOrder
+    appLogo?: SortOrderInput | SortOrder
     corPrincipal?: SortOrder
     corSecundaria?: SortOrder
     corTerciaria?: SortOrder
@@ -22628,6 +22666,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: BoolFilter<"Settings"> | boolean
     assistentePluginAtivo?: BoolFilter<"Settings"> | boolean
     temaApp?: StringFilter<"Settings"> | string
+    appNome?: StringFilter<"Settings"> | string
+    appLogo?: StringNullableFilter<"Settings"> | string | null
     corPrincipal?: StringFilter<"Settings"> | string
     corSecundaria?: StringFilter<"Settings"> | string
     corTerciaria?: StringFilter<"Settings"> | string
@@ -22653,6 +22693,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
     temaApp?: SortOrder
+    appNome?: SortOrder
+    appLogo?: SortOrderInput | SortOrder
     corPrincipal?: SortOrder
     corSecundaria?: SortOrder
     corTerciaria?: SortOrder
@@ -22686,6 +22728,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
     assistentePluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
     temaApp?: StringWithAggregatesFilter<"Settings"> | string
+    appNome?: StringWithAggregatesFilter<"Settings"> | string
+    appLogo?: StringNullableWithAggregatesFilter<"Settings"> | string | null
     corPrincipal?: StringWithAggregatesFilter<"Settings"> | string
     corSecundaria?: StringWithAggregatesFilter<"Settings"> | string
     corTerciaria?: StringWithAggregatesFilter<"Settings"> | string
@@ -23936,6 +23980,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
     temaApp?: string
+    appNome?: string
+    appLogo?: string | null
     corPrincipal?: string
     corSecundaria?: string
     corTerciaria?: string
@@ -23961,6 +24007,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
     temaApp?: string
+    appNome?: string
+    appLogo?: string | null
     corPrincipal?: string
     corSecundaria?: string
     corTerciaria?: string
@@ -23986,6 +24034,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
+    appNome?: StringFieldUpdateOperationsInput | string
+    appLogo?: NullableStringFieldUpdateOperationsInput | string | null
     corPrincipal?: StringFieldUpdateOperationsInput | string
     corSecundaria?: StringFieldUpdateOperationsInput | string
     corTerciaria?: StringFieldUpdateOperationsInput | string
@@ -24011,6 +24061,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
+    appNome?: StringFieldUpdateOperationsInput | string
+    appLogo?: NullableStringFieldUpdateOperationsInput | string | null
     corPrincipal?: StringFieldUpdateOperationsInput | string
     corSecundaria?: StringFieldUpdateOperationsInput | string
     corTerciaria?: StringFieldUpdateOperationsInput | string
@@ -24036,6 +24088,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
     temaApp?: string
+    appNome?: string
+    appLogo?: string | null
     corPrincipal?: string
     corSecundaria?: string
     corTerciaria?: string
@@ -24061,6 +24115,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
+    appNome?: StringFieldUpdateOperationsInput | string
+    appLogo?: NullableStringFieldUpdateOperationsInput | string | null
     corPrincipal?: StringFieldUpdateOperationsInput | string
     corSecundaria?: StringFieldUpdateOperationsInput | string
     corTerciaria?: StringFieldUpdateOperationsInput | string
@@ -24086,6 +24142,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
+    appNome?: StringFieldUpdateOperationsInput | string
+    appLogo?: NullableStringFieldUpdateOperationsInput | string | null
     corPrincipal?: StringFieldUpdateOperationsInput | string
     corSecundaria?: StringFieldUpdateOperationsInput | string
     corTerciaria?: StringFieldUpdateOperationsInput | string
@@ -25207,6 +25265,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
     temaApp?: SortOrder
+    appNome?: SortOrder
+    appLogo?: SortOrder
     corPrincipal?: SortOrder
     corSecundaria?: SortOrder
     corTerciaria?: SortOrder
@@ -25238,6 +25298,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
     temaApp?: SortOrder
+    appNome?: SortOrder
+    appLogo?: SortOrder
     corPrincipal?: SortOrder
     corSecundaria?: SortOrder
     corTerciaria?: SortOrder
@@ -25263,6 +25325,8 @@ export namespace Prisma {
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
     temaApp?: SortOrder
+    appNome?: SortOrder
+    appLogo?: SortOrder
     corPrincipal?: SortOrder
     corSecundaria?: SortOrder
     corTerciaria?: SortOrder
