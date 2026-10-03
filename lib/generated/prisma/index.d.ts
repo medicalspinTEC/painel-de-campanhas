@@ -111,6 +111,16 @@ export type InboundEvent = $Result.DefaultSelection<Prisma.$InboundEventPayload>
  * que foram criadas por aqui, para que a listagem mostre somente essas.
  */
 export type Instance = $Result.DefaultSelection<Prisma.$InstancePayload>
+/**
+ * Model NoCodeFlow
+ * Fluxos do plugin "No Code" (editor visual de automações do próprio app).
+ */
+export type NoCodeFlow = $Result.DefaultSelection<Prisma.$NoCodeFlowPayload>
+/**
+ * Model NoCodeExecution
+ * Histórico de execuções dos fluxos (uma por evento recebido ou teste manual).
+ */
+export type NoCodeExecution = $Result.DefaultSelection<Prisma.$NoCodeExecutionPayload>
 
 /**
  * Enums
@@ -488,6 +498,26 @@ export class PrismaClient<
     * ```
     */
   get instance(): Prisma.InstanceDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.noCodeFlow`: Exposes CRUD operations for the **NoCodeFlow** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more NoCodeFlows
+    * const noCodeFlows = await prisma.noCodeFlow.findMany()
+    * ```
+    */
+  get noCodeFlow(): Prisma.NoCodeFlowDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.noCodeExecution`: Exposes CRUD operations for the **NoCodeExecution** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more NoCodeExecutions
+    * const noCodeExecutions = await prisma.noCodeExecution.findMany()
+    * ```
+    */
+  get noCodeExecution(): Prisma.NoCodeExecutionDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -945,7 +975,9 @@ export namespace Prisma {
     TimelineEvent: 'TimelineEvent',
     InboundWebhookToken: 'InboundWebhookToken',
     InboundEvent: 'InboundEvent',
-    Instance: 'Instance'
+    Instance: 'Instance',
+    NoCodeFlow: 'NoCodeFlow',
+    NoCodeExecution: 'NoCodeExecution'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -964,7 +996,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "inboundEvent" | "instance"
+      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "inboundEvent" | "instance" | "noCodeFlow" | "noCodeExecution"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2226,6 +2258,154 @@ export namespace Prisma {
           }
         }
       }
+      NoCodeFlow: {
+        payload: Prisma.$NoCodeFlowPayload<ExtArgs>
+        fields: Prisma.NoCodeFlowFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.NoCodeFlowFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeFlowPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.NoCodeFlowFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeFlowPayload>
+          }
+          findFirst: {
+            args: Prisma.NoCodeFlowFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeFlowPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.NoCodeFlowFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeFlowPayload>
+          }
+          findMany: {
+            args: Prisma.NoCodeFlowFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeFlowPayload>[]
+          }
+          create: {
+            args: Prisma.NoCodeFlowCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeFlowPayload>
+          }
+          createMany: {
+            args: Prisma.NoCodeFlowCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.NoCodeFlowCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeFlowPayload>[]
+          }
+          delete: {
+            args: Prisma.NoCodeFlowDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeFlowPayload>
+          }
+          update: {
+            args: Prisma.NoCodeFlowUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeFlowPayload>
+          }
+          deleteMany: {
+            args: Prisma.NoCodeFlowDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.NoCodeFlowUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.NoCodeFlowUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeFlowPayload>[]
+          }
+          upsert: {
+            args: Prisma.NoCodeFlowUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeFlowPayload>
+          }
+          aggregate: {
+            args: Prisma.NoCodeFlowAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateNoCodeFlow>
+          }
+          groupBy: {
+            args: Prisma.NoCodeFlowGroupByArgs<ExtArgs>
+            result: $Utils.Optional<NoCodeFlowGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.NoCodeFlowCountArgs<ExtArgs>
+            result: $Utils.Optional<NoCodeFlowCountAggregateOutputType> | number
+          }
+        }
+      }
+      NoCodeExecution: {
+        payload: Prisma.$NoCodeExecutionPayload<ExtArgs>
+        fields: Prisma.NoCodeExecutionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.NoCodeExecutionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeExecutionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.NoCodeExecutionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeExecutionPayload>
+          }
+          findFirst: {
+            args: Prisma.NoCodeExecutionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeExecutionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.NoCodeExecutionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeExecutionPayload>
+          }
+          findMany: {
+            args: Prisma.NoCodeExecutionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeExecutionPayload>[]
+          }
+          create: {
+            args: Prisma.NoCodeExecutionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeExecutionPayload>
+          }
+          createMany: {
+            args: Prisma.NoCodeExecutionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.NoCodeExecutionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeExecutionPayload>[]
+          }
+          delete: {
+            args: Prisma.NoCodeExecutionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeExecutionPayload>
+          }
+          update: {
+            args: Prisma.NoCodeExecutionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeExecutionPayload>
+          }
+          deleteMany: {
+            args: Prisma.NoCodeExecutionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.NoCodeExecutionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.NoCodeExecutionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeExecutionPayload>[]
+          }
+          upsert: {
+            args: Prisma.NoCodeExecutionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NoCodeExecutionPayload>
+          }
+          aggregate: {
+            args: Prisma.NoCodeExecutionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateNoCodeExecution>
+          }
+          groupBy: {
+            args: Prisma.NoCodeExecutionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<NoCodeExecutionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.NoCodeExecutionCountArgs<ExtArgs>
+            result: $Utils.Optional<NoCodeExecutionCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2339,6 +2519,8 @@ export namespace Prisma {
     inboundWebhookToken?: InboundWebhookTokenOmit
     inboundEvent?: InboundEventOmit
     instance?: InstanceOmit
+    noCodeFlow?: NoCodeFlowOmit
+    noCodeExecution?: NoCodeExecutionOmit
   }
 
   /* Types for Logging */
@@ -2558,6 +2740,37 @@ export namespace Prisma {
    */
   export type CampaignMessageCountOutputTypeCountEventosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TimelineEventWhereInput
+  }
+
+
+  /**
+   * Count Type NoCodeFlowCountOutputType
+   */
+
+  export type NoCodeFlowCountOutputType = {
+    execucoes: number
+  }
+
+  export type NoCodeFlowCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    execucoes?: boolean | NoCodeFlowCountOutputTypeCountExecucoesArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * NoCodeFlowCountOutputType without action
+   */
+  export type NoCodeFlowCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeFlowCountOutputType
+     */
+    select?: NoCodeFlowCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * NoCodeFlowCountOutputType without action
+   */
+  export type NoCodeFlowCountOutputTypeCountExecucoesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NoCodeExecutionWhereInput
   }
 
 
@@ -13812,6 +14025,7 @@ export namespace Prisma {
     chatPluginAtivo: boolean | null
     kanbanPluginAtivo: boolean | null
     assistentePluginAtivo: boolean | null
+    nocodePluginAtivo: boolean | null
     temaApp: string | null
     appNome: string | null
     appLogo: string | null
@@ -13839,6 +14053,7 @@ export namespace Prisma {
     chatPluginAtivo: boolean | null
     kanbanPluginAtivo: boolean | null
     assistentePluginAtivo: boolean | null
+    nocodePluginAtivo: boolean | null
     temaApp: string | null
     appNome: string | null
     appLogo: string | null
@@ -13866,6 +14081,7 @@ export namespace Prisma {
     chatPluginAtivo: number
     kanbanPluginAtivo: number
     assistentePluginAtivo: number
+    nocodePluginAtivo: number
     temaApp: number
     appNome: number
     appLogo: number
@@ -13907,6 +14123,7 @@ export namespace Prisma {
     chatPluginAtivo?: true
     kanbanPluginAtivo?: true
     assistentePluginAtivo?: true
+    nocodePluginAtivo?: true
     temaApp?: true
     appNome?: true
     appLogo?: true
@@ -13934,6 +14151,7 @@ export namespace Prisma {
     chatPluginAtivo?: true
     kanbanPluginAtivo?: true
     assistentePluginAtivo?: true
+    nocodePluginAtivo?: true
     temaApp?: true
     appNome?: true
     appLogo?: true
@@ -13961,6 +14179,7 @@ export namespace Prisma {
     chatPluginAtivo?: true
     kanbanPluginAtivo?: true
     assistentePluginAtivo?: true
+    nocodePluginAtivo?: true
     temaApp?: true
     appNome?: true
     appLogo?: true
@@ -14075,6 +14294,7 @@ export namespace Prisma {
     chatPluginAtivo: boolean
     kanbanPluginAtivo: boolean
     assistentePluginAtivo: boolean
+    nocodePluginAtivo: boolean
     temaApp: string
     appNome: string
     appLogo: string | null
@@ -14121,6 +14341,7 @@ export namespace Prisma {
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
+    nocodePluginAtivo?: boolean
     temaApp?: boolean
     appNome?: boolean
     appLogo?: boolean
@@ -14148,6 +14369,7 @@ export namespace Prisma {
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
+    nocodePluginAtivo?: boolean
     temaApp?: boolean
     appNome?: boolean
     appLogo?: boolean
@@ -14175,6 +14397,7 @@ export namespace Prisma {
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
+    nocodePluginAtivo?: boolean
     temaApp?: boolean
     appNome?: boolean
     appLogo?: boolean
@@ -14202,6 +14425,7 @@ export namespace Prisma {
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
+    nocodePluginAtivo?: boolean
     temaApp?: boolean
     appNome?: boolean
     appLogo?: boolean
@@ -14211,7 +14435,7 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type SettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "chatPluginAtivo" | "kanbanPluginAtivo" | "assistentePluginAtivo" | "temaApp" | "appNome" | "appLogo" | "corPrincipal" | "corSecundaria" | "corTerciaria" | "atualizadoEm", ExtArgs["result"]["settings"]>
+  export type SettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "chatPluginAtivo" | "kanbanPluginAtivo" | "assistentePluginAtivo" | "nocodePluginAtivo" | "temaApp" | "appNome" | "appLogo" | "corPrincipal" | "corSecundaria" | "corTerciaria" | "atualizadoEm", ExtArgs["result"]["settings"]>
 
   export type $SettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Settings"
@@ -14243,6 +14467,7 @@ export namespace Prisma {
       chatPluginAtivo: boolean
       kanbanPluginAtivo: boolean
       assistentePluginAtivo: boolean
+      nocodePluginAtivo: boolean
       /**
        * Tema pronto do painel (ver lib/temas.ts). Vale para o modo claro e o escuro.
        */
@@ -14702,6 +14927,7 @@ export namespace Prisma {
     readonly chatPluginAtivo: FieldRef<"Settings", 'Boolean'>
     readonly kanbanPluginAtivo: FieldRef<"Settings", 'Boolean'>
     readonly assistentePluginAtivo: FieldRef<"Settings", 'Boolean'>
+    readonly nocodePluginAtivo: FieldRef<"Settings", 'Boolean'>
     readonly temaApp: FieldRef<"Settings", 'String'>
     readonly appNome: FieldRef<"Settings", 'String'>
     readonly appLogo: FieldRef<"Settings", 'String'>
@@ -21354,6 +21580,2245 @@ export namespace Prisma {
 
 
   /**
+   * Model NoCodeFlow
+   */
+
+  export type AggregateNoCodeFlow = {
+    _count: NoCodeFlowCountAggregateOutputType | null
+    _min: NoCodeFlowMinAggregateOutputType | null
+    _max: NoCodeFlowMaxAggregateOutputType | null
+  }
+
+  export type NoCodeFlowMinAggregateOutputType = {
+    id: string | null
+    nome: string | null
+    ativo: boolean | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type NoCodeFlowMaxAggregateOutputType = {
+    id: string | null
+    nome: string | null
+    ativo: boolean | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type NoCodeFlowCountAggregateOutputType = {
+    id: number
+    nome: number
+    ativo: number
+    nodes: number
+    edges: number
+    criadoEm: number
+    atualizadoEm: number
+    _all: number
+  }
+
+
+  export type NoCodeFlowMinAggregateInputType = {
+    id?: true
+    nome?: true
+    ativo?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type NoCodeFlowMaxAggregateInputType = {
+    id?: true
+    nome?: true
+    ativo?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type NoCodeFlowCountAggregateInputType = {
+    id?: true
+    nome?: true
+    ativo?: true
+    nodes?: true
+    edges?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    _all?: true
+  }
+
+  export type NoCodeFlowAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which NoCodeFlow to aggregate.
+     */
+    where?: NoCodeFlowWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NoCodeFlows to fetch.
+     */
+    orderBy?: NoCodeFlowOrderByWithRelationInput | NoCodeFlowOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: NoCodeFlowWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NoCodeFlows from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NoCodeFlows.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned NoCodeFlows
+    **/
+    _count?: true | NoCodeFlowCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: NoCodeFlowMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: NoCodeFlowMaxAggregateInputType
+  }
+
+  export type GetNoCodeFlowAggregateType<T extends NoCodeFlowAggregateArgs> = {
+        [P in keyof T & keyof AggregateNoCodeFlow]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateNoCodeFlow[P]>
+      : GetScalarType<T[P], AggregateNoCodeFlow[P]>
+  }
+
+
+
+
+  export type NoCodeFlowGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NoCodeFlowWhereInput
+    orderBy?: NoCodeFlowOrderByWithAggregationInput | NoCodeFlowOrderByWithAggregationInput[]
+    by: NoCodeFlowScalarFieldEnum[] | NoCodeFlowScalarFieldEnum
+    having?: NoCodeFlowScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: NoCodeFlowCountAggregateInputType | true
+    _min?: NoCodeFlowMinAggregateInputType
+    _max?: NoCodeFlowMaxAggregateInputType
+  }
+
+  export type NoCodeFlowGroupByOutputType = {
+    id: string
+    nome: string
+    ativo: boolean
+    nodes: JsonValue
+    edges: JsonValue
+    criadoEm: Date
+    atualizadoEm: Date
+    _count: NoCodeFlowCountAggregateOutputType | null
+    _min: NoCodeFlowMinAggregateOutputType | null
+    _max: NoCodeFlowMaxAggregateOutputType | null
+  }
+
+  type GetNoCodeFlowGroupByPayload<T extends NoCodeFlowGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<NoCodeFlowGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof NoCodeFlowGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], NoCodeFlowGroupByOutputType[P]>
+            : GetScalarType<T[P], NoCodeFlowGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type NoCodeFlowSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    nome?: boolean
+    ativo?: boolean
+    nodes?: boolean
+    edges?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    execucoes?: boolean | NoCodeFlow$execucoesArgs<ExtArgs>
+    _count?: boolean | NoCodeFlowCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["noCodeFlow"]>
+
+  export type NoCodeFlowSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    nome?: boolean
+    ativo?: boolean
+    nodes?: boolean
+    edges?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }, ExtArgs["result"]["noCodeFlow"]>
+
+  export type NoCodeFlowSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    nome?: boolean
+    ativo?: boolean
+    nodes?: boolean
+    edges?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }, ExtArgs["result"]["noCodeFlow"]>
+
+  export type NoCodeFlowSelectScalar = {
+    id?: boolean
+    nome?: boolean
+    ativo?: boolean
+    nodes?: boolean
+    edges?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }
+
+  export type NoCodeFlowOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "ativo" | "nodes" | "edges" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["noCodeFlow"]>
+  export type NoCodeFlowInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    execucoes?: boolean | NoCodeFlow$execucoesArgs<ExtArgs>
+    _count?: boolean | NoCodeFlowCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type NoCodeFlowIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type NoCodeFlowIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $NoCodeFlowPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "NoCodeFlow"
+    objects: {
+      execucoes: Prisma.$NoCodeExecutionPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      nome: string
+      ativo: boolean
+      /**
+       * Nós do canvas: [{ id, type, name, position: {x,y}, config }].
+       */
+      nodes: Prisma.JsonValue
+      /**
+       * Conexões: [{ id, source, sourceHandle, target }].
+       */
+      edges: Prisma.JsonValue
+      criadoEm: Date
+      atualizadoEm: Date
+    }, ExtArgs["result"]["noCodeFlow"]>
+    composites: {}
+  }
+
+  type NoCodeFlowGetPayload<S extends boolean | null | undefined | NoCodeFlowDefaultArgs> = $Result.GetResult<Prisma.$NoCodeFlowPayload, S>
+
+  type NoCodeFlowCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<NoCodeFlowFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: NoCodeFlowCountAggregateInputType | true
+    }
+
+  export interface NoCodeFlowDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['NoCodeFlow'], meta: { name: 'NoCodeFlow' } }
+    /**
+     * Find zero or one NoCodeFlow that matches the filter.
+     * @param {NoCodeFlowFindUniqueArgs} args - Arguments to find a NoCodeFlow
+     * @example
+     * // Get one NoCodeFlow
+     * const noCodeFlow = await prisma.noCodeFlow.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends NoCodeFlowFindUniqueArgs>(args: SelectSubset<T, NoCodeFlowFindUniqueArgs<ExtArgs>>): Prisma__NoCodeFlowClient<$Result.GetResult<Prisma.$NoCodeFlowPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one NoCodeFlow that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {NoCodeFlowFindUniqueOrThrowArgs} args - Arguments to find a NoCodeFlow
+     * @example
+     * // Get one NoCodeFlow
+     * const noCodeFlow = await prisma.noCodeFlow.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends NoCodeFlowFindUniqueOrThrowArgs>(args: SelectSubset<T, NoCodeFlowFindUniqueOrThrowArgs<ExtArgs>>): Prisma__NoCodeFlowClient<$Result.GetResult<Prisma.$NoCodeFlowPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first NoCodeFlow that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoCodeFlowFindFirstArgs} args - Arguments to find a NoCodeFlow
+     * @example
+     * // Get one NoCodeFlow
+     * const noCodeFlow = await prisma.noCodeFlow.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends NoCodeFlowFindFirstArgs>(args?: SelectSubset<T, NoCodeFlowFindFirstArgs<ExtArgs>>): Prisma__NoCodeFlowClient<$Result.GetResult<Prisma.$NoCodeFlowPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first NoCodeFlow that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoCodeFlowFindFirstOrThrowArgs} args - Arguments to find a NoCodeFlow
+     * @example
+     * // Get one NoCodeFlow
+     * const noCodeFlow = await prisma.noCodeFlow.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends NoCodeFlowFindFirstOrThrowArgs>(args?: SelectSubset<T, NoCodeFlowFindFirstOrThrowArgs<ExtArgs>>): Prisma__NoCodeFlowClient<$Result.GetResult<Prisma.$NoCodeFlowPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more NoCodeFlows that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoCodeFlowFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all NoCodeFlows
+     * const noCodeFlows = await prisma.noCodeFlow.findMany()
+     * 
+     * // Get first 10 NoCodeFlows
+     * const noCodeFlows = await prisma.noCodeFlow.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const noCodeFlowWithIdOnly = await prisma.noCodeFlow.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends NoCodeFlowFindManyArgs>(args?: SelectSubset<T, NoCodeFlowFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NoCodeFlowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a NoCodeFlow.
+     * @param {NoCodeFlowCreateArgs} args - Arguments to create a NoCodeFlow.
+     * @example
+     * // Create one NoCodeFlow
+     * const NoCodeFlow = await prisma.noCodeFlow.create({
+     *   data: {
+     *     // ... data to create a NoCodeFlow
+     *   }
+     * })
+     * 
+     */
+    create<T extends NoCodeFlowCreateArgs>(args: SelectSubset<T, NoCodeFlowCreateArgs<ExtArgs>>): Prisma__NoCodeFlowClient<$Result.GetResult<Prisma.$NoCodeFlowPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many NoCodeFlows.
+     * @param {NoCodeFlowCreateManyArgs} args - Arguments to create many NoCodeFlows.
+     * @example
+     * // Create many NoCodeFlows
+     * const noCodeFlow = await prisma.noCodeFlow.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends NoCodeFlowCreateManyArgs>(args?: SelectSubset<T, NoCodeFlowCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many NoCodeFlows and returns the data saved in the database.
+     * @param {NoCodeFlowCreateManyAndReturnArgs} args - Arguments to create many NoCodeFlows.
+     * @example
+     * // Create many NoCodeFlows
+     * const noCodeFlow = await prisma.noCodeFlow.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many NoCodeFlows and only return the `id`
+     * const noCodeFlowWithIdOnly = await prisma.noCodeFlow.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends NoCodeFlowCreateManyAndReturnArgs>(args?: SelectSubset<T, NoCodeFlowCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NoCodeFlowPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a NoCodeFlow.
+     * @param {NoCodeFlowDeleteArgs} args - Arguments to delete one NoCodeFlow.
+     * @example
+     * // Delete one NoCodeFlow
+     * const NoCodeFlow = await prisma.noCodeFlow.delete({
+     *   where: {
+     *     // ... filter to delete one NoCodeFlow
+     *   }
+     * })
+     * 
+     */
+    delete<T extends NoCodeFlowDeleteArgs>(args: SelectSubset<T, NoCodeFlowDeleteArgs<ExtArgs>>): Prisma__NoCodeFlowClient<$Result.GetResult<Prisma.$NoCodeFlowPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one NoCodeFlow.
+     * @param {NoCodeFlowUpdateArgs} args - Arguments to update one NoCodeFlow.
+     * @example
+     * // Update one NoCodeFlow
+     * const noCodeFlow = await prisma.noCodeFlow.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends NoCodeFlowUpdateArgs>(args: SelectSubset<T, NoCodeFlowUpdateArgs<ExtArgs>>): Prisma__NoCodeFlowClient<$Result.GetResult<Prisma.$NoCodeFlowPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more NoCodeFlows.
+     * @param {NoCodeFlowDeleteManyArgs} args - Arguments to filter NoCodeFlows to delete.
+     * @example
+     * // Delete a few NoCodeFlows
+     * const { count } = await prisma.noCodeFlow.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends NoCodeFlowDeleteManyArgs>(args?: SelectSubset<T, NoCodeFlowDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more NoCodeFlows.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoCodeFlowUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many NoCodeFlows
+     * const noCodeFlow = await prisma.noCodeFlow.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends NoCodeFlowUpdateManyArgs>(args: SelectSubset<T, NoCodeFlowUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more NoCodeFlows and returns the data updated in the database.
+     * @param {NoCodeFlowUpdateManyAndReturnArgs} args - Arguments to update many NoCodeFlows.
+     * @example
+     * // Update many NoCodeFlows
+     * const noCodeFlow = await prisma.noCodeFlow.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more NoCodeFlows and only return the `id`
+     * const noCodeFlowWithIdOnly = await prisma.noCodeFlow.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends NoCodeFlowUpdateManyAndReturnArgs>(args: SelectSubset<T, NoCodeFlowUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NoCodeFlowPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one NoCodeFlow.
+     * @param {NoCodeFlowUpsertArgs} args - Arguments to update or create a NoCodeFlow.
+     * @example
+     * // Update or create a NoCodeFlow
+     * const noCodeFlow = await prisma.noCodeFlow.upsert({
+     *   create: {
+     *     // ... data to create a NoCodeFlow
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the NoCodeFlow we want to update
+     *   }
+     * })
+     */
+    upsert<T extends NoCodeFlowUpsertArgs>(args: SelectSubset<T, NoCodeFlowUpsertArgs<ExtArgs>>): Prisma__NoCodeFlowClient<$Result.GetResult<Prisma.$NoCodeFlowPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of NoCodeFlows.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoCodeFlowCountArgs} args - Arguments to filter NoCodeFlows to count.
+     * @example
+     * // Count the number of NoCodeFlows
+     * const count = await prisma.noCodeFlow.count({
+     *   where: {
+     *     // ... the filter for the NoCodeFlows we want to count
+     *   }
+     * })
+    **/
+    count<T extends NoCodeFlowCountArgs>(
+      args?: Subset<T, NoCodeFlowCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], NoCodeFlowCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a NoCodeFlow.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoCodeFlowAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends NoCodeFlowAggregateArgs>(args: Subset<T, NoCodeFlowAggregateArgs>): Prisma.PrismaPromise<GetNoCodeFlowAggregateType<T>>
+
+    /**
+     * Group by NoCodeFlow.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoCodeFlowGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends NoCodeFlowGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: NoCodeFlowGroupByArgs['orderBy'] }
+        : { orderBy?: NoCodeFlowGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, NoCodeFlowGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetNoCodeFlowGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the NoCodeFlow model
+   */
+  readonly fields: NoCodeFlowFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for NoCodeFlow.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__NoCodeFlowClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    execucoes<T extends NoCodeFlow$execucoesArgs<ExtArgs> = {}>(args?: Subset<T, NoCodeFlow$execucoesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NoCodeExecutionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the NoCodeFlow model
+   */
+  interface NoCodeFlowFieldRefs {
+    readonly id: FieldRef<"NoCodeFlow", 'String'>
+    readonly nome: FieldRef<"NoCodeFlow", 'String'>
+    readonly ativo: FieldRef<"NoCodeFlow", 'Boolean'>
+    readonly nodes: FieldRef<"NoCodeFlow", 'Json'>
+    readonly edges: FieldRef<"NoCodeFlow", 'Json'>
+    readonly criadoEm: FieldRef<"NoCodeFlow", 'DateTime'>
+    readonly atualizadoEm: FieldRef<"NoCodeFlow", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * NoCodeFlow findUnique
+   */
+  export type NoCodeFlowFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeFlow
+     */
+    select?: NoCodeFlowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeFlow
+     */
+    omit?: NoCodeFlowOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeFlowInclude<ExtArgs> | null
+    /**
+     * Filter, which NoCodeFlow to fetch.
+     */
+    where: NoCodeFlowWhereUniqueInput
+  }
+
+  /**
+   * NoCodeFlow findUniqueOrThrow
+   */
+  export type NoCodeFlowFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeFlow
+     */
+    select?: NoCodeFlowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeFlow
+     */
+    omit?: NoCodeFlowOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeFlowInclude<ExtArgs> | null
+    /**
+     * Filter, which NoCodeFlow to fetch.
+     */
+    where: NoCodeFlowWhereUniqueInput
+  }
+
+  /**
+   * NoCodeFlow findFirst
+   */
+  export type NoCodeFlowFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeFlow
+     */
+    select?: NoCodeFlowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeFlow
+     */
+    omit?: NoCodeFlowOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeFlowInclude<ExtArgs> | null
+    /**
+     * Filter, which NoCodeFlow to fetch.
+     */
+    where?: NoCodeFlowWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NoCodeFlows to fetch.
+     */
+    orderBy?: NoCodeFlowOrderByWithRelationInput | NoCodeFlowOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for NoCodeFlows.
+     */
+    cursor?: NoCodeFlowWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NoCodeFlows from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NoCodeFlows.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of NoCodeFlows.
+     */
+    distinct?: NoCodeFlowScalarFieldEnum | NoCodeFlowScalarFieldEnum[]
+  }
+
+  /**
+   * NoCodeFlow findFirstOrThrow
+   */
+  export type NoCodeFlowFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeFlow
+     */
+    select?: NoCodeFlowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeFlow
+     */
+    omit?: NoCodeFlowOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeFlowInclude<ExtArgs> | null
+    /**
+     * Filter, which NoCodeFlow to fetch.
+     */
+    where?: NoCodeFlowWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NoCodeFlows to fetch.
+     */
+    orderBy?: NoCodeFlowOrderByWithRelationInput | NoCodeFlowOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for NoCodeFlows.
+     */
+    cursor?: NoCodeFlowWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NoCodeFlows from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NoCodeFlows.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of NoCodeFlows.
+     */
+    distinct?: NoCodeFlowScalarFieldEnum | NoCodeFlowScalarFieldEnum[]
+  }
+
+  /**
+   * NoCodeFlow findMany
+   */
+  export type NoCodeFlowFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeFlow
+     */
+    select?: NoCodeFlowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeFlow
+     */
+    omit?: NoCodeFlowOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeFlowInclude<ExtArgs> | null
+    /**
+     * Filter, which NoCodeFlows to fetch.
+     */
+    where?: NoCodeFlowWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NoCodeFlows to fetch.
+     */
+    orderBy?: NoCodeFlowOrderByWithRelationInput | NoCodeFlowOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing NoCodeFlows.
+     */
+    cursor?: NoCodeFlowWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NoCodeFlows from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NoCodeFlows.
+     */
+    skip?: number
+    distinct?: NoCodeFlowScalarFieldEnum | NoCodeFlowScalarFieldEnum[]
+  }
+
+  /**
+   * NoCodeFlow create
+   */
+  export type NoCodeFlowCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeFlow
+     */
+    select?: NoCodeFlowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeFlow
+     */
+    omit?: NoCodeFlowOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeFlowInclude<ExtArgs> | null
+    /**
+     * The data needed to create a NoCodeFlow.
+     */
+    data: XOR<NoCodeFlowCreateInput, NoCodeFlowUncheckedCreateInput>
+  }
+
+  /**
+   * NoCodeFlow createMany
+   */
+  export type NoCodeFlowCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many NoCodeFlows.
+     */
+    data: NoCodeFlowCreateManyInput | NoCodeFlowCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * NoCodeFlow createManyAndReturn
+   */
+  export type NoCodeFlowCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeFlow
+     */
+    select?: NoCodeFlowSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeFlow
+     */
+    omit?: NoCodeFlowOmit<ExtArgs> | null
+    /**
+     * The data used to create many NoCodeFlows.
+     */
+    data: NoCodeFlowCreateManyInput | NoCodeFlowCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * NoCodeFlow update
+   */
+  export type NoCodeFlowUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeFlow
+     */
+    select?: NoCodeFlowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeFlow
+     */
+    omit?: NoCodeFlowOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeFlowInclude<ExtArgs> | null
+    /**
+     * The data needed to update a NoCodeFlow.
+     */
+    data: XOR<NoCodeFlowUpdateInput, NoCodeFlowUncheckedUpdateInput>
+    /**
+     * Choose, which NoCodeFlow to update.
+     */
+    where: NoCodeFlowWhereUniqueInput
+  }
+
+  /**
+   * NoCodeFlow updateMany
+   */
+  export type NoCodeFlowUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update NoCodeFlows.
+     */
+    data: XOR<NoCodeFlowUpdateManyMutationInput, NoCodeFlowUncheckedUpdateManyInput>
+    /**
+     * Filter which NoCodeFlows to update
+     */
+    where?: NoCodeFlowWhereInput
+    /**
+     * Limit how many NoCodeFlows to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * NoCodeFlow updateManyAndReturn
+   */
+  export type NoCodeFlowUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeFlow
+     */
+    select?: NoCodeFlowSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeFlow
+     */
+    omit?: NoCodeFlowOmit<ExtArgs> | null
+    /**
+     * The data used to update NoCodeFlows.
+     */
+    data: XOR<NoCodeFlowUpdateManyMutationInput, NoCodeFlowUncheckedUpdateManyInput>
+    /**
+     * Filter which NoCodeFlows to update
+     */
+    where?: NoCodeFlowWhereInput
+    /**
+     * Limit how many NoCodeFlows to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * NoCodeFlow upsert
+   */
+  export type NoCodeFlowUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeFlow
+     */
+    select?: NoCodeFlowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeFlow
+     */
+    omit?: NoCodeFlowOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeFlowInclude<ExtArgs> | null
+    /**
+     * The filter to search for the NoCodeFlow to update in case it exists.
+     */
+    where: NoCodeFlowWhereUniqueInput
+    /**
+     * In case the NoCodeFlow found by the `where` argument doesn't exist, create a new NoCodeFlow with this data.
+     */
+    create: XOR<NoCodeFlowCreateInput, NoCodeFlowUncheckedCreateInput>
+    /**
+     * In case the NoCodeFlow was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<NoCodeFlowUpdateInput, NoCodeFlowUncheckedUpdateInput>
+  }
+
+  /**
+   * NoCodeFlow delete
+   */
+  export type NoCodeFlowDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeFlow
+     */
+    select?: NoCodeFlowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeFlow
+     */
+    omit?: NoCodeFlowOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeFlowInclude<ExtArgs> | null
+    /**
+     * Filter which NoCodeFlow to delete.
+     */
+    where: NoCodeFlowWhereUniqueInput
+  }
+
+  /**
+   * NoCodeFlow deleteMany
+   */
+  export type NoCodeFlowDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which NoCodeFlows to delete
+     */
+    where?: NoCodeFlowWhereInput
+    /**
+     * Limit how many NoCodeFlows to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * NoCodeFlow.execucoes
+   */
+  export type NoCodeFlow$execucoesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeExecution
+     */
+    select?: NoCodeExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeExecution
+     */
+    omit?: NoCodeExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeExecutionInclude<ExtArgs> | null
+    where?: NoCodeExecutionWhereInput
+    orderBy?: NoCodeExecutionOrderByWithRelationInput | NoCodeExecutionOrderByWithRelationInput[]
+    cursor?: NoCodeExecutionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: NoCodeExecutionScalarFieldEnum | NoCodeExecutionScalarFieldEnum[]
+  }
+
+  /**
+   * NoCodeFlow without action
+   */
+  export type NoCodeFlowDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeFlow
+     */
+    select?: NoCodeFlowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeFlow
+     */
+    omit?: NoCodeFlowOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeFlowInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model NoCodeExecution
+   */
+
+  export type AggregateNoCodeExecution = {
+    _count: NoCodeExecutionCountAggregateOutputType | null
+    _avg: NoCodeExecutionAvgAggregateOutputType | null
+    _sum: NoCodeExecutionSumAggregateOutputType | null
+    _min: NoCodeExecutionMinAggregateOutputType | null
+    _max: NoCodeExecutionMaxAggregateOutputType | null
+  }
+
+  export type NoCodeExecutionAvgAggregateOutputType = {
+    duracaoMs: number | null
+  }
+
+  export type NoCodeExecutionSumAggregateOutputType = {
+    duracaoMs: number | null
+  }
+
+  export type NoCodeExecutionMinAggregateOutputType = {
+    id: string | null
+    flowId: string | null
+    status: string | null
+    origem: string | null
+    erro: string | null
+    duracaoMs: number | null
+    iniciadoEm: Date | null
+  }
+
+  export type NoCodeExecutionMaxAggregateOutputType = {
+    id: string | null
+    flowId: string | null
+    status: string | null
+    origem: string | null
+    erro: string | null
+    duracaoMs: number | null
+    iniciadoEm: Date | null
+  }
+
+  export type NoCodeExecutionCountAggregateOutputType = {
+    id: number
+    flowId: number
+    status: number
+    origem: number
+    entrada: number
+    passos: number
+    erro: number
+    duracaoMs: number
+    iniciadoEm: number
+    _all: number
+  }
+
+
+  export type NoCodeExecutionAvgAggregateInputType = {
+    duracaoMs?: true
+  }
+
+  export type NoCodeExecutionSumAggregateInputType = {
+    duracaoMs?: true
+  }
+
+  export type NoCodeExecutionMinAggregateInputType = {
+    id?: true
+    flowId?: true
+    status?: true
+    origem?: true
+    erro?: true
+    duracaoMs?: true
+    iniciadoEm?: true
+  }
+
+  export type NoCodeExecutionMaxAggregateInputType = {
+    id?: true
+    flowId?: true
+    status?: true
+    origem?: true
+    erro?: true
+    duracaoMs?: true
+    iniciadoEm?: true
+  }
+
+  export type NoCodeExecutionCountAggregateInputType = {
+    id?: true
+    flowId?: true
+    status?: true
+    origem?: true
+    entrada?: true
+    passos?: true
+    erro?: true
+    duracaoMs?: true
+    iniciadoEm?: true
+    _all?: true
+  }
+
+  export type NoCodeExecutionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which NoCodeExecution to aggregate.
+     */
+    where?: NoCodeExecutionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NoCodeExecutions to fetch.
+     */
+    orderBy?: NoCodeExecutionOrderByWithRelationInput | NoCodeExecutionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: NoCodeExecutionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NoCodeExecutions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NoCodeExecutions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned NoCodeExecutions
+    **/
+    _count?: true | NoCodeExecutionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: NoCodeExecutionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: NoCodeExecutionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: NoCodeExecutionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: NoCodeExecutionMaxAggregateInputType
+  }
+
+  export type GetNoCodeExecutionAggregateType<T extends NoCodeExecutionAggregateArgs> = {
+        [P in keyof T & keyof AggregateNoCodeExecution]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateNoCodeExecution[P]>
+      : GetScalarType<T[P], AggregateNoCodeExecution[P]>
+  }
+
+
+
+
+  export type NoCodeExecutionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NoCodeExecutionWhereInput
+    orderBy?: NoCodeExecutionOrderByWithAggregationInput | NoCodeExecutionOrderByWithAggregationInput[]
+    by: NoCodeExecutionScalarFieldEnum[] | NoCodeExecutionScalarFieldEnum
+    having?: NoCodeExecutionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: NoCodeExecutionCountAggregateInputType | true
+    _avg?: NoCodeExecutionAvgAggregateInputType
+    _sum?: NoCodeExecutionSumAggregateInputType
+    _min?: NoCodeExecutionMinAggregateInputType
+    _max?: NoCodeExecutionMaxAggregateInputType
+  }
+
+  export type NoCodeExecutionGroupByOutputType = {
+    id: string
+    flowId: string
+    status: string
+    origem: string
+    entrada: JsonValue | null
+    passos: JsonValue
+    erro: string | null
+    duracaoMs: number
+    iniciadoEm: Date
+    _count: NoCodeExecutionCountAggregateOutputType | null
+    _avg: NoCodeExecutionAvgAggregateOutputType | null
+    _sum: NoCodeExecutionSumAggregateOutputType | null
+    _min: NoCodeExecutionMinAggregateOutputType | null
+    _max: NoCodeExecutionMaxAggregateOutputType | null
+  }
+
+  type GetNoCodeExecutionGroupByPayload<T extends NoCodeExecutionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<NoCodeExecutionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof NoCodeExecutionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], NoCodeExecutionGroupByOutputType[P]>
+            : GetScalarType<T[P], NoCodeExecutionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type NoCodeExecutionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    flowId?: boolean
+    status?: boolean
+    origem?: boolean
+    entrada?: boolean
+    passos?: boolean
+    erro?: boolean
+    duracaoMs?: boolean
+    iniciadoEm?: boolean
+    flow?: boolean | NoCodeFlowDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["noCodeExecution"]>
+
+  export type NoCodeExecutionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    flowId?: boolean
+    status?: boolean
+    origem?: boolean
+    entrada?: boolean
+    passos?: boolean
+    erro?: boolean
+    duracaoMs?: boolean
+    iniciadoEm?: boolean
+    flow?: boolean | NoCodeFlowDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["noCodeExecution"]>
+
+  export type NoCodeExecutionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    flowId?: boolean
+    status?: boolean
+    origem?: boolean
+    entrada?: boolean
+    passos?: boolean
+    erro?: boolean
+    duracaoMs?: boolean
+    iniciadoEm?: boolean
+    flow?: boolean | NoCodeFlowDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["noCodeExecution"]>
+
+  export type NoCodeExecutionSelectScalar = {
+    id?: boolean
+    flowId?: boolean
+    status?: boolean
+    origem?: boolean
+    entrada?: boolean
+    passos?: boolean
+    erro?: boolean
+    duracaoMs?: boolean
+    iniciadoEm?: boolean
+  }
+
+  export type NoCodeExecutionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "flowId" | "status" | "origem" | "entrada" | "passos" | "erro" | "duracaoMs" | "iniciadoEm", ExtArgs["result"]["noCodeExecution"]>
+  export type NoCodeExecutionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    flow?: boolean | NoCodeFlowDefaultArgs<ExtArgs>
+  }
+  export type NoCodeExecutionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    flow?: boolean | NoCodeFlowDefaultArgs<ExtArgs>
+  }
+  export type NoCodeExecutionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    flow?: boolean | NoCodeFlowDefaultArgs<ExtArgs>
+  }
+
+  export type $NoCodeExecutionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "NoCodeExecution"
+    objects: {
+      flow: Prisma.$NoCodeFlowPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      flowId: string
+      /**
+       * "sucesso" | "erro" | "ignorado"
+       */
+      status: string
+      /**
+       * "webhook" | "teste"
+       */
+      origem: string
+      entrada: Prisma.JsonValue | null
+      /**
+       * Passo a passo: [{ nodeId, nome, tipo, status, saida, erro, ms }].
+       */
+      passos: Prisma.JsonValue
+      erro: string | null
+      duracaoMs: number
+      iniciadoEm: Date
+    }, ExtArgs["result"]["noCodeExecution"]>
+    composites: {}
+  }
+
+  type NoCodeExecutionGetPayload<S extends boolean | null | undefined | NoCodeExecutionDefaultArgs> = $Result.GetResult<Prisma.$NoCodeExecutionPayload, S>
+
+  type NoCodeExecutionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<NoCodeExecutionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: NoCodeExecutionCountAggregateInputType | true
+    }
+
+  export interface NoCodeExecutionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['NoCodeExecution'], meta: { name: 'NoCodeExecution' } }
+    /**
+     * Find zero or one NoCodeExecution that matches the filter.
+     * @param {NoCodeExecutionFindUniqueArgs} args - Arguments to find a NoCodeExecution
+     * @example
+     * // Get one NoCodeExecution
+     * const noCodeExecution = await prisma.noCodeExecution.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends NoCodeExecutionFindUniqueArgs>(args: SelectSubset<T, NoCodeExecutionFindUniqueArgs<ExtArgs>>): Prisma__NoCodeExecutionClient<$Result.GetResult<Prisma.$NoCodeExecutionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one NoCodeExecution that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {NoCodeExecutionFindUniqueOrThrowArgs} args - Arguments to find a NoCodeExecution
+     * @example
+     * // Get one NoCodeExecution
+     * const noCodeExecution = await prisma.noCodeExecution.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends NoCodeExecutionFindUniqueOrThrowArgs>(args: SelectSubset<T, NoCodeExecutionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__NoCodeExecutionClient<$Result.GetResult<Prisma.$NoCodeExecutionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first NoCodeExecution that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoCodeExecutionFindFirstArgs} args - Arguments to find a NoCodeExecution
+     * @example
+     * // Get one NoCodeExecution
+     * const noCodeExecution = await prisma.noCodeExecution.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends NoCodeExecutionFindFirstArgs>(args?: SelectSubset<T, NoCodeExecutionFindFirstArgs<ExtArgs>>): Prisma__NoCodeExecutionClient<$Result.GetResult<Prisma.$NoCodeExecutionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first NoCodeExecution that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoCodeExecutionFindFirstOrThrowArgs} args - Arguments to find a NoCodeExecution
+     * @example
+     * // Get one NoCodeExecution
+     * const noCodeExecution = await prisma.noCodeExecution.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends NoCodeExecutionFindFirstOrThrowArgs>(args?: SelectSubset<T, NoCodeExecutionFindFirstOrThrowArgs<ExtArgs>>): Prisma__NoCodeExecutionClient<$Result.GetResult<Prisma.$NoCodeExecutionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more NoCodeExecutions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoCodeExecutionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all NoCodeExecutions
+     * const noCodeExecutions = await prisma.noCodeExecution.findMany()
+     * 
+     * // Get first 10 NoCodeExecutions
+     * const noCodeExecutions = await prisma.noCodeExecution.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const noCodeExecutionWithIdOnly = await prisma.noCodeExecution.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends NoCodeExecutionFindManyArgs>(args?: SelectSubset<T, NoCodeExecutionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NoCodeExecutionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a NoCodeExecution.
+     * @param {NoCodeExecutionCreateArgs} args - Arguments to create a NoCodeExecution.
+     * @example
+     * // Create one NoCodeExecution
+     * const NoCodeExecution = await prisma.noCodeExecution.create({
+     *   data: {
+     *     // ... data to create a NoCodeExecution
+     *   }
+     * })
+     * 
+     */
+    create<T extends NoCodeExecutionCreateArgs>(args: SelectSubset<T, NoCodeExecutionCreateArgs<ExtArgs>>): Prisma__NoCodeExecutionClient<$Result.GetResult<Prisma.$NoCodeExecutionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many NoCodeExecutions.
+     * @param {NoCodeExecutionCreateManyArgs} args - Arguments to create many NoCodeExecutions.
+     * @example
+     * // Create many NoCodeExecutions
+     * const noCodeExecution = await prisma.noCodeExecution.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends NoCodeExecutionCreateManyArgs>(args?: SelectSubset<T, NoCodeExecutionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many NoCodeExecutions and returns the data saved in the database.
+     * @param {NoCodeExecutionCreateManyAndReturnArgs} args - Arguments to create many NoCodeExecutions.
+     * @example
+     * // Create many NoCodeExecutions
+     * const noCodeExecution = await prisma.noCodeExecution.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many NoCodeExecutions and only return the `id`
+     * const noCodeExecutionWithIdOnly = await prisma.noCodeExecution.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends NoCodeExecutionCreateManyAndReturnArgs>(args?: SelectSubset<T, NoCodeExecutionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NoCodeExecutionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a NoCodeExecution.
+     * @param {NoCodeExecutionDeleteArgs} args - Arguments to delete one NoCodeExecution.
+     * @example
+     * // Delete one NoCodeExecution
+     * const NoCodeExecution = await prisma.noCodeExecution.delete({
+     *   where: {
+     *     // ... filter to delete one NoCodeExecution
+     *   }
+     * })
+     * 
+     */
+    delete<T extends NoCodeExecutionDeleteArgs>(args: SelectSubset<T, NoCodeExecutionDeleteArgs<ExtArgs>>): Prisma__NoCodeExecutionClient<$Result.GetResult<Prisma.$NoCodeExecutionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one NoCodeExecution.
+     * @param {NoCodeExecutionUpdateArgs} args - Arguments to update one NoCodeExecution.
+     * @example
+     * // Update one NoCodeExecution
+     * const noCodeExecution = await prisma.noCodeExecution.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends NoCodeExecutionUpdateArgs>(args: SelectSubset<T, NoCodeExecutionUpdateArgs<ExtArgs>>): Prisma__NoCodeExecutionClient<$Result.GetResult<Prisma.$NoCodeExecutionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more NoCodeExecutions.
+     * @param {NoCodeExecutionDeleteManyArgs} args - Arguments to filter NoCodeExecutions to delete.
+     * @example
+     * // Delete a few NoCodeExecutions
+     * const { count } = await prisma.noCodeExecution.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends NoCodeExecutionDeleteManyArgs>(args?: SelectSubset<T, NoCodeExecutionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more NoCodeExecutions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoCodeExecutionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many NoCodeExecutions
+     * const noCodeExecution = await prisma.noCodeExecution.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends NoCodeExecutionUpdateManyArgs>(args: SelectSubset<T, NoCodeExecutionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more NoCodeExecutions and returns the data updated in the database.
+     * @param {NoCodeExecutionUpdateManyAndReturnArgs} args - Arguments to update many NoCodeExecutions.
+     * @example
+     * // Update many NoCodeExecutions
+     * const noCodeExecution = await prisma.noCodeExecution.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more NoCodeExecutions and only return the `id`
+     * const noCodeExecutionWithIdOnly = await prisma.noCodeExecution.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends NoCodeExecutionUpdateManyAndReturnArgs>(args: SelectSubset<T, NoCodeExecutionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NoCodeExecutionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one NoCodeExecution.
+     * @param {NoCodeExecutionUpsertArgs} args - Arguments to update or create a NoCodeExecution.
+     * @example
+     * // Update or create a NoCodeExecution
+     * const noCodeExecution = await prisma.noCodeExecution.upsert({
+     *   create: {
+     *     // ... data to create a NoCodeExecution
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the NoCodeExecution we want to update
+     *   }
+     * })
+     */
+    upsert<T extends NoCodeExecutionUpsertArgs>(args: SelectSubset<T, NoCodeExecutionUpsertArgs<ExtArgs>>): Prisma__NoCodeExecutionClient<$Result.GetResult<Prisma.$NoCodeExecutionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of NoCodeExecutions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoCodeExecutionCountArgs} args - Arguments to filter NoCodeExecutions to count.
+     * @example
+     * // Count the number of NoCodeExecutions
+     * const count = await prisma.noCodeExecution.count({
+     *   where: {
+     *     // ... the filter for the NoCodeExecutions we want to count
+     *   }
+     * })
+    **/
+    count<T extends NoCodeExecutionCountArgs>(
+      args?: Subset<T, NoCodeExecutionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], NoCodeExecutionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a NoCodeExecution.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoCodeExecutionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends NoCodeExecutionAggregateArgs>(args: Subset<T, NoCodeExecutionAggregateArgs>): Prisma.PrismaPromise<GetNoCodeExecutionAggregateType<T>>
+
+    /**
+     * Group by NoCodeExecution.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoCodeExecutionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends NoCodeExecutionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: NoCodeExecutionGroupByArgs['orderBy'] }
+        : { orderBy?: NoCodeExecutionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, NoCodeExecutionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetNoCodeExecutionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the NoCodeExecution model
+   */
+  readonly fields: NoCodeExecutionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for NoCodeExecution.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__NoCodeExecutionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    flow<T extends NoCodeFlowDefaultArgs<ExtArgs> = {}>(args?: Subset<T, NoCodeFlowDefaultArgs<ExtArgs>>): Prisma__NoCodeFlowClient<$Result.GetResult<Prisma.$NoCodeFlowPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the NoCodeExecution model
+   */
+  interface NoCodeExecutionFieldRefs {
+    readonly id: FieldRef<"NoCodeExecution", 'String'>
+    readonly flowId: FieldRef<"NoCodeExecution", 'String'>
+    readonly status: FieldRef<"NoCodeExecution", 'String'>
+    readonly origem: FieldRef<"NoCodeExecution", 'String'>
+    readonly entrada: FieldRef<"NoCodeExecution", 'Json'>
+    readonly passos: FieldRef<"NoCodeExecution", 'Json'>
+    readonly erro: FieldRef<"NoCodeExecution", 'String'>
+    readonly duracaoMs: FieldRef<"NoCodeExecution", 'Int'>
+    readonly iniciadoEm: FieldRef<"NoCodeExecution", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * NoCodeExecution findUnique
+   */
+  export type NoCodeExecutionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeExecution
+     */
+    select?: NoCodeExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeExecution
+     */
+    omit?: NoCodeExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeExecutionInclude<ExtArgs> | null
+    /**
+     * Filter, which NoCodeExecution to fetch.
+     */
+    where: NoCodeExecutionWhereUniqueInput
+  }
+
+  /**
+   * NoCodeExecution findUniqueOrThrow
+   */
+  export type NoCodeExecutionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeExecution
+     */
+    select?: NoCodeExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeExecution
+     */
+    omit?: NoCodeExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeExecutionInclude<ExtArgs> | null
+    /**
+     * Filter, which NoCodeExecution to fetch.
+     */
+    where: NoCodeExecutionWhereUniqueInput
+  }
+
+  /**
+   * NoCodeExecution findFirst
+   */
+  export type NoCodeExecutionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeExecution
+     */
+    select?: NoCodeExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeExecution
+     */
+    omit?: NoCodeExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeExecutionInclude<ExtArgs> | null
+    /**
+     * Filter, which NoCodeExecution to fetch.
+     */
+    where?: NoCodeExecutionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NoCodeExecutions to fetch.
+     */
+    orderBy?: NoCodeExecutionOrderByWithRelationInput | NoCodeExecutionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for NoCodeExecutions.
+     */
+    cursor?: NoCodeExecutionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NoCodeExecutions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NoCodeExecutions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of NoCodeExecutions.
+     */
+    distinct?: NoCodeExecutionScalarFieldEnum | NoCodeExecutionScalarFieldEnum[]
+  }
+
+  /**
+   * NoCodeExecution findFirstOrThrow
+   */
+  export type NoCodeExecutionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeExecution
+     */
+    select?: NoCodeExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeExecution
+     */
+    omit?: NoCodeExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeExecutionInclude<ExtArgs> | null
+    /**
+     * Filter, which NoCodeExecution to fetch.
+     */
+    where?: NoCodeExecutionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NoCodeExecutions to fetch.
+     */
+    orderBy?: NoCodeExecutionOrderByWithRelationInput | NoCodeExecutionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for NoCodeExecutions.
+     */
+    cursor?: NoCodeExecutionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NoCodeExecutions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NoCodeExecutions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of NoCodeExecutions.
+     */
+    distinct?: NoCodeExecutionScalarFieldEnum | NoCodeExecutionScalarFieldEnum[]
+  }
+
+  /**
+   * NoCodeExecution findMany
+   */
+  export type NoCodeExecutionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeExecution
+     */
+    select?: NoCodeExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeExecution
+     */
+    omit?: NoCodeExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeExecutionInclude<ExtArgs> | null
+    /**
+     * Filter, which NoCodeExecutions to fetch.
+     */
+    where?: NoCodeExecutionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NoCodeExecutions to fetch.
+     */
+    orderBy?: NoCodeExecutionOrderByWithRelationInput | NoCodeExecutionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing NoCodeExecutions.
+     */
+    cursor?: NoCodeExecutionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NoCodeExecutions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NoCodeExecutions.
+     */
+    skip?: number
+    distinct?: NoCodeExecutionScalarFieldEnum | NoCodeExecutionScalarFieldEnum[]
+  }
+
+  /**
+   * NoCodeExecution create
+   */
+  export type NoCodeExecutionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeExecution
+     */
+    select?: NoCodeExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeExecution
+     */
+    omit?: NoCodeExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeExecutionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a NoCodeExecution.
+     */
+    data: XOR<NoCodeExecutionCreateInput, NoCodeExecutionUncheckedCreateInput>
+  }
+
+  /**
+   * NoCodeExecution createMany
+   */
+  export type NoCodeExecutionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many NoCodeExecutions.
+     */
+    data: NoCodeExecutionCreateManyInput | NoCodeExecutionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * NoCodeExecution createManyAndReturn
+   */
+  export type NoCodeExecutionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeExecution
+     */
+    select?: NoCodeExecutionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeExecution
+     */
+    omit?: NoCodeExecutionOmit<ExtArgs> | null
+    /**
+     * The data used to create many NoCodeExecutions.
+     */
+    data: NoCodeExecutionCreateManyInput | NoCodeExecutionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeExecutionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * NoCodeExecution update
+   */
+  export type NoCodeExecutionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeExecution
+     */
+    select?: NoCodeExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeExecution
+     */
+    omit?: NoCodeExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeExecutionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a NoCodeExecution.
+     */
+    data: XOR<NoCodeExecutionUpdateInput, NoCodeExecutionUncheckedUpdateInput>
+    /**
+     * Choose, which NoCodeExecution to update.
+     */
+    where: NoCodeExecutionWhereUniqueInput
+  }
+
+  /**
+   * NoCodeExecution updateMany
+   */
+  export type NoCodeExecutionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update NoCodeExecutions.
+     */
+    data: XOR<NoCodeExecutionUpdateManyMutationInput, NoCodeExecutionUncheckedUpdateManyInput>
+    /**
+     * Filter which NoCodeExecutions to update
+     */
+    where?: NoCodeExecutionWhereInput
+    /**
+     * Limit how many NoCodeExecutions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * NoCodeExecution updateManyAndReturn
+   */
+  export type NoCodeExecutionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeExecution
+     */
+    select?: NoCodeExecutionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeExecution
+     */
+    omit?: NoCodeExecutionOmit<ExtArgs> | null
+    /**
+     * The data used to update NoCodeExecutions.
+     */
+    data: XOR<NoCodeExecutionUpdateManyMutationInput, NoCodeExecutionUncheckedUpdateManyInput>
+    /**
+     * Filter which NoCodeExecutions to update
+     */
+    where?: NoCodeExecutionWhereInput
+    /**
+     * Limit how many NoCodeExecutions to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeExecutionIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * NoCodeExecution upsert
+   */
+  export type NoCodeExecutionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeExecution
+     */
+    select?: NoCodeExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeExecution
+     */
+    omit?: NoCodeExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeExecutionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the NoCodeExecution to update in case it exists.
+     */
+    where: NoCodeExecutionWhereUniqueInput
+    /**
+     * In case the NoCodeExecution found by the `where` argument doesn't exist, create a new NoCodeExecution with this data.
+     */
+    create: XOR<NoCodeExecutionCreateInput, NoCodeExecutionUncheckedCreateInput>
+    /**
+     * In case the NoCodeExecution was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<NoCodeExecutionUpdateInput, NoCodeExecutionUncheckedUpdateInput>
+  }
+
+  /**
+   * NoCodeExecution delete
+   */
+  export type NoCodeExecutionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeExecution
+     */
+    select?: NoCodeExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeExecution
+     */
+    omit?: NoCodeExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeExecutionInclude<ExtArgs> | null
+    /**
+     * Filter which NoCodeExecution to delete.
+     */
+    where: NoCodeExecutionWhereUniqueInput
+  }
+
+  /**
+   * NoCodeExecution deleteMany
+   */
+  export type NoCodeExecutionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which NoCodeExecutions to delete
+     */
+    where?: NoCodeExecutionWhereInput
+    /**
+     * Limit how many NoCodeExecutions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * NoCodeExecution without action
+   */
+  export type NoCodeExecutionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeExecution
+     */
+    select?: NoCodeExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeExecution
+     */
+    omit?: NoCodeExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeExecutionInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -21532,6 +23997,7 @@ export namespace Prisma {
     chatPluginAtivo: 'chatPluginAtivo',
     kanbanPluginAtivo: 'kanbanPluginAtivo',
     assistentePluginAtivo: 'assistentePluginAtivo',
+    nocodePluginAtivo: 'nocodePluginAtivo',
     temaApp: 'temaApp',
     appNome: 'appNome',
     appLogo: 'appLogo',
@@ -21621,6 +24087,34 @@ export namespace Prisma {
   export type InstanceScalarFieldEnum = (typeof InstanceScalarFieldEnum)[keyof typeof InstanceScalarFieldEnum]
 
 
+  export const NoCodeFlowScalarFieldEnum: {
+    id: 'id',
+    nome: 'nome',
+    ativo: 'ativo',
+    nodes: 'nodes',
+    edges: 'edges',
+    criadoEm: 'criadoEm',
+    atualizadoEm: 'atualizadoEm'
+  };
+
+  export type NoCodeFlowScalarFieldEnum = (typeof NoCodeFlowScalarFieldEnum)[keyof typeof NoCodeFlowScalarFieldEnum]
+
+
+  export const NoCodeExecutionScalarFieldEnum: {
+    id: 'id',
+    flowId: 'flowId',
+    status: 'status',
+    origem: 'origem',
+    entrada: 'entrada',
+    passos: 'passos',
+    erro: 'erro',
+    duracaoMs: 'duracaoMs',
+    iniciadoEm: 'iniciadoEm'
+  };
+
+  export type NoCodeExecutionScalarFieldEnum = (typeof NoCodeExecutionScalarFieldEnum)[keyof typeof NoCodeExecutionScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -21634,6 +24128,14 @@ export namespace Prisma {
   };
 
   export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+  export const NullableJsonNullValueInput: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull
+  };
+
+  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
   export const QueryMode: {
@@ -22608,6 +25110,7 @@ export namespace Prisma {
     chatPluginAtivo?: BoolFilter<"Settings"> | boolean
     kanbanPluginAtivo?: BoolFilter<"Settings"> | boolean
     assistentePluginAtivo?: BoolFilter<"Settings"> | boolean
+    nocodePluginAtivo?: BoolFilter<"Settings"> | boolean
     temaApp?: StringFilter<"Settings"> | string
     appNome?: StringFilter<"Settings"> | string
     appLogo?: StringNullableFilter<"Settings"> | string | null
@@ -22635,6 +25138,7 @@ export namespace Prisma {
     chatPluginAtivo?: SortOrder
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
+    nocodePluginAtivo?: SortOrder
     temaApp?: SortOrder
     appNome?: SortOrder
     appLogo?: SortOrderInput | SortOrder
@@ -22665,6 +25169,7 @@ export namespace Prisma {
     chatPluginAtivo?: BoolFilter<"Settings"> | boolean
     kanbanPluginAtivo?: BoolFilter<"Settings"> | boolean
     assistentePluginAtivo?: BoolFilter<"Settings"> | boolean
+    nocodePluginAtivo?: BoolFilter<"Settings"> | boolean
     temaApp?: StringFilter<"Settings"> | string
     appNome?: StringFilter<"Settings"> | string
     appLogo?: StringNullableFilter<"Settings"> | string | null
@@ -22692,6 +25197,7 @@ export namespace Prisma {
     chatPluginAtivo?: SortOrder
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
+    nocodePluginAtivo?: SortOrder
     temaApp?: SortOrder
     appNome?: SortOrder
     appLogo?: SortOrderInput | SortOrder
@@ -22727,6 +25233,7 @@ export namespace Prisma {
     chatPluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
     kanbanPluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
     assistentePluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
+    nocodePluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
     temaApp?: StringWithAggregatesFilter<"Settings"> | string
     appNome?: StringWithAggregatesFilter<"Settings"> | string
     appLogo?: StringNullableWithAggregatesFilter<"Settings"> | string | null
@@ -23112,6 +25619,148 @@ export namespace Prisma {
     numero?: StringNullableWithAggregatesFilter<"Instance"> | string | null
     criadoEm?: DateTimeWithAggregatesFilter<"Instance"> | Date | string
     atualizadoEm?: DateTimeWithAggregatesFilter<"Instance"> | Date | string
+  }
+
+  export type NoCodeFlowWhereInput = {
+    AND?: NoCodeFlowWhereInput | NoCodeFlowWhereInput[]
+    OR?: NoCodeFlowWhereInput[]
+    NOT?: NoCodeFlowWhereInput | NoCodeFlowWhereInput[]
+    id?: StringFilter<"NoCodeFlow"> | string
+    nome?: StringFilter<"NoCodeFlow"> | string
+    ativo?: BoolFilter<"NoCodeFlow"> | boolean
+    nodes?: JsonFilter<"NoCodeFlow">
+    edges?: JsonFilter<"NoCodeFlow">
+    criadoEm?: DateTimeFilter<"NoCodeFlow"> | Date | string
+    atualizadoEm?: DateTimeFilter<"NoCodeFlow"> | Date | string
+    execucoes?: NoCodeExecutionListRelationFilter
+  }
+
+  export type NoCodeFlowOrderByWithRelationInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    ativo?: SortOrder
+    nodes?: SortOrder
+    edges?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    execucoes?: NoCodeExecutionOrderByRelationAggregateInput
+  }
+
+  export type NoCodeFlowWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: NoCodeFlowWhereInput | NoCodeFlowWhereInput[]
+    OR?: NoCodeFlowWhereInput[]
+    NOT?: NoCodeFlowWhereInput | NoCodeFlowWhereInput[]
+    nome?: StringFilter<"NoCodeFlow"> | string
+    ativo?: BoolFilter<"NoCodeFlow"> | boolean
+    nodes?: JsonFilter<"NoCodeFlow">
+    edges?: JsonFilter<"NoCodeFlow">
+    criadoEm?: DateTimeFilter<"NoCodeFlow"> | Date | string
+    atualizadoEm?: DateTimeFilter<"NoCodeFlow"> | Date | string
+    execucoes?: NoCodeExecutionListRelationFilter
+  }, "id">
+
+  export type NoCodeFlowOrderByWithAggregationInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    ativo?: SortOrder
+    nodes?: SortOrder
+    edges?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    _count?: NoCodeFlowCountOrderByAggregateInput
+    _max?: NoCodeFlowMaxOrderByAggregateInput
+    _min?: NoCodeFlowMinOrderByAggregateInput
+  }
+
+  export type NoCodeFlowScalarWhereWithAggregatesInput = {
+    AND?: NoCodeFlowScalarWhereWithAggregatesInput | NoCodeFlowScalarWhereWithAggregatesInput[]
+    OR?: NoCodeFlowScalarWhereWithAggregatesInput[]
+    NOT?: NoCodeFlowScalarWhereWithAggregatesInput | NoCodeFlowScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"NoCodeFlow"> | string
+    nome?: StringWithAggregatesFilter<"NoCodeFlow"> | string
+    ativo?: BoolWithAggregatesFilter<"NoCodeFlow"> | boolean
+    nodes?: JsonWithAggregatesFilter<"NoCodeFlow">
+    edges?: JsonWithAggregatesFilter<"NoCodeFlow">
+    criadoEm?: DateTimeWithAggregatesFilter<"NoCodeFlow"> | Date | string
+    atualizadoEm?: DateTimeWithAggregatesFilter<"NoCodeFlow"> | Date | string
+  }
+
+  export type NoCodeExecutionWhereInput = {
+    AND?: NoCodeExecutionWhereInput | NoCodeExecutionWhereInput[]
+    OR?: NoCodeExecutionWhereInput[]
+    NOT?: NoCodeExecutionWhereInput | NoCodeExecutionWhereInput[]
+    id?: StringFilter<"NoCodeExecution"> | string
+    flowId?: StringFilter<"NoCodeExecution"> | string
+    status?: StringFilter<"NoCodeExecution"> | string
+    origem?: StringFilter<"NoCodeExecution"> | string
+    entrada?: JsonNullableFilter<"NoCodeExecution">
+    passos?: JsonFilter<"NoCodeExecution">
+    erro?: StringNullableFilter<"NoCodeExecution"> | string | null
+    duracaoMs?: IntFilter<"NoCodeExecution"> | number
+    iniciadoEm?: DateTimeFilter<"NoCodeExecution"> | Date | string
+    flow?: XOR<NoCodeFlowScalarRelationFilter, NoCodeFlowWhereInput>
+  }
+
+  export type NoCodeExecutionOrderByWithRelationInput = {
+    id?: SortOrder
+    flowId?: SortOrder
+    status?: SortOrder
+    origem?: SortOrder
+    entrada?: SortOrderInput | SortOrder
+    passos?: SortOrder
+    erro?: SortOrderInput | SortOrder
+    duracaoMs?: SortOrder
+    iniciadoEm?: SortOrder
+    flow?: NoCodeFlowOrderByWithRelationInput
+  }
+
+  export type NoCodeExecutionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: NoCodeExecutionWhereInput | NoCodeExecutionWhereInput[]
+    OR?: NoCodeExecutionWhereInput[]
+    NOT?: NoCodeExecutionWhereInput | NoCodeExecutionWhereInput[]
+    flowId?: StringFilter<"NoCodeExecution"> | string
+    status?: StringFilter<"NoCodeExecution"> | string
+    origem?: StringFilter<"NoCodeExecution"> | string
+    entrada?: JsonNullableFilter<"NoCodeExecution">
+    passos?: JsonFilter<"NoCodeExecution">
+    erro?: StringNullableFilter<"NoCodeExecution"> | string | null
+    duracaoMs?: IntFilter<"NoCodeExecution"> | number
+    iniciadoEm?: DateTimeFilter<"NoCodeExecution"> | Date | string
+    flow?: XOR<NoCodeFlowScalarRelationFilter, NoCodeFlowWhereInput>
+  }, "id">
+
+  export type NoCodeExecutionOrderByWithAggregationInput = {
+    id?: SortOrder
+    flowId?: SortOrder
+    status?: SortOrder
+    origem?: SortOrder
+    entrada?: SortOrderInput | SortOrder
+    passos?: SortOrder
+    erro?: SortOrderInput | SortOrder
+    duracaoMs?: SortOrder
+    iniciadoEm?: SortOrder
+    _count?: NoCodeExecutionCountOrderByAggregateInput
+    _avg?: NoCodeExecutionAvgOrderByAggregateInput
+    _max?: NoCodeExecutionMaxOrderByAggregateInput
+    _min?: NoCodeExecutionMinOrderByAggregateInput
+    _sum?: NoCodeExecutionSumOrderByAggregateInput
+  }
+
+  export type NoCodeExecutionScalarWhereWithAggregatesInput = {
+    AND?: NoCodeExecutionScalarWhereWithAggregatesInput | NoCodeExecutionScalarWhereWithAggregatesInput[]
+    OR?: NoCodeExecutionScalarWhereWithAggregatesInput[]
+    NOT?: NoCodeExecutionScalarWhereWithAggregatesInput | NoCodeExecutionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"NoCodeExecution"> | string
+    flowId?: StringWithAggregatesFilter<"NoCodeExecution"> | string
+    status?: StringWithAggregatesFilter<"NoCodeExecution"> | string
+    origem?: StringWithAggregatesFilter<"NoCodeExecution"> | string
+    entrada?: JsonNullableWithAggregatesFilter<"NoCodeExecution">
+    passos?: JsonWithAggregatesFilter<"NoCodeExecution">
+    erro?: StringNullableWithAggregatesFilter<"NoCodeExecution"> | string | null
+    duracaoMs?: IntWithAggregatesFilter<"NoCodeExecution"> | number
+    iniciadoEm?: DateTimeWithAggregatesFilter<"NoCodeExecution"> | Date | string
   }
 
   export type LeadCreateInput = {
@@ -23979,6 +26628,7 @@ export namespace Prisma {
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
+    nocodePluginAtivo?: boolean
     temaApp?: string
     appNome?: string
     appLogo?: string | null
@@ -24006,6 +26656,7 @@ export namespace Prisma {
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
+    nocodePluginAtivo?: boolean
     temaApp?: string
     appNome?: string
     appLogo?: string | null
@@ -24033,6 +26684,7 @@ export namespace Prisma {
     chatPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    nocodePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     appNome?: StringFieldUpdateOperationsInput | string
     appLogo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24060,6 +26712,7 @@ export namespace Prisma {
     chatPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    nocodePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     appNome?: StringFieldUpdateOperationsInput | string
     appLogo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24087,6 +26740,7 @@ export namespace Prisma {
     chatPluginAtivo?: boolean
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
+    nocodePluginAtivo?: boolean
     temaApp?: string
     appNome?: string
     appLogo?: string | null
@@ -24114,6 +26768,7 @@ export namespace Prisma {
     chatPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    nocodePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     appNome?: StringFieldUpdateOperationsInput | string
     appLogo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24141,6 +26796,7 @@ export namespace Prisma {
     chatPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    nocodePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     appNome?: StringFieldUpdateOperationsInput | string
     appLogo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24558,6 +27214,163 @@ export namespace Prisma {
     numero?: NullableStringFieldUpdateOperationsInput | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NoCodeFlowCreateInput = {
+    id?: string
+    nome: string
+    ativo?: boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    execucoes?: NoCodeExecutionCreateNestedManyWithoutFlowInput
+  }
+
+  export type NoCodeFlowUncheckedCreateInput = {
+    id?: string
+    nome: string
+    ativo?: boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    execucoes?: NoCodeExecutionUncheckedCreateNestedManyWithoutFlowInput
+  }
+
+  export type NoCodeFlowUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    execucoes?: NoCodeExecutionUpdateManyWithoutFlowNestedInput
+  }
+
+  export type NoCodeFlowUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    execucoes?: NoCodeExecutionUncheckedUpdateManyWithoutFlowNestedInput
+  }
+
+  export type NoCodeFlowCreateManyInput = {
+    id?: string
+    nome: string
+    ativo?: boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type NoCodeFlowUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NoCodeFlowUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NoCodeExecutionCreateInput = {
+    id?: string
+    status: string
+    origem?: string
+    entrada?: NullableJsonNullValueInput | InputJsonValue
+    passos?: JsonNullValueInput | InputJsonValue
+    erro?: string | null
+    duracaoMs?: number
+    iniciadoEm?: Date | string
+    flow: NoCodeFlowCreateNestedOneWithoutExecucoesInput
+  }
+
+  export type NoCodeExecutionUncheckedCreateInput = {
+    id?: string
+    flowId: string
+    status: string
+    origem?: string
+    entrada?: NullableJsonNullValueInput | InputJsonValue
+    passos?: JsonNullValueInput | InputJsonValue
+    erro?: string | null
+    duracaoMs?: number
+    iniciadoEm?: Date | string
+  }
+
+  export type NoCodeExecutionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    origem?: StringFieldUpdateOperationsInput | string
+    entrada?: NullableJsonNullValueInput | InputJsonValue
+    passos?: JsonNullValueInput | InputJsonValue
+    erro?: NullableStringFieldUpdateOperationsInput | string | null
+    duracaoMs?: IntFieldUpdateOperationsInput | number
+    iniciadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    flow?: NoCodeFlowUpdateOneRequiredWithoutExecucoesNestedInput
+  }
+
+  export type NoCodeExecutionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    flowId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    origem?: StringFieldUpdateOperationsInput | string
+    entrada?: NullableJsonNullValueInput | InputJsonValue
+    passos?: JsonNullValueInput | InputJsonValue
+    erro?: NullableStringFieldUpdateOperationsInput | string | null
+    duracaoMs?: IntFieldUpdateOperationsInput | number
+    iniciadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NoCodeExecutionCreateManyInput = {
+    id?: string
+    flowId: string
+    status: string
+    origem?: string
+    entrada?: NullableJsonNullValueInput | InputJsonValue
+    passos?: JsonNullValueInput | InputJsonValue
+    erro?: string | null
+    duracaoMs?: number
+    iniciadoEm?: Date | string
+  }
+
+  export type NoCodeExecutionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    origem?: StringFieldUpdateOperationsInput | string
+    entrada?: NullableJsonNullValueInput | InputJsonValue
+    passos?: JsonNullValueInput | InputJsonValue
+    erro?: NullableStringFieldUpdateOperationsInput | string | null
+    duracaoMs?: IntFieldUpdateOperationsInput | number
+    iniciadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NoCodeExecutionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    flowId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    origem?: StringFieldUpdateOperationsInput | string
+    entrada?: NullableJsonNullValueInput | InputJsonValue
+    passos?: JsonNullValueInput | InputJsonValue
+    erro?: NullableStringFieldUpdateOperationsInput | string | null
+    duracaoMs?: IntFieldUpdateOperationsInput | number
+    iniciadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -25264,6 +28077,7 @@ export namespace Prisma {
     chatPluginAtivo?: SortOrder
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
+    nocodePluginAtivo?: SortOrder
     temaApp?: SortOrder
     appNome?: SortOrder
     appLogo?: SortOrder
@@ -25297,6 +28111,7 @@ export namespace Prisma {
     chatPluginAtivo?: SortOrder
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
+    nocodePluginAtivo?: SortOrder
     temaApp?: SortOrder
     appNome?: SortOrder
     appLogo?: SortOrder
@@ -25324,6 +28139,7 @@ export namespace Prisma {
     chatPluginAtivo?: SortOrder
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
+    nocodePluginAtivo?: SortOrder
     temaApp?: SortOrder
     appNome?: SortOrder
     appLogo?: SortOrder
@@ -25641,6 +28457,136 @@ export namespace Prisma {
     numero?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
+  }
+
+  export type NoCodeExecutionListRelationFilter = {
+    every?: NoCodeExecutionWhereInput
+    some?: NoCodeExecutionWhereInput
+    none?: NoCodeExecutionWhereInput
+  }
+
+  export type NoCodeExecutionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type NoCodeFlowCountOrderByAggregateInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    ativo?: SortOrder
+    nodes?: SortOrder
+    edges?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type NoCodeFlowMaxOrderByAggregateInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type NoCodeFlowMinOrderByAggregateInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type NoCodeFlowScalarRelationFilter = {
+    is?: NoCodeFlowWhereInput
+    isNot?: NoCodeFlowWhereInput
+  }
+
+  export type NoCodeExecutionCountOrderByAggregateInput = {
+    id?: SortOrder
+    flowId?: SortOrder
+    status?: SortOrder
+    origem?: SortOrder
+    entrada?: SortOrder
+    passos?: SortOrder
+    erro?: SortOrder
+    duracaoMs?: SortOrder
+    iniciadoEm?: SortOrder
+  }
+
+  export type NoCodeExecutionAvgOrderByAggregateInput = {
+    duracaoMs?: SortOrder
+  }
+
+  export type NoCodeExecutionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    flowId?: SortOrder
+    status?: SortOrder
+    origem?: SortOrder
+    erro?: SortOrder
+    duracaoMs?: SortOrder
+    iniciadoEm?: SortOrder
+  }
+
+  export type NoCodeExecutionMinOrderByAggregateInput = {
+    id?: SortOrder
+    flowId?: SortOrder
+    status?: SortOrder
+    origem?: SortOrder
+    erro?: SortOrder
+    duracaoMs?: SortOrder
+    iniciadoEm?: SortOrder
+  }
+
+  export type NoCodeExecutionSumOrderByAggregateInput = {
+    duracaoMs?: SortOrder
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type CampaignCreateNestedOneWithoutLeadsInput = {
@@ -26222,6 +29168,62 @@ export namespace Prisma {
     update?: XOR<XOR<CampaignMessageUpdateToOneWithWhereWithoutEventosInput, CampaignMessageUpdateWithoutEventosInput>, CampaignMessageUncheckedUpdateWithoutEventosInput>
   }
 
+  export type NoCodeExecutionCreateNestedManyWithoutFlowInput = {
+    create?: XOR<NoCodeExecutionCreateWithoutFlowInput, NoCodeExecutionUncheckedCreateWithoutFlowInput> | NoCodeExecutionCreateWithoutFlowInput[] | NoCodeExecutionUncheckedCreateWithoutFlowInput[]
+    connectOrCreate?: NoCodeExecutionCreateOrConnectWithoutFlowInput | NoCodeExecutionCreateOrConnectWithoutFlowInput[]
+    createMany?: NoCodeExecutionCreateManyFlowInputEnvelope
+    connect?: NoCodeExecutionWhereUniqueInput | NoCodeExecutionWhereUniqueInput[]
+  }
+
+  export type NoCodeExecutionUncheckedCreateNestedManyWithoutFlowInput = {
+    create?: XOR<NoCodeExecutionCreateWithoutFlowInput, NoCodeExecutionUncheckedCreateWithoutFlowInput> | NoCodeExecutionCreateWithoutFlowInput[] | NoCodeExecutionUncheckedCreateWithoutFlowInput[]
+    connectOrCreate?: NoCodeExecutionCreateOrConnectWithoutFlowInput | NoCodeExecutionCreateOrConnectWithoutFlowInput[]
+    createMany?: NoCodeExecutionCreateManyFlowInputEnvelope
+    connect?: NoCodeExecutionWhereUniqueInput | NoCodeExecutionWhereUniqueInput[]
+  }
+
+  export type NoCodeExecutionUpdateManyWithoutFlowNestedInput = {
+    create?: XOR<NoCodeExecutionCreateWithoutFlowInput, NoCodeExecutionUncheckedCreateWithoutFlowInput> | NoCodeExecutionCreateWithoutFlowInput[] | NoCodeExecutionUncheckedCreateWithoutFlowInput[]
+    connectOrCreate?: NoCodeExecutionCreateOrConnectWithoutFlowInput | NoCodeExecutionCreateOrConnectWithoutFlowInput[]
+    upsert?: NoCodeExecutionUpsertWithWhereUniqueWithoutFlowInput | NoCodeExecutionUpsertWithWhereUniqueWithoutFlowInput[]
+    createMany?: NoCodeExecutionCreateManyFlowInputEnvelope
+    set?: NoCodeExecutionWhereUniqueInput | NoCodeExecutionWhereUniqueInput[]
+    disconnect?: NoCodeExecutionWhereUniqueInput | NoCodeExecutionWhereUniqueInput[]
+    delete?: NoCodeExecutionWhereUniqueInput | NoCodeExecutionWhereUniqueInput[]
+    connect?: NoCodeExecutionWhereUniqueInput | NoCodeExecutionWhereUniqueInput[]
+    update?: NoCodeExecutionUpdateWithWhereUniqueWithoutFlowInput | NoCodeExecutionUpdateWithWhereUniqueWithoutFlowInput[]
+    updateMany?: NoCodeExecutionUpdateManyWithWhereWithoutFlowInput | NoCodeExecutionUpdateManyWithWhereWithoutFlowInput[]
+    deleteMany?: NoCodeExecutionScalarWhereInput | NoCodeExecutionScalarWhereInput[]
+  }
+
+  export type NoCodeExecutionUncheckedUpdateManyWithoutFlowNestedInput = {
+    create?: XOR<NoCodeExecutionCreateWithoutFlowInput, NoCodeExecutionUncheckedCreateWithoutFlowInput> | NoCodeExecutionCreateWithoutFlowInput[] | NoCodeExecutionUncheckedCreateWithoutFlowInput[]
+    connectOrCreate?: NoCodeExecutionCreateOrConnectWithoutFlowInput | NoCodeExecutionCreateOrConnectWithoutFlowInput[]
+    upsert?: NoCodeExecutionUpsertWithWhereUniqueWithoutFlowInput | NoCodeExecutionUpsertWithWhereUniqueWithoutFlowInput[]
+    createMany?: NoCodeExecutionCreateManyFlowInputEnvelope
+    set?: NoCodeExecutionWhereUniqueInput | NoCodeExecutionWhereUniqueInput[]
+    disconnect?: NoCodeExecutionWhereUniqueInput | NoCodeExecutionWhereUniqueInput[]
+    delete?: NoCodeExecutionWhereUniqueInput | NoCodeExecutionWhereUniqueInput[]
+    connect?: NoCodeExecutionWhereUniqueInput | NoCodeExecutionWhereUniqueInput[]
+    update?: NoCodeExecutionUpdateWithWhereUniqueWithoutFlowInput | NoCodeExecutionUpdateWithWhereUniqueWithoutFlowInput[]
+    updateMany?: NoCodeExecutionUpdateManyWithWhereWithoutFlowInput | NoCodeExecutionUpdateManyWithWhereWithoutFlowInput[]
+    deleteMany?: NoCodeExecutionScalarWhereInput | NoCodeExecutionScalarWhereInput[]
+  }
+
+  export type NoCodeFlowCreateNestedOneWithoutExecucoesInput = {
+    create?: XOR<NoCodeFlowCreateWithoutExecucoesInput, NoCodeFlowUncheckedCreateWithoutExecucoesInput>
+    connectOrCreate?: NoCodeFlowCreateOrConnectWithoutExecucoesInput
+    connect?: NoCodeFlowWhereUniqueInput
+  }
+
+  export type NoCodeFlowUpdateOneRequiredWithoutExecucoesNestedInput = {
+    create?: XOR<NoCodeFlowCreateWithoutExecucoesInput, NoCodeFlowUncheckedCreateWithoutExecucoesInput>
+    connectOrCreate?: NoCodeFlowCreateOrConnectWithoutExecucoesInput
+    upsert?: NoCodeFlowUpsertWithoutExecucoesInput
+    connect?: NoCodeFlowWhereUniqueInput
+    update?: XOR<XOR<NoCodeFlowUpdateToOneWithWhereWithoutExecucoesInput, NoCodeFlowUpdateWithoutExecucoesInput>, NoCodeFlowUncheckedUpdateWithoutExecucoesInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -26532,6 +29534,29 @@ export namespace Prisma {
     | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
 
   export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
     equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
     path?: string[]
     mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
@@ -27932,6 +30957,125 @@ export namespace Prisma {
     campanhaId?: StringFieldUpdateOperationsInput | string
   }
 
+  export type NoCodeExecutionCreateWithoutFlowInput = {
+    id?: string
+    status: string
+    origem?: string
+    entrada?: NullableJsonNullValueInput | InputJsonValue
+    passos?: JsonNullValueInput | InputJsonValue
+    erro?: string | null
+    duracaoMs?: number
+    iniciadoEm?: Date | string
+  }
+
+  export type NoCodeExecutionUncheckedCreateWithoutFlowInput = {
+    id?: string
+    status: string
+    origem?: string
+    entrada?: NullableJsonNullValueInput | InputJsonValue
+    passos?: JsonNullValueInput | InputJsonValue
+    erro?: string | null
+    duracaoMs?: number
+    iniciadoEm?: Date | string
+  }
+
+  export type NoCodeExecutionCreateOrConnectWithoutFlowInput = {
+    where: NoCodeExecutionWhereUniqueInput
+    create: XOR<NoCodeExecutionCreateWithoutFlowInput, NoCodeExecutionUncheckedCreateWithoutFlowInput>
+  }
+
+  export type NoCodeExecutionCreateManyFlowInputEnvelope = {
+    data: NoCodeExecutionCreateManyFlowInput | NoCodeExecutionCreateManyFlowInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type NoCodeExecutionUpsertWithWhereUniqueWithoutFlowInput = {
+    where: NoCodeExecutionWhereUniqueInput
+    update: XOR<NoCodeExecutionUpdateWithoutFlowInput, NoCodeExecutionUncheckedUpdateWithoutFlowInput>
+    create: XOR<NoCodeExecutionCreateWithoutFlowInput, NoCodeExecutionUncheckedCreateWithoutFlowInput>
+  }
+
+  export type NoCodeExecutionUpdateWithWhereUniqueWithoutFlowInput = {
+    where: NoCodeExecutionWhereUniqueInput
+    data: XOR<NoCodeExecutionUpdateWithoutFlowInput, NoCodeExecutionUncheckedUpdateWithoutFlowInput>
+  }
+
+  export type NoCodeExecutionUpdateManyWithWhereWithoutFlowInput = {
+    where: NoCodeExecutionScalarWhereInput
+    data: XOR<NoCodeExecutionUpdateManyMutationInput, NoCodeExecutionUncheckedUpdateManyWithoutFlowInput>
+  }
+
+  export type NoCodeExecutionScalarWhereInput = {
+    AND?: NoCodeExecutionScalarWhereInput | NoCodeExecutionScalarWhereInput[]
+    OR?: NoCodeExecutionScalarWhereInput[]
+    NOT?: NoCodeExecutionScalarWhereInput | NoCodeExecutionScalarWhereInput[]
+    id?: StringFilter<"NoCodeExecution"> | string
+    flowId?: StringFilter<"NoCodeExecution"> | string
+    status?: StringFilter<"NoCodeExecution"> | string
+    origem?: StringFilter<"NoCodeExecution"> | string
+    entrada?: JsonNullableFilter<"NoCodeExecution">
+    passos?: JsonFilter<"NoCodeExecution">
+    erro?: StringNullableFilter<"NoCodeExecution"> | string | null
+    duracaoMs?: IntFilter<"NoCodeExecution"> | number
+    iniciadoEm?: DateTimeFilter<"NoCodeExecution"> | Date | string
+  }
+
+  export type NoCodeFlowCreateWithoutExecucoesInput = {
+    id?: string
+    nome: string
+    ativo?: boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type NoCodeFlowUncheckedCreateWithoutExecucoesInput = {
+    id?: string
+    nome: string
+    ativo?: boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type NoCodeFlowCreateOrConnectWithoutExecucoesInput = {
+    where: NoCodeFlowWhereUniqueInput
+    create: XOR<NoCodeFlowCreateWithoutExecucoesInput, NoCodeFlowUncheckedCreateWithoutExecucoesInput>
+  }
+
+  export type NoCodeFlowUpsertWithoutExecucoesInput = {
+    update: XOR<NoCodeFlowUpdateWithoutExecucoesInput, NoCodeFlowUncheckedUpdateWithoutExecucoesInput>
+    create: XOR<NoCodeFlowCreateWithoutExecucoesInput, NoCodeFlowUncheckedCreateWithoutExecucoesInput>
+    where?: NoCodeFlowWhereInput
+  }
+
+  export type NoCodeFlowUpdateToOneWithWhereWithoutExecucoesInput = {
+    where?: NoCodeFlowWhereInput
+    data: XOR<NoCodeFlowUpdateWithoutExecucoesInput, NoCodeFlowUncheckedUpdateWithoutExecucoesInput>
+  }
+
+  export type NoCodeFlowUpdateWithoutExecucoesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NoCodeFlowUncheckedUpdateWithoutExecucoesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type LeadCampaignCreateManyLeadInput = {
     id?: string
     campanhaId: string
@@ -28324,6 +31468,50 @@ export namespace Prisma {
     sucesso?: BoolFieldUpdateOperationsInput | boolean
     leadId?: StringFieldUpdateOperationsInput | string
     campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type NoCodeExecutionCreateManyFlowInput = {
+    id?: string
+    status: string
+    origem?: string
+    entrada?: NullableJsonNullValueInput | InputJsonValue
+    passos?: JsonNullValueInput | InputJsonValue
+    erro?: string | null
+    duracaoMs?: number
+    iniciadoEm?: Date | string
+  }
+
+  export type NoCodeExecutionUpdateWithoutFlowInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    origem?: StringFieldUpdateOperationsInput | string
+    entrada?: NullableJsonNullValueInput | InputJsonValue
+    passos?: JsonNullValueInput | InputJsonValue
+    erro?: NullableStringFieldUpdateOperationsInput | string | null
+    duracaoMs?: IntFieldUpdateOperationsInput | number
+    iniciadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NoCodeExecutionUncheckedUpdateWithoutFlowInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    origem?: StringFieldUpdateOperationsInput | string
+    entrada?: NullableJsonNullValueInput | InputJsonValue
+    passos?: JsonNullValueInput | InputJsonValue
+    erro?: NullableStringFieldUpdateOperationsInput | string | null
+    duracaoMs?: IntFieldUpdateOperationsInput | number
+    iniciadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NoCodeExecutionUncheckedUpdateManyWithoutFlowInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    origem?: StringFieldUpdateOperationsInput | string
+    entrada?: NullableJsonNullValueInput | InputJsonValue
+    passos?: JsonNullValueInput | InputJsonValue
+    erro?: NullableStringFieldUpdateOperationsInput | string | null
+    duracaoMs?: IntFieldUpdateOperationsInput | number
+    iniciadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

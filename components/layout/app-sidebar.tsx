@@ -20,6 +20,7 @@ import {
   Zap,
   Bot,
   SquareKanban,
+  Workflow,
 } from "lucide-react"
 
 import { logoutAction } from "@/app/actions/auth"
@@ -46,6 +47,7 @@ const navPrincipal = [
   { title: "Kanban", url: "/kanban", icon: SquareKanban },
   { title: "Chat", url: "/chat", icon: MessagesSquare },
   { title: "Assistente", url: "/assistente", icon: Bot },
+  { title: "No Code", url: "/nocode", icon: Workflow },
   { title: "Campanhas", url: "/campanhas", icon: Megaphone },
   { title: "Segmentação", url: "/segmentacao", icon: Target },
 ]
@@ -69,6 +71,7 @@ interface AppSidebarProps {
   chatAtivo?: boolean
   kanbanAtivo?: boolean
   assistenteAtivo?: boolean
+  nocodeAtivo?: boolean
   appNome?: string
   appLogo?: string | null
 }
@@ -113,6 +116,7 @@ export function AppSidebar({
   chatAtivo = false,
   kanbanAtivo = false,
   assistenteAtivo = false,
+  nocodeAtivo = false,
   appNome = "Medical Spin",
   appLogo = null,
 }: AppSidebarProps) {
@@ -141,7 +145,7 @@ export function AppSidebar({
           </div>
           <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
             <span className="truncate text-sm font-semibold leading-tight">{appNome}</span>
-            <span className="truncate text-xs text-muted-foreground leading-tight">Follow-up WhatsApp v1.8.0</span>
+            <span className="truncate text-xs text-muted-foreground leading-tight">Follow-up WhatsApp v1.3.0</span>
           </div>
         </div>
       </SidebarHeader>
@@ -156,7 +160,8 @@ export function AppSidebar({
                   (item) =>
                     (item.url !== "/chat" || chatAtivo) &&
                     (item.url !== "/kanban" || kanbanAtivo) &&
-                    (item.url !== "/assistente" || assistenteAtivo),
+                    (item.url !== "/assistente" || assistenteAtivo) &&
+                    (item.url !== "/nocode" || nocodeAtivo),
                 )
                 .map((item) => (
                 <SidebarMenuItem key={item.url}>

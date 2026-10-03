@@ -188,3 +188,24 @@ export async function saveAppMarca(marca: AppMarca): Promise<void> {
     update: { appNome: marca.nome, appLogo: marca.logo },
   })
 }
+
+export async function getNocodePluginAtivo(): Promise<boolean> {
+  try {
+    const row = await prisma.settings.findUnique({
+      where: { id: ID },
+      select: { nocodePluginAtivo: true },
+    })
+    return row?.nocodePluginAtivo ?? false
+  } catch (error) {
+    if (colunaAusente(error)) return false
+    throw error
+  }
+}
+
+export async function setNocodePluginAtivo(ativo: boolean): Promise<void> {
+  await prisma.settings.upsert({
+    where: { id: ID },
+    create: { id: ID, nocodePluginAtivo: ativo },
+    update: { nocodePluginAtivo: ativo },
+  })
+}

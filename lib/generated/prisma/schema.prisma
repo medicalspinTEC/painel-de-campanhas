@@ -330,6 +330,7 @@ model Settings {
   chatPluginAtivo       Boolean @default(false)
   kanbanPluginAtivo     Boolean @default(false)
   assistentePluginAtivo Boolean @default(false)
+  nocodePluginAtivo     Boolean @default(false)
   /// Tema pronto do painel (ver lib/temas.ts). Vale para o modo claro e o escuro.
   temaApp               String  @default("esmeralda")
   /// Nome exibido no topo da sidebar (o subtítulo com a versão é fixo).
@@ -444,4 +445,42 @@ model Instance {
   atualizadoEm DateTime @updatedAt
 
   @@index([criadoEm])
+}
+
+/// Fluxos do plugin "No Code" (editor visual de automações do próprio app).
+model NoCodeFlow {
+  id    String  @id @default(cuid())
+  nome  String
+  ativo Boolean @default(false)
+  /// Nós do canvas: [{ id, type, name, position: {x,y}, config }].
+  nodes Json    @default("[]")
+  /// Conexões: [{ id, source, sourceHandle, target }].
+  edges Json    @default("[]")
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  execucoes NoCodeExecution[]
+
+  @@index([atualizadoEm])
+}
+
+/// Histórico de execuções dos fluxos (uma por evento recebido ou teste manual).
+model NoCodeExecution {
+  id         String     @id @default(cuid())
+  flowId     String
+  flow       NoCodeFlow @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  /// "sucesso" | "erro" | "ignorado"
+  status     String
+  /// "webhook" | "teste"
+  origem     String     @default("webhook")
+  entrada    Json?
+  /// Passo a passo: [{ nodeId, nome, tipo, status, saida, erro, ms }].
+  passos     Json       @default("[]")
+  erro       String?
+  duracaoMs  Int        @default(0)
+  iniciadoEm DateTime   @default(now())
+
+  @@index([flowId, iniciadoEm])
+  @@index([iniciadoEm])
 }

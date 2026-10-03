@@ -39,7 +39,7 @@ function timingSafeEqual(a: string, b: string): boolean {
  */
 
 // Rotas acessíveis sem sessão.
-const ROTAS_PUBLICAS = ["/login", "/api/webhook/entrada", "/api/cron"]
+const ROTAS_PUBLICAS = ["/login", "/api/webhook/entrada", "/api/cron", "/api/nocode/webhook"]
 
 function isPublica(pathname: string): boolean {
   if (pathname === ROTA_MCP || pathname.startsWith(`${ROTA_MCP}/`)) {

@@ -2,13 +2,14 @@
 
 import { useState, useTransition, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronRight, ClipboardList, Columns3, MessageCircle, Puzzle } from "lucide-react"
+import { ChevronRight, ClipboardList, Columns3, MessageCircle, Puzzle, Workflow } from "lucide-react"
 import { toast } from "sonner"
 
 import {
   setAssistentePluginAtivoAction,
   setChatPluginAtivoAction,
   setKanbanPluginAtivoAction,
+  setNocodePluginAtivoAction,
 } from "@/app/actions/settings"
 import { LinkButton } from "@/components/shared/link-button"
 import { Badge } from "@/components/ui/badge"
@@ -21,7 +22,7 @@ import {
 } from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
 
-type PluginId = "chat" | "kanban" | "assistente"
+type PluginId = "chat" | "kanban" | "assistente" | "nocode"
 
 function PluginCard({
   titulo,
@@ -73,15 +74,18 @@ export function PluginsManager({
   chatAtivoInicial,
   kanbanAtivoInicial,
   assistenteAtivoInicial,
+  nocodeAtivoInicial,
 }: {
   chatAtivoInicial: boolean
   kanbanAtivoInicial: boolean
   assistenteAtivoInicial: boolean
+  nocodeAtivoInicial: boolean
 }) {
   const router = useRouter()
   const [chatAtivo, setChatAtivo] = useState(chatAtivoInicial)
   const [kanbanAtivo, setKanbanAtivo] = useState(kanbanAtivoInicial)
   const [assistenteAtivo, setAssistenteAtivo] = useState(assistenteAtivoInicial)
+  const [nocodeAtivo, setNocodeAtivo] = useState(nocodeAtivoInicial)
   const [pending, startTransition] = useTransition()
   const [pluginSelecionado, setPluginSelecionado] = useState<PluginId | null>(null)
 
@@ -127,6 +131,20 @@ export function PluginsManager({
     })
   }
 
+  function alterarNocode(ativo: boolean) {
+    startTransition(async () => {
+      const resultado = await setNocodePluginAtivoAction(ativo)
+      if (!resultado.ok) {
+        toast.error(resultado.message)
+        return
+      }
+
+      setNocodeAtivo(ativo)
+      toast.success(resultado.message)
+      router.refresh()
+    })
+  }
+
   const detalhes: PluginDetails | null =
     pluginSelecionado === "chat"
       ? {
@@ -165,6 +183,19 @@ export function PluginsManager({
               acaoLabel: "Abrir Assistente",
               acaoIcon: <ClipboardList className="size-4" />,
             }
+        : pluginSelecionado === "nocode"
+          ? {
+              id: "nocode",
+              titulo: "No Code",
+              descricao:
+                "Editor visual de fluxos de automação do próprio app, sem serviços externos. Receba os eventos da Evolution API e trate as respostas dos leads direto aqui.",
+              ativo: nocodeAtivo,
+              onChange: alterarNocode,
+              icon: Workflow,
+              href: "/nocode",
+              acaoLabel: "Abrir No Code",
+              acaoIcon: <Workflow className="size-4" />,
+            }
         : null
 
   return (
@@ -192,6 +223,12 @@ export function PluginsManager({
           ativo={assistenteAtivo}
           icon={ClipboardList}
           onClick={() => setPluginSelecionado("assistente")}
+        />
+        <PluginCard
+          titulo="No Code"
+          ativo={nocodeAtivo}
+          icon={Workflow}
+          onClick={() => setPluginSelecionado("nocode")}
         />
       </div>
 

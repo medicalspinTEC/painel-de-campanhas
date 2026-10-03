@@ -9,6 +9,7 @@ import {
   setAssistentePluginAtivo,
   setChatPluginAtivo,
   setKanbanPluginAtivo,
+  setNocodePluginAtivo,
   type Settings,
 } from "@/services/settings"
 import { recordAppLog } from "@/services/app-logs"
@@ -106,6 +107,22 @@ export async function setAssistentePluginAtivoAction(ativo: boolean): Promise<Se
   revalidatePath("/assistente")
   revalidatePath("/", "layout")
   return { ok: true, message: ativo ? "Plugin Assistente ativado." : "Plugin Assistente desativado.", ativo }
+}
+
+export async function setNocodePluginAtivoAction(ativo: boolean): Promise<SettingsActionResult & { ativo?: boolean }> {
+  if (typeof ativo !== "boolean") return { ok: false, message: "Estado inválido para o plugin." }
+
+  try {
+    await setNocodePluginAtivo(ativo)
+  } catch (error) {
+    await recordAppLog({ origem: "settings", mensagem: "Falha ao atualizar o plugin No Code.", detalhes: error })
+    return { ok: false, message: "Não foi possível atualizar o plugin No Code. Aplique a migration mais recente." }
+  }
+
+  revalidatePath("/integracoes")
+  revalidatePath("/nocode")
+  revalidatePath("/", "layout")
+  return { ok: true, message: ativo ? "Plugin No Code ativado." : "Plugin No Code desativado.", ativo }
 }
 
 const LIMITE_NOME_MARCA = 40

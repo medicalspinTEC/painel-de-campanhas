@@ -1,0 +1,144 @@
+"use server"
+
+import { revalidatePath } from "next/cache"
+
+import { modeloFluxoResposta, validarGrafo, type FlowEdge, type FlowNode } from "@/lib/nocode/catalog"
+import { recordAppLog } from "@/services/app-logs"
+import {
+  createFlow,
+  deleteFlow,
+  executarEGravar,
+  getFlow,
+  listExecutions,
+  updateFlow,
+  type ExecutionRow,
+} from "@/services/nocode"
+
+type Resultado<T = object> = ({ ok: true; message: string } & T) | { ok: false; message: string }
+
+const LIMITE_NOME = 80
+const LIMITE_NOS = 100
+
+function nomeValido(valor: unknown): string | null {
+  const nome = String(valor ?? "").trim()
+  return nome && nome.length <= LIMITE_NOME ? nome : null
+}
+
+function grafoValido(nodes: unknown, edges: unknown): { nodes: FlowNode[]; edges: FlowEdge[] } | string {
+  if (!Array.isArray(nodes) || !Array.isArray(edges)) return "Fluxo inválido."
+  if (nodes.length > LIMITE_NOS) return `O fluxo pode ter no máximo ${LIMITE_NOS} blocos.`
+  const erro = validarGrafo(nodes as FlowNode[], edges as FlowEdge[])
+  return erro ?? { nodes: nodes as FlowNode[], edges: edges as FlowEdge[] }
+}
+
+async function falha(mensagem: string, error: unknown): Promise<{ ok: false; message: string }> {
+  await recordAppLog({ origem: "nocode", mensagem, detalhes: error })
+  return { ok: false, message: `${mensagem} Confira se a migration mais recente foi aplicada.` }
+}
+
+export async function createFlowAction(input: {
+  nome: string
+  modelo: "resposta" | "vazio"
+}): Promise<Resultado<{ id: string }>> {
+  const nome = nomeValido(input?.nome)
+  if (!nome) return { ok: false, message: `Informe um nome de até ${LIMITE_NOME} caracteres.` }
+
+  try {
+    const base = input.modelo === "resposta" ? modeloFluxoResposta() : { nodes: [], edges: [] }
+    const fluxo = await createFlow({ nome, ...base })
+    revalidatePath("/nocode")
+    return { ok: true, message: "Fluxo criado.", id: fluxo.id }
+  } catch (error) {
+    return falha("Não foi possível criar o fluxo.", error)
+  }
+}
+
+export async function saveFlowAction(
+  id: string,
+  input: { nome: string; nodes: FlowNode[]; edges: FlowEdge[] },
+): Promise<Resultado> {
+  const nome = nomeValido(input?.nome)
+  if (!nome) return { ok: false, message: `Informe um nome de até ${LIMITE_NOME} caracteres.` }
+  const grafo = grafoValido(input?.nodes, input?.edges)
+  if (typeof grafo === "string") return { ok: false, message: grafo }
+
+  try {
+    const atual = await getFlow(id)
+    if (!atual) return { ok: false, message: "Fluxo não encontrado." }
+    // Um fluxo ativo precisa continuar válido (com gatilho) depois da edição.
+    if (atual.ativo) {
+      const erro = validarGrafo(grafo.nodes, grafo.edges, true)
+      if (erro) return { ok: false, message: `${erro} Desative o fluxo para salvar assim.` }
+    }
+    await updateFlow(id, { nome, ...grafo })
+    revalidatePath("/nocode")
+    return { ok: true, message: "Fluxo salvo." }
+  } catch (error) {
+    return falha("Não foi possível salvar o fluxo.", error)
+  }
+}
+
+export async function toggleFlowAction(id: string, ativo: boolean): Promise<Resultado<{ ativo: boolean }>> {
+  if (typeof ativo !== "boolean") return { ok: false, message: "Estado inválido." }
+  try {
+    const fluxo = await getFlow(id)
+    if (!fluxo) return { ok: false, message: "Fluxo não encontrado." }
+    if (ativo) {
+      const erro = validarGrafo(fluxo.nodes, fluxo.edges, true)
+      if (erro) return { ok: false, message: erro }
+    }
+    await updateFlow(id, { ativo })
+    revalidatePath("/nocode")
+    return { ok: true, message: ativo ? "Fluxo ativado." : "Fluxo desativado.", ativo }
+  } catch (error) {
+    return falha("Não foi possível alterar o fluxo.", error)
+  }
+}
+
+export async function deleteFlowAction(id: string): Promise<Resultado> {
+  try {
+    await deleteFlow(id)
+    revalidatePath("/nocode")
+    return { ok: true, message: "Fluxo excluído." }
+  } catch (error) {
+    return falha("Não foi possível excluir o fluxo.", error)
+  }
+}
+
+/**
+ * Testa o fluxo com um evento de exemplo, usando o que está na tela (mesmo sem
+ * salvar). Blocos com efeito real (registrar resposta, enviar mensagem) são
+ * apenas simulados; a busca do lead lê o banco de verdade.
+ */
+export async function testFlowAction(
+  id: string,
+  input: { nodes: FlowNode[]; edges: FlowEdge[]; payload: string },
+): Promise<Resultado<{ execucao: ExecutionRow }>> {
+  const grafo = grafoValido(input?.nodes, input?.edges)
+  if (typeof grafo === "string") return { ok: false, message: grafo }
+  const semGatilho = validarGrafo(grafo.nodes, grafo.edges, true)
+  if (semGatilho) return { ok: false, message: semGatilho }
+
+  let payload: unknown
+  try {
+    payload = JSON.parse(input.payload)
+  } catch {
+    return { ok: false, message: "O evento de teste não é um JSON válido." }
+  }
+
+  try {
+    if (!(await getFlow(id))) return { ok: false, message: "Fluxo não encontrado." }
+    const execucao = await executarEGravar(id, grafo, payload, "teste")
+    return { ok: true, message: "Teste executado.", execucao }
+  } catch (error) {
+    return falha("Não foi possível executar o teste.", error)
+  }
+}
+
+export async function listExecutionsAction(flowId: string): Promise<ExecutionRow[] | null> {
+  try {
+    return await listExecutions(flowId)
+  } catch {
+    return null
+  }
+}

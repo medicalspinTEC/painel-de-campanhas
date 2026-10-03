@@ -53,7 +53,7 @@ function nucleoTelefone(raw: string): string {
 }
 
 /** Dois telefones são o mesmo se forem iguais ou compartilharem o núcleo BR. */
-function telefonesBatem(a: string, b: string): boolean {
+export function telefonesBatem(a: string, b: string): boolean {
   const da = digitos(a)
   const db = digitos(b)
   if (!da || !db) return false
