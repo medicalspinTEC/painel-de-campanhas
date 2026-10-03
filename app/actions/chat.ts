@@ -1,6 +1,6 @@
 "use server"
 
-import { addChatInternalNote, getChatInbox, getChatMessages } from "@/services/chat"
+import { addChatInternalNote, getChatInbox, getChatMessages, getChatsForExport } from "@/services/chat"
 
 export async function refreshChatInboxAction(conversaId?: string | null, semMensagens = false) {
   return getChatInbox(conversaId, { semMensagens })
@@ -26,5 +26,14 @@ export async function createChatInternalNoteAction(leadId: string, texto: string
     return { ok: true, message: "Nota interna adicionada." }
   } catch {
     return { ok: false, message: "Não foi possível salvar a nota interna." }
+  }
+}
+
+/** Dados para exportar conversas (PDF/JSON). Sem `leadIds`, exporta todas. */
+export async function exportChatsAction(leadIds?: string[] | null) {
+  try {
+    return { ok: true as const, conversas: await getChatsForExport(leadIds) }
+  } catch {
+    return { ok: false as const, message: "Não foi possível carregar as conversas para exportar." }
   }
 }

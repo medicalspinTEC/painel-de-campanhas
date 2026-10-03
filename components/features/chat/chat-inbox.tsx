@@ -14,6 +14,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { ChatExportMenu } from "@/components/features/chat/chat-export-menu"
 import { LeadAvatar } from "@/components/shared/lead-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -321,17 +322,20 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
               <h2 className="text-base font-semibold">Leads e conversas</h2>
               <p className="text-xs text-muted-foreground">{conversas.length} leads cadastrados</p>
             </div>
-            <Button
-              variant={somenteRespostas ? "secondary" : "ghost"}
-              size="icon"
-              className="rounded-full"
-              aria-label="Alternar filtro de respostas"
-              aria-pressed={somenteRespostas}
-              title="Alternar filtro de respostas"
-              onClick={() => setSomenteRespostas((atual) => !atual)}
-            >
-              <Filter className="size-4" />
-            </Button>
+            <div className="flex shrink-0 items-center gap-1">
+              <ChatExportMenu conversaAtualId={conversaAtiva?.id ?? null} idsListados={conversasVisiveis.map((conversa) => conversa.id)} />
+              <Button
+                variant={somenteRespostas ? "secondary" : "ghost"}
+                size="icon"
+                className="rounded-full"
+                aria-label="Alternar filtro de respostas"
+                aria-pressed={somenteRespostas}
+                title="Alternar filtro de respostas"
+                onClick={() => setSomenteRespostas((atual) => !atual)}
+              >
+                <Filter className="size-4" />
+              </Button>
+            </div>
           </div>
           <div className="px-3 py-3">
             <div className="relative">
@@ -425,6 +429,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
+                  <ChatExportMenu conversaAtualId={conversaAtiva.id} idsListados={conversasVisiveis.map((conversa) => conversa.id)} />
                   <Button variant="ghost" size="icon" className="rounded-full" aria-label="Sair da conversa" title="Sair da conversa" onClick={sairDaConversa}>
                     <X className="size-4" />
                   </Button>

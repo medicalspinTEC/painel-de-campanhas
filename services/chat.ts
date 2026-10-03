@@ -238,3 +238,96 @@ function nomesDasCampanhas(
 ): string[] {
   return [...new Set([campanha?.nome, ...campanhas.map((vinculo) => vinculo.campanha.nome)].filter((nome): nome is string => Boolean(nome)))]
 }
+
+// ---------------------------------------------------------------------------
+// Exportação
+// ---------------------------------------------------------------------------
+
+export interface ChatExportItem {
+  lead: {
+    id: string
+    nome: string
+    telefone: string
+    status: string
+    produto: string
+    marca: string
+    persona: string
+    regiao: string
+    negocio: string | null
+    atividade: string | null
+    campanhas: string[]
+  }
+  mensagens: ChatMessage[]
+}
+
+const LIMITE_LEADS_EXPORTACAO = 2000
+
+/**
+ * Histórico COMPLETO (sem o corte de 250 da tela) de um ou mais leads, com
+ * mensagens e notas internas, em consultas em lote. `leadIds` vazio/nulo =
+ * todos os leads.
+ */
+export async function getChatsForExport(leadIds?: string[] | null): Promise<ChatExportItem[]> {
+  const filtroLead = leadIds && leadIds.length ? { id: { in: leadIds.slice(0, LIMITE_LEADS_EXPORTACAO) } } : {}
+
+  const leads = await prisma.lead.findMany({
+    where: filtroLead,
+    select: {
+      id: true,
+      nome: true,
+      telefone: true,
+      status: true,
+      produto: true,
+      marca: true,
+      persona: true,
+      regiao: true,
+      negocio: true,
+      atividade: true,
+      campanha: { select: { nome: true } },
+      campanhas: { select: { campanha: { select: { nome: true } } } },
+    },
+    orderBy: { atualizadoEm: "desc" },
+    take: LIMITE_LEADS_EXPORTACAO,
+  })
+  if (leads.length === 0) return []
+
+  const ids = leads.map((lead) => lead.id)
+  const [eventos, notas] = await Promise.all([
+    prisma.timelineEvent.findMany({
+      where: { leadId: { in: ids }, tipo: { in: [...TIPOS_DE_MENSAGEM] } },
+      select: { id: true, leadId: true, tipo: true, detalhes: true, data: true, campanha: { select: { nome: true } } },
+      orderBy: { data: "asc" },
+    }),
+    prisma.chatInternalNote.findMany({
+      where: { leadId: { in: ids } },
+      select: { id: true, leadId: true, texto: true, data: true },
+      orderBy: { data: "asc" },
+    }),
+  ])
+
+  const porLead = new Map<string, ChatMessage[]>()
+  const adicionar = (leadId: string, mensagem: ChatMessage) => {
+    const lista = porLead.get(leadId)
+    if (lista) lista.push(mensagem)
+    else porLead.set(leadId, [mensagem])
+  }
+  for (const evento of eventos) adicionar(evento.leadId, mapearMensagem(evento))
+  for (const nota of notas) adicionar(nota.leadId, mapearNota(nota))
+
+  return leads.map((lead) => ({
+    lead: {
+      id: lead.id,
+      nome: lead.nome,
+      telefone: lead.telefone,
+      status: lead.status,
+      produto: lead.produto,
+      marca: lead.marca,
+      persona: lead.persona,
+      regiao: lead.regiao,
+      negocio: lead.negocio,
+      atividade: lead.atividade,
+      campanhas: nomesDasCampanhas(lead.campanha, lead.campanhas),
+    },
+    mensagens: (porLead.get(lead.id) ?? []).sort((a, b) => a.data.localeCompare(b.data)),
+  }))
+}
