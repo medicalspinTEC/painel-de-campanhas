@@ -20,7 +20,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SelectField } from "@/components/shared/select-field"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { formatRelative } from "@/lib/format"
 import { cn } from "@/lib/utils"
@@ -90,7 +89,6 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
   const [arrastando, setArrastando] = useState(false)
   const painelRef = useRef<HTMLDivElement>(null)
   const [somenteRespostas, setSomenteRespostas] = useState(false)
-  const [abaAtiva, setAbaAtiva] = useState<"conversa" | "perfil">("conversa")
   const [modoComposicao, setModoComposicao] = useState<"mensagem" | "nota" | "resposta">("mensagem")
   const [texto, setTexto] = useState("")
   const [seletorEmojiAberto, setSeletorEmojiAberto] = useState(false)
@@ -530,11 +528,64 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                   <Button variant="ghost" size="icon" className="-ml-1 rounded-full lg:hidden" aria-label="Voltar para a lista de conversas" title="Voltar" onClick={sairDaConversa}>
                     <ArrowLeft className="size-5" />
                   </Button>
-                  <LeadAvatar leadId={conversaAtiva.id} nome={conversaAtiva.nome} telefone={conversaAtiva.telefone} className="size-10 shrink-0" fallbackClassName="bg-primary/15 text-sm font-semibold text-primary" />
-                  <div className="min-w-0">
-                    <h2 className="truncate text-[15px] font-semibold leading-tight">{conversaAtiva.nome}</h2>
-                    <p className="truncate text-xs text-muted-foreground">{conversaAtiva.telefone}</p>
-                  </div>
+                  <Popover>
+                    <PopoverTrigger
+                      render={
+                        <button
+                          type="button"
+                          aria-label={`Ver perfil de ${conversaAtiva.nome}`}
+                          title="Ver perfil"
+                          className="flex min-w-0 items-center gap-2 rounded-lg py-1 pr-2 text-left transition-colors hover:bg-muted/60 sm:gap-3"
+                        >
+                          <LeadAvatar leadId={conversaAtiva.id} nome={conversaAtiva.nome} telefone={conversaAtiva.telefone} className="size-10 shrink-0" fallbackClassName="bg-primary/15 text-sm font-semibold text-primary" />
+                          <span className="min-w-0">
+                            <span className="block truncate text-[15px] font-semibold leading-tight">{conversaAtiva.nome}</span>
+                            <span className="block truncate text-xs text-muted-foreground">{conversaAtiva.telefone}</span>
+                          </span>
+                        </button>
+                      }
+                    />
+                    <PopoverContent align="start" className="w-80 gap-4">
+                      <div className="flex items-center gap-3">
+                        <LeadAvatar leadId={conversaAtiva.id} nome={conversaAtiva.nome} telefone={conversaAtiva.telefone} className="size-14 shrink-0" fallbackClassName="bg-primary/15 text-base font-semibold text-primary" />
+                        <div className="min-w-0">
+                          <h3 className="truncate text-base font-semibold">{conversaAtiva.nome}</h3>
+                          <p className="truncate text-sm text-muted-foreground">{conversaAtiva.telefone}</p>
+                          <Badge variant="secondary" className="mt-1.5 capitalize">{conversaAtiva.status.replaceAll("_", " ")}</Badge>
+                        </div>
+                      </div>
+                      {conversaAtiva.campanhasNomes.length > 0 ? (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Megaphone className="size-4 shrink-0 text-primary" />
+                          {conversaAtiva.campanhasNomes.map((nome) => (
+                            <Badge key={nome} className="max-w-full"><span className="truncate">{nome}</span></Badge>
+                          ))}
+                        </div>
+                      ) : null}
+                      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-y py-3">
+                        <CampoPerfil rotulo="Produto" valor={conversaAtiva.produto} />
+                        <CampoPerfil rotulo="Marca" valor={conversaAtiva.marca} />
+                        <CampoPerfil rotulo="Persona" valor={conversaAtiva.persona} />
+                        <CampoPerfil rotulo="Região" valor={conversaAtiva.regiao} />
+                        <CampoPerfil rotulo="Negócio" valor={conversaAtiva.negocio} />
+                        <CampoPerfil rotulo="Atividade" valor={conversaAtiva.atividade} />
+                      </dl>
+                      <LinkButton variant="outline" size="sm" className="w-fit" href={`/leads/${conversaAtiva.id}`}>
+                        Ver cadastro completo
+                      </LinkButton>
+                    </PopoverContent>
+                  </Popover>
+                  {conversaAtiva.campanhasNomes.length > 0 ? (
+                    <div className="hidden min-w-0 items-center gap-1.5 sm:flex" title={`Campanha vinculada: ${conversaAtiva.campanhasNomes.join(", ")}`}>
+                      <Megaphone className="size-4 shrink-0 text-primary" aria-label="Campanha vinculada" />
+                      {conversaAtiva.campanhasNomes.slice(0, 2).map((nome) => (
+                        <Badge key={nome} className="max-w-40"><span className="truncate">{nome}</span></Badge>
+                      ))}
+                      {conversaAtiva.campanhasNomes.length > 2 ? (
+                        <Badge variant="secondary">+{conversaAtiva.campanhasNomes.length - 2}</Badge>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
                   <ChatExportMenu conversaAtualId={conversaAtiva.id} idsListados={conversasVisiveis.map((conversa) => conversa.id)} />
@@ -544,28 +595,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                 </div>
               </header>
 
-              {conversaAtiva.campanhasNomes.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-2 border-y border-primary/20 bg-primary/10 px-4 py-2">
-                  <Megaphone className="size-4 shrink-0 text-primary" />
-                  <span className="text-xs font-semibold text-foreground">Campanha vinculada</span>
-                  {conversaAtiva.campanhasNomes.map((nome) => (
-                    <Badge key={nome} className="max-w-full">
-                      <span className="truncate">{nome}</span>
-                    </Badge>
-                  ))}
-                </div>
-              ) : null}
-
-              <Tabs
-                value={abaAtiva}
-                onValueChange={(valor) => setAbaAtiva(String(valor) as "conversa" | "perfil")}
-                className="min-h-0 flex-1 gap-0"
-              >
-                <TabsList className="h-11 w-full justify-start rounded-none border-b bg-card px-3">
-                  <TabsTrigger value="conversa"><MessagesSquare className="size-4" />Conversa</TabsTrigger>
-                  <TabsTrigger value="perfil"><UserRound className="size-4" />Perfil</TabsTrigger>
-                </TabsList>
-                <TabsContent value="conversa" className="flex min-h-0 flex-1 flex-col">
+              <div className="flex min-h-0 flex-1 flex-col">
                   <div ref={definirAreaMensagens} onScroll={aoRolarMensagens} className="wa-wallpaper flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 py-6 sm:px-8 lg:px-12">
                     {mensagens.length ? mensagens.map((mensagem, indice) => {
                       const anterior = indice > 0 ? mensagens[indice - 1] : null
@@ -728,31 +758,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                       <span className="shrink-0 tabular-nums">{texto.length}/{limiteTexto}</span>
                     </div>
                   </div>
-                </TabsContent>
-                <TabsContent value="perfil" className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
-                  <div className="mx-auto flex max-w-2xl flex-col gap-6">
-                    <div className="flex items-center gap-4">
-                      <LeadAvatar leadId={conversaAtiva.id} nome={conversaAtiva.nome} telefone={conversaAtiva.telefone} className="size-16 shrink-0" fallbackClassName="bg-primary/15 text-lg font-semibold text-primary" />
-                      <div className="min-w-0">
-                        <h3 className="text-base font-semibold">{conversaAtiva.nome}</h3>
-                        <p className="mt-1 text-sm text-muted-foreground">{conversaAtiva.telefone}</p>
-                        <Badge variant="secondary" className="mt-2 capitalize">{conversaAtiva.status.replaceAll("_", " ")}</Badge>
-                      </div>
-                    </div>
-                    <dl className="grid grid-cols-1 gap-x-8 gap-y-5 border-y py-5 sm:grid-cols-2">
-                      <CampoPerfil rotulo="Produto" valor={conversaAtiva.produto} />
-                      <CampoPerfil rotulo="Marca" valor={conversaAtiva.marca} />
-                      <CampoPerfil rotulo="Persona" valor={conversaAtiva.persona} />
-                      <CampoPerfil rotulo="Região" valor={conversaAtiva.regiao} />
-                      <CampoPerfil rotulo="Negócio" valor={conversaAtiva.negocio} />
-                      <CampoPerfil rotulo="Atividade" valor={conversaAtiva.atividade} />
-                    </dl>
-                    <LinkButton variant="outline" className="w-fit" href={`/leads/${conversaAtiva.id}`}>
-                      Ver cadastro completo
-                    </LinkButton>
-                  </div>
-                </TabsContent>
-              </Tabs>
+              </div>
             </>
           ) : (
             <div className="wa-wallpaper flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
