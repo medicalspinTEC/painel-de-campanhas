@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   AlertTriangle,
   Award,
@@ -11,8 +11,11 @@ import {
   PlayCircle,
   Send,
   StopCircle,
+  Volume2,
+  VolumeX,
 } from "lucide-react"
 
+import { listNotificacoesAction } from "@/app/actions/notificacoes"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { formatRelative } from "@/lib/format"
@@ -44,8 +47,17 @@ const CORES: Record<EventType, string> = {
  * — assim o badge é por usuário/dispositivo, sem precisar de coluna no banco.
  */
 const STORAGE_KEY = "notificacoes:ultima-leitura"
+const STORAGE_SOM = "notificacoes:som"
+const SOM_NOTIFICACAO = "/sounds/notificacao.mp3"
+const INTERVALO_ATUALIZACAO = 10_000
+/** Envios da própria equipe/campanha não tocam o som: seriam centenas por disparo. */
+const TIPOS_SEM_SOM: EventType[] = ["mensagem_enviada"]
 
-export function NotificationBell({ notificacoes }: { notificacoes: EventRow[] }) {
+export function NotificationBell({ notificacoes: iniciais }: { notificacoes: EventRow[] }) {
+  const [notificacoes, setNotificacoes] = useState(iniciais)
+  const [somAtivo, setSomAtivo] = useState(true)
+  const idsVistos = useRef(new Set(iniciais.map((n) => n.id)))
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   const [aberto, setAberto] = useState(false)
   const [ultimaLeitura, setUltimaLeitura] = useState<number | null>(null)
   const [pronto, setPronto] = useState(false)
@@ -56,6 +68,92 @@ export function NotificationBell({ notificacoes }: { notificacoes: EventRow[] })
     setUltimaLeitura(salvo ? Number(salvo) : 0)
     setPronto(true)
   }, [])
+
+  // Quando a página traz dados novos do servidor, aproveita sem tocar som.
+  useEffect(() => {
+    setNotificacoes(iniciais)
+    iniciais.forEach((n) => idsVistos.current.add(n.id))
+  }, [iniciais])
+
+  // Preferência de som + "destrava" o áudio no primeiro clique (política de autoplay dos navegadores).
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem(STORAGE_SOM) === "off") setSomAtivo(false)
+    } catch {
+      // Segue com o som ligado.
+    }
+    const audio = new Audio(SOM_NOTIFICACAO)
+    audio.preload = "auto"
+    audioRef.current = audio
+
+    function destravar() {
+      audio.muted = true
+      audio
+        .play()
+        .then(() => {
+          audio.pause()
+          audio.currentTime = 0
+        })
+        .catch(() => {})
+        .finally(() => {
+          audio.muted = false
+        })
+      window.removeEventListener("pointerdown", destravar)
+      window.removeEventListener("keydown", destravar)
+    }
+    window.addEventListener("pointerdown", destravar)
+    window.addEventListener("keydown", destravar)
+    return () => {
+      window.removeEventListener("pointerdown", destravar)
+      window.removeEventListener("keydown", destravar)
+      audio.pause()
+      audioRef.current = null
+    }
+  }, [])
+
+  const somAtivoRef = useRef(somAtivo)
+  useEffect(() => {
+    somAtivoRef.current = somAtivo
+  }, [somAtivo])
+
+  const tocarSom = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio || !somAtivoRef.current) return
+    audio.currentTime = 0
+    void audio.play().catch(() => {
+      // Navegador ainda bloqueando (sem interação prévia): ignora.
+    })
+  }, [])
+
+  // Consulta novas notificações a cada 10 s e toca o som quando chega alguma.
+  useEffect(() => {
+    let cancelado = false
+    async function atualizar() {
+      const lista = await listNotificacoesAction().catch(() => null)
+      if (cancelado || !lista) return
+      const novas = lista.filter((n) => !idsVistos.current.has(n.id))
+      if (novas.length === 0) return
+      novas.forEach((n) => idsVistos.current.add(n.id))
+      setNotificacoes(lista)
+      if (novas.some((n) => !TIPOS_SEM_SOM.includes(n.tipo))) tocarSom()
+    }
+    const timer = window.setInterval(() => void atualizar(), INTERVALO_ATUALIZACAO)
+    return () => {
+      cancelado = true
+      window.clearInterval(timer)
+    }
+  }, [tocarSom])
+
+  function alternarSom() {
+    const novo = !somAtivo
+    setSomAtivo(novo)
+    try {
+      window.localStorage.setItem(STORAGE_SOM, novo ? "on" : "off")
+    } catch {
+      // Sem armazenamento: vale só até recarregar.
+    }
+    if (novo) tocarSom()
+  }
 
   const naoLidas = useMemo(() => {
     if (ultimaLeitura === null) return 0
@@ -102,15 +200,27 @@ export function NotificationBell({ notificacoes }: { notificacoes: EventRow[] })
               </span>
             ) : null}
           </div>
-          {temNaoLidas ? (
+          <div className="flex items-center gap-2">
+            {temNaoLidas ? (
+              <button
+                type="button"
+                onClick={marcarComoLidas}
+                className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Marcar como lidas
+              </button>
+            ) : null}
             <button
               type="button"
-              onClick={marcarComoLidas}
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              onClick={alternarSom}
+              aria-label={somAtivo ? "Desativar som das notificações" : "Ativar som das notificações"}
+              aria-pressed={somAtivo}
+              title={somAtivo ? "Som ligado" : "Som desligado"}
+              className="text-muted-foreground transition-colors hover:text-foreground"
             >
-              Marcar como lidas
+              {somAtivo ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
             </button>
-          ) : null}
+          </div>
         </div>
 
         {notificacoes.length === 0 ? (

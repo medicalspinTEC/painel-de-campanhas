@@ -93,5 +93,5 @@ export const config = {
    * Aplica a todas as rotas, menos assets internos do Next e arquivos estáticos
    * (imagens, ícones, etc.), que não precisam de verificação de sessão.
    */
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico|mp3)$).*)"],
 }
