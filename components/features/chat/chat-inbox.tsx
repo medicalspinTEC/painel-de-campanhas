@@ -14,7 +14,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { LeadAvatar } from "@/components/shared/lead-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -375,11 +375,13 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                   onClick={() => void selecionarConversa(conversa.id)}
                   className={cn("group flex w-full items-center gap-3.5 px-4 text-left transition-colors hover:bg-muted/60", conversaSelecionadaId === conversa.id && "bg-muted")}
                 >
-                  <Avatar className="size-10 shrink-0">
-                    <AvatarFallback className={cn("text-sm font-semibold", respondeu ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground")}>
-                      {iniciais(conversa.nome)}
-                    </AvatarFallback>
-                  </Avatar>
+                  <LeadAvatar
+                    leadId={conversa.id}
+                    nome={conversa.nome}
+                    telefone={conversa.telefone}
+                    className="size-10 shrink-0"
+                    fallbackClassName={cn("text-sm font-semibold", respondeu ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground")}
+                  />
                   <span className="min-w-0 flex-1 border-b py-4 group-last:border-b-0">
                     <span className="flex items-center justify-between gap-2">
                       <span className="truncate text-base font-medium">{conversa.nome}</span>
@@ -416,7 +418,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                   <Button variant="ghost" size="icon" className="-ml-1 rounded-full lg:hidden" aria-label="Voltar para a lista de conversas" title="Voltar" onClick={sairDaConversa}>
                     <ArrowLeft className="size-5" />
                   </Button>
-                  <Avatar className="size-10 shrink-0"><AvatarFallback className="bg-primary/15 text-sm font-semibold text-primary">{iniciais(conversaAtiva.nome)}</AvatarFallback></Avatar>
+                  <LeadAvatar leadId={conversaAtiva.id} nome={conversaAtiva.nome} telefone={conversaAtiva.telefone} className="size-10 shrink-0" fallbackClassName="bg-primary/15 text-sm font-semibold text-primary" />
                   <div className="min-w-0">
                     <h2 className="truncate text-[15px] font-semibold leading-tight">{conversaAtiva.nome}</h2>
                     <p className="truncate text-xs text-muted-foreground">{conversaAtiva.telefone}</p>
@@ -617,9 +619,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                 <TabsContent value="perfil" className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
                   <div className="mx-auto flex max-w-2xl flex-col gap-6">
                     <div className="flex items-center gap-4">
-                      <Avatar className="size-16 shrink-0">
-                        <AvatarFallback className="bg-primary/15 text-lg font-semibold text-primary">{iniciais(conversaAtiva.nome)}</AvatarFallback>
-                      </Avatar>
+                      <LeadAvatar leadId={conversaAtiva.id} nome={conversaAtiva.nome} telefone={conversaAtiva.telefone} className="size-16 shrink-0" fallbackClassName="bg-primary/15 text-lg font-semibold text-primary" />
                       <div className="min-w-0">
                         <h3 className="text-base font-semibold">{conversaAtiva.nome}</h3>
                         <p className="mt-1 text-sm text-muted-foreground">{conversaAtiva.telefone}</p>

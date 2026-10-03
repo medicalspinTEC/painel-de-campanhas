@@ -7,7 +7,7 @@ import { LeadNotes } from "@/components/features/leads/lead-notes"
 import { LeadTimeline } from "@/components/features/leads/lead-timeline"
 import { LinkButton } from "@/components/shared/link-button"
 import { LeadStatusBadge } from "@/components/shared/status-badges"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { LeadAvatar } from "@/components/shared/lead-avatar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { formatDateTime, formatRelative, initials } from "@/lib/format"
@@ -43,9 +43,7 @@ export default async function LeadDetalhePage({ params }: { params: Promise<{ id
         <Card className="xl:w-80 xl:shrink-0">
           <CardHeader className="items-center">
             <div className="flex items-center gap-3">
-              <Avatar className="size-11">
-                <AvatarFallback className="bg-primary/12 text-primary">{initials(lead.nome)}</AvatarFallback>
-              </Avatar>
+              <LeadAvatar leadId={lead.id} nome={lead.nome} telefone={lead.telefone} className="size-11" fallbackClassName="bg-primary/12 text-primary" />
               <div className="flex flex-col gap-1">
                 <CardTitle className="text-base">{lead.nome}</CardTitle>
                 <LeadStatusBadge status={lead.status} className="w-fit" />

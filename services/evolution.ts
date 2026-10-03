@@ -806,3 +806,183 @@ export async function sendCampaignMessageToLead(input: {
     return { ok: false, erro: mensagem }
   }
 }
+
+// ---------------------------------------------------------------------------
+// Foto de perfil do lead
+// ---------------------------------------------------------------------------
+
+/** "foto" achou; "sem_foto" existe no WhatsApp mas não tem foto visível (tentar de novo);
+ *  "nao_existe" não está no WhatsApp (não consultar até o lead ser editado); "erro" falha temporária. */
+export type LeadFotoStatus = "foto" | "sem_foto" | "nao_existe" | "erro"
+export interface LeadFotoResultado {
+  status: LeadFotoStatus
+  url?: string
+}
+
+const FOTO_TTL_ENCONTRADA_MS = 30 * 60 * 1000
+/** Evita rajada de chamadas repetidas à Evolution; o cliente refaz a tentativa a cada 10 s. */
+const FOTO_TTL_SEM_FOTO_MS = 10 * 1000
+const FOTO_TTL_ERRO_MS = 5 * 1000
+const INSTANCIAS_TTL_MS = 60 * 1000
+const FOTO_CONCORRENCIA = 4
+
+const fotoCache = new Map<string, { resultado: LeadFotoResultado; expiraEm: number }>()
+const fotoEmAndamento = new Map<string, Promise<LeadFotoResultado>>()
+/** leadId -> atualizadoEm (ms) do lead quando se descobriu que o número não está no WhatsApp. */
+const naoExisteNoWhatsapp = new Map<string, number>()
+let instanciasCache: { nomes: string[]; expiraEm: number } | null = null
+
+/** Limita quantas buscas de foto falam com a Evolution ao mesmo tempo. */
+let fotoAtivas = 0
+const fotoFila: Array<() => void> = []
+async function comLimiteDeFotos<T>(tarefa: () => Promise<T>): Promise<T> {
+  if (fotoAtivas >= FOTO_CONCORRENCIA) {
+    await new Promise<void>((resolve) => fotoFila.push(resolve))
+  }
+  fotoAtivas++
+  try {
+    return await tarefa()
+  } finally {
+    fotoAtivas--
+    fotoFila.shift()?.()
+  }
+}
+
+/** Instâncias cadastradas no app (as mais usadas primeiro). Não depende do estado de conexão. */
+async function listarInstanciasDoApp(): Promise<string[]> {
+  const agora = Date.now()
+  if (instanciasCache && instanciasCache.expiraEm > agora) return instanciasCache.nomes
+  const registradas = await prisma.instance.findMany({
+    select: { nome: true },
+    orderBy: [{ atualizadoEm: "desc" }, { criadoEm: "desc" }],
+  })
+  const nomes = registradas.map((i) => i.nome)
+  instanciasCache = { nomes, expiraEm: agora + (nomes.length ? INSTANCIAS_TTL_MS : 5000) }
+  return nomes
+}
+
+/**
+ * Números a tentar. No Brasil o WhatsApp pode registrar o contato com ou sem
+ * o 9º dígito, então tenta também a outra forma.
+ */
+function variantesDoNumero(telefone: string): string[] {
+  const numero = normalizePhoneForEvolution(telefone).replace(/^\+/, "")
+  if (!numero) return []
+  const variantes = [numero]
+  if (numero.startsWith("55") && numero.length === 13 && numero[4] === "9") {
+    variantes.push(numero.slice(0, 4) + numero.slice(5))
+  } else if (numero.startsWith("55") && numero.length === 12) {
+    variantes.push(numero.slice(0, 4) + "9" + numero.slice(4))
+  }
+  return variantes
+}
+
+async function chamarEvolution(caminho: string, instancia: string, corpo: unknown): Promise<{ status: number; json: unknown } | null> {
+  const { apiUrl, apiKey } = getEvolutionCredentials()
+  if (!apiKey) return null
+  try {
+    const response = await fetch(`${apiUrl}${caminho}/${encodeURIComponent(instancia)}`, {
+      method: "POST",
+      headers: { apikey: apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify(corpo),
+      cache: "no-store",
+      signal: AbortSignal.timeout(6000),
+    })
+    const texto = await response.text().catch(() => "")
+    let json: unknown = null
+    try {
+      json = JSON.parse(texto)
+    } catch {}
+    if (!response.ok) {
+      await recordAppLog({
+        nivel: "aviso",
+        origem: "evolution",
+        mensagem: `Foto de perfil: ${caminho} na instância "${instancia}" respondeu ${response.status}.`,
+        detalhes: texto.slice(0, 300),
+      })
+    }
+    return { status: response.status, json }
+  } catch (error) {
+    await recordAppLog({
+      nivel: "erro",
+      origem: "evolution",
+      mensagem: `Falha em ${caminho} na instância "${instancia}".`,
+      detalhes: error,
+    })
+    return null
+  }
+}
+
+/** POST /chat/fetchProfilePictureUrl/{instancia}. */
+async function buscarFotoNaInstancia(instancia: string, numero: string): Promise<{ url: string | null; erro: boolean }> {
+  const r = await chamarEvolution("/chat/fetchProfilePictureUrl", instancia, { number: numero })
+  if (!r) return { url: null, erro: true }
+  const url = (r.json as { profilePictureUrl?: unknown } | null)?.profilePictureUrl
+  return {
+    url: typeof url === "string" && /^https?:\/\//i.test(url) ? url : null,
+    erro: r.status >= 500,
+  }
+}
+
+/** POST /chat/whatsappNumbers/{instancia}: true/false se algum número existe no WhatsApp; null se não deu para saber. */
+async function numeroExisteNaInstancia(instancia: string, numeros: string[]): Promise<boolean | null> {
+  const r = await chamarEvolution("/chat/whatsappNumbers", instancia, { numbers: numeros })
+  if (!r || r.status >= 400 || !Array.isArray(r.json)) return null
+  return (r.json as Array<{ exists?: boolean }>).some((item) => item?.exists === true)
+}
+
+async function resolverFoto(lead: { id: string; telefone: string; atualizadoEm: Date }): Promise<LeadFotoResultado> {
+  const variantes = variantesDoNumero(lead.telefone)
+  if (variantes.length === 0) return { status: "nao_existe" }
+
+  const instancias = await listarInstanciasDoApp()
+  if (instancias.length === 0 || !getEvolutionCredentials().apiKey) return { status: "erro" }
+
+  // 1) Tenta a foto em todas as instâncias (a primeira com foto vale).
+  let houveErro = false
+  for (const numero of variantes) {
+    const resultados = await Promise.all(instancias.map((nome) => buscarFotoNaInstancia(nome, numero)))
+    houveErro = houveErro || resultados.some((r) => r.erro)
+    const achada = resultados.find((r) => r.url)?.url
+    if (achada) return { status: "foto", url: achada }
+  }
+
+  // 2) Sem foto: descobre se o número sequer existe no WhatsApp.
+  const existencia = await Promise.all(instancias.map((nome) => numeroExisteNaInstancia(nome, variantes)))
+  if (existencia.some((e) => e === true)) return { status: "sem_foto" }
+  if (!houveErro && existencia.every((e) => e === false)) {
+    naoExisteNoWhatsapp.set(lead.id, lead.atualizadoEm.getTime())
+    return { status: "nao_existe" }
+  }
+  return { status: "erro" }
+}
+
+/**
+ * Foto de perfil do lead, buscada em TODAS as instâncias cadastradas.
+ * - Número fora do WhatsApp: não consulta mais até o lead ser editado (muda `atualizadoEm`).
+ * - Existe mas sem foto: quem chama tenta de novo (o cache dura 10 s).
+ */
+export async function getLeadProfilePicture(lead: { id: string; telefone: string; atualizadoEm: Date }): Promise<LeadFotoResultado> {
+  if (naoExisteNoWhatsapp.get(lead.id) === lead.atualizadoEm.getTime()) return { status: "nao_existe" }
+  naoExisteNoWhatsapp.delete(lead.id)
+
+  const chave = `${lead.id}:${lead.telefone}`
+  const emCache = fotoCache.get(chave)
+  if (emCache && emCache.expiraEm > Date.now()) return emCache.resultado
+
+  const andamento = fotoEmAndamento.get(chave)
+  if (andamento) return andamento
+
+  const busca = comLimiteDeFotos(async () => {
+    const resultado = await resolverFoto(lead)
+    if (resultado.status !== "nao_existe") {
+      const ttl =
+        resultado.status === "foto" ? FOTO_TTL_ENCONTRADA_MS : resultado.status === "sem_foto" ? FOTO_TTL_SEM_FOTO_MS : FOTO_TTL_ERRO_MS
+      fotoCache.set(chave, { resultado, expiraEm: Date.now() + ttl })
+    }
+    return resultado
+  }).finally(() => fotoEmAndamento.delete(chave))
+
+  fotoEmAndamento.set(chave, busca)
+  return busca
+}
