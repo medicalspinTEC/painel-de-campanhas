@@ -2,12 +2,13 @@
 
 import { useState, useTransition, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronRight, ClipboardList, Columns3, MessageCircle, Puzzle, Workflow } from "lucide-react"
+import { ChevronRight, ClipboardList, Columns3, Contact, MessageCircle, Puzzle, Workflow } from "lucide-react"
 import { toast } from "sonner"
 
 import {
   setAssistentePluginAtivoAction,
   setChatPluginAtivoAction,
+  setCrmPluginAtivoAction,
   setKanbanPluginAtivoAction,
   setNocodePluginAtivoAction,
 } from "@/app/actions/settings"
@@ -22,7 +23,7 @@ import {
 } from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
 
-type PluginId = "chat" | "kanban" | "assistente" | "nocode"
+type PluginId = "chat" | "kanban" | "assistente" | "nocode" | "crm"
 
 function PluginCard({
   titulo,
@@ -75,17 +76,20 @@ export function PluginsManager({
   kanbanAtivoInicial,
   assistenteAtivoInicial,
   nocodeAtivoInicial,
+  crmAtivoInicial,
 }: {
   chatAtivoInicial: boolean
   kanbanAtivoInicial: boolean
   assistenteAtivoInicial: boolean
   nocodeAtivoInicial: boolean
+  crmAtivoInicial: boolean
 }) {
   const router = useRouter()
   const [chatAtivo, setChatAtivo] = useState(chatAtivoInicial)
   const [kanbanAtivo, setKanbanAtivo] = useState(kanbanAtivoInicial)
   const [assistenteAtivo, setAssistenteAtivo] = useState(assistenteAtivoInicial)
   const [nocodeAtivo, setNocodeAtivo] = useState(nocodeAtivoInicial)
+  const [crmAtivo, setCrmAtivo] = useState(crmAtivoInicial)
   const [pending, startTransition] = useTransition()
   const [pluginSelecionado, setPluginSelecionado] = useState<PluginId | null>(null)
 
@@ -145,6 +149,20 @@ export function PluginsManager({
     })
   }
 
+  function alterarCrm(ativo: boolean) {
+    startTransition(async () => {
+      const resultado = await setCrmPluginAtivoAction(ativo)
+      if (!resultado.ok) {
+        toast.error(resultado.message)
+        return
+      }
+
+      setCrmAtivo(ativo)
+      toast.success(resultado.message)
+      router.refresh()
+    })
+  }
+
   const detalhes: PluginDetails | null =
     pluginSelecionado === "chat"
       ? {
@@ -196,6 +214,19 @@ export function PluginsManager({
               acaoLabel: "Abrir No Code",
               acaoIcon: <Workflow className="size-4" />,
             }
+        : pluginSelecionado === "crm"
+          ? {
+              id: "crm",
+              titulo: "CRM",
+              descricao:
+                "Departamentos e atendentes (usuários admin ou comuns). Com o plugin Chat ativo, o chat ganha a transferência de conversas por departamento e atendente.",
+              ativo: crmAtivo,
+              onChange: alterarCrm,
+              icon: Contact,
+              href: "/crm",
+              acaoLabel: "Abrir CRM",
+              acaoIcon: <Contact className="size-4" />,
+            }
         : null
 
   return (
@@ -229,6 +260,12 @@ export function PluginsManager({
           ativo={nocodeAtivo}
           icon={Workflow}
           onClick={() => setPluginSelecionado("nocode")}
+        />
+        <PluginCard
+          titulo="CRM"
+          ativo={crmAtivo}
+          icon={Contact}
+          onClick={() => setPluginSelecionado("crm")}
         />
       </div>
 

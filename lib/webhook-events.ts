@@ -39,6 +39,13 @@ export const WEBHOOK_EVENTS: WebhookEventDef[] = [
     grupo: "Leads",
   },
 
+  {
+    key: "atendimento.transferido",
+    label: "Conversa transferida",
+    descricao: "Uma conversa do chat foi transferida para outro departamento ou atendente (plugin CRM).",
+    grupo: "Leads",
+  },
+
   // Campanhas
   { key: "campanha.criada", label: "Campanha criada", descricao: "Uma campanha foi cadastrada.", grupo: "Campanhas" },
   {

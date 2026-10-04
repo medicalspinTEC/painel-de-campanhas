@@ -111,6 +111,9 @@ model Lead {
   eventos TimelineEvent[]
   mensagensAgendadas ScheduledMessage[]
   notasInternas ChatInternalNote[]
+  /// Plugin CRM: departamento/atendente responsável pela conversa (1:1, opcional).
+  atendimento LeadAtendimento?
+  transferencias AtendimentoTransferencia[]
 
   // A listagem ordena por data de criação e filtra por campanha e status.
   @@index([campanhaId])
@@ -339,6 +342,7 @@ model Settings {
   kanbanPluginAtivo   Boolean @default(false)
   assistentePluginAtivo Boolean @default(false)
   nocodePluginAtivo     Boolean @default(false)
+  crmPluginAtivo        Boolean @default(false)
   /// Tema pronto do painel (ver lib/temas.ts). Vale para o modo claro e o escuro.
   temaApp            String  @default("esmeralda")
   /// Nome exibido no topo da sidebar (o subtítulo com a versão é fixo).
@@ -517,8 +521,101 @@ model User {
   /// usuário chegam ao lead com o nome dele no início (ver `sendLeadMessageAction`).
   chatIdentificarRemetente Boolean @default(false)
 
+  /// Plugin CRM: perfil de atendente deste usuário (opcional).
+  atendente Atendente?
+
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
   @@index([role])
+}
+
+// ---------------------------------------------------------------------------
+// Plugin CRM: departamentos, atendentes e transferência de conversas do chat.
+// ---------------------------------------------------------------------------
+
+/// Departamento de atendimento (ex.: Comercial, Suporte). Pode ser inativado
+/// (deixa de receber transferências) ou excluído (as conversas dele ficam sem
+/// departamento).
+model Departamento {
+  id        String  @id @default(cuid())
+  nome      String  @unique
+  descricao String?
+  ativo     Boolean @default(true)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  atendentes   AtendenteDepartamento[]
+  atendimentos LeadAtendimento[]
+
+  @@index([ativo, nome])
+}
+
+/// Atendente = um `User` (admin ou padrão) com perfil no CRM. O login, a senha e
+/// o nível continuam em `User`; aqui ficam só os dados de atendimento.
+/// `ativo` controla apenas o recebimento de conversas, sem tirar o acesso ao painel.
+model Atendente {
+  id     String  @id @default(cuid())
+  userId String  @unique
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ativo  Boolean @default(true)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  departamentos AtendenteDepartamento[]
+  atendimentos  LeadAtendimento[]
+
+  @@index([ativo])
+}
+
+/// Vínculo N:N entre atendentes e departamentos.
+model AtendenteDepartamento {
+  atendenteId    String
+  atendente      Atendente    @relation(fields: [atendenteId], references: [id], onDelete: Cascade)
+  departamentoId String
+  departamento   Departamento @relation(fields: [departamentoId], references: [id], onDelete: Cascade)
+
+  @@id([atendenteId, departamentoId])
+  @@index([departamentoId])
+}
+
+/// Quem está responsável pela conversa de um lead no chat (no máximo uma linha
+/// por lead). Departamento e atendente são opcionais: dá para transferir só
+/// para a fila de um departamento, sem atendente definido.
+model LeadAtendimento {
+  leadId String @id
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  departamentoId String?
+  departamento   Departamento? @relation(fields: [departamentoId], references: [id], onDelete: SetNull)
+
+  atendenteId String?
+  atendente   Atendente? @relation(fields: [atendenteId], references: [id], onDelete: SetNull)
+
+  transferidoEm DateTime @default(now())
+
+  @@index([departamentoId])
+  @@index([atendenteId])
+}
+
+/// Histórico de transferências. Guarda os NOMES no momento da transferência,
+/// então o registro continua legível mesmo se o departamento/atendente for
+/// excluído depois.
+model AtendimentoTransferencia {
+  id     String @id @default(cuid())
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  deDepartamento   String?
+  paraDepartamento String?
+  deAtendente      String?
+  paraAtendente    String?
+  /// Nome de quem executou a transferência.
+  porUsuario       String
+  motivo           String?
+  data             DateTime @default(now())
+
+  @@index([leadId, data])
 }

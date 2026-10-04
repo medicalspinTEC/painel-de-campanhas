@@ -3,7 +3,14 @@ import { podeAcessar, SECOES } from "@/lib/permissoes"
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
-import { getAppMarca, getAssistentePluginAtivo, getChatPluginAtivo, getKanbanPluginAtivo, getNocodePluginAtivo } from "@/services/settings"
+import {
+  getAppMarca,
+  getAssistentePluginAtivo,
+  getChatPluginAtivo,
+  getCrmPluginAtivo,
+  getKanbanPluginAtivo,
+  getNocodePluginAtivo,
+} from "@/services/settings"
 
 /**
  * Consulta o status da instância do WhatsApp (Evolution API). Isolado do
@@ -61,13 +68,14 @@ async function getEvolutionInstanceStatus() {
 }
 
 export async function AppSidebarData() {
-  const [status, chatAtivo, kanbanAtivo, assistenteAtivo, marca, nocodeAtivo, usuario] = await Promise.all([
+  const [status, chatAtivo, kanbanAtivo, assistenteAtivo, marca, nocodeAtivo, crmAtivo, usuario] = await Promise.all([
     getEvolutionInstanceStatus(),
     getChatPluginAtivo(),
     getKanbanPluginAtivo(),
     getAssistentePluginAtivo(),
     getAppMarca(),
     getNocodePluginAtivo(),
+    getCrmPluginAtivo(),
     getCurrentUser(),
   ])
 
@@ -82,6 +90,7 @@ export async function AppSidebarData() {
       kanbanAtivo={kanbanAtivo}
       assistenteAtivo={assistenteAtivo}
       nocodeAtivo={nocodeAtivo}
+      crmAtivo={crmAtivo}
       appNome={marca.nome}
       appLogo={marca.logo}
       urlsPermitidas={urlsPermitidas}

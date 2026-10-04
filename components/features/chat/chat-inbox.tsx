@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react"
 import { toast } from "sonner"
-import { ArrowLeft, CheckCheck, Filter, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Search, Send, Smile, StickyNote, UserCheck, UserRound, X } from "lucide-react"
+import { ArrowLeft, ArrowRightLeft, Building2, CheckCheck, Filter, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Search, Send, Smile, StickyNote, UserCheck, UserRound, X } from "lucide-react"
 
 import { createChatInternalNoteAction, loadChatMessagesAction, refreshChatInboxAction } from "@/app/actions/chat"
 import { sendLeadMessageAction, setLeadStatusAction } from "@/app/actions/leads"
@@ -16,6 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { ChatExportMenu } from "@/components/features/chat/chat-export-menu"
+import { TransferirConversaDialog } from "@/components/features/crm/transferir-conversa-dialog"
 import { LeadAvatar } from "@/components/shared/lead-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -26,12 +27,17 @@ import { formatRelative } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import type { InstanceOption } from "@/services/evolution"
 import type { ChatInboxSnapshot, ChatMessage } from "@/services/chat"
+import type { CrmChatOpcoes } from "@/services/crm"
 
 const INTERVALO_ATUALIZACAO = 8000
 const LIMITE_MENSAGEM = 4096
 const LIMITE_NOTA_INTERNA = 5000
 const CHAVE_VISTAS = "chat-conversas-vistas"
 const CHAVE_LARGURA_LISTA = "chat-largura-lista"
+const FILTRO_TODOS = "todos"
+const FILTRO_MEUS = "meus"
+const FILTRO_SEM_RESPONSAVEL = "sem"
+const PREFIXO_FILTRO_DEPARTAMENTO = "dep:"
 const LARGURA_LISTA_PADRAO = 360
 const LARGURA_LISTA_MIN = 260
 const LARGURA_CONVERSA_MIN = 360
@@ -85,11 +91,14 @@ export function ChatInbox({
   instancias,
   nomeUsuario = "",
   identificarRemetenteInicial = false,
+  crm = null,
 }: {
   inicial: ChatInboxSnapshot
   instancias: InstanceOption[]
   nomeUsuario?: string
   identificarRemetenteInicial?: boolean
+  /** Opções do plugin CRM. Nulo = plugin desativado, o chat segue sem transferência. */
+  crm?: CrmChatOpcoes | null
 }) {
   const [identificarRemetente, setIdentificarRemetente] = useState(identificarRemetenteInicial)
   const [conversas, setConversas] = useState(inicial.conversas)
@@ -101,6 +110,8 @@ export function ChatInbox({
   const [arrastando, setArrastando] = useState(false)
   const painelRef = useRef<HTMLDivElement>(null)
   const [somenteRespostas, setSomenteRespostas] = useState(false)
+  const [filtroAtendimento, setFiltroAtendimento] = useState(FILTRO_TODOS)
+  const [transferirAberto, setTransferirAberto] = useState(false)
   const [modoComposicao, setModoComposicao] = useState<"mensagem" | "nota" | "resposta">("mensagem")
   const [texto, setTexto] = useState("")
   const [seletorEmojiAberto, setSeletorEmojiAberto] = useState(false)
@@ -130,14 +141,49 @@ export function ChatInbox({
 
   const conversasVisiveis = conversas.filter((conversa) => {
     const correspondeBusca = `${conversa.nome} ${conversa.telefone} ${conversa.produto}`.toLowerCase().includes(busca.toLowerCase())
-    return correspondeBusca && (!somenteRespostas || conversa.ultimaMensagem?.lado === "lead")
+    return correspondeBusca && (!somenteRespostas || conversa.ultimaMensagem?.lado === "lead") && correspondeAtendimento(conversa)
   })
   const totalComResposta = conversas.filter((conversa) => conversa.ultimaMensagem?.lado === "lead").length
+  const opcoesFiltroAtendimento = crm
+    ? [
+        { value: FILTRO_TODOS, label: "Todos os atendimentos" },
+        ...(crm.meuAtendenteId ? [{ value: FILTRO_MEUS, label: "Meus chats" }] : []),
+        { value: FILTRO_SEM_RESPONSAVEL, label: "Sem responsável" },
+        ...crm.departamentos.map((departamento) => ({
+          value: `${PREFIXO_FILTRO_DEPARTAMENTO}${departamento.id}`,
+          label: `Departamento: ${departamento.nome}`,
+        })),
+      ]
+    : []
   const opcoesInstancia = instancias.map((item) => ({ value: item.nome, label: `${item.nome} · ${item.estado}` }))
 
   useEffect(() => {
     idSelecionadoRef.current = conversaSelecionadaId
   }, [conversaSelecionadaId])
+
+  /** Filtro do CRM (meus chats, sem responsável, por departamento). Sem o plugin, não filtra nada. */
+  function correspondeAtendimento(conversa: ChatInboxSnapshot["conversas"][number]) {
+    if (!crm || filtroAtendimento === FILTRO_TODOS) return true
+    const atendimento = conversa.atendimento
+    if (filtroAtendimento === FILTRO_MEUS) return Boolean(crm.meuAtendenteId) && atendimento?.atendenteId === crm.meuAtendenteId
+    if (filtroAtendimento === FILTRO_SEM_RESPONSAVEL) return !atendimento?.departamentoId && !atendimento?.atendenteId
+    if (filtroAtendimento.startsWith(PREFIXO_FILTRO_DEPARTAMENTO)) {
+      return atendimento?.departamentoId === filtroAtendimento.slice(PREFIXO_FILTRO_DEPARTAMENTO.length)
+    }
+    return true
+  }
+
+  /** Depois de transferir, recarrega a lista para mostrar o novo responsável e a nota interna. */
+  async function aoTransferir() {
+    const leadId = conversaAtiva?.id
+    if (!leadId) return
+    try {
+      const snapshot = await refreshChatInboxAction(leadId)
+      aplicarSnapshot(snapshot, idSelecionadoRef.current === leadId)
+    } catch {
+      toast.message("Conversa transferida. A lista será atualizada em instantes.")
+    }
+  }
 
   useEffect(() => {
     // Recupera até onde cada conversa já foi vista neste navegador.
@@ -497,6 +543,17 @@ export function ChatInbox({
               Com resposta <span className="ml-1 tabular-nums">{totalComResposta}</span>
             </Button>
           </div>
+          {crm ? (
+            <div className="px-3 pb-2">
+              <SelectField
+                value={filtroAtendimento}
+                onValueChange={setFiltroAtendimento}
+                opcoes={opcoesFiltroAtendimento}
+                size="sm"
+                className="w-full rounded-lg bg-muted"
+              />
+            </div>
+          ) : null}
           <div className="min-h-0 flex-1 overflow-y-auto">
             {conversasVisiveis.length ? conversasVisiveis.map((conversa) => {
               const respondeu = conversa.ultimaMensagem?.lado === "lead"
@@ -535,6 +592,22 @@ export function ChatInbox({
                       </span>
                       {naoLida ? <span className="size-2.5 shrink-0 rounded-full bg-primary" aria-label="Resposta não lida" /> : null}
                     </span>
+                    {crm && (conversa.atendimento?.departamentoNome || conversa.atendimento?.atendenteNome) ? (
+                      <span className="mt-1 flex min-w-0 items-center gap-2 text-[11px] text-muted-foreground">
+                        {conversa.atendimento?.departamentoNome ? (
+                          <span className="flex min-w-0 items-center gap-1">
+                            <Building2 className="size-3 shrink-0" />
+                            <span className="truncate">{conversa.atendimento.departamentoNome}</span>
+                          </span>
+                        ) : null}
+                        {conversa.atendimento?.atendenteNome ? (
+                          <span className="flex min-w-0 items-center gap-1">
+                            <UserRound className="size-3 shrink-0" />
+                            <span className="truncate">{conversa.atendimento.atendenteNome}</span>
+                          </span>
+                        ) : null}
+                      </span>
+                    ) : null}
                   </span>
                 </button>
               )
@@ -612,6 +685,39 @@ export function ChatInbox({
                   ) : null}
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
+                  {crm ? (
+                    <>
+                      {conversaAtiva.atendimento?.departamentoNome || conversaAtiva.atendimento?.atendenteNome ? (
+                        <div
+                          className="hidden min-w-0 items-center gap-1.5 md:flex"
+                          title={`Responsável: ${[conversaAtiva.atendimento?.departamentoNome, conversaAtiva.atendimento?.atendenteNome].filter(Boolean).join(" / ")}`}
+                        >
+                          {conversaAtiva.atendimento?.departamentoNome ? (
+                            <Badge variant="outline" className="max-w-32 gap-1">
+                              <Building2 />
+                              <span className="truncate">{conversaAtiva.atendimento.departamentoNome}</span>
+                            </Badge>
+                          ) : null}
+                          {conversaAtiva.atendimento?.atendenteNome ? (
+                            <Badge variant="outline" className="max-w-32 gap-1">
+                              <UserRound />
+                              <span className="truncate">{conversaAtiva.atendimento.atendenteNome}</span>
+                            </Badge>
+                          ) : null}
+                        </div>
+                      ) : null}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full"
+                        aria-label="Transferir conversa"
+                        title="Transferir conversa"
+                        onClick={() => setTransferirAberto(true)}
+                      >
+                        <ArrowRightLeft className="size-4" />
+                      </Button>
+                    </>
+                  ) : null}
                   <ChatExportMenu conversaAtualId={conversaAtiva.id} idsListados={conversasVisiveis.map((conversa) => conversa.id)} />
                   <Button variant="ghost" size="icon" className="rounded-full" aria-label="Sair da conversa" title="Sair da conversa" onClick={sairDaConversa}>
                     <X className="size-4" />
@@ -816,6 +922,18 @@ export function ChatInbox({
           )}
         </section>
       </div>
+
+      {crm && conversaAtiva ? (
+        <TransferirConversaDialog
+          open={transferirAberto}
+          onOpenChange={setTransferirAberto}
+          leadId={conversaAtiva.id}
+          leadNome={conversaAtiva.nome}
+          atual={conversaAtiva.atendimento}
+          opcoes={crm}
+          onTransferido={() => void aoTransferir()}
+        />
+      ) : null}
     </div>
   )
 }

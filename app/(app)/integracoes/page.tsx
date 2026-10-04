@@ -4,7 +4,13 @@ import { WebhooksManager } from "@/components/features/integrations/webhooks-man
 import { PageHeader } from "@/components/shared/page-header"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getAssistentePluginAtivo, getChatPluginAtivo, getKanbanPluginAtivo, getNocodePluginAtivo } from "@/services/settings"
+import {
+  getAssistentePluginAtivo,
+  getChatPluginAtivo,
+  getCrmPluginAtivo,
+  getKanbanPluginAtivo,
+  getNocodePluginAtivo,
+} from "@/services/settings"
 import { getToken, listEventos } from "@/services/inbound-webhook"
 import { listWebhooks } from "@/services/webhooks"
 import { Plug, Puzzle } from "lucide-react"
@@ -38,7 +44,7 @@ x-ingest-token: <INGEST_TOKEN>
 
 export default async function IntegracoesPage() {
   await requireSecao("integracoes")
-  const [webhooks, tokenInicial, eventosIniciais, chatAtivo, kanbanAtivo, assistenteAtivo, nocodeAtivo] = await Promise.all([
+  const [webhooks, tokenInicial, eventosIniciais, chatAtivo, kanbanAtivo, assistenteAtivo, nocodeAtivo, crmAtivo] = await Promise.all([
     listWebhooks(),
     getToken(),
     listEventos(50),
@@ -46,6 +52,7 @@ export default async function IntegracoesPage() {
     getKanbanPluginAtivo(),
     getAssistentePluginAtivo(),
     getNocodePluginAtivo(),
+    getCrmPluginAtivo(),
   ])
 
   return (
@@ -109,6 +116,7 @@ export default async function IntegracoesPage() {
             kanbanAtivoInicial={kanbanAtivo}
             assistenteAtivoInicial={assistenteAtivo}
             nocodeAtivoInicial={nocodeAtivo}
+            crmAtivoInicial={crmAtivo}
           />
         </TabsContent>
       </Tabs>

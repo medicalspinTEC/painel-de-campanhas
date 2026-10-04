@@ -6,6 +6,7 @@ import {
   BarChart3,
   ClipboardList,
   Columns3,
+  Contact,
   MessagesSquare,
   LayoutDashboard,
   LogOut,
@@ -74,6 +75,7 @@ interface AppSidebarProps {
   kanbanAtivo?: boolean
   assistenteAtivo?: boolean
   nocodeAtivo?: boolean
+  crmAtivo?: boolean
   appNome?: string
   appLogo?: string | null
   /** URLs das seções que o usuário logado pode acessar (admin recebe todas). */
@@ -123,6 +125,7 @@ export function AppSidebar({
   kanbanAtivo = false,
   assistenteAtivo = false,
   nocodeAtivo = false,
+  crmAtivo = false,
   appNome = "Medical Spin",
   appLogo = null,
   urlsPermitidas = [],
@@ -148,6 +151,9 @@ export function AppSidebar({
       (item.url !== "/assistente" || assistenteAtivo) &&
       (item.url !== "/nocode" || nocodeAtivo),
   )
+  // O CRM (departamentos e atendentes) é gerenciado só por administradores, como Usuários.
+  const itensGestaoComCrm =
+    crmAtivo && usuario?.role === "admin" ? [...itensGestao, { title: "CRM", url: "/crm", icon: Contact }] : itensGestao
   const itensOperacao = navOperacao.filter((item) => visivel(item.url))
   const itensSistema = [
     ...navSistema.filter((item) => visivel(item.url )),
@@ -173,12 +179,12 @@ export function AppSidebar({
       </SidebarHeader>
 
       <SidebarContent>
-        {itensGestao.length > 0 ? (
+        {itensGestaoComCrm.length > 0 ? (
         <SidebarGroup>
           <SidebarGroupLabel>Gestão</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {itensGestao.map((item) => (
+              {itensGestaoComCrm.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton
                     isActive={isActive(item.url)}

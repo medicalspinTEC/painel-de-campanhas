@@ -191,3 +191,25 @@ export async function setNocodePluginAtivo(ativo: boolean): Promise<void> {
     update: { nocodePluginAtivo: ativo },
   })
 }
+
+export async function getCrmPluginAtivo(): Promise<boolean> {
+  try {
+    const row = await prisma.settings.findUnique({
+      where: { id: ID },
+      select: { crmPluginAtivo: true },
+    })
+    return row?.crmPluginAtivo ?? false
+  } catch (error) {
+    // Coluna ainda não existe: a migration do CRM não foi aplicada.
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "P2022") return false
+    throw error
+  }
+}
+
+export async function setCrmPluginAtivo(ativo: boolean): Promise<void> {
+  await prisma.settings.upsert({
+    where: { id: ID },
+    create: { id: ID, crmPluginAtivo: ativo },
+    update: { crmPluginAtivo: ativo },
+  })
+}

@@ -7,6 +7,7 @@ import {
   saveSettings,
   setAssistentePluginAtivo,
   setChatPluginAtivo,
+  setCrmPluginAtivo,
   setKanbanPluginAtivo,
   setNocodePluginAtivo,
   type Settings,
@@ -125,6 +126,24 @@ export async function setNocodePluginAtivoAction(ativo: boolean): Promise<Settin
   revalidatePath("/nocode")
   revalidatePath("/", "layout")
   return { ok: true, message: ativo ? "Plugin No Code ativado." : "Plugin No Code desativado.", ativo }
+}
+
+export async function setCrmPluginAtivoAction(ativo: boolean): Promise<SettingsActionResult & { ativo?: boolean }> {
+  await assertSecao("integracoes")
+  if (typeof ativo !== "boolean") return { ok: false, message: "Estado inválido para o plugin." }
+
+  try {
+    await setCrmPluginAtivo(ativo)
+  } catch (error) {
+    await recordAppLog({ origem: "settings", mensagem: "Falha ao atualizar o plugin CRM.", detalhes: error })
+    return { ok: false, message: "Não foi possível atualizar o plugin CRM. Aplique a migration mais recente." }
+  }
+
+  revalidatePath("/integracoes")
+  revalidatePath("/crm")
+  revalidatePath("/chat")
+  revalidatePath("/", "layout")
+  return { ok: true, message: ativo ? "Plugin CRM ativado." : "Plugin CRM desativado.", ativo }
 }
 
 const LIMITE_NOME_MARCA = 40

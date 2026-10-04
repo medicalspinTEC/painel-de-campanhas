@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma"
+import { listAtendimentosPorLead, type ChatAtendimento } from "@/services/crm"
+import { getCrmPluginAtivo } from "@/services/settings"
 
 const TIPOS_DE_MENSAGEM = ["mensagem_enviada", "resposta"] as const
 const LIMITE_EVENTOS_RECENTES = 1000
@@ -26,6 +28,8 @@ export interface ChatConversation {
   campanhasNomes: string[]
   atualizadoEm: string
   ultimaMensagem: ChatMessage | null
+  /** Plugin CRM: responsável pela conversa. Sempre nulo com o plugin desativado. */
+  atendimento: ChatAtendimento | null
 }
 
 export interface ChatInboxSnapshot {
@@ -175,7 +179,7 @@ export async function getChatInbox(
   // (antes era uma consulta depois da outra).
   const buscarJunto = conversaId && !opcoes.semMensagens ? conversaId : null
 
-  const [leads, ultimas, mensagensAdiantadas] = await Promise.all([
+  const [leads, ultimas, mensagensAdiantadas, atendimentos] = await Promise.all([
     prisma.lead.findMany({
       select: {
         id: true,
@@ -196,6 +200,10 @@ export async function getChatInbox(
     }),
     ultimasMensagensPorLead(),
     buscarJunto ? getChatMessages(buscarJunto) : Promise.resolve(null),
+    // Só consulta o CRM quando o plugin está ativo; uma falha aqui nunca derruba o chat.
+    getCrmPluginAtivo()
+      .then((ativo) => (ativo ? listAtendimentosPorLead() : null))
+      .catch(() => null),
   ])
 
   const conversas: ChatConversation[] = leads.map((lead) => {
@@ -214,6 +222,7 @@ export async function getChatInbox(
       campanhasNomes: nomesDasCampanhas(lead.campanha, lead.campanhas),
       atualizadoEm: ultimaMensagem ? ultimaMensagem.data : lead.atualizadoEm.toISOString(),
       ultimaMensagem,
+      atendimento: atendimentos?.get(lead.id) ?? null,
     }
   })
   conversas.sort((a, b) => new Date(b.atualizadoEm).getTime() - new Date(a.atualizadoEm).getTime())

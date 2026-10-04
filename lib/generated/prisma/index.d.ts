@@ -127,6 +127,39 @@ export type NoCodeExecution = $Result.DefaultSelection<Prisma.$NoCodeExecutionPa
  * credenciais de `AUTH_USERNAME`/`AUTH_PASSWORD` (ver `services/users.ts`).
  */
 export type User = $Result.DefaultSelection<Prisma.$UserPayload>
+/**
+ * Model Departamento
+ * Departamento de atendimento (ex.: Comercial, Suporte). Pode ser inativado
+ * (deixa de receber transferências) ou excluído (as conversas dele ficam sem
+ * departamento).
+ */
+export type Departamento = $Result.DefaultSelection<Prisma.$DepartamentoPayload>
+/**
+ * Model Atendente
+ * Atendente = um `User` (admin ou padrão) com perfil no CRM. O login, a senha e
+ * o nível continuam em `User`; aqui ficam só os dados de atendimento.
+ * `ativo` controla apenas o recebimento de conversas, sem tirar o acesso ao painel.
+ */
+export type Atendente = $Result.DefaultSelection<Prisma.$AtendentePayload>
+/**
+ * Model AtendenteDepartamento
+ * Vínculo N:N entre atendentes e departamentos.
+ */
+export type AtendenteDepartamento = $Result.DefaultSelection<Prisma.$AtendenteDepartamentoPayload>
+/**
+ * Model LeadAtendimento
+ * Quem está responsável pela conversa de um lead no chat (no máximo uma linha
+ * por lead). Departamento e atendente são opcionais: dá para transferir só
+ * para a fila de um departamento, sem atendente definido.
+ */
+export type LeadAtendimento = $Result.DefaultSelection<Prisma.$LeadAtendimentoPayload>
+/**
+ * Model AtendimentoTransferencia
+ * Histórico de transferências. Guarda os NOMES no momento da transferência,
+ * então o registro continua legível mesmo se o departamento/atendente for
+ * excluído depois.
+ */
+export type AtendimentoTransferencia = $Result.DefaultSelection<Prisma.$AtendimentoTransferenciaPayload>
 
 /**
  * Enums
@@ -546,6 +579,56 @@ export class PrismaClient<
     * ```
     */
   get user(): Prisma.UserDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.departamento`: Exposes CRUD operations for the **Departamento** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Departamentos
+    * const departamentos = await prisma.departamento.findMany()
+    * ```
+    */
+  get departamento(): Prisma.DepartamentoDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.atendente`: Exposes CRUD operations for the **Atendente** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Atendentes
+    * const atendentes = await prisma.atendente.findMany()
+    * ```
+    */
+  get atendente(): Prisma.AtendenteDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.atendenteDepartamento`: Exposes CRUD operations for the **AtendenteDepartamento** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AtendenteDepartamentos
+    * const atendenteDepartamentos = await prisma.atendenteDepartamento.findMany()
+    * ```
+    */
+  get atendenteDepartamento(): Prisma.AtendenteDepartamentoDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.leadAtendimento`: Exposes CRUD operations for the **LeadAtendimento** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LeadAtendimentos
+    * const leadAtendimentos = await prisma.leadAtendimento.findMany()
+    * ```
+    */
+  get leadAtendimento(): Prisma.LeadAtendimentoDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.atendimentoTransferencia`: Exposes CRUD operations for the **AtendimentoTransferencia** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AtendimentoTransferencias
+    * const atendimentoTransferencias = await prisma.atendimentoTransferencia.findMany()
+    * ```
+    */
+  get atendimentoTransferencia(): Prisma.AtendimentoTransferenciaDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1006,7 +1089,12 @@ export namespace Prisma {
     Instance: 'Instance',
     NoCodeFlow: 'NoCodeFlow',
     NoCodeExecution: 'NoCodeExecution',
-    User: 'User'
+    User: 'User',
+    Departamento: 'Departamento',
+    Atendente: 'Atendente',
+    AtendenteDepartamento: 'AtendenteDepartamento',
+    LeadAtendimento: 'LeadAtendimento',
+    AtendimentoTransferencia: 'AtendimentoTransferencia'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1025,7 +1113,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "inboundEvent" | "instance" | "noCodeFlow" | "noCodeExecution" | "user"
+      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "inboundEvent" | "instance" | "noCodeFlow" | "noCodeExecution" | "user" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2509,6 +2597,376 @@ export namespace Prisma {
           }
         }
       }
+      Departamento: {
+        payload: Prisma.$DepartamentoPayload<ExtArgs>
+        fields: Prisma.DepartamentoFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DepartamentoFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartamentoPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DepartamentoFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartamentoPayload>
+          }
+          findFirst: {
+            args: Prisma.DepartamentoFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartamentoPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DepartamentoFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartamentoPayload>
+          }
+          findMany: {
+            args: Prisma.DepartamentoFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartamentoPayload>[]
+          }
+          create: {
+            args: Prisma.DepartamentoCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartamentoPayload>
+          }
+          createMany: {
+            args: Prisma.DepartamentoCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DepartamentoCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartamentoPayload>[]
+          }
+          delete: {
+            args: Prisma.DepartamentoDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartamentoPayload>
+          }
+          update: {
+            args: Prisma.DepartamentoUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartamentoPayload>
+          }
+          deleteMany: {
+            args: Prisma.DepartamentoDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DepartamentoUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.DepartamentoUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartamentoPayload>[]
+          }
+          upsert: {
+            args: Prisma.DepartamentoUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartamentoPayload>
+          }
+          aggregate: {
+            args: Prisma.DepartamentoAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDepartamento>
+          }
+          groupBy: {
+            args: Prisma.DepartamentoGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DepartamentoGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DepartamentoCountArgs<ExtArgs>
+            result: $Utils.Optional<DepartamentoCountAggregateOutputType> | number
+          }
+        }
+      }
+      Atendente: {
+        payload: Prisma.$AtendentePayload<ExtArgs>
+        fields: Prisma.AtendenteFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AtendenteFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendentePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AtendenteFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendentePayload>
+          }
+          findFirst: {
+            args: Prisma.AtendenteFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendentePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AtendenteFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendentePayload>
+          }
+          findMany: {
+            args: Prisma.AtendenteFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendentePayload>[]
+          }
+          create: {
+            args: Prisma.AtendenteCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendentePayload>
+          }
+          createMany: {
+            args: Prisma.AtendenteCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AtendenteCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendentePayload>[]
+          }
+          delete: {
+            args: Prisma.AtendenteDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendentePayload>
+          }
+          update: {
+            args: Prisma.AtendenteUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendentePayload>
+          }
+          deleteMany: {
+            args: Prisma.AtendenteDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AtendenteUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AtendenteUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendentePayload>[]
+          }
+          upsert: {
+            args: Prisma.AtendenteUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendentePayload>
+          }
+          aggregate: {
+            args: Prisma.AtendenteAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAtendente>
+          }
+          groupBy: {
+            args: Prisma.AtendenteGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AtendenteGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AtendenteCountArgs<ExtArgs>
+            result: $Utils.Optional<AtendenteCountAggregateOutputType> | number
+          }
+        }
+      }
+      AtendenteDepartamento: {
+        payload: Prisma.$AtendenteDepartamentoPayload<ExtArgs>
+        fields: Prisma.AtendenteDepartamentoFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AtendenteDepartamentoFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendenteDepartamentoPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AtendenteDepartamentoFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendenteDepartamentoPayload>
+          }
+          findFirst: {
+            args: Prisma.AtendenteDepartamentoFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendenteDepartamentoPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AtendenteDepartamentoFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendenteDepartamentoPayload>
+          }
+          findMany: {
+            args: Prisma.AtendenteDepartamentoFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendenteDepartamentoPayload>[]
+          }
+          create: {
+            args: Prisma.AtendenteDepartamentoCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendenteDepartamentoPayload>
+          }
+          createMany: {
+            args: Prisma.AtendenteDepartamentoCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AtendenteDepartamentoCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendenteDepartamentoPayload>[]
+          }
+          delete: {
+            args: Prisma.AtendenteDepartamentoDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendenteDepartamentoPayload>
+          }
+          update: {
+            args: Prisma.AtendenteDepartamentoUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendenteDepartamentoPayload>
+          }
+          deleteMany: {
+            args: Prisma.AtendenteDepartamentoDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AtendenteDepartamentoUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AtendenteDepartamentoUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendenteDepartamentoPayload>[]
+          }
+          upsert: {
+            args: Prisma.AtendenteDepartamentoUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendenteDepartamentoPayload>
+          }
+          aggregate: {
+            args: Prisma.AtendenteDepartamentoAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAtendenteDepartamento>
+          }
+          groupBy: {
+            args: Prisma.AtendenteDepartamentoGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AtendenteDepartamentoGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AtendenteDepartamentoCountArgs<ExtArgs>
+            result: $Utils.Optional<AtendenteDepartamentoCountAggregateOutputType> | number
+          }
+        }
+      }
+      LeadAtendimento: {
+        payload: Prisma.$LeadAtendimentoPayload<ExtArgs>
+        fields: Prisma.LeadAtendimentoFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LeadAtendimentoFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadAtendimentoPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LeadAtendimentoFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadAtendimentoPayload>
+          }
+          findFirst: {
+            args: Prisma.LeadAtendimentoFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadAtendimentoPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LeadAtendimentoFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadAtendimentoPayload>
+          }
+          findMany: {
+            args: Prisma.LeadAtendimentoFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadAtendimentoPayload>[]
+          }
+          create: {
+            args: Prisma.LeadAtendimentoCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadAtendimentoPayload>
+          }
+          createMany: {
+            args: Prisma.LeadAtendimentoCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LeadAtendimentoCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadAtendimentoPayload>[]
+          }
+          delete: {
+            args: Prisma.LeadAtendimentoDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadAtendimentoPayload>
+          }
+          update: {
+            args: Prisma.LeadAtendimentoUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadAtendimentoPayload>
+          }
+          deleteMany: {
+            args: Prisma.LeadAtendimentoDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LeadAtendimentoUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.LeadAtendimentoUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadAtendimentoPayload>[]
+          }
+          upsert: {
+            args: Prisma.LeadAtendimentoUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadAtendimentoPayload>
+          }
+          aggregate: {
+            args: Prisma.LeadAtendimentoAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLeadAtendimento>
+          }
+          groupBy: {
+            args: Prisma.LeadAtendimentoGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LeadAtendimentoGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LeadAtendimentoCountArgs<ExtArgs>
+            result: $Utils.Optional<LeadAtendimentoCountAggregateOutputType> | number
+          }
+        }
+      }
+      AtendimentoTransferencia: {
+        payload: Prisma.$AtendimentoTransferenciaPayload<ExtArgs>
+        fields: Prisma.AtendimentoTransferenciaFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AtendimentoTransferenciaFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendimentoTransferenciaPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AtendimentoTransferenciaFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendimentoTransferenciaPayload>
+          }
+          findFirst: {
+            args: Prisma.AtendimentoTransferenciaFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendimentoTransferenciaPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AtendimentoTransferenciaFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendimentoTransferenciaPayload>
+          }
+          findMany: {
+            args: Prisma.AtendimentoTransferenciaFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendimentoTransferenciaPayload>[]
+          }
+          create: {
+            args: Prisma.AtendimentoTransferenciaCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendimentoTransferenciaPayload>
+          }
+          createMany: {
+            args: Prisma.AtendimentoTransferenciaCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AtendimentoTransferenciaCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendimentoTransferenciaPayload>[]
+          }
+          delete: {
+            args: Prisma.AtendimentoTransferenciaDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendimentoTransferenciaPayload>
+          }
+          update: {
+            args: Prisma.AtendimentoTransferenciaUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendimentoTransferenciaPayload>
+          }
+          deleteMany: {
+            args: Prisma.AtendimentoTransferenciaDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AtendimentoTransferenciaUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AtendimentoTransferenciaUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendimentoTransferenciaPayload>[]
+          }
+          upsert: {
+            args: Prisma.AtendimentoTransferenciaUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AtendimentoTransferenciaPayload>
+          }
+          aggregate: {
+            args: Prisma.AtendimentoTransferenciaAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAtendimentoTransferencia>
+          }
+          groupBy: {
+            args: Prisma.AtendimentoTransferenciaGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AtendimentoTransferenciaGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AtendimentoTransferenciaCountArgs<ExtArgs>
+            result: $Utils.Optional<AtendimentoTransferenciaCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2625,6 +3083,11 @@ export namespace Prisma {
     noCodeFlow?: NoCodeFlowOmit
     noCodeExecution?: NoCodeExecutionOmit
     user?: UserOmit
+    departamento?: DepartamentoOmit
+    atendente?: AtendenteOmit
+    atendenteDepartamento?: AtendenteDepartamentoOmit
+    leadAtendimento?: LeadAtendimentoOmit
+    atendimentoTransferencia?: AtendimentoTransferenciaOmit
   }
 
   /* Types for Logging */
@@ -2709,6 +3172,7 @@ export namespace Prisma {
     eventos: number
     mensagensAgendadas: number
     notasInternas: number
+    transferencias: number
   }
 
   export type LeadCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2716,6 +3180,7 @@ export namespace Prisma {
     eventos?: boolean | LeadCountOutputTypeCountEventosArgs
     mensagensAgendadas?: boolean | LeadCountOutputTypeCountMensagensAgendadasArgs
     notasInternas?: boolean | LeadCountOutputTypeCountNotasInternasArgs
+    transferencias?: boolean | LeadCountOutputTypeCountTransferenciasArgs
   }
 
   // Custom InputTypes
@@ -2755,6 +3220,13 @@ export namespace Prisma {
    */
   export type LeadCountOutputTypeCountNotasInternasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ChatInternalNoteWhereInput
+  }
+
+  /**
+   * LeadCountOutputType without action
+   */
+  export type LeadCountOutputTypeCountTransferenciasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AtendimentoTransferenciaWhereInput
   }
 
 
@@ -2875,6 +3347,86 @@ export namespace Prisma {
    */
   export type NoCodeFlowCountOutputTypeCountExecucoesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: NoCodeExecutionWhereInput
+  }
+
+
+  /**
+   * Count Type DepartamentoCountOutputType
+   */
+
+  export type DepartamentoCountOutputType = {
+    atendentes: number
+    atendimentos: number
+  }
+
+  export type DepartamentoCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    atendentes?: boolean | DepartamentoCountOutputTypeCountAtendentesArgs
+    atendimentos?: boolean | DepartamentoCountOutputTypeCountAtendimentosArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * DepartamentoCountOutputType without action
+   */
+  export type DepartamentoCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DepartamentoCountOutputType
+     */
+    select?: DepartamentoCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * DepartamentoCountOutputType without action
+   */
+  export type DepartamentoCountOutputTypeCountAtendentesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AtendenteDepartamentoWhereInput
+  }
+
+  /**
+   * DepartamentoCountOutputType without action
+   */
+  export type DepartamentoCountOutputTypeCountAtendimentosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadAtendimentoWhereInput
+  }
+
+
+  /**
+   * Count Type AtendenteCountOutputType
+   */
+
+  export type AtendenteCountOutputType = {
+    departamentos: number
+    atendimentos: number
+  }
+
+  export type AtendenteCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    departamentos?: boolean | AtendenteCountOutputTypeCountDepartamentosArgs
+    atendimentos?: boolean | AtendenteCountOutputTypeCountAtendimentosArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * AtendenteCountOutputType without action
+   */
+  export type AtendenteCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendenteCountOutputType
+     */
+    select?: AtendenteCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * AtendenteCountOutputType without action
+   */
+  export type AtendenteCountOutputTypeCountDepartamentosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AtendenteDepartamentoWhereInput
+  }
+
+  /**
+   * AtendenteCountOutputType without action
+   */
+  export type AtendenteCountOutputTypeCountAtendimentosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadAtendimentoWhereInput
   }
 
 
@@ -3131,6 +3683,8 @@ export namespace Prisma {
     eventos?: boolean | Lead$eventosArgs<ExtArgs>
     mensagensAgendadas?: boolean | Lead$mensagensAgendadasArgs<ExtArgs>
     notasInternas?: boolean | Lead$notasInternasArgs<ExtArgs>
+    atendimento?: boolean | Lead$atendimentoArgs<ExtArgs>
+    transferencias?: boolean | Lead$transferenciasArgs<ExtArgs>
     _count?: boolean | LeadCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["lead"]>
 
@@ -3197,6 +3751,8 @@ export namespace Prisma {
     eventos?: boolean | Lead$eventosArgs<ExtArgs>
     mensagensAgendadas?: boolean | Lead$mensagensAgendadasArgs<ExtArgs>
     notasInternas?: boolean | Lead$notasInternasArgs<ExtArgs>
+    atendimento?: boolean | Lead$atendimentoArgs<ExtArgs>
+    transferencias?: boolean | Lead$transferenciasArgs<ExtArgs>
     _count?: boolean | LeadCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type LeadIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3214,6 +3770,11 @@ export namespace Prisma {
       eventos: Prisma.$TimelineEventPayload<ExtArgs>[]
       mensagensAgendadas: Prisma.$ScheduledMessagePayload<ExtArgs>[]
       notasInternas: Prisma.$ChatInternalNotePayload<ExtArgs>[]
+      /**
+       * Plugin CRM: departamento/atendente responsável pela conversa (1:1, opcional).
+       */
+      atendimento: Prisma.$LeadAtendimentoPayload<ExtArgs> | null
+      transferencias: Prisma.$AtendimentoTransferenciaPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3630,6 +4191,8 @@ export namespace Prisma {
     eventos<T extends Lead$eventosArgs<ExtArgs> = {}>(args?: Subset<T, Lead$eventosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TimelineEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     mensagensAgendadas<T extends Lead$mensagensAgendadasArgs<ExtArgs> = {}>(args?: Subset<T, Lead$mensagensAgendadasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduledMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notasInternas<T extends Lead$notasInternasArgs<ExtArgs> = {}>(args?: Subset<T, Lead$notasInternasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatInternalNotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    atendimento<T extends Lead$atendimentoArgs<ExtArgs> = {}>(args?: Subset<T, Lead$atendimentoArgs<ExtArgs>>): Prisma__LeadAtendimentoClient<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    transferencias<T extends Lead$transferenciasArgs<ExtArgs> = {}>(args?: Subset<T, Lead$transferenciasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendimentoTransferenciaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4182,6 +4745,49 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ChatInternalNoteScalarFieldEnum | ChatInternalNoteScalarFieldEnum[]
+  }
+
+  /**
+   * Lead.atendimento
+   */
+  export type Lead$atendimentoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadAtendimento
+     */
+    select?: LeadAtendimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadAtendimento
+     */
+    omit?: LeadAtendimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadAtendimentoInclude<ExtArgs> | null
+    where?: LeadAtendimentoWhereInput
+  }
+
+  /**
+   * Lead.transferencias
+   */
+  export type Lead$transferenciasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendimentoTransferencia
+     */
+    select?: AtendimentoTransferenciaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendimentoTransferencia
+     */
+    omit?: AtendimentoTransferenciaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendimentoTransferenciaInclude<ExtArgs> | null
+    where?: AtendimentoTransferenciaWhereInput
+    orderBy?: AtendimentoTransferenciaOrderByWithRelationInput | AtendimentoTransferenciaOrderByWithRelationInput[]
+    cursor?: AtendimentoTransferenciaWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AtendimentoTransferenciaScalarFieldEnum | AtendimentoTransferenciaScalarFieldEnum[]
   }
 
   /**
@@ -14130,6 +14736,7 @@ export namespace Prisma {
     kanbanPluginAtivo: boolean | null
     assistentePluginAtivo: boolean | null
     nocodePluginAtivo: boolean | null
+    crmPluginAtivo: boolean | null
     temaApp: string | null
     appNome: string | null
     appLogo: string | null
@@ -14158,6 +14765,7 @@ export namespace Prisma {
     kanbanPluginAtivo: boolean | null
     assistentePluginAtivo: boolean | null
     nocodePluginAtivo: boolean | null
+    crmPluginAtivo: boolean | null
     temaApp: string | null
     appNome: string | null
     appLogo: string | null
@@ -14186,6 +14794,7 @@ export namespace Prisma {
     kanbanPluginAtivo: number
     assistentePluginAtivo: number
     nocodePluginAtivo: number
+    crmPluginAtivo: number
     temaApp: number
     appNome: number
     appLogo: number
@@ -14228,6 +14837,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: true
     assistentePluginAtivo?: true
     nocodePluginAtivo?: true
+    crmPluginAtivo?: true
     temaApp?: true
     appNome?: true
     appLogo?: true
@@ -14256,6 +14866,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: true
     assistentePluginAtivo?: true
     nocodePluginAtivo?: true
+    crmPluginAtivo?: true
     temaApp?: true
     appNome?: true
     appLogo?: true
@@ -14284,6 +14895,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: true
     assistentePluginAtivo?: true
     nocodePluginAtivo?: true
+    crmPluginAtivo?: true
     temaApp?: true
     appNome?: true
     appLogo?: true
@@ -14399,6 +15011,7 @@ export namespace Prisma {
     kanbanPluginAtivo: boolean
     assistentePluginAtivo: boolean
     nocodePluginAtivo: boolean
+    crmPluginAtivo: boolean
     temaApp: string
     appNome: string
     appLogo: string | null
@@ -14446,6 +15059,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
     nocodePluginAtivo?: boolean
+    crmPluginAtivo?: boolean
     temaApp?: boolean
     appNome?: boolean
     appLogo?: boolean
@@ -14474,6 +15088,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
     nocodePluginAtivo?: boolean
+    crmPluginAtivo?: boolean
     temaApp?: boolean
     appNome?: boolean
     appLogo?: boolean
@@ -14502,6 +15117,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
     nocodePluginAtivo?: boolean
+    crmPluginAtivo?: boolean
     temaApp?: boolean
     appNome?: boolean
     appLogo?: boolean
@@ -14530,6 +15146,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
     nocodePluginAtivo?: boolean
+    crmPluginAtivo?: boolean
     temaApp?: boolean
     appNome?: boolean
     appLogo?: boolean
@@ -14539,7 +15156,7 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type SettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "chatPluginAtivo" | "kanbanPluginAtivo" | "assistentePluginAtivo" | "nocodePluginAtivo" | "temaApp" | "appNome" | "appLogo" | "corPrincipal" | "corSecundaria" | "corTerciaria" | "atualizadoEm", ExtArgs["result"]["settings"]>
+  export type SettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "chatPluginAtivo" | "kanbanPluginAtivo" | "assistentePluginAtivo" | "nocodePluginAtivo" | "crmPluginAtivo" | "temaApp" | "appNome" | "appLogo" | "corPrincipal" | "corSecundaria" | "corTerciaria" | "atualizadoEm", ExtArgs["result"]["settings"]>
 
   export type $SettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Settings"
@@ -14572,6 +15189,7 @@ export namespace Prisma {
       kanbanPluginAtivo: boolean
       assistentePluginAtivo: boolean
       nocodePluginAtivo: boolean
+      crmPluginAtivo: boolean
       /**
        * Tema pronto do painel (ver lib/temas.ts). Vale para o modo claro e o escuro.
        */
@@ -15032,6 +15650,7 @@ export namespace Prisma {
     readonly kanbanPluginAtivo: FieldRef<"Settings", 'Boolean'>
     readonly assistentePluginAtivo: FieldRef<"Settings", 'Boolean'>
     readonly nocodePluginAtivo: FieldRef<"Settings", 'Boolean'>
+    readonly crmPluginAtivo: FieldRef<"Settings", 'Boolean'>
     readonly temaApp: FieldRef<"Settings", 'String'>
     readonly appNome: FieldRef<"Settings", 'String'>
     readonly appLogo: FieldRef<"Settings", 'String'>
@@ -24130,6 +24749,7 @@ export namespace Prisma {
     chatIdentificarRemetente?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
+    atendente?: boolean | User$atendenteArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -24175,10 +24795,20 @@ export namespace Prisma {
   }
 
   export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "nome" | "senhaHash" | "role" | "secoes" | "ativo" | "temaApp" | "chatIdentificarRemetente" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["user"]>
+  export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    atendente?: boolean | User$atendenteArgs<ExtArgs>
+  }
+  export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type UserIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
 
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
-    objects: {}
+    objects: {
+      /**
+       * Plugin CRM: perfil de atendente deste usuário (opcional).
+       */
+      atendente: Prisma.$AtendentePayload<ExtArgs> | null
+    }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       /**
@@ -24605,6 +25235,7 @@ export namespace Prisma {
    */
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    atendente<T extends User$atendenteArgs<ExtArgs> = {}>(args?: Subset<T, User$atendenteArgs<ExtArgs>>): Prisma__AtendenteClient<$Result.GetResult<Prisma.$AtendentePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -24662,6 +25293,10 @@ export namespace Prisma {
      */
     omit?: UserOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
      * Filter, which User to fetch.
      */
     where: UserWhereUniqueInput
@@ -24680,6 +25315,10 @@ export namespace Prisma {
      */
     omit?: UserOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
      * Filter, which User to fetch.
      */
     where: UserWhereUniqueInput
@@ -24697,6 +25336,10 @@ export namespace Prisma {
      * Omit specific fields from the User
      */
     omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
     /**
      * Filter, which User to fetch.
      */
@@ -24746,6 +25389,10 @@ export namespace Prisma {
      */
     omit?: UserOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
      * Filter, which User to fetch.
      */
     where?: UserWhereInput
@@ -24794,6 +25441,10 @@ export namespace Prisma {
      */
     omit?: UserOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
      * Filter, which Users to fetch.
      */
     where?: UserWhereInput
@@ -24836,6 +25487,10 @@ export namespace Prisma {
      * Omit specific fields from the User
      */
     omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
     /**
      * The data needed to create a User.
      */
@@ -24884,6 +25539,10 @@ export namespace Prisma {
      * Omit specific fields from the User
      */
     omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
     /**
      * The data needed to update a User.
      */
@@ -24951,6 +25610,10 @@ export namespace Prisma {
      */
     omit?: UserOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
      * The filter to search for the User to update in case it exists.
      */
     where: UserWhereUniqueInput
@@ -24977,6 +25640,10 @@ export namespace Prisma {
      */
     omit?: UserOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
      * Filter which User to delete.
      */
     where: UserWhereUniqueInput
@@ -24997,6 +25664,25 @@ export namespace Prisma {
   }
 
   /**
+   * User.atendente
+   */
+  export type User$atendenteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Atendente
+     */
+    select?: AtendenteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Atendente
+     */
+    omit?: AtendenteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteInclude<ExtArgs> | null
+    where?: AtendenteWhereInput
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -25008,6 +25694,5476 @@ export namespace Prisma {
      * Omit specific fields from the User
      */
     omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Departamento
+   */
+
+  export type AggregateDepartamento = {
+    _count: DepartamentoCountAggregateOutputType | null
+    _min: DepartamentoMinAggregateOutputType | null
+    _max: DepartamentoMaxAggregateOutputType | null
+  }
+
+  export type DepartamentoMinAggregateOutputType = {
+    id: string | null
+    nome: string | null
+    descricao: string | null
+    ativo: boolean | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type DepartamentoMaxAggregateOutputType = {
+    id: string | null
+    nome: string | null
+    descricao: string | null
+    ativo: boolean | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type DepartamentoCountAggregateOutputType = {
+    id: number
+    nome: number
+    descricao: number
+    ativo: number
+    criadoEm: number
+    atualizadoEm: number
+    _all: number
+  }
+
+
+  export type DepartamentoMinAggregateInputType = {
+    id?: true
+    nome?: true
+    descricao?: true
+    ativo?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type DepartamentoMaxAggregateInputType = {
+    id?: true
+    nome?: true
+    descricao?: true
+    ativo?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type DepartamentoCountAggregateInputType = {
+    id?: true
+    nome?: true
+    descricao?: true
+    ativo?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    _all?: true
+  }
+
+  export type DepartamentoAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Departamento to aggregate.
+     */
+    where?: DepartamentoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Departamentos to fetch.
+     */
+    orderBy?: DepartamentoOrderByWithRelationInput | DepartamentoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DepartamentoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Departamentos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Departamentos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Departamentos
+    **/
+    _count?: true | DepartamentoCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DepartamentoMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DepartamentoMaxAggregateInputType
+  }
+
+  export type GetDepartamentoAggregateType<T extends DepartamentoAggregateArgs> = {
+        [P in keyof T & keyof AggregateDepartamento]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDepartamento[P]>
+      : GetScalarType<T[P], AggregateDepartamento[P]>
+  }
+
+
+
+
+  export type DepartamentoGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DepartamentoWhereInput
+    orderBy?: DepartamentoOrderByWithAggregationInput | DepartamentoOrderByWithAggregationInput[]
+    by: DepartamentoScalarFieldEnum[] | DepartamentoScalarFieldEnum
+    having?: DepartamentoScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DepartamentoCountAggregateInputType | true
+    _min?: DepartamentoMinAggregateInputType
+    _max?: DepartamentoMaxAggregateInputType
+  }
+
+  export type DepartamentoGroupByOutputType = {
+    id: string
+    nome: string
+    descricao: string | null
+    ativo: boolean
+    criadoEm: Date
+    atualizadoEm: Date
+    _count: DepartamentoCountAggregateOutputType | null
+    _min: DepartamentoMinAggregateOutputType | null
+    _max: DepartamentoMaxAggregateOutputType | null
+  }
+
+  type GetDepartamentoGroupByPayload<T extends DepartamentoGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DepartamentoGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DepartamentoGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DepartamentoGroupByOutputType[P]>
+            : GetScalarType<T[P], DepartamentoGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DepartamentoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    nome?: boolean
+    descricao?: boolean
+    ativo?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    atendentes?: boolean | Departamento$atendentesArgs<ExtArgs>
+    atendimentos?: boolean | Departamento$atendimentosArgs<ExtArgs>
+    _count?: boolean | DepartamentoCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["departamento"]>
+
+  export type DepartamentoSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    nome?: boolean
+    descricao?: boolean
+    ativo?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }, ExtArgs["result"]["departamento"]>
+
+  export type DepartamentoSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    nome?: boolean
+    descricao?: boolean
+    ativo?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }, ExtArgs["result"]["departamento"]>
+
+  export type DepartamentoSelectScalar = {
+    id?: boolean
+    nome?: boolean
+    descricao?: boolean
+    ativo?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }
+
+  export type DepartamentoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "descricao" | "ativo" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["departamento"]>
+  export type DepartamentoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    atendentes?: boolean | Departamento$atendentesArgs<ExtArgs>
+    atendimentos?: boolean | Departamento$atendimentosArgs<ExtArgs>
+    _count?: boolean | DepartamentoCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type DepartamentoIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type DepartamentoIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $DepartamentoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Departamento"
+    objects: {
+      atendentes: Prisma.$AtendenteDepartamentoPayload<ExtArgs>[]
+      atendimentos: Prisma.$LeadAtendimentoPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      nome: string
+      descricao: string | null
+      ativo: boolean
+      criadoEm: Date
+      atualizadoEm: Date
+    }, ExtArgs["result"]["departamento"]>
+    composites: {}
+  }
+
+  type DepartamentoGetPayload<S extends boolean | null | undefined | DepartamentoDefaultArgs> = $Result.GetResult<Prisma.$DepartamentoPayload, S>
+
+  type DepartamentoCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<DepartamentoFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: DepartamentoCountAggregateInputType | true
+    }
+
+  export interface DepartamentoDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Departamento'], meta: { name: 'Departamento' } }
+    /**
+     * Find zero or one Departamento that matches the filter.
+     * @param {DepartamentoFindUniqueArgs} args - Arguments to find a Departamento
+     * @example
+     * // Get one Departamento
+     * const departamento = await prisma.departamento.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DepartamentoFindUniqueArgs>(args: SelectSubset<T, DepartamentoFindUniqueArgs<ExtArgs>>): Prisma__DepartamentoClient<$Result.GetResult<Prisma.$DepartamentoPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Departamento that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {DepartamentoFindUniqueOrThrowArgs} args - Arguments to find a Departamento
+     * @example
+     * // Get one Departamento
+     * const departamento = await prisma.departamento.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DepartamentoFindUniqueOrThrowArgs>(args: SelectSubset<T, DepartamentoFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DepartamentoClient<$Result.GetResult<Prisma.$DepartamentoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Departamento that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DepartamentoFindFirstArgs} args - Arguments to find a Departamento
+     * @example
+     * // Get one Departamento
+     * const departamento = await prisma.departamento.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DepartamentoFindFirstArgs>(args?: SelectSubset<T, DepartamentoFindFirstArgs<ExtArgs>>): Prisma__DepartamentoClient<$Result.GetResult<Prisma.$DepartamentoPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Departamento that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DepartamentoFindFirstOrThrowArgs} args - Arguments to find a Departamento
+     * @example
+     * // Get one Departamento
+     * const departamento = await prisma.departamento.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DepartamentoFindFirstOrThrowArgs>(args?: SelectSubset<T, DepartamentoFindFirstOrThrowArgs<ExtArgs>>): Prisma__DepartamentoClient<$Result.GetResult<Prisma.$DepartamentoPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Departamentos that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DepartamentoFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Departamentos
+     * const departamentos = await prisma.departamento.findMany()
+     * 
+     * // Get first 10 Departamentos
+     * const departamentos = await prisma.departamento.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const departamentoWithIdOnly = await prisma.departamento.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends DepartamentoFindManyArgs>(args?: SelectSubset<T, DepartamentoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DepartamentoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Departamento.
+     * @param {DepartamentoCreateArgs} args - Arguments to create a Departamento.
+     * @example
+     * // Create one Departamento
+     * const Departamento = await prisma.departamento.create({
+     *   data: {
+     *     // ... data to create a Departamento
+     *   }
+     * })
+     * 
+     */
+    create<T extends DepartamentoCreateArgs>(args: SelectSubset<T, DepartamentoCreateArgs<ExtArgs>>): Prisma__DepartamentoClient<$Result.GetResult<Prisma.$DepartamentoPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Departamentos.
+     * @param {DepartamentoCreateManyArgs} args - Arguments to create many Departamentos.
+     * @example
+     * // Create many Departamentos
+     * const departamento = await prisma.departamento.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DepartamentoCreateManyArgs>(args?: SelectSubset<T, DepartamentoCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Departamentos and returns the data saved in the database.
+     * @param {DepartamentoCreateManyAndReturnArgs} args - Arguments to create many Departamentos.
+     * @example
+     * // Create many Departamentos
+     * const departamento = await prisma.departamento.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Departamentos and only return the `id`
+     * const departamentoWithIdOnly = await prisma.departamento.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DepartamentoCreateManyAndReturnArgs>(args?: SelectSubset<T, DepartamentoCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DepartamentoPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Departamento.
+     * @param {DepartamentoDeleteArgs} args - Arguments to delete one Departamento.
+     * @example
+     * // Delete one Departamento
+     * const Departamento = await prisma.departamento.delete({
+     *   where: {
+     *     // ... filter to delete one Departamento
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DepartamentoDeleteArgs>(args: SelectSubset<T, DepartamentoDeleteArgs<ExtArgs>>): Prisma__DepartamentoClient<$Result.GetResult<Prisma.$DepartamentoPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Departamento.
+     * @param {DepartamentoUpdateArgs} args - Arguments to update one Departamento.
+     * @example
+     * // Update one Departamento
+     * const departamento = await prisma.departamento.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DepartamentoUpdateArgs>(args: SelectSubset<T, DepartamentoUpdateArgs<ExtArgs>>): Prisma__DepartamentoClient<$Result.GetResult<Prisma.$DepartamentoPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Departamentos.
+     * @param {DepartamentoDeleteManyArgs} args - Arguments to filter Departamentos to delete.
+     * @example
+     * // Delete a few Departamentos
+     * const { count } = await prisma.departamento.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DepartamentoDeleteManyArgs>(args?: SelectSubset<T, DepartamentoDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Departamentos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DepartamentoUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Departamentos
+     * const departamento = await prisma.departamento.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DepartamentoUpdateManyArgs>(args: SelectSubset<T, DepartamentoUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Departamentos and returns the data updated in the database.
+     * @param {DepartamentoUpdateManyAndReturnArgs} args - Arguments to update many Departamentos.
+     * @example
+     * // Update many Departamentos
+     * const departamento = await prisma.departamento.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Departamentos and only return the `id`
+     * const departamentoWithIdOnly = await prisma.departamento.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends DepartamentoUpdateManyAndReturnArgs>(args: SelectSubset<T, DepartamentoUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DepartamentoPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Departamento.
+     * @param {DepartamentoUpsertArgs} args - Arguments to update or create a Departamento.
+     * @example
+     * // Update or create a Departamento
+     * const departamento = await prisma.departamento.upsert({
+     *   create: {
+     *     // ... data to create a Departamento
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Departamento we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DepartamentoUpsertArgs>(args: SelectSubset<T, DepartamentoUpsertArgs<ExtArgs>>): Prisma__DepartamentoClient<$Result.GetResult<Prisma.$DepartamentoPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Departamentos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DepartamentoCountArgs} args - Arguments to filter Departamentos to count.
+     * @example
+     * // Count the number of Departamentos
+     * const count = await prisma.departamento.count({
+     *   where: {
+     *     // ... the filter for the Departamentos we want to count
+     *   }
+     * })
+    **/
+    count<T extends DepartamentoCountArgs>(
+      args?: Subset<T, DepartamentoCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DepartamentoCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Departamento.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DepartamentoAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DepartamentoAggregateArgs>(args: Subset<T, DepartamentoAggregateArgs>): Prisma.PrismaPromise<GetDepartamentoAggregateType<T>>
+
+    /**
+     * Group by Departamento.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DepartamentoGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DepartamentoGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DepartamentoGroupByArgs['orderBy'] }
+        : { orderBy?: DepartamentoGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DepartamentoGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDepartamentoGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Departamento model
+   */
+  readonly fields: DepartamentoFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Departamento.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DepartamentoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    atendentes<T extends Departamento$atendentesArgs<ExtArgs> = {}>(args?: Subset<T, Departamento$atendentesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendenteDepartamentoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    atendimentos<T extends Departamento$atendimentosArgs<ExtArgs> = {}>(args?: Subset<T, Departamento$atendimentosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Departamento model
+   */
+  interface DepartamentoFieldRefs {
+    readonly id: FieldRef<"Departamento", 'String'>
+    readonly nome: FieldRef<"Departamento", 'String'>
+    readonly descricao: FieldRef<"Departamento", 'String'>
+    readonly ativo: FieldRef<"Departamento", 'Boolean'>
+    readonly criadoEm: FieldRef<"Departamento", 'DateTime'>
+    readonly atualizadoEm: FieldRef<"Departamento", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Departamento findUnique
+   */
+  export type DepartamentoFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Departamento
+     */
+    select?: DepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Departamento
+     */
+    omit?: DepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartamentoInclude<ExtArgs> | null
+    /**
+     * Filter, which Departamento to fetch.
+     */
+    where: DepartamentoWhereUniqueInput
+  }
+
+  /**
+   * Departamento findUniqueOrThrow
+   */
+  export type DepartamentoFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Departamento
+     */
+    select?: DepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Departamento
+     */
+    omit?: DepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartamentoInclude<ExtArgs> | null
+    /**
+     * Filter, which Departamento to fetch.
+     */
+    where: DepartamentoWhereUniqueInput
+  }
+
+  /**
+   * Departamento findFirst
+   */
+  export type DepartamentoFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Departamento
+     */
+    select?: DepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Departamento
+     */
+    omit?: DepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartamentoInclude<ExtArgs> | null
+    /**
+     * Filter, which Departamento to fetch.
+     */
+    where?: DepartamentoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Departamentos to fetch.
+     */
+    orderBy?: DepartamentoOrderByWithRelationInput | DepartamentoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Departamentos.
+     */
+    cursor?: DepartamentoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Departamentos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Departamentos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Departamentos.
+     */
+    distinct?: DepartamentoScalarFieldEnum | DepartamentoScalarFieldEnum[]
+  }
+
+  /**
+   * Departamento findFirstOrThrow
+   */
+  export type DepartamentoFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Departamento
+     */
+    select?: DepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Departamento
+     */
+    omit?: DepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartamentoInclude<ExtArgs> | null
+    /**
+     * Filter, which Departamento to fetch.
+     */
+    where?: DepartamentoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Departamentos to fetch.
+     */
+    orderBy?: DepartamentoOrderByWithRelationInput | DepartamentoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Departamentos.
+     */
+    cursor?: DepartamentoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Departamentos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Departamentos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Departamentos.
+     */
+    distinct?: DepartamentoScalarFieldEnum | DepartamentoScalarFieldEnum[]
+  }
+
+  /**
+   * Departamento findMany
+   */
+  export type DepartamentoFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Departamento
+     */
+    select?: DepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Departamento
+     */
+    omit?: DepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartamentoInclude<ExtArgs> | null
+    /**
+     * Filter, which Departamentos to fetch.
+     */
+    where?: DepartamentoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Departamentos to fetch.
+     */
+    orderBy?: DepartamentoOrderByWithRelationInput | DepartamentoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Departamentos.
+     */
+    cursor?: DepartamentoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Departamentos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Departamentos.
+     */
+    skip?: number
+    distinct?: DepartamentoScalarFieldEnum | DepartamentoScalarFieldEnum[]
+  }
+
+  /**
+   * Departamento create
+   */
+  export type DepartamentoCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Departamento
+     */
+    select?: DepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Departamento
+     */
+    omit?: DepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartamentoInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Departamento.
+     */
+    data: XOR<DepartamentoCreateInput, DepartamentoUncheckedCreateInput>
+  }
+
+  /**
+   * Departamento createMany
+   */
+  export type DepartamentoCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Departamentos.
+     */
+    data: DepartamentoCreateManyInput | DepartamentoCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Departamento createManyAndReturn
+   */
+  export type DepartamentoCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Departamento
+     */
+    select?: DepartamentoSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Departamento
+     */
+    omit?: DepartamentoOmit<ExtArgs> | null
+    /**
+     * The data used to create many Departamentos.
+     */
+    data: DepartamentoCreateManyInput | DepartamentoCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Departamento update
+   */
+  export type DepartamentoUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Departamento
+     */
+    select?: DepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Departamento
+     */
+    omit?: DepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartamentoInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Departamento.
+     */
+    data: XOR<DepartamentoUpdateInput, DepartamentoUncheckedUpdateInput>
+    /**
+     * Choose, which Departamento to update.
+     */
+    where: DepartamentoWhereUniqueInput
+  }
+
+  /**
+   * Departamento updateMany
+   */
+  export type DepartamentoUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Departamentos.
+     */
+    data: XOR<DepartamentoUpdateManyMutationInput, DepartamentoUncheckedUpdateManyInput>
+    /**
+     * Filter which Departamentos to update
+     */
+    where?: DepartamentoWhereInput
+    /**
+     * Limit how many Departamentos to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Departamento updateManyAndReturn
+   */
+  export type DepartamentoUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Departamento
+     */
+    select?: DepartamentoSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Departamento
+     */
+    omit?: DepartamentoOmit<ExtArgs> | null
+    /**
+     * The data used to update Departamentos.
+     */
+    data: XOR<DepartamentoUpdateManyMutationInput, DepartamentoUncheckedUpdateManyInput>
+    /**
+     * Filter which Departamentos to update
+     */
+    where?: DepartamentoWhereInput
+    /**
+     * Limit how many Departamentos to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Departamento upsert
+   */
+  export type DepartamentoUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Departamento
+     */
+    select?: DepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Departamento
+     */
+    omit?: DepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartamentoInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Departamento to update in case it exists.
+     */
+    where: DepartamentoWhereUniqueInput
+    /**
+     * In case the Departamento found by the `where` argument doesn't exist, create a new Departamento with this data.
+     */
+    create: XOR<DepartamentoCreateInput, DepartamentoUncheckedCreateInput>
+    /**
+     * In case the Departamento was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DepartamentoUpdateInput, DepartamentoUncheckedUpdateInput>
+  }
+
+  /**
+   * Departamento delete
+   */
+  export type DepartamentoDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Departamento
+     */
+    select?: DepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Departamento
+     */
+    omit?: DepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartamentoInclude<ExtArgs> | null
+    /**
+     * Filter which Departamento to delete.
+     */
+    where: DepartamentoWhereUniqueInput
+  }
+
+  /**
+   * Departamento deleteMany
+   */
+  export type DepartamentoDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Departamentos to delete
+     */
+    where?: DepartamentoWhereInput
+    /**
+     * Limit how many Departamentos to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Departamento.atendentes
+   */
+  export type Departamento$atendentesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendenteDepartamento
+     */
+    select?: AtendenteDepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendenteDepartamento
+     */
+    omit?: AtendenteDepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteDepartamentoInclude<ExtArgs> | null
+    where?: AtendenteDepartamentoWhereInput
+    orderBy?: AtendenteDepartamentoOrderByWithRelationInput | AtendenteDepartamentoOrderByWithRelationInput[]
+    cursor?: AtendenteDepartamentoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AtendenteDepartamentoScalarFieldEnum | AtendenteDepartamentoScalarFieldEnum[]
+  }
+
+  /**
+   * Departamento.atendimentos
+   */
+  export type Departamento$atendimentosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadAtendimento
+     */
+    select?: LeadAtendimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadAtendimento
+     */
+    omit?: LeadAtendimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadAtendimentoInclude<ExtArgs> | null
+    where?: LeadAtendimentoWhereInput
+    orderBy?: LeadAtendimentoOrderByWithRelationInput | LeadAtendimentoOrderByWithRelationInput[]
+    cursor?: LeadAtendimentoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadAtendimentoScalarFieldEnum | LeadAtendimentoScalarFieldEnum[]
+  }
+
+  /**
+   * Departamento without action
+   */
+  export type DepartamentoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Departamento
+     */
+    select?: DepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Departamento
+     */
+    omit?: DepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartamentoInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Atendente
+   */
+
+  export type AggregateAtendente = {
+    _count: AtendenteCountAggregateOutputType | null
+    _min: AtendenteMinAggregateOutputType | null
+    _max: AtendenteMaxAggregateOutputType | null
+  }
+
+  export type AtendenteMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    ativo: boolean | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type AtendenteMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    ativo: boolean | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type AtendenteCountAggregateOutputType = {
+    id: number
+    userId: number
+    ativo: number
+    criadoEm: number
+    atualizadoEm: number
+    _all: number
+  }
+
+
+  export type AtendenteMinAggregateInputType = {
+    id?: true
+    userId?: true
+    ativo?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type AtendenteMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    ativo?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type AtendenteCountAggregateInputType = {
+    id?: true
+    userId?: true
+    ativo?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    _all?: true
+  }
+
+  export type AtendenteAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Atendente to aggregate.
+     */
+    where?: AtendenteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Atendentes to fetch.
+     */
+    orderBy?: AtendenteOrderByWithRelationInput | AtendenteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AtendenteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Atendentes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Atendentes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Atendentes
+    **/
+    _count?: true | AtendenteCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AtendenteMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AtendenteMaxAggregateInputType
+  }
+
+  export type GetAtendenteAggregateType<T extends AtendenteAggregateArgs> = {
+        [P in keyof T & keyof AggregateAtendente]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAtendente[P]>
+      : GetScalarType<T[P], AggregateAtendente[P]>
+  }
+
+
+
+
+  export type AtendenteGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AtendenteWhereInput
+    orderBy?: AtendenteOrderByWithAggregationInput | AtendenteOrderByWithAggregationInput[]
+    by: AtendenteScalarFieldEnum[] | AtendenteScalarFieldEnum
+    having?: AtendenteScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AtendenteCountAggregateInputType | true
+    _min?: AtendenteMinAggregateInputType
+    _max?: AtendenteMaxAggregateInputType
+  }
+
+  export type AtendenteGroupByOutputType = {
+    id: string
+    userId: string
+    ativo: boolean
+    criadoEm: Date
+    atualizadoEm: Date
+    _count: AtendenteCountAggregateOutputType | null
+    _min: AtendenteMinAggregateOutputType | null
+    _max: AtendenteMaxAggregateOutputType | null
+  }
+
+  type GetAtendenteGroupByPayload<T extends AtendenteGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AtendenteGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AtendenteGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AtendenteGroupByOutputType[P]>
+            : GetScalarType<T[P], AtendenteGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AtendenteSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    ativo?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    departamentos?: boolean | Atendente$departamentosArgs<ExtArgs>
+    atendimentos?: boolean | Atendente$atendimentosArgs<ExtArgs>
+    _count?: boolean | AtendenteCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["atendente"]>
+
+  export type AtendenteSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    ativo?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["atendente"]>
+
+  export type AtendenteSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    ativo?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["atendente"]>
+
+  export type AtendenteSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    ativo?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }
+
+  export type AtendenteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "ativo" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["atendente"]>
+  export type AtendenteInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    departamentos?: boolean | Atendente$departamentosArgs<ExtArgs>
+    atendimentos?: boolean | Atendente$atendimentosArgs<ExtArgs>
+    _count?: boolean | AtendenteCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type AtendenteIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type AtendenteIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $AtendentePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Atendente"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      departamentos: Prisma.$AtendenteDepartamentoPayload<ExtArgs>[]
+      atendimentos: Prisma.$LeadAtendimentoPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      ativo: boolean
+      criadoEm: Date
+      atualizadoEm: Date
+    }, ExtArgs["result"]["atendente"]>
+    composites: {}
+  }
+
+  type AtendenteGetPayload<S extends boolean | null | undefined | AtendenteDefaultArgs> = $Result.GetResult<Prisma.$AtendentePayload, S>
+
+  type AtendenteCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AtendenteFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AtendenteCountAggregateInputType | true
+    }
+
+  export interface AtendenteDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Atendente'], meta: { name: 'Atendente' } }
+    /**
+     * Find zero or one Atendente that matches the filter.
+     * @param {AtendenteFindUniqueArgs} args - Arguments to find a Atendente
+     * @example
+     * // Get one Atendente
+     * const atendente = await prisma.atendente.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AtendenteFindUniqueArgs>(args: SelectSubset<T, AtendenteFindUniqueArgs<ExtArgs>>): Prisma__AtendenteClient<$Result.GetResult<Prisma.$AtendentePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Atendente that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AtendenteFindUniqueOrThrowArgs} args - Arguments to find a Atendente
+     * @example
+     * // Get one Atendente
+     * const atendente = await prisma.atendente.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AtendenteFindUniqueOrThrowArgs>(args: SelectSubset<T, AtendenteFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AtendenteClient<$Result.GetResult<Prisma.$AtendentePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Atendente that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendenteFindFirstArgs} args - Arguments to find a Atendente
+     * @example
+     * // Get one Atendente
+     * const atendente = await prisma.atendente.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AtendenteFindFirstArgs>(args?: SelectSubset<T, AtendenteFindFirstArgs<ExtArgs>>): Prisma__AtendenteClient<$Result.GetResult<Prisma.$AtendentePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Atendente that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendenteFindFirstOrThrowArgs} args - Arguments to find a Atendente
+     * @example
+     * // Get one Atendente
+     * const atendente = await prisma.atendente.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AtendenteFindFirstOrThrowArgs>(args?: SelectSubset<T, AtendenteFindFirstOrThrowArgs<ExtArgs>>): Prisma__AtendenteClient<$Result.GetResult<Prisma.$AtendentePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Atendentes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendenteFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Atendentes
+     * const atendentes = await prisma.atendente.findMany()
+     * 
+     * // Get first 10 Atendentes
+     * const atendentes = await prisma.atendente.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const atendenteWithIdOnly = await prisma.atendente.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AtendenteFindManyArgs>(args?: SelectSubset<T, AtendenteFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendentePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Atendente.
+     * @param {AtendenteCreateArgs} args - Arguments to create a Atendente.
+     * @example
+     * // Create one Atendente
+     * const Atendente = await prisma.atendente.create({
+     *   data: {
+     *     // ... data to create a Atendente
+     *   }
+     * })
+     * 
+     */
+    create<T extends AtendenteCreateArgs>(args: SelectSubset<T, AtendenteCreateArgs<ExtArgs>>): Prisma__AtendenteClient<$Result.GetResult<Prisma.$AtendentePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Atendentes.
+     * @param {AtendenteCreateManyArgs} args - Arguments to create many Atendentes.
+     * @example
+     * // Create many Atendentes
+     * const atendente = await prisma.atendente.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AtendenteCreateManyArgs>(args?: SelectSubset<T, AtendenteCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Atendentes and returns the data saved in the database.
+     * @param {AtendenteCreateManyAndReturnArgs} args - Arguments to create many Atendentes.
+     * @example
+     * // Create many Atendentes
+     * const atendente = await prisma.atendente.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Atendentes and only return the `id`
+     * const atendenteWithIdOnly = await prisma.atendente.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AtendenteCreateManyAndReturnArgs>(args?: SelectSubset<T, AtendenteCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendentePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Atendente.
+     * @param {AtendenteDeleteArgs} args - Arguments to delete one Atendente.
+     * @example
+     * // Delete one Atendente
+     * const Atendente = await prisma.atendente.delete({
+     *   where: {
+     *     // ... filter to delete one Atendente
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AtendenteDeleteArgs>(args: SelectSubset<T, AtendenteDeleteArgs<ExtArgs>>): Prisma__AtendenteClient<$Result.GetResult<Prisma.$AtendentePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Atendente.
+     * @param {AtendenteUpdateArgs} args - Arguments to update one Atendente.
+     * @example
+     * // Update one Atendente
+     * const atendente = await prisma.atendente.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AtendenteUpdateArgs>(args: SelectSubset<T, AtendenteUpdateArgs<ExtArgs>>): Prisma__AtendenteClient<$Result.GetResult<Prisma.$AtendentePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Atendentes.
+     * @param {AtendenteDeleteManyArgs} args - Arguments to filter Atendentes to delete.
+     * @example
+     * // Delete a few Atendentes
+     * const { count } = await prisma.atendente.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AtendenteDeleteManyArgs>(args?: SelectSubset<T, AtendenteDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Atendentes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendenteUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Atendentes
+     * const atendente = await prisma.atendente.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AtendenteUpdateManyArgs>(args: SelectSubset<T, AtendenteUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Atendentes and returns the data updated in the database.
+     * @param {AtendenteUpdateManyAndReturnArgs} args - Arguments to update many Atendentes.
+     * @example
+     * // Update many Atendentes
+     * const atendente = await prisma.atendente.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Atendentes and only return the `id`
+     * const atendenteWithIdOnly = await prisma.atendente.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AtendenteUpdateManyAndReturnArgs>(args: SelectSubset<T, AtendenteUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendentePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Atendente.
+     * @param {AtendenteUpsertArgs} args - Arguments to update or create a Atendente.
+     * @example
+     * // Update or create a Atendente
+     * const atendente = await prisma.atendente.upsert({
+     *   create: {
+     *     // ... data to create a Atendente
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Atendente we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AtendenteUpsertArgs>(args: SelectSubset<T, AtendenteUpsertArgs<ExtArgs>>): Prisma__AtendenteClient<$Result.GetResult<Prisma.$AtendentePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Atendentes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendenteCountArgs} args - Arguments to filter Atendentes to count.
+     * @example
+     * // Count the number of Atendentes
+     * const count = await prisma.atendente.count({
+     *   where: {
+     *     // ... the filter for the Atendentes we want to count
+     *   }
+     * })
+    **/
+    count<T extends AtendenteCountArgs>(
+      args?: Subset<T, AtendenteCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AtendenteCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Atendente.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendenteAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AtendenteAggregateArgs>(args: Subset<T, AtendenteAggregateArgs>): Prisma.PrismaPromise<GetAtendenteAggregateType<T>>
+
+    /**
+     * Group by Atendente.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendenteGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AtendenteGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AtendenteGroupByArgs['orderBy'] }
+        : { orderBy?: AtendenteGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AtendenteGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAtendenteGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Atendente model
+   */
+  readonly fields: AtendenteFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Atendente.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AtendenteClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    departamentos<T extends Atendente$departamentosArgs<ExtArgs> = {}>(args?: Subset<T, Atendente$departamentosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendenteDepartamentoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    atendimentos<T extends Atendente$atendimentosArgs<ExtArgs> = {}>(args?: Subset<T, Atendente$atendimentosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Atendente model
+   */
+  interface AtendenteFieldRefs {
+    readonly id: FieldRef<"Atendente", 'String'>
+    readonly userId: FieldRef<"Atendente", 'String'>
+    readonly ativo: FieldRef<"Atendente", 'Boolean'>
+    readonly criadoEm: FieldRef<"Atendente", 'DateTime'>
+    readonly atualizadoEm: FieldRef<"Atendente", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Atendente findUnique
+   */
+  export type AtendenteFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Atendente
+     */
+    select?: AtendenteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Atendente
+     */
+    omit?: AtendenteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteInclude<ExtArgs> | null
+    /**
+     * Filter, which Atendente to fetch.
+     */
+    where: AtendenteWhereUniqueInput
+  }
+
+  /**
+   * Atendente findUniqueOrThrow
+   */
+  export type AtendenteFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Atendente
+     */
+    select?: AtendenteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Atendente
+     */
+    omit?: AtendenteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteInclude<ExtArgs> | null
+    /**
+     * Filter, which Atendente to fetch.
+     */
+    where: AtendenteWhereUniqueInput
+  }
+
+  /**
+   * Atendente findFirst
+   */
+  export type AtendenteFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Atendente
+     */
+    select?: AtendenteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Atendente
+     */
+    omit?: AtendenteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteInclude<ExtArgs> | null
+    /**
+     * Filter, which Atendente to fetch.
+     */
+    where?: AtendenteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Atendentes to fetch.
+     */
+    orderBy?: AtendenteOrderByWithRelationInput | AtendenteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Atendentes.
+     */
+    cursor?: AtendenteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Atendentes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Atendentes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Atendentes.
+     */
+    distinct?: AtendenteScalarFieldEnum | AtendenteScalarFieldEnum[]
+  }
+
+  /**
+   * Atendente findFirstOrThrow
+   */
+  export type AtendenteFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Atendente
+     */
+    select?: AtendenteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Atendente
+     */
+    omit?: AtendenteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteInclude<ExtArgs> | null
+    /**
+     * Filter, which Atendente to fetch.
+     */
+    where?: AtendenteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Atendentes to fetch.
+     */
+    orderBy?: AtendenteOrderByWithRelationInput | AtendenteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Atendentes.
+     */
+    cursor?: AtendenteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Atendentes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Atendentes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Atendentes.
+     */
+    distinct?: AtendenteScalarFieldEnum | AtendenteScalarFieldEnum[]
+  }
+
+  /**
+   * Atendente findMany
+   */
+  export type AtendenteFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Atendente
+     */
+    select?: AtendenteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Atendente
+     */
+    omit?: AtendenteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteInclude<ExtArgs> | null
+    /**
+     * Filter, which Atendentes to fetch.
+     */
+    where?: AtendenteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Atendentes to fetch.
+     */
+    orderBy?: AtendenteOrderByWithRelationInput | AtendenteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Atendentes.
+     */
+    cursor?: AtendenteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Atendentes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Atendentes.
+     */
+    skip?: number
+    distinct?: AtendenteScalarFieldEnum | AtendenteScalarFieldEnum[]
+  }
+
+  /**
+   * Atendente create
+   */
+  export type AtendenteCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Atendente
+     */
+    select?: AtendenteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Atendente
+     */
+    omit?: AtendenteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Atendente.
+     */
+    data: XOR<AtendenteCreateInput, AtendenteUncheckedCreateInput>
+  }
+
+  /**
+   * Atendente createMany
+   */
+  export type AtendenteCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Atendentes.
+     */
+    data: AtendenteCreateManyInput | AtendenteCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Atendente createManyAndReturn
+   */
+  export type AtendenteCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Atendente
+     */
+    select?: AtendenteSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Atendente
+     */
+    omit?: AtendenteOmit<ExtArgs> | null
+    /**
+     * The data used to create many Atendentes.
+     */
+    data: AtendenteCreateManyInput | AtendenteCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Atendente update
+   */
+  export type AtendenteUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Atendente
+     */
+    select?: AtendenteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Atendente
+     */
+    omit?: AtendenteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Atendente.
+     */
+    data: XOR<AtendenteUpdateInput, AtendenteUncheckedUpdateInput>
+    /**
+     * Choose, which Atendente to update.
+     */
+    where: AtendenteWhereUniqueInput
+  }
+
+  /**
+   * Atendente updateMany
+   */
+  export type AtendenteUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Atendentes.
+     */
+    data: XOR<AtendenteUpdateManyMutationInput, AtendenteUncheckedUpdateManyInput>
+    /**
+     * Filter which Atendentes to update
+     */
+    where?: AtendenteWhereInput
+    /**
+     * Limit how many Atendentes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Atendente updateManyAndReturn
+   */
+  export type AtendenteUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Atendente
+     */
+    select?: AtendenteSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Atendente
+     */
+    omit?: AtendenteOmit<ExtArgs> | null
+    /**
+     * The data used to update Atendentes.
+     */
+    data: XOR<AtendenteUpdateManyMutationInput, AtendenteUncheckedUpdateManyInput>
+    /**
+     * Filter which Atendentes to update
+     */
+    where?: AtendenteWhereInput
+    /**
+     * Limit how many Atendentes to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Atendente upsert
+   */
+  export type AtendenteUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Atendente
+     */
+    select?: AtendenteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Atendente
+     */
+    omit?: AtendenteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Atendente to update in case it exists.
+     */
+    where: AtendenteWhereUniqueInput
+    /**
+     * In case the Atendente found by the `where` argument doesn't exist, create a new Atendente with this data.
+     */
+    create: XOR<AtendenteCreateInput, AtendenteUncheckedCreateInput>
+    /**
+     * In case the Atendente was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AtendenteUpdateInput, AtendenteUncheckedUpdateInput>
+  }
+
+  /**
+   * Atendente delete
+   */
+  export type AtendenteDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Atendente
+     */
+    select?: AtendenteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Atendente
+     */
+    omit?: AtendenteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteInclude<ExtArgs> | null
+    /**
+     * Filter which Atendente to delete.
+     */
+    where: AtendenteWhereUniqueInput
+  }
+
+  /**
+   * Atendente deleteMany
+   */
+  export type AtendenteDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Atendentes to delete
+     */
+    where?: AtendenteWhereInput
+    /**
+     * Limit how many Atendentes to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Atendente.departamentos
+   */
+  export type Atendente$departamentosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendenteDepartamento
+     */
+    select?: AtendenteDepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendenteDepartamento
+     */
+    omit?: AtendenteDepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteDepartamentoInclude<ExtArgs> | null
+    where?: AtendenteDepartamentoWhereInput
+    orderBy?: AtendenteDepartamentoOrderByWithRelationInput | AtendenteDepartamentoOrderByWithRelationInput[]
+    cursor?: AtendenteDepartamentoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AtendenteDepartamentoScalarFieldEnum | AtendenteDepartamentoScalarFieldEnum[]
+  }
+
+  /**
+   * Atendente.atendimentos
+   */
+  export type Atendente$atendimentosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadAtendimento
+     */
+    select?: LeadAtendimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadAtendimento
+     */
+    omit?: LeadAtendimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadAtendimentoInclude<ExtArgs> | null
+    where?: LeadAtendimentoWhereInput
+    orderBy?: LeadAtendimentoOrderByWithRelationInput | LeadAtendimentoOrderByWithRelationInput[]
+    cursor?: LeadAtendimentoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadAtendimentoScalarFieldEnum | LeadAtendimentoScalarFieldEnum[]
+  }
+
+  /**
+   * Atendente without action
+   */
+  export type AtendenteDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Atendente
+     */
+    select?: AtendenteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Atendente
+     */
+    omit?: AtendenteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AtendenteDepartamento
+   */
+
+  export type AggregateAtendenteDepartamento = {
+    _count: AtendenteDepartamentoCountAggregateOutputType | null
+    _min: AtendenteDepartamentoMinAggregateOutputType | null
+    _max: AtendenteDepartamentoMaxAggregateOutputType | null
+  }
+
+  export type AtendenteDepartamentoMinAggregateOutputType = {
+    atendenteId: string | null
+    departamentoId: string | null
+  }
+
+  export type AtendenteDepartamentoMaxAggregateOutputType = {
+    atendenteId: string | null
+    departamentoId: string | null
+  }
+
+  export type AtendenteDepartamentoCountAggregateOutputType = {
+    atendenteId: number
+    departamentoId: number
+    _all: number
+  }
+
+
+  export type AtendenteDepartamentoMinAggregateInputType = {
+    atendenteId?: true
+    departamentoId?: true
+  }
+
+  export type AtendenteDepartamentoMaxAggregateInputType = {
+    atendenteId?: true
+    departamentoId?: true
+  }
+
+  export type AtendenteDepartamentoCountAggregateInputType = {
+    atendenteId?: true
+    departamentoId?: true
+    _all?: true
+  }
+
+  export type AtendenteDepartamentoAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AtendenteDepartamento to aggregate.
+     */
+    where?: AtendenteDepartamentoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AtendenteDepartamentos to fetch.
+     */
+    orderBy?: AtendenteDepartamentoOrderByWithRelationInput | AtendenteDepartamentoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AtendenteDepartamentoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AtendenteDepartamentos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AtendenteDepartamentos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AtendenteDepartamentos
+    **/
+    _count?: true | AtendenteDepartamentoCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AtendenteDepartamentoMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AtendenteDepartamentoMaxAggregateInputType
+  }
+
+  export type GetAtendenteDepartamentoAggregateType<T extends AtendenteDepartamentoAggregateArgs> = {
+        [P in keyof T & keyof AggregateAtendenteDepartamento]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAtendenteDepartamento[P]>
+      : GetScalarType<T[P], AggregateAtendenteDepartamento[P]>
+  }
+
+
+
+
+  export type AtendenteDepartamentoGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AtendenteDepartamentoWhereInput
+    orderBy?: AtendenteDepartamentoOrderByWithAggregationInput | AtendenteDepartamentoOrderByWithAggregationInput[]
+    by: AtendenteDepartamentoScalarFieldEnum[] | AtendenteDepartamentoScalarFieldEnum
+    having?: AtendenteDepartamentoScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AtendenteDepartamentoCountAggregateInputType | true
+    _min?: AtendenteDepartamentoMinAggregateInputType
+    _max?: AtendenteDepartamentoMaxAggregateInputType
+  }
+
+  export type AtendenteDepartamentoGroupByOutputType = {
+    atendenteId: string
+    departamentoId: string
+    _count: AtendenteDepartamentoCountAggregateOutputType | null
+    _min: AtendenteDepartamentoMinAggregateOutputType | null
+    _max: AtendenteDepartamentoMaxAggregateOutputType | null
+  }
+
+  type GetAtendenteDepartamentoGroupByPayload<T extends AtendenteDepartamentoGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AtendenteDepartamentoGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AtendenteDepartamentoGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AtendenteDepartamentoGroupByOutputType[P]>
+            : GetScalarType<T[P], AtendenteDepartamentoGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AtendenteDepartamentoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    atendenteId?: boolean
+    departamentoId?: boolean
+    atendente?: boolean | AtendenteDefaultArgs<ExtArgs>
+    departamento?: boolean | DepartamentoDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["atendenteDepartamento"]>
+
+  export type AtendenteDepartamentoSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    atendenteId?: boolean
+    departamentoId?: boolean
+    atendente?: boolean | AtendenteDefaultArgs<ExtArgs>
+    departamento?: boolean | DepartamentoDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["atendenteDepartamento"]>
+
+  export type AtendenteDepartamentoSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    atendenteId?: boolean
+    departamentoId?: boolean
+    atendente?: boolean | AtendenteDefaultArgs<ExtArgs>
+    departamento?: boolean | DepartamentoDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["atendenteDepartamento"]>
+
+  export type AtendenteDepartamentoSelectScalar = {
+    atendenteId?: boolean
+    departamentoId?: boolean
+  }
+
+  export type AtendenteDepartamentoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"atendenteId" | "departamentoId", ExtArgs["result"]["atendenteDepartamento"]>
+  export type AtendenteDepartamentoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    atendente?: boolean | AtendenteDefaultArgs<ExtArgs>
+    departamento?: boolean | DepartamentoDefaultArgs<ExtArgs>
+  }
+  export type AtendenteDepartamentoIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    atendente?: boolean | AtendenteDefaultArgs<ExtArgs>
+    departamento?: boolean | DepartamentoDefaultArgs<ExtArgs>
+  }
+  export type AtendenteDepartamentoIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    atendente?: boolean | AtendenteDefaultArgs<ExtArgs>
+    departamento?: boolean | DepartamentoDefaultArgs<ExtArgs>
+  }
+
+  export type $AtendenteDepartamentoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AtendenteDepartamento"
+    objects: {
+      atendente: Prisma.$AtendentePayload<ExtArgs>
+      departamento: Prisma.$DepartamentoPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      atendenteId: string
+      departamentoId: string
+    }, ExtArgs["result"]["atendenteDepartamento"]>
+    composites: {}
+  }
+
+  type AtendenteDepartamentoGetPayload<S extends boolean | null | undefined | AtendenteDepartamentoDefaultArgs> = $Result.GetResult<Prisma.$AtendenteDepartamentoPayload, S>
+
+  type AtendenteDepartamentoCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AtendenteDepartamentoFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AtendenteDepartamentoCountAggregateInputType | true
+    }
+
+  export interface AtendenteDepartamentoDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AtendenteDepartamento'], meta: { name: 'AtendenteDepartamento' } }
+    /**
+     * Find zero or one AtendenteDepartamento that matches the filter.
+     * @param {AtendenteDepartamentoFindUniqueArgs} args - Arguments to find a AtendenteDepartamento
+     * @example
+     * // Get one AtendenteDepartamento
+     * const atendenteDepartamento = await prisma.atendenteDepartamento.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AtendenteDepartamentoFindUniqueArgs>(args: SelectSubset<T, AtendenteDepartamentoFindUniqueArgs<ExtArgs>>): Prisma__AtendenteDepartamentoClient<$Result.GetResult<Prisma.$AtendenteDepartamentoPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AtendenteDepartamento that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AtendenteDepartamentoFindUniqueOrThrowArgs} args - Arguments to find a AtendenteDepartamento
+     * @example
+     * // Get one AtendenteDepartamento
+     * const atendenteDepartamento = await prisma.atendenteDepartamento.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AtendenteDepartamentoFindUniqueOrThrowArgs>(args: SelectSubset<T, AtendenteDepartamentoFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AtendenteDepartamentoClient<$Result.GetResult<Prisma.$AtendenteDepartamentoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AtendenteDepartamento that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendenteDepartamentoFindFirstArgs} args - Arguments to find a AtendenteDepartamento
+     * @example
+     * // Get one AtendenteDepartamento
+     * const atendenteDepartamento = await prisma.atendenteDepartamento.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AtendenteDepartamentoFindFirstArgs>(args?: SelectSubset<T, AtendenteDepartamentoFindFirstArgs<ExtArgs>>): Prisma__AtendenteDepartamentoClient<$Result.GetResult<Prisma.$AtendenteDepartamentoPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AtendenteDepartamento that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendenteDepartamentoFindFirstOrThrowArgs} args - Arguments to find a AtendenteDepartamento
+     * @example
+     * // Get one AtendenteDepartamento
+     * const atendenteDepartamento = await prisma.atendenteDepartamento.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AtendenteDepartamentoFindFirstOrThrowArgs>(args?: SelectSubset<T, AtendenteDepartamentoFindFirstOrThrowArgs<ExtArgs>>): Prisma__AtendenteDepartamentoClient<$Result.GetResult<Prisma.$AtendenteDepartamentoPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AtendenteDepartamentos that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendenteDepartamentoFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AtendenteDepartamentos
+     * const atendenteDepartamentos = await prisma.atendenteDepartamento.findMany()
+     * 
+     * // Get first 10 AtendenteDepartamentos
+     * const atendenteDepartamentos = await prisma.atendenteDepartamento.findMany({ take: 10 })
+     * 
+     * // Only select the `atendenteId`
+     * const atendenteDepartamentoWithAtendenteIdOnly = await prisma.atendenteDepartamento.findMany({ select: { atendenteId: true } })
+     * 
+     */
+    findMany<T extends AtendenteDepartamentoFindManyArgs>(args?: SelectSubset<T, AtendenteDepartamentoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendenteDepartamentoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AtendenteDepartamento.
+     * @param {AtendenteDepartamentoCreateArgs} args - Arguments to create a AtendenteDepartamento.
+     * @example
+     * // Create one AtendenteDepartamento
+     * const AtendenteDepartamento = await prisma.atendenteDepartamento.create({
+     *   data: {
+     *     // ... data to create a AtendenteDepartamento
+     *   }
+     * })
+     * 
+     */
+    create<T extends AtendenteDepartamentoCreateArgs>(args: SelectSubset<T, AtendenteDepartamentoCreateArgs<ExtArgs>>): Prisma__AtendenteDepartamentoClient<$Result.GetResult<Prisma.$AtendenteDepartamentoPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AtendenteDepartamentos.
+     * @param {AtendenteDepartamentoCreateManyArgs} args - Arguments to create many AtendenteDepartamentos.
+     * @example
+     * // Create many AtendenteDepartamentos
+     * const atendenteDepartamento = await prisma.atendenteDepartamento.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AtendenteDepartamentoCreateManyArgs>(args?: SelectSubset<T, AtendenteDepartamentoCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AtendenteDepartamentos and returns the data saved in the database.
+     * @param {AtendenteDepartamentoCreateManyAndReturnArgs} args - Arguments to create many AtendenteDepartamentos.
+     * @example
+     * // Create many AtendenteDepartamentos
+     * const atendenteDepartamento = await prisma.atendenteDepartamento.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AtendenteDepartamentos and only return the `atendenteId`
+     * const atendenteDepartamentoWithAtendenteIdOnly = await prisma.atendenteDepartamento.createManyAndReturn({
+     *   select: { atendenteId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AtendenteDepartamentoCreateManyAndReturnArgs>(args?: SelectSubset<T, AtendenteDepartamentoCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendenteDepartamentoPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AtendenteDepartamento.
+     * @param {AtendenteDepartamentoDeleteArgs} args - Arguments to delete one AtendenteDepartamento.
+     * @example
+     * // Delete one AtendenteDepartamento
+     * const AtendenteDepartamento = await prisma.atendenteDepartamento.delete({
+     *   where: {
+     *     // ... filter to delete one AtendenteDepartamento
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AtendenteDepartamentoDeleteArgs>(args: SelectSubset<T, AtendenteDepartamentoDeleteArgs<ExtArgs>>): Prisma__AtendenteDepartamentoClient<$Result.GetResult<Prisma.$AtendenteDepartamentoPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AtendenteDepartamento.
+     * @param {AtendenteDepartamentoUpdateArgs} args - Arguments to update one AtendenteDepartamento.
+     * @example
+     * // Update one AtendenteDepartamento
+     * const atendenteDepartamento = await prisma.atendenteDepartamento.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AtendenteDepartamentoUpdateArgs>(args: SelectSubset<T, AtendenteDepartamentoUpdateArgs<ExtArgs>>): Prisma__AtendenteDepartamentoClient<$Result.GetResult<Prisma.$AtendenteDepartamentoPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AtendenteDepartamentos.
+     * @param {AtendenteDepartamentoDeleteManyArgs} args - Arguments to filter AtendenteDepartamentos to delete.
+     * @example
+     * // Delete a few AtendenteDepartamentos
+     * const { count } = await prisma.atendenteDepartamento.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AtendenteDepartamentoDeleteManyArgs>(args?: SelectSubset<T, AtendenteDepartamentoDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AtendenteDepartamentos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendenteDepartamentoUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AtendenteDepartamentos
+     * const atendenteDepartamento = await prisma.atendenteDepartamento.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AtendenteDepartamentoUpdateManyArgs>(args: SelectSubset<T, AtendenteDepartamentoUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AtendenteDepartamentos and returns the data updated in the database.
+     * @param {AtendenteDepartamentoUpdateManyAndReturnArgs} args - Arguments to update many AtendenteDepartamentos.
+     * @example
+     * // Update many AtendenteDepartamentos
+     * const atendenteDepartamento = await prisma.atendenteDepartamento.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AtendenteDepartamentos and only return the `atendenteId`
+     * const atendenteDepartamentoWithAtendenteIdOnly = await prisma.atendenteDepartamento.updateManyAndReturn({
+     *   select: { atendenteId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AtendenteDepartamentoUpdateManyAndReturnArgs>(args: SelectSubset<T, AtendenteDepartamentoUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendenteDepartamentoPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AtendenteDepartamento.
+     * @param {AtendenteDepartamentoUpsertArgs} args - Arguments to update or create a AtendenteDepartamento.
+     * @example
+     * // Update or create a AtendenteDepartamento
+     * const atendenteDepartamento = await prisma.atendenteDepartamento.upsert({
+     *   create: {
+     *     // ... data to create a AtendenteDepartamento
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AtendenteDepartamento we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AtendenteDepartamentoUpsertArgs>(args: SelectSubset<T, AtendenteDepartamentoUpsertArgs<ExtArgs>>): Prisma__AtendenteDepartamentoClient<$Result.GetResult<Prisma.$AtendenteDepartamentoPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AtendenteDepartamentos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendenteDepartamentoCountArgs} args - Arguments to filter AtendenteDepartamentos to count.
+     * @example
+     * // Count the number of AtendenteDepartamentos
+     * const count = await prisma.atendenteDepartamento.count({
+     *   where: {
+     *     // ... the filter for the AtendenteDepartamentos we want to count
+     *   }
+     * })
+    **/
+    count<T extends AtendenteDepartamentoCountArgs>(
+      args?: Subset<T, AtendenteDepartamentoCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AtendenteDepartamentoCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AtendenteDepartamento.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendenteDepartamentoAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AtendenteDepartamentoAggregateArgs>(args: Subset<T, AtendenteDepartamentoAggregateArgs>): Prisma.PrismaPromise<GetAtendenteDepartamentoAggregateType<T>>
+
+    /**
+     * Group by AtendenteDepartamento.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendenteDepartamentoGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AtendenteDepartamentoGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AtendenteDepartamentoGroupByArgs['orderBy'] }
+        : { orderBy?: AtendenteDepartamentoGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AtendenteDepartamentoGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAtendenteDepartamentoGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AtendenteDepartamento model
+   */
+  readonly fields: AtendenteDepartamentoFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AtendenteDepartamento.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AtendenteDepartamentoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    atendente<T extends AtendenteDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AtendenteDefaultArgs<ExtArgs>>): Prisma__AtendenteClient<$Result.GetResult<Prisma.$AtendentePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    departamento<T extends DepartamentoDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DepartamentoDefaultArgs<ExtArgs>>): Prisma__DepartamentoClient<$Result.GetResult<Prisma.$DepartamentoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AtendenteDepartamento model
+   */
+  interface AtendenteDepartamentoFieldRefs {
+    readonly atendenteId: FieldRef<"AtendenteDepartamento", 'String'>
+    readonly departamentoId: FieldRef<"AtendenteDepartamento", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AtendenteDepartamento findUnique
+   */
+  export type AtendenteDepartamentoFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendenteDepartamento
+     */
+    select?: AtendenteDepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendenteDepartamento
+     */
+    omit?: AtendenteDepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteDepartamentoInclude<ExtArgs> | null
+    /**
+     * Filter, which AtendenteDepartamento to fetch.
+     */
+    where: AtendenteDepartamentoWhereUniqueInput
+  }
+
+  /**
+   * AtendenteDepartamento findUniqueOrThrow
+   */
+  export type AtendenteDepartamentoFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendenteDepartamento
+     */
+    select?: AtendenteDepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendenteDepartamento
+     */
+    omit?: AtendenteDepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteDepartamentoInclude<ExtArgs> | null
+    /**
+     * Filter, which AtendenteDepartamento to fetch.
+     */
+    where: AtendenteDepartamentoWhereUniqueInput
+  }
+
+  /**
+   * AtendenteDepartamento findFirst
+   */
+  export type AtendenteDepartamentoFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendenteDepartamento
+     */
+    select?: AtendenteDepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendenteDepartamento
+     */
+    omit?: AtendenteDepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteDepartamentoInclude<ExtArgs> | null
+    /**
+     * Filter, which AtendenteDepartamento to fetch.
+     */
+    where?: AtendenteDepartamentoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AtendenteDepartamentos to fetch.
+     */
+    orderBy?: AtendenteDepartamentoOrderByWithRelationInput | AtendenteDepartamentoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AtendenteDepartamentos.
+     */
+    cursor?: AtendenteDepartamentoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AtendenteDepartamentos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AtendenteDepartamentos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AtendenteDepartamentos.
+     */
+    distinct?: AtendenteDepartamentoScalarFieldEnum | AtendenteDepartamentoScalarFieldEnum[]
+  }
+
+  /**
+   * AtendenteDepartamento findFirstOrThrow
+   */
+  export type AtendenteDepartamentoFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendenteDepartamento
+     */
+    select?: AtendenteDepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendenteDepartamento
+     */
+    omit?: AtendenteDepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteDepartamentoInclude<ExtArgs> | null
+    /**
+     * Filter, which AtendenteDepartamento to fetch.
+     */
+    where?: AtendenteDepartamentoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AtendenteDepartamentos to fetch.
+     */
+    orderBy?: AtendenteDepartamentoOrderByWithRelationInput | AtendenteDepartamentoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AtendenteDepartamentos.
+     */
+    cursor?: AtendenteDepartamentoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AtendenteDepartamentos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AtendenteDepartamentos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AtendenteDepartamentos.
+     */
+    distinct?: AtendenteDepartamentoScalarFieldEnum | AtendenteDepartamentoScalarFieldEnum[]
+  }
+
+  /**
+   * AtendenteDepartamento findMany
+   */
+  export type AtendenteDepartamentoFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendenteDepartamento
+     */
+    select?: AtendenteDepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendenteDepartamento
+     */
+    omit?: AtendenteDepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteDepartamentoInclude<ExtArgs> | null
+    /**
+     * Filter, which AtendenteDepartamentos to fetch.
+     */
+    where?: AtendenteDepartamentoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AtendenteDepartamentos to fetch.
+     */
+    orderBy?: AtendenteDepartamentoOrderByWithRelationInput | AtendenteDepartamentoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AtendenteDepartamentos.
+     */
+    cursor?: AtendenteDepartamentoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AtendenteDepartamentos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AtendenteDepartamentos.
+     */
+    skip?: number
+    distinct?: AtendenteDepartamentoScalarFieldEnum | AtendenteDepartamentoScalarFieldEnum[]
+  }
+
+  /**
+   * AtendenteDepartamento create
+   */
+  export type AtendenteDepartamentoCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendenteDepartamento
+     */
+    select?: AtendenteDepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendenteDepartamento
+     */
+    omit?: AtendenteDepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteDepartamentoInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AtendenteDepartamento.
+     */
+    data: XOR<AtendenteDepartamentoCreateInput, AtendenteDepartamentoUncheckedCreateInput>
+  }
+
+  /**
+   * AtendenteDepartamento createMany
+   */
+  export type AtendenteDepartamentoCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AtendenteDepartamentos.
+     */
+    data: AtendenteDepartamentoCreateManyInput | AtendenteDepartamentoCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AtendenteDepartamento createManyAndReturn
+   */
+  export type AtendenteDepartamentoCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendenteDepartamento
+     */
+    select?: AtendenteDepartamentoSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendenteDepartamento
+     */
+    omit?: AtendenteDepartamentoOmit<ExtArgs> | null
+    /**
+     * The data used to create many AtendenteDepartamentos.
+     */
+    data: AtendenteDepartamentoCreateManyInput | AtendenteDepartamentoCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteDepartamentoIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AtendenteDepartamento update
+   */
+  export type AtendenteDepartamentoUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendenteDepartamento
+     */
+    select?: AtendenteDepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendenteDepartamento
+     */
+    omit?: AtendenteDepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteDepartamentoInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AtendenteDepartamento.
+     */
+    data: XOR<AtendenteDepartamentoUpdateInput, AtendenteDepartamentoUncheckedUpdateInput>
+    /**
+     * Choose, which AtendenteDepartamento to update.
+     */
+    where: AtendenteDepartamentoWhereUniqueInput
+  }
+
+  /**
+   * AtendenteDepartamento updateMany
+   */
+  export type AtendenteDepartamentoUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AtendenteDepartamentos.
+     */
+    data: XOR<AtendenteDepartamentoUpdateManyMutationInput, AtendenteDepartamentoUncheckedUpdateManyInput>
+    /**
+     * Filter which AtendenteDepartamentos to update
+     */
+    where?: AtendenteDepartamentoWhereInput
+    /**
+     * Limit how many AtendenteDepartamentos to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AtendenteDepartamento updateManyAndReturn
+   */
+  export type AtendenteDepartamentoUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendenteDepartamento
+     */
+    select?: AtendenteDepartamentoSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendenteDepartamento
+     */
+    omit?: AtendenteDepartamentoOmit<ExtArgs> | null
+    /**
+     * The data used to update AtendenteDepartamentos.
+     */
+    data: XOR<AtendenteDepartamentoUpdateManyMutationInput, AtendenteDepartamentoUncheckedUpdateManyInput>
+    /**
+     * Filter which AtendenteDepartamentos to update
+     */
+    where?: AtendenteDepartamentoWhereInput
+    /**
+     * Limit how many AtendenteDepartamentos to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteDepartamentoIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AtendenteDepartamento upsert
+   */
+  export type AtendenteDepartamentoUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendenteDepartamento
+     */
+    select?: AtendenteDepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendenteDepartamento
+     */
+    omit?: AtendenteDepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteDepartamentoInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AtendenteDepartamento to update in case it exists.
+     */
+    where: AtendenteDepartamentoWhereUniqueInput
+    /**
+     * In case the AtendenteDepartamento found by the `where` argument doesn't exist, create a new AtendenteDepartamento with this data.
+     */
+    create: XOR<AtendenteDepartamentoCreateInput, AtendenteDepartamentoUncheckedCreateInput>
+    /**
+     * In case the AtendenteDepartamento was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AtendenteDepartamentoUpdateInput, AtendenteDepartamentoUncheckedUpdateInput>
+  }
+
+  /**
+   * AtendenteDepartamento delete
+   */
+  export type AtendenteDepartamentoDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendenteDepartamento
+     */
+    select?: AtendenteDepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendenteDepartamento
+     */
+    omit?: AtendenteDepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteDepartamentoInclude<ExtArgs> | null
+    /**
+     * Filter which AtendenteDepartamento to delete.
+     */
+    where: AtendenteDepartamentoWhereUniqueInput
+  }
+
+  /**
+   * AtendenteDepartamento deleteMany
+   */
+  export type AtendenteDepartamentoDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AtendenteDepartamentos to delete
+     */
+    where?: AtendenteDepartamentoWhereInput
+    /**
+     * Limit how many AtendenteDepartamentos to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AtendenteDepartamento without action
+   */
+  export type AtendenteDepartamentoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendenteDepartamento
+     */
+    select?: AtendenteDepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendenteDepartamento
+     */
+    omit?: AtendenteDepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteDepartamentoInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LeadAtendimento
+   */
+
+  export type AggregateLeadAtendimento = {
+    _count: LeadAtendimentoCountAggregateOutputType | null
+    _min: LeadAtendimentoMinAggregateOutputType | null
+    _max: LeadAtendimentoMaxAggregateOutputType | null
+  }
+
+  export type LeadAtendimentoMinAggregateOutputType = {
+    leadId: string | null
+    departamentoId: string | null
+    atendenteId: string | null
+    transferidoEm: Date | null
+  }
+
+  export type LeadAtendimentoMaxAggregateOutputType = {
+    leadId: string | null
+    departamentoId: string | null
+    atendenteId: string | null
+    transferidoEm: Date | null
+  }
+
+  export type LeadAtendimentoCountAggregateOutputType = {
+    leadId: number
+    departamentoId: number
+    atendenteId: number
+    transferidoEm: number
+    _all: number
+  }
+
+
+  export type LeadAtendimentoMinAggregateInputType = {
+    leadId?: true
+    departamentoId?: true
+    atendenteId?: true
+    transferidoEm?: true
+  }
+
+  export type LeadAtendimentoMaxAggregateInputType = {
+    leadId?: true
+    departamentoId?: true
+    atendenteId?: true
+    transferidoEm?: true
+  }
+
+  export type LeadAtendimentoCountAggregateInputType = {
+    leadId?: true
+    departamentoId?: true
+    atendenteId?: true
+    transferidoEm?: true
+    _all?: true
+  }
+
+  export type LeadAtendimentoAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadAtendimento to aggregate.
+     */
+    where?: LeadAtendimentoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadAtendimentos to fetch.
+     */
+    orderBy?: LeadAtendimentoOrderByWithRelationInput | LeadAtendimentoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LeadAtendimentoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadAtendimentos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadAtendimentos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LeadAtendimentos
+    **/
+    _count?: true | LeadAtendimentoCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LeadAtendimentoMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LeadAtendimentoMaxAggregateInputType
+  }
+
+  export type GetLeadAtendimentoAggregateType<T extends LeadAtendimentoAggregateArgs> = {
+        [P in keyof T & keyof AggregateLeadAtendimento]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLeadAtendimento[P]>
+      : GetScalarType<T[P], AggregateLeadAtendimento[P]>
+  }
+
+
+
+
+  export type LeadAtendimentoGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadAtendimentoWhereInput
+    orderBy?: LeadAtendimentoOrderByWithAggregationInput | LeadAtendimentoOrderByWithAggregationInput[]
+    by: LeadAtendimentoScalarFieldEnum[] | LeadAtendimentoScalarFieldEnum
+    having?: LeadAtendimentoScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LeadAtendimentoCountAggregateInputType | true
+    _min?: LeadAtendimentoMinAggregateInputType
+    _max?: LeadAtendimentoMaxAggregateInputType
+  }
+
+  export type LeadAtendimentoGroupByOutputType = {
+    leadId: string
+    departamentoId: string | null
+    atendenteId: string | null
+    transferidoEm: Date
+    _count: LeadAtendimentoCountAggregateOutputType | null
+    _min: LeadAtendimentoMinAggregateOutputType | null
+    _max: LeadAtendimentoMaxAggregateOutputType | null
+  }
+
+  type GetLeadAtendimentoGroupByPayload<T extends LeadAtendimentoGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LeadAtendimentoGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LeadAtendimentoGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LeadAtendimentoGroupByOutputType[P]>
+            : GetScalarType<T[P], LeadAtendimentoGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LeadAtendimentoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    leadId?: boolean
+    departamentoId?: boolean
+    atendenteId?: boolean
+    transferidoEm?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    departamento?: boolean | LeadAtendimento$departamentoArgs<ExtArgs>
+    atendente?: boolean | LeadAtendimento$atendenteArgs<ExtArgs>
+  }, ExtArgs["result"]["leadAtendimento"]>
+
+  export type LeadAtendimentoSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    leadId?: boolean
+    departamentoId?: boolean
+    atendenteId?: boolean
+    transferidoEm?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    departamento?: boolean | LeadAtendimento$departamentoArgs<ExtArgs>
+    atendente?: boolean | LeadAtendimento$atendenteArgs<ExtArgs>
+  }, ExtArgs["result"]["leadAtendimento"]>
+
+  export type LeadAtendimentoSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    leadId?: boolean
+    departamentoId?: boolean
+    atendenteId?: boolean
+    transferidoEm?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    departamento?: boolean | LeadAtendimento$departamentoArgs<ExtArgs>
+    atendente?: boolean | LeadAtendimento$atendenteArgs<ExtArgs>
+  }, ExtArgs["result"]["leadAtendimento"]>
+
+  export type LeadAtendimentoSelectScalar = {
+    leadId?: boolean
+    departamentoId?: boolean
+    atendenteId?: boolean
+    transferidoEm?: boolean
+  }
+
+  export type LeadAtendimentoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"leadId" | "departamentoId" | "atendenteId" | "transferidoEm", ExtArgs["result"]["leadAtendimento"]>
+  export type LeadAtendimentoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    departamento?: boolean | LeadAtendimento$departamentoArgs<ExtArgs>
+    atendente?: boolean | LeadAtendimento$atendenteArgs<ExtArgs>
+  }
+  export type LeadAtendimentoIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    departamento?: boolean | LeadAtendimento$departamentoArgs<ExtArgs>
+    atendente?: boolean | LeadAtendimento$atendenteArgs<ExtArgs>
+  }
+  export type LeadAtendimentoIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    departamento?: boolean | LeadAtendimento$departamentoArgs<ExtArgs>
+    atendente?: boolean | LeadAtendimento$atendenteArgs<ExtArgs>
+  }
+
+  export type $LeadAtendimentoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LeadAtendimento"
+    objects: {
+      lead: Prisma.$LeadPayload<ExtArgs>
+      departamento: Prisma.$DepartamentoPayload<ExtArgs> | null
+      atendente: Prisma.$AtendentePayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      leadId: string
+      departamentoId: string | null
+      atendenteId: string | null
+      transferidoEm: Date
+    }, ExtArgs["result"]["leadAtendimento"]>
+    composites: {}
+  }
+
+  type LeadAtendimentoGetPayload<S extends boolean | null | undefined | LeadAtendimentoDefaultArgs> = $Result.GetResult<Prisma.$LeadAtendimentoPayload, S>
+
+  type LeadAtendimentoCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<LeadAtendimentoFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: LeadAtendimentoCountAggregateInputType | true
+    }
+
+  export interface LeadAtendimentoDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LeadAtendimento'], meta: { name: 'LeadAtendimento' } }
+    /**
+     * Find zero or one LeadAtendimento that matches the filter.
+     * @param {LeadAtendimentoFindUniqueArgs} args - Arguments to find a LeadAtendimento
+     * @example
+     * // Get one LeadAtendimento
+     * const leadAtendimento = await prisma.leadAtendimento.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LeadAtendimentoFindUniqueArgs>(args: SelectSubset<T, LeadAtendimentoFindUniqueArgs<ExtArgs>>): Prisma__LeadAtendimentoClient<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one LeadAtendimento that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {LeadAtendimentoFindUniqueOrThrowArgs} args - Arguments to find a LeadAtendimento
+     * @example
+     * // Get one LeadAtendimento
+     * const leadAtendimento = await prisma.leadAtendimento.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LeadAtendimentoFindUniqueOrThrowArgs>(args: SelectSubset<T, LeadAtendimentoFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LeadAtendimentoClient<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first LeadAtendimento that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadAtendimentoFindFirstArgs} args - Arguments to find a LeadAtendimento
+     * @example
+     * // Get one LeadAtendimento
+     * const leadAtendimento = await prisma.leadAtendimento.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LeadAtendimentoFindFirstArgs>(args?: SelectSubset<T, LeadAtendimentoFindFirstArgs<ExtArgs>>): Prisma__LeadAtendimentoClient<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first LeadAtendimento that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadAtendimentoFindFirstOrThrowArgs} args - Arguments to find a LeadAtendimento
+     * @example
+     * // Get one LeadAtendimento
+     * const leadAtendimento = await prisma.leadAtendimento.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LeadAtendimentoFindFirstOrThrowArgs>(args?: SelectSubset<T, LeadAtendimentoFindFirstOrThrowArgs<ExtArgs>>): Prisma__LeadAtendimentoClient<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more LeadAtendimentos that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadAtendimentoFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LeadAtendimentos
+     * const leadAtendimentos = await prisma.leadAtendimento.findMany()
+     * 
+     * // Get first 10 LeadAtendimentos
+     * const leadAtendimentos = await prisma.leadAtendimento.findMany({ take: 10 })
+     * 
+     * // Only select the `leadId`
+     * const leadAtendimentoWithLeadIdOnly = await prisma.leadAtendimento.findMany({ select: { leadId: true } })
+     * 
+     */
+    findMany<T extends LeadAtendimentoFindManyArgs>(args?: SelectSubset<T, LeadAtendimentoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a LeadAtendimento.
+     * @param {LeadAtendimentoCreateArgs} args - Arguments to create a LeadAtendimento.
+     * @example
+     * // Create one LeadAtendimento
+     * const LeadAtendimento = await prisma.leadAtendimento.create({
+     *   data: {
+     *     // ... data to create a LeadAtendimento
+     *   }
+     * })
+     * 
+     */
+    create<T extends LeadAtendimentoCreateArgs>(args: SelectSubset<T, LeadAtendimentoCreateArgs<ExtArgs>>): Prisma__LeadAtendimentoClient<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many LeadAtendimentos.
+     * @param {LeadAtendimentoCreateManyArgs} args - Arguments to create many LeadAtendimentos.
+     * @example
+     * // Create many LeadAtendimentos
+     * const leadAtendimento = await prisma.leadAtendimento.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LeadAtendimentoCreateManyArgs>(args?: SelectSubset<T, LeadAtendimentoCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LeadAtendimentos and returns the data saved in the database.
+     * @param {LeadAtendimentoCreateManyAndReturnArgs} args - Arguments to create many LeadAtendimentos.
+     * @example
+     * // Create many LeadAtendimentos
+     * const leadAtendimento = await prisma.leadAtendimento.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LeadAtendimentos and only return the `leadId`
+     * const leadAtendimentoWithLeadIdOnly = await prisma.leadAtendimento.createManyAndReturn({
+     *   select: { leadId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LeadAtendimentoCreateManyAndReturnArgs>(args?: SelectSubset<T, LeadAtendimentoCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a LeadAtendimento.
+     * @param {LeadAtendimentoDeleteArgs} args - Arguments to delete one LeadAtendimento.
+     * @example
+     * // Delete one LeadAtendimento
+     * const LeadAtendimento = await prisma.leadAtendimento.delete({
+     *   where: {
+     *     // ... filter to delete one LeadAtendimento
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LeadAtendimentoDeleteArgs>(args: SelectSubset<T, LeadAtendimentoDeleteArgs<ExtArgs>>): Prisma__LeadAtendimentoClient<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one LeadAtendimento.
+     * @param {LeadAtendimentoUpdateArgs} args - Arguments to update one LeadAtendimento.
+     * @example
+     * // Update one LeadAtendimento
+     * const leadAtendimento = await prisma.leadAtendimento.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LeadAtendimentoUpdateArgs>(args: SelectSubset<T, LeadAtendimentoUpdateArgs<ExtArgs>>): Prisma__LeadAtendimentoClient<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more LeadAtendimentos.
+     * @param {LeadAtendimentoDeleteManyArgs} args - Arguments to filter LeadAtendimentos to delete.
+     * @example
+     * // Delete a few LeadAtendimentos
+     * const { count } = await prisma.leadAtendimento.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LeadAtendimentoDeleteManyArgs>(args?: SelectSubset<T, LeadAtendimentoDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LeadAtendimentos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadAtendimentoUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LeadAtendimentos
+     * const leadAtendimento = await prisma.leadAtendimento.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LeadAtendimentoUpdateManyArgs>(args: SelectSubset<T, LeadAtendimentoUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LeadAtendimentos and returns the data updated in the database.
+     * @param {LeadAtendimentoUpdateManyAndReturnArgs} args - Arguments to update many LeadAtendimentos.
+     * @example
+     * // Update many LeadAtendimentos
+     * const leadAtendimento = await prisma.leadAtendimento.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more LeadAtendimentos and only return the `leadId`
+     * const leadAtendimentoWithLeadIdOnly = await prisma.leadAtendimento.updateManyAndReturn({
+     *   select: { leadId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends LeadAtendimentoUpdateManyAndReturnArgs>(args: SelectSubset<T, LeadAtendimentoUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one LeadAtendimento.
+     * @param {LeadAtendimentoUpsertArgs} args - Arguments to update or create a LeadAtendimento.
+     * @example
+     * // Update or create a LeadAtendimento
+     * const leadAtendimento = await prisma.leadAtendimento.upsert({
+     *   create: {
+     *     // ... data to create a LeadAtendimento
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LeadAtendimento we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LeadAtendimentoUpsertArgs>(args: SelectSubset<T, LeadAtendimentoUpsertArgs<ExtArgs>>): Prisma__LeadAtendimentoClient<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of LeadAtendimentos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadAtendimentoCountArgs} args - Arguments to filter LeadAtendimentos to count.
+     * @example
+     * // Count the number of LeadAtendimentos
+     * const count = await prisma.leadAtendimento.count({
+     *   where: {
+     *     // ... the filter for the LeadAtendimentos we want to count
+     *   }
+     * })
+    **/
+    count<T extends LeadAtendimentoCountArgs>(
+      args?: Subset<T, LeadAtendimentoCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LeadAtendimentoCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LeadAtendimento.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadAtendimentoAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LeadAtendimentoAggregateArgs>(args: Subset<T, LeadAtendimentoAggregateArgs>): Prisma.PrismaPromise<GetLeadAtendimentoAggregateType<T>>
+
+    /**
+     * Group by LeadAtendimento.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadAtendimentoGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LeadAtendimentoGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LeadAtendimentoGroupByArgs['orderBy'] }
+        : { orderBy?: LeadAtendimentoGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LeadAtendimentoGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLeadAtendimentoGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LeadAtendimento model
+   */
+  readonly fields: LeadAtendimentoFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LeadAtendimento.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LeadAtendimentoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    lead<T extends LeadDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LeadDefaultArgs<ExtArgs>>): Prisma__LeadClient<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    departamento<T extends LeadAtendimento$departamentoArgs<ExtArgs> = {}>(args?: Subset<T, LeadAtendimento$departamentoArgs<ExtArgs>>): Prisma__DepartamentoClient<$Result.GetResult<Prisma.$DepartamentoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    atendente<T extends LeadAtendimento$atendenteArgs<ExtArgs> = {}>(args?: Subset<T, LeadAtendimento$atendenteArgs<ExtArgs>>): Prisma__AtendenteClient<$Result.GetResult<Prisma.$AtendentePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LeadAtendimento model
+   */
+  interface LeadAtendimentoFieldRefs {
+    readonly leadId: FieldRef<"LeadAtendimento", 'String'>
+    readonly departamentoId: FieldRef<"LeadAtendimento", 'String'>
+    readonly atendenteId: FieldRef<"LeadAtendimento", 'String'>
+    readonly transferidoEm: FieldRef<"LeadAtendimento", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LeadAtendimento findUnique
+   */
+  export type LeadAtendimentoFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadAtendimento
+     */
+    select?: LeadAtendimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadAtendimento
+     */
+    omit?: LeadAtendimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadAtendimentoInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadAtendimento to fetch.
+     */
+    where: LeadAtendimentoWhereUniqueInput
+  }
+
+  /**
+   * LeadAtendimento findUniqueOrThrow
+   */
+  export type LeadAtendimentoFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadAtendimento
+     */
+    select?: LeadAtendimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadAtendimento
+     */
+    omit?: LeadAtendimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadAtendimentoInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadAtendimento to fetch.
+     */
+    where: LeadAtendimentoWhereUniqueInput
+  }
+
+  /**
+   * LeadAtendimento findFirst
+   */
+  export type LeadAtendimentoFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadAtendimento
+     */
+    select?: LeadAtendimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadAtendimento
+     */
+    omit?: LeadAtendimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadAtendimentoInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadAtendimento to fetch.
+     */
+    where?: LeadAtendimentoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadAtendimentos to fetch.
+     */
+    orderBy?: LeadAtendimentoOrderByWithRelationInput | LeadAtendimentoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadAtendimentos.
+     */
+    cursor?: LeadAtendimentoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadAtendimentos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadAtendimentos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadAtendimentos.
+     */
+    distinct?: LeadAtendimentoScalarFieldEnum | LeadAtendimentoScalarFieldEnum[]
+  }
+
+  /**
+   * LeadAtendimento findFirstOrThrow
+   */
+  export type LeadAtendimentoFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadAtendimento
+     */
+    select?: LeadAtendimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadAtendimento
+     */
+    omit?: LeadAtendimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadAtendimentoInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadAtendimento to fetch.
+     */
+    where?: LeadAtendimentoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadAtendimentos to fetch.
+     */
+    orderBy?: LeadAtendimentoOrderByWithRelationInput | LeadAtendimentoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadAtendimentos.
+     */
+    cursor?: LeadAtendimentoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadAtendimentos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadAtendimentos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadAtendimentos.
+     */
+    distinct?: LeadAtendimentoScalarFieldEnum | LeadAtendimentoScalarFieldEnum[]
+  }
+
+  /**
+   * LeadAtendimento findMany
+   */
+  export type LeadAtendimentoFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadAtendimento
+     */
+    select?: LeadAtendimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadAtendimento
+     */
+    omit?: LeadAtendimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadAtendimentoInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadAtendimentos to fetch.
+     */
+    where?: LeadAtendimentoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadAtendimentos to fetch.
+     */
+    orderBy?: LeadAtendimentoOrderByWithRelationInput | LeadAtendimentoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LeadAtendimentos.
+     */
+    cursor?: LeadAtendimentoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadAtendimentos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadAtendimentos.
+     */
+    skip?: number
+    distinct?: LeadAtendimentoScalarFieldEnum | LeadAtendimentoScalarFieldEnum[]
+  }
+
+  /**
+   * LeadAtendimento create
+   */
+  export type LeadAtendimentoCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadAtendimento
+     */
+    select?: LeadAtendimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadAtendimento
+     */
+    omit?: LeadAtendimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadAtendimentoInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LeadAtendimento.
+     */
+    data: XOR<LeadAtendimentoCreateInput, LeadAtendimentoUncheckedCreateInput>
+  }
+
+  /**
+   * LeadAtendimento createMany
+   */
+  export type LeadAtendimentoCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LeadAtendimentos.
+     */
+    data: LeadAtendimentoCreateManyInput | LeadAtendimentoCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LeadAtendimento createManyAndReturn
+   */
+  export type LeadAtendimentoCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadAtendimento
+     */
+    select?: LeadAtendimentoSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadAtendimento
+     */
+    omit?: LeadAtendimentoOmit<ExtArgs> | null
+    /**
+     * The data used to create many LeadAtendimentos.
+     */
+    data: LeadAtendimentoCreateManyInput | LeadAtendimentoCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadAtendimentoIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LeadAtendimento update
+   */
+  export type LeadAtendimentoUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadAtendimento
+     */
+    select?: LeadAtendimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadAtendimento
+     */
+    omit?: LeadAtendimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadAtendimentoInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LeadAtendimento.
+     */
+    data: XOR<LeadAtendimentoUpdateInput, LeadAtendimentoUncheckedUpdateInput>
+    /**
+     * Choose, which LeadAtendimento to update.
+     */
+    where: LeadAtendimentoWhereUniqueInput
+  }
+
+  /**
+   * LeadAtendimento updateMany
+   */
+  export type LeadAtendimentoUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LeadAtendimentos.
+     */
+    data: XOR<LeadAtendimentoUpdateManyMutationInput, LeadAtendimentoUncheckedUpdateManyInput>
+    /**
+     * Filter which LeadAtendimentos to update
+     */
+    where?: LeadAtendimentoWhereInput
+    /**
+     * Limit how many LeadAtendimentos to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * LeadAtendimento updateManyAndReturn
+   */
+  export type LeadAtendimentoUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadAtendimento
+     */
+    select?: LeadAtendimentoSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadAtendimento
+     */
+    omit?: LeadAtendimentoOmit<ExtArgs> | null
+    /**
+     * The data used to update LeadAtendimentos.
+     */
+    data: XOR<LeadAtendimentoUpdateManyMutationInput, LeadAtendimentoUncheckedUpdateManyInput>
+    /**
+     * Filter which LeadAtendimentos to update
+     */
+    where?: LeadAtendimentoWhereInput
+    /**
+     * Limit how many LeadAtendimentos to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadAtendimentoIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LeadAtendimento upsert
+   */
+  export type LeadAtendimentoUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadAtendimento
+     */
+    select?: LeadAtendimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadAtendimento
+     */
+    omit?: LeadAtendimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadAtendimentoInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LeadAtendimento to update in case it exists.
+     */
+    where: LeadAtendimentoWhereUniqueInput
+    /**
+     * In case the LeadAtendimento found by the `where` argument doesn't exist, create a new LeadAtendimento with this data.
+     */
+    create: XOR<LeadAtendimentoCreateInput, LeadAtendimentoUncheckedCreateInput>
+    /**
+     * In case the LeadAtendimento was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LeadAtendimentoUpdateInput, LeadAtendimentoUncheckedUpdateInput>
+  }
+
+  /**
+   * LeadAtendimento delete
+   */
+  export type LeadAtendimentoDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadAtendimento
+     */
+    select?: LeadAtendimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadAtendimento
+     */
+    omit?: LeadAtendimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadAtendimentoInclude<ExtArgs> | null
+    /**
+     * Filter which LeadAtendimento to delete.
+     */
+    where: LeadAtendimentoWhereUniqueInput
+  }
+
+  /**
+   * LeadAtendimento deleteMany
+   */
+  export type LeadAtendimentoDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadAtendimentos to delete
+     */
+    where?: LeadAtendimentoWhereInput
+    /**
+     * Limit how many LeadAtendimentos to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * LeadAtendimento.departamento
+   */
+  export type LeadAtendimento$departamentoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Departamento
+     */
+    select?: DepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Departamento
+     */
+    omit?: DepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartamentoInclude<ExtArgs> | null
+    where?: DepartamentoWhereInput
+  }
+
+  /**
+   * LeadAtendimento.atendente
+   */
+  export type LeadAtendimento$atendenteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Atendente
+     */
+    select?: AtendenteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Atendente
+     */
+    omit?: AtendenteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendenteInclude<ExtArgs> | null
+    where?: AtendenteWhereInput
+  }
+
+  /**
+   * LeadAtendimento without action
+   */
+  export type LeadAtendimentoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadAtendimento
+     */
+    select?: LeadAtendimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadAtendimento
+     */
+    omit?: LeadAtendimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadAtendimentoInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AtendimentoTransferencia
+   */
+
+  export type AggregateAtendimentoTransferencia = {
+    _count: AtendimentoTransferenciaCountAggregateOutputType | null
+    _min: AtendimentoTransferenciaMinAggregateOutputType | null
+    _max: AtendimentoTransferenciaMaxAggregateOutputType | null
+  }
+
+  export type AtendimentoTransferenciaMinAggregateOutputType = {
+    id: string | null
+    leadId: string | null
+    deDepartamento: string | null
+    paraDepartamento: string | null
+    deAtendente: string | null
+    paraAtendente: string | null
+    porUsuario: string | null
+    motivo: string | null
+    data: Date | null
+  }
+
+  export type AtendimentoTransferenciaMaxAggregateOutputType = {
+    id: string | null
+    leadId: string | null
+    deDepartamento: string | null
+    paraDepartamento: string | null
+    deAtendente: string | null
+    paraAtendente: string | null
+    porUsuario: string | null
+    motivo: string | null
+    data: Date | null
+  }
+
+  export type AtendimentoTransferenciaCountAggregateOutputType = {
+    id: number
+    leadId: number
+    deDepartamento: number
+    paraDepartamento: number
+    deAtendente: number
+    paraAtendente: number
+    porUsuario: number
+    motivo: number
+    data: number
+    _all: number
+  }
+
+
+  export type AtendimentoTransferenciaMinAggregateInputType = {
+    id?: true
+    leadId?: true
+    deDepartamento?: true
+    paraDepartamento?: true
+    deAtendente?: true
+    paraAtendente?: true
+    porUsuario?: true
+    motivo?: true
+    data?: true
+  }
+
+  export type AtendimentoTransferenciaMaxAggregateInputType = {
+    id?: true
+    leadId?: true
+    deDepartamento?: true
+    paraDepartamento?: true
+    deAtendente?: true
+    paraAtendente?: true
+    porUsuario?: true
+    motivo?: true
+    data?: true
+  }
+
+  export type AtendimentoTransferenciaCountAggregateInputType = {
+    id?: true
+    leadId?: true
+    deDepartamento?: true
+    paraDepartamento?: true
+    deAtendente?: true
+    paraAtendente?: true
+    porUsuario?: true
+    motivo?: true
+    data?: true
+    _all?: true
+  }
+
+  export type AtendimentoTransferenciaAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AtendimentoTransferencia to aggregate.
+     */
+    where?: AtendimentoTransferenciaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AtendimentoTransferencias to fetch.
+     */
+    orderBy?: AtendimentoTransferenciaOrderByWithRelationInput | AtendimentoTransferenciaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AtendimentoTransferenciaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AtendimentoTransferencias from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AtendimentoTransferencias.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AtendimentoTransferencias
+    **/
+    _count?: true | AtendimentoTransferenciaCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AtendimentoTransferenciaMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AtendimentoTransferenciaMaxAggregateInputType
+  }
+
+  export type GetAtendimentoTransferenciaAggregateType<T extends AtendimentoTransferenciaAggregateArgs> = {
+        [P in keyof T & keyof AggregateAtendimentoTransferencia]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAtendimentoTransferencia[P]>
+      : GetScalarType<T[P], AggregateAtendimentoTransferencia[P]>
+  }
+
+
+
+
+  export type AtendimentoTransferenciaGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AtendimentoTransferenciaWhereInput
+    orderBy?: AtendimentoTransferenciaOrderByWithAggregationInput | AtendimentoTransferenciaOrderByWithAggregationInput[]
+    by: AtendimentoTransferenciaScalarFieldEnum[] | AtendimentoTransferenciaScalarFieldEnum
+    having?: AtendimentoTransferenciaScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AtendimentoTransferenciaCountAggregateInputType | true
+    _min?: AtendimentoTransferenciaMinAggregateInputType
+    _max?: AtendimentoTransferenciaMaxAggregateInputType
+  }
+
+  export type AtendimentoTransferenciaGroupByOutputType = {
+    id: string
+    leadId: string
+    deDepartamento: string | null
+    paraDepartamento: string | null
+    deAtendente: string | null
+    paraAtendente: string | null
+    porUsuario: string
+    motivo: string | null
+    data: Date
+    _count: AtendimentoTransferenciaCountAggregateOutputType | null
+    _min: AtendimentoTransferenciaMinAggregateOutputType | null
+    _max: AtendimentoTransferenciaMaxAggregateOutputType | null
+  }
+
+  type GetAtendimentoTransferenciaGroupByPayload<T extends AtendimentoTransferenciaGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AtendimentoTransferenciaGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AtendimentoTransferenciaGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AtendimentoTransferenciaGroupByOutputType[P]>
+            : GetScalarType<T[P], AtendimentoTransferenciaGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AtendimentoTransferenciaSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    leadId?: boolean
+    deDepartamento?: boolean
+    paraDepartamento?: boolean
+    deAtendente?: boolean
+    paraAtendente?: boolean
+    porUsuario?: boolean
+    motivo?: boolean
+    data?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["atendimentoTransferencia"]>
+
+  export type AtendimentoTransferenciaSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    leadId?: boolean
+    deDepartamento?: boolean
+    paraDepartamento?: boolean
+    deAtendente?: boolean
+    paraAtendente?: boolean
+    porUsuario?: boolean
+    motivo?: boolean
+    data?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["atendimentoTransferencia"]>
+
+  export type AtendimentoTransferenciaSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    leadId?: boolean
+    deDepartamento?: boolean
+    paraDepartamento?: boolean
+    deAtendente?: boolean
+    paraAtendente?: boolean
+    porUsuario?: boolean
+    motivo?: boolean
+    data?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["atendimentoTransferencia"]>
+
+  export type AtendimentoTransferenciaSelectScalar = {
+    id?: boolean
+    leadId?: boolean
+    deDepartamento?: boolean
+    paraDepartamento?: boolean
+    deAtendente?: boolean
+    paraAtendente?: boolean
+    porUsuario?: boolean
+    motivo?: boolean
+    data?: boolean
+  }
+
+  export type AtendimentoTransferenciaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "leadId" | "deDepartamento" | "paraDepartamento" | "deAtendente" | "paraAtendente" | "porUsuario" | "motivo" | "data", ExtArgs["result"]["atendimentoTransferencia"]>
+  export type AtendimentoTransferenciaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }
+  export type AtendimentoTransferenciaIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }
+  export type AtendimentoTransferenciaIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }
+
+  export type $AtendimentoTransferenciaPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AtendimentoTransferencia"
+    objects: {
+      lead: Prisma.$LeadPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      leadId: string
+      deDepartamento: string | null
+      paraDepartamento: string | null
+      deAtendente: string | null
+      paraAtendente: string | null
+      /**
+       * Nome de quem executou a transferência.
+       */
+      porUsuario: string
+      motivo: string | null
+      data: Date
+    }, ExtArgs["result"]["atendimentoTransferencia"]>
+    composites: {}
+  }
+
+  type AtendimentoTransferenciaGetPayload<S extends boolean | null | undefined | AtendimentoTransferenciaDefaultArgs> = $Result.GetResult<Prisma.$AtendimentoTransferenciaPayload, S>
+
+  type AtendimentoTransferenciaCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AtendimentoTransferenciaFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AtendimentoTransferenciaCountAggregateInputType | true
+    }
+
+  export interface AtendimentoTransferenciaDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AtendimentoTransferencia'], meta: { name: 'AtendimentoTransferencia' } }
+    /**
+     * Find zero or one AtendimentoTransferencia that matches the filter.
+     * @param {AtendimentoTransferenciaFindUniqueArgs} args - Arguments to find a AtendimentoTransferencia
+     * @example
+     * // Get one AtendimentoTransferencia
+     * const atendimentoTransferencia = await prisma.atendimentoTransferencia.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AtendimentoTransferenciaFindUniqueArgs>(args: SelectSubset<T, AtendimentoTransferenciaFindUniqueArgs<ExtArgs>>): Prisma__AtendimentoTransferenciaClient<$Result.GetResult<Prisma.$AtendimentoTransferenciaPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AtendimentoTransferencia that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AtendimentoTransferenciaFindUniqueOrThrowArgs} args - Arguments to find a AtendimentoTransferencia
+     * @example
+     * // Get one AtendimentoTransferencia
+     * const atendimentoTransferencia = await prisma.atendimentoTransferencia.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AtendimentoTransferenciaFindUniqueOrThrowArgs>(args: SelectSubset<T, AtendimentoTransferenciaFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AtendimentoTransferenciaClient<$Result.GetResult<Prisma.$AtendimentoTransferenciaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AtendimentoTransferencia that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendimentoTransferenciaFindFirstArgs} args - Arguments to find a AtendimentoTransferencia
+     * @example
+     * // Get one AtendimentoTransferencia
+     * const atendimentoTransferencia = await prisma.atendimentoTransferencia.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AtendimentoTransferenciaFindFirstArgs>(args?: SelectSubset<T, AtendimentoTransferenciaFindFirstArgs<ExtArgs>>): Prisma__AtendimentoTransferenciaClient<$Result.GetResult<Prisma.$AtendimentoTransferenciaPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AtendimentoTransferencia that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendimentoTransferenciaFindFirstOrThrowArgs} args - Arguments to find a AtendimentoTransferencia
+     * @example
+     * // Get one AtendimentoTransferencia
+     * const atendimentoTransferencia = await prisma.atendimentoTransferencia.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AtendimentoTransferenciaFindFirstOrThrowArgs>(args?: SelectSubset<T, AtendimentoTransferenciaFindFirstOrThrowArgs<ExtArgs>>): Prisma__AtendimentoTransferenciaClient<$Result.GetResult<Prisma.$AtendimentoTransferenciaPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AtendimentoTransferencias that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendimentoTransferenciaFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AtendimentoTransferencias
+     * const atendimentoTransferencias = await prisma.atendimentoTransferencia.findMany()
+     * 
+     * // Get first 10 AtendimentoTransferencias
+     * const atendimentoTransferencias = await prisma.atendimentoTransferencia.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const atendimentoTransferenciaWithIdOnly = await prisma.atendimentoTransferencia.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AtendimentoTransferenciaFindManyArgs>(args?: SelectSubset<T, AtendimentoTransferenciaFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendimentoTransferenciaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AtendimentoTransferencia.
+     * @param {AtendimentoTransferenciaCreateArgs} args - Arguments to create a AtendimentoTransferencia.
+     * @example
+     * // Create one AtendimentoTransferencia
+     * const AtendimentoTransferencia = await prisma.atendimentoTransferencia.create({
+     *   data: {
+     *     // ... data to create a AtendimentoTransferencia
+     *   }
+     * })
+     * 
+     */
+    create<T extends AtendimentoTransferenciaCreateArgs>(args: SelectSubset<T, AtendimentoTransferenciaCreateArgs<ExtArgs>>): Prisma__AtendimentoTransferenciaClient<$Result.GetResult<Prisma.$AtendimentoTransferenciaPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AtendimentoTransferencias.
+     * @param {AtendimentoTransferenciaCreateManyArgs} args - Arguments to create many AtendimentoTransferencias.
+     * @example
+     * // Create many AtendimentoTransferencias
+     * const atendimentoTransferencia = await prisma.atendimentoTransferencia.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AtendimentoTransferenciaCreateManyArgs>(args?: SelectSubset<T, AtendimentoTransferenciaCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AtendimentoTransferencias and returns the data saved in the database.
+     * @param {AtendimentoTransferenciaCreateManyAndReturnArgs} args - Arguments to create many AtendimentoTransferencias.
+     * @example
+     * // Create many AtendimentoTransferencias
+     * const atendimentoTransferencia = await prisma.atendimentoTransferencia.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AtendimentoTransferencias and only return the `id`
+     * const atendimentoTransferenciaWithIdOnly = await prisma.atendimentoTransferencia.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AtendimentoTransferenciaCreateManyAndReturnArgs>(args?: SelectSubset<T, AtendimentoTransferenciaCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendimentoTransferenciaPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AtendimentoTransferencia.
+     * @param {AtendimentoTransferenciaDeleteArgs} args - Arguments to delete one AtendimentoTransferencia.
+     * @example
+     * // Delete one AtendimentoTransferencia
+     * const AtendimentoTransferencia = await prisma.atendimentoTransferencia.delete({
+     *   where: {
+     *     // ... filter to delete one AtendimentoTransferencia
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AtendimentoTransferenciaDeleteArgs>(args: SelectSubset<T, AtendimentoTransferenciaDeleteArgs<ExtArgs>>): Prisma__AtendimentoTransferenciaClient<$Result.GetResult<Prisma.$AtendimentoTransferenciaPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AtendimentoTransferencia.
+     * @param {AtendimentoTransferenciaUpdateArgs} args - Arguments to update one AtendimentoTransferencia.
+     * @example
+     * // Update one AtendimentoTransferencia
+     * const atendimentoTransferencia = await prisma.atendimentoTransferencia.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AtendimentoTransferenciaUpdateArgs>(args: SelectSubset<T, AtendimentoTransferenciaUpdateArgs<ExtArgs>>): Prisma__AtendimentoTransferenciaClient<$Result.GetResult<Prisma.$AtendimentoTransferenciaPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AtendimentoTransferencias.
+     * @param {AtendimentoTransferenciaDeleteManyArgs} args - Arguments to filter AtendimentoTransferencias to delete.
+     * @example
+     * // Delete a few AtendimentoTransferencias
+     * const { count } = await prisma.atendimentoTransferencia.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AtendimentoTransferenciaDeleteManyArgs>(args?: SelectSubset<T, AtendimentoTransferenciaDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AtendimentoTransferencias.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendimentoTransferenciaUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AtendimentoTransferencias
+     * const atendimentoTransferencia = await prisma.atendimentoTransferencia.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AtendimentoTransferenciaUpdateManyArgs>(args: SelectSubset<T, AtendimentoTransferenciaUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AtendimentoTransferencias and returns the data updated in the database.
+     * @param {AtendimentoTransferenciaUpdateManyAndReturnArgs} args - Arguments to update many AtendimentoTransferencias.
+     * @example
+     * // Update many AtendimentoTransferencias
+     * const atendimentoTransferencia = await prisma.atendimentoTransferencia.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AtendimentoTransferencias and only return the `id`
+     * const atendimentoTransferenciaWithIdOnly = await prisma.atendimentoTransferencia.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AtendimentoTransferenciaUpdateManyAndReturnArgs>(args: SelectSubset<T, AtendimentoTransferenciaUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendimentoTransferenciaPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AtendimentoTransferencia.
+     * @param {AtendimentoTransferenciaUpsertArgs} args - Arguments to update or create a AtendimentoTransferencia.
+     * @example
+     * // Update or create a AtendimentoTransferencia
+     * const atendimentoTransferencia = await prisma.atendimentoTransferencia.upsert({
+     *   create: {
+     *     // ... data to create a AtendimentoTransferencia
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AtendimentoTransferencia we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AtendimentoTransferenciaUpsertArgs>(args: SelectSubset<T, AtendimentoTransferenciaUpsertArgs<ExtArgs>>): Prisma__AtendimentoTransferenciaClient<$Result.GetResult<Prisma.$AtendimentoTransferenciaPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AtendimentoTransferencias.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendimentoTransferenciaCountArgs} args - Arguments to filter AtendimentoTransferencias to count.
+     * @example
+     * // Count the number of AtendimentoTransferencias
+     * const count = await prisma.atendimentoTransferencia.count({
+     *   where: {
+     *     // ... the filter for the AtendimentoTransferencias we want to count
+     *   }
+     * })
+    **/
+    count<T extends AtendimentoTransferenciaCountArgs>(
+      args?: Subset<T, AtendimentoTransferenciaCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AtendimentoTransferenciaCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AtendimentoTransferencia.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendimentoTransferenciaAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AtendimentoTransferenciaAggregateArgs>(args: Subset<T, AtendimentoTransferenciaAggregateArgs>): Prisma.PrismaPromise<GetAtendimentoTransferenciaAggregateType<T>>
+
+    /**
+     * Group by AtendimentoTransferencia.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AtendimentoTransferenciaGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AtendimentoTransferenciaGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AtendimentoTransferenciaGroupByArgs['orderBy'] }
+        : { orderBy?: AtendimentoTransferenciaGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AtendimentoTransferenciaGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAtendimentoTransferenciaGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AtendimentoTransferencia model
+   */
+  readonly fields: AtendimentoTransferenciaFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AtendimentoTransferencia.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AtendimentoTransferenciaClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    lead<T extends LeadDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LeadDefaultArgs<ExtArgs>>): Prisma__LeadClient<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AtendimentoTransferencia model
+   */
+  interface AtendimentoTransferenciaFieldRefs {
+    readonly id: FieldRef<"AtendimentoTransferencia", 'String'>
+    readonly leadId: FieldRef<"AtendimentoTransferencia", 'String'>
+    readonly deDepartamento: FieldRef<"AtendimentoTransferencia", 'String'>
+    readonly paraDepartamento: FieldRef<"AtendimentoTransferencia", 'String'>
+    readonly deAtendente: FieldRef<"AtendimentoTransferencia", 'String'>
+    readonly paraAtendente: FieldRef<"AtendimentoTransferencia", 'String'>
+    readonly porUsuario: FieldRef<"AtendimentoTransferencia", 'String'>
+    readonly motivo: FieldRef<"AtendimentoTransferencia", 'String'>
+    readonly data: FieldRef<"AtendimentoTransferencia", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AtendimentoTransferencia findUnique
+   */
+  export type AtendimentoTransferenciaFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendimentoTransferencia
+     */
+    select?: AtendimentoTransferenciaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendimentoTransferencia
+     */
+    omit?: AtendimentoTransferenciaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendimentoTransferenciaInclude<ExtArgs> | null
+    /**
+     * Filter, which AtendimentoTransferencia to fetch.
+     */
+    where: AtendimentoTransferenciaWhereUniqueInput
+  }
+
+  /**
+   * AtendimentoTransferencia findUniqueOrThrow
+   */
+  export type AtendimentoTransferenciaFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendimentoTransferencia
+     */
+    select?: AtendimentoTransferenciaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendimentoTransferencia
+     */
+    omit?: AtendimentoTransferenciaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendimentoTransferenciaInclude<ExtArgs> | null
+    /**
+     * Filter, which AtendimentoTransferencia to fetch.
+     */
+    where: AtendimentoTransferenciaWhereUniqueInput
+  }
+
+  /**
+   * AtendimentoTransferencia findFirst
+   */
+  export type AtendimentoTransferenciaFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendimentoTransferencia
+     */
+    select?: AtendimentoTransferenciaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendimentoTransferencia
+     */
+    omit?: AtendimentoTransferenciaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendimentoTransferenciaInclude<ExtArgs> | null
+    /**
+     * Filter, which AtendimentoTransferencia to fetch.
+     */
+    where?: AtendimentoTransferenciaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AtendimentoTransferencias to fetch.
+     */
+    orderBy?: AtendimentoTransferenciaOrderByWithRelationInput | AtendimentoTransferenciaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AtendimentoTransferencias.
+     */
+    cursor?: AtendimentoTransferenciaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AtendimentoTransferencias from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AtendimentoTransferencias.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AtendimentoTransferencias.
+     */
+    distinct?: AtendimentoTransferenciaScalarFieldEnum | AtendimentoTransferenciaScalarFieldEnum[]
+  }
+
+  /**
+   * AtendimentoTransferencia findFirstOrThrow
+   */
+  export type AtendimentoTransferenciaFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendimentoTransferencia
+     */
+    select?: AtendimentoTransferenciaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendimentoTransferencia
+     */
+    omit?: AtendimentoTransferenciaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendimentoTransferenciaInclude<ExtArgs> | null
+    /**
+     * Filter, which AtendimentoTransferencia to fetch.
+     */
+    where?: AtendimentoTransferenciaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AtendimentoTransferencias to fetch.
+     */
+    orderBy?: AtendimentoTransferenciaOrderByWithRelationInput | AtendimentoTransferenciaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AtendimentoTransferencias.
+     */
+    cursor?: AtendimentoTransferenciaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AtendimentoTransferencias from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AtendimentoTransferencias.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AtendimentoTransferencias.
+     */
+    distinct?: AtendimentoTransferenciaScalarFieldEnum | AtendimentoTransferenciaScalarFieldEnum[]
+  }
+
+  /**
+   * AtendimentoTransferencia findMany
+   */
+  export type AtendimentoTransferenciaFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendimentoTransferencia
+     */
+    select?: AtendimentoTransferenciaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendimentoTransferencia
+     */
+    omit?: AtendimentoTransferenciaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendimentoTransferenciaInclude<ExtArgs> | null
+    /**
+     * Filter, which AtendimentoTransferencias to fetch.
+     */
+    where?: AtendimentoTransferenciaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AtendimentoTransferencias to fetch.
+     */
+    orderBy?: AtendimentoTransferenciaOrderByWithRelationInput | AtendimentoTransferenciaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AtendimentoTransferencias.
+     */
+    cursor?: AtendimentoTransferenciaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AtendimentoTransferencias from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AtendimentoTransferencias.
+     */
+    skip?: number
+    distinct?: AtendimentoTransferenciaScalarFieldEnum | AtendimentoTransferenciaScalarFieldEnum[]
+  }
+
+  /**
+   * AtendimentoTransferencia create
+   */
+  export type AtendimentoTransferenciaCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendimentoTransferencia
+     */
+    select?: AtendimentoTransferenciaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendimentoTransferencia
+     */
+    omit?: AtendimentoTransferenciaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendimentoTransferenciaInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AtendimentoTransferencia.
+     */
+    data: XOR<AtendimentoTransferenciaCreateInput, AtendimentoTransferenciaUncheckedCreateInput>
+  }
+
+  /**
+   * AtendimentoTransferencia createMany
+   */
+  export type AtendimentoTransferenciaCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AtendimentoTransferencias.
+     */
+    data: AtendimentoTransferenciaCreateManyInput | AtendimentoTransferenciaCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AtendimentoTransferencia createManyAndReturn
+   */
+  export type AtendimentoTransferenciaCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendimentoTransferencia
+     */
+    select?: AtendimentoTransferenciaSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendimentoTransferencia
+     */
+    omit?: AtendimentoTransferenciaOmit<ExtArgs> | null
+    /**
+     * The data used to create many AtendimentoTransferencias.
+     */
+    data: AtendimentoTransferenciaCreateManyInput | AtendimentoTransferenciaCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendimentoTransferenciaIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AtendimentoTransferencia update
+   */
+  export type AtendimentoTransferenciaUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendimentoTransferencia
+     */
+    select?: AtendimentoTransferenciaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendimentoTransferencia
+     */
+    omit?: AtendimentoTransferenciaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendimentoTransferenciaInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AtendimentoTransferencia.
+     */
+    data: XOR<AtendimentoTransferenciaUpdateInput, AtendimentoTransferenciaUncheckedUpdateInput>
+    /**
+     * Choose, which AtendimentoTransferencia to update.
+     */
+    where: AtendimentoTransferenciaWhereUniqueInput
+  }
+
+  /**
+   * AtendimentoTransferencia updateMany
+   */
+  export type AtendimentoTransferenciaUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AtendimentoTransferencias.
+     */
+    data: XOR<AtendimentoTransferenciaUpdateManyMutationInput, AtendimentoTransferenciaUncheckedUpdateManyInput>
+    /**
+     * Filter which AtendimentoTransferencias to update
+     */
+    where?: AtendimentoTransferenciaWhereInput
+    /**
+     * Limit how many AtendimentoTransferencias to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AtendimentoTransferencia updateManyAndReturn
+   */
+  export type AtendimentoTransferenciaUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendimentoTransferencia
+     */
+    select?: AtendimentoTransferenciaSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendimentoTransferencia
+     */
+    omit?: AtendimentoTransferenciaOmit<ExtArgs> | null
+    /**
+     * The data used to update AtendimentoTransferencias.
+     */
+    data: XOR<AtendimentoTransferenciaUpdateManyMutationInput, AtendimentoTransferenciaUncheckedUpdateManyInput>
+    /**
+     * Filter which AtendimentoTransferencias to update
+     */
+    where?: AtendimentoTransferenciaWhereInput
+    /**
+     * Limit how many AtendimentoTransferencias to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendimentoTransferenciaIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AtendimentoTransferencia upsert
+   */
+  export type AtendimentoTransferenciaUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendimentoTransferencia
+     */
+    select?: AtendimentoTransferenciaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendimentoTransferencia
+     */
+    omit?: AtendimentoTransferenciaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendimentoTransferenciaInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AtendimentoTransferencia to update in case it exists.
+     */
+    where: AtendimentoTransferenciaWhereUniqueInput
+    /**
+     * In case the AtendimentoTransferencia found by the `where` argument doesn't exist, create a new AtendimentoTransferencia with this data.
+     */
+    create: XOR<AtendimentoTransferenciaCreateInput, AtendimentoTransferenciaUncheckedCreateInput>
+    /**
+     * In case the AtendimentoTransferencia was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AtendimentoTransferenciaUpdateInput, AtendimentoTransferenciaUncheckedUpdateInput>
+  }
+
+  /**
+   * AtendimentoTransferencia delete
+   */
+  export type AtendimentoTransferenciaDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendimentoTransferencia
+     */
+    select?: AtendimentoTransferenciaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendimentoTransferencia
+     */
+    omit?: AtendimentoTransferenciaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendimentoTransferenciaInclude<ExtArgs> | null
+    /**
+     * Filter which AtendimentoTransferencia to delete.
+     */
+    where: AtendimentoTransferenciaWhereUniqueInput
+  }
+
+  /**
+   * AtendimentoTransferencia deleteMany
+   */
+  export type AtendimentoTransferenciaDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AtendimentoTransferencias to delete
+     */
+    where?: AtendimentoTransferenciaWhereInput
+    /**
+     * Limit how many AtendimentoTransferencias to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AtendimentoTransferencia without action
+   */
+  export type AtendimentoTransferenciaDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AtendimentoTransferencia
+     */
+    select?: AtendimentoTransferenciaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AtendimentoTransferencia
+     */
+    omit?: AtendimentoTransferenciaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AtendimentoTransferenciaInclude<ExtArgs> | null
   }
 
 
@@ -25191,6 +31347,7 @@ export namespace Prisma {
     kanbanPluginAtivo: 'kanbanPluginAtivo',
     assistentePluginAtivo: 'assistentePluginAtivo',
     nocodePluginAtivo: 'nocodePluginAtivo',
+    crmPluginAtivo: 'crmPluginAtivo',
     temaApp: 'temaApp',
     appNome: 'appNome',
     appLogo: 'appLogo',
@@ -25323,6 +31480,62 @@ export namespace Prisma {
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+  export const DepartamentoScalarFieldEnum: {
+    id: 'id',
+    nome: 'nome',
+    descricao: 'descricao',
+    ativo: 'ativo',
+    criadoEm: 'criadoEm',
+    atualizadoEm: 'atualizadoEm'
+  };
+
+  export type DepartamentoScalarFieldEnum = (typeof DepartamentoScalarFieldEnum)[keyof typeof DepartamentoScalarFieldEnum]
+
+
+  export const AtendenteScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    ativo: 'ativo',
+    criadoEm: 'criadoEm',
+    atualizadoEm: 'atualizadoEm'
+  };
+
+  export type AtendenteScalarFieldEnum = (typeof AtendenteScalarFieldEnum)[keyof typeof AtendenteScalarFieldEnum]
+
+
+  export const AtendenteDepartamentoScalarFieldEnum: {
+    atendenteId: 'atendenteId',
+    departamentoId: 'departamentoId'
+  };
+
+  export type AtendenteDepartamentoScalarFieldEnum = (typeof AtendenteDepartamentoScalarFieldEnum)[keyof typeof AtendenteDepartamentoScalarFieldEnum]
+
+
+  export const LeadAtendimentoScalarFieldEnum: {
+    leadId: 'leadId',
+    departamentoId: 'departamentoId',
+    atendenteId: 'atendenteId',
+    transferidoEm: 'transferidoEm'
+  };
+
+  export type LeadAtendimentoScalarFieldEnum = (typeof LeadAtendimentoScalarFieldEnum)[keyof typeof LeadAtendimentoScalarFieldEnum]
+
+
+  export const AtendimentoTransferenciaScalarFieldEnum: {
+    id: 'id',
+    leadId: 'leadId',
+    deDepartamento: 'deDepartamento',
+    paraDepartamento: 'paraDepartamento',
+    deAtendente: 'deAtendente',
+    paraAtendente: 'paraAtendente',
+    porUsuario: 'porUsuario',
+    motivo: 'motivo',
+    data: 'data'
+  };
+
+  export type AtendimentoTransferenciaScalarFieldEnum = (typeof AtendimentoTransferenciaScalarFieldEnum)[keyof typeof AtendimentoTransferenciaScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -25580,6 +31793,8 @@ export namespace Prisma {
     eventos?: TimelineEventListRelationFilter
     mensagensAgendadas?: ScheduledMessageListRelationFilter
     notasInternas?: ChatInternalNoteListRelationFilter
+    atendimento?: XOR<LeadAtendimentoNullableScalarRelationFilter, LeadAtendimentoWhereInput> | null
+    transferencias?: AtendimentoTransferenciaListRelationFilter
   }
 
   export type LeadOrderByWithRelationInput = {
@@ -25603,6 +31818,8 @@ export namespace Prisma {
     eventos?: TimelineEventOrderByRelationAggregateInput
     mensagensAgendadas?: ScheduledMessageOrderByRelationAggregateInput
     notasInternas?: ChatInternalNoteOrderByRelationAggregateInput
+    atendimento?: LeadAtendimentoOrderByWithRelationInput
+    transferencias?: AtendimentoTransferenciaOrderByRelationAggregateInput
   }
 
   export type LeadWhereUniqueInput = Prisma.AtLeast<{
@@ -25629,6 +31846,8 @@ export namespace Prisma {
     eventos?: TimelineEventListRelationFilter
     mensagensAgendadas?: ScheduledMessageListRelationFilter
     notasInternas?: ChatInternalNoteListRelationFilter
+    atendimento?: XOR<LeadAtendimentoNullableScalarRelationFilter, LeadAtendimentoWhereInput> | null
+    transferencias?: AtendimentoTransferenciaListRelationFilter
   }, "id">
 
   export type LeadOrderByWithAggregationInput = {
@@ -26335,6 +32554,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: BoolFilter<"Settings"> | boolean
     assistentePluginAtivo?: BoolFilter<"Settings"> | boolean
     nocodePluginAtivo?: BoolFilter<"Settings"> | boolean
+    crmPluginAtivo?: BoolFilter<"Settings"> | boolean
     temaApp?: StringFilter<"Settings"> | string
     appNome?: StringFilter<"Settings"> | string
     appLogo?: StringNullableFilter<"Settings"> | string | null
@@ -26363,6 +32583,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
     nocodePluginAtivo?: SortOrder
+    crmPluginAtivo?: SortOrder
     temaApp?: SortOrder
     appNome?: SortOrder
     appLogo?: SortOrderInput | SortOrder
@@ -26394,6 +32615,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: BoolFilter<"Settings"> | boolean
     assistentePluginAtivo?: BoolFilter<"Settings"> | boolean
     nocodePluginAtivo?: BoolFilter<"Settings"> | boolean
+    crmPluginAtivo?: BoolFilter<"Settings"> | boolean
     temaApp?: StringFilter<"Settings"> | string
     appNome?: StringFilter<"Settings"> | string
     appLogo?: StringNullableFilter<"Settings"> | string | null
@@ -26422,6 +32644,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
     nocodePluginAtivo?: SortOrder
+    crmPluginAtivo?: SortOrder
     temaApp?: SortOrder
     appNome?: SortOrder
     appLogo?: SortOrderInput | SortOrder
@@ -26458,6 +32681,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
     assistentePluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
     nocodePluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
+    crmPluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
     temaApp?: StringWithAggregatesFilter<"Settings"> | string
     appNome?: StringWithAggregatesFilter<"Settings"> | string
     appLogo?: StringNullableWithAggregatesFilter<"Settings"> | string | null
@@ -27002,6 +33226,7 @@ export namespace Prisma {
     chatIdentificarRemetente?: BoolFilter<"User"> | boolean
     criadoEm?: DateTimeFilter<"User"> | Date | string
     atualizadoEm?: DateTimeFilter<"User"> | Date | string
+    atendente?: XOR<AtendenteNullableScalarRelationFilter, AtendenteWhereInput> | null
   }
 
   export type UserOrderByWithRelationInput = {
@@ -27016,6 +33241,7 @@ export namespace Prisma {
     chatIdentificarRemetente?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
+    atendente?: AtendenteOrderByWithRelationInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -27033,6 +33259,7 @@ export namespace Prisma {
     chatIdentificarRemetente?: BoolFilter<"User"> | boolean
     criadoEm?: DateTimeFilter<"User"> | Date | string
     atualizadoEm?: DateTimeFilter<"User"> | Date | string
+    atendente?: XOR<AtendenteNullableScalarRelationFilter, AtendenteWhereInput> | null
   }, "id" | "username">
 
   export type UserOrderByWithAggregationInput = {
@@ -27069,6 +33296,305 @@ export namespace Prisma {
     atualizadoEm?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
 
+  export type DepartamentoWhereInput = {
+    AND?: DepartamentoWhereInput | DepartamentoWhereInput[]
+    OR?: DepartamentoWhereInput[]
+    NOT?: DepartamentoWhereInput | DepartamentoWhereInput[]
+    id?: StringFilter<"Departamento"> | string
+    nome?: StringFilter<"Departamento"> | string
+    descricao?: StringNullableFilter<"Departamento"> | string | null
+    ativo?: BoolFilter<"Departamento"> | boolean
+    criadoEm?: DateTimeFilter<"Departamento"> | Date | string
+    atualizadoEm?: DateTimeFilter<"Departamento"> | Date | string
+    atendentes?: AtendenteDepartamentoListRelationFilter
+    atendimentos?: LeadAtendimentoListRelationFilter
+  }
+
+  export type DepartamentoOrderByWithRelationInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    descricao?: SortOrderInput | SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    atendentes?: AtendenteDepartamentoOrderByRelationAggregateInput
+    atendimentos?: LeadAtendimentoOrderByRelationAggregateInput
+  }
+
+  export type DepartamentoWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    nome?: string
+    AND?: DepartamentoWhereInput | DepartamentoWhereInput[]
+    OR?: DepartamentoWhereInput[]
+    NOT?: DepartamentoWhereInput | DepartamentoWhereInput[]
+    descricao?: StringNullableFilter<"Departamento"> | string | null
+    ativo?: BoolFilter<"Departamento"> | boolean
+    criadoEm?: DateTimeFilter<"Departamento"> | Date | string
+    atualizadoEm?: DateTimeFilter<"Departamento"> | Date | string
+    atendentes?: AtendenteDepartamentoListRelationFilter
+    atendimentos?: LeadAtendimentoListRelationFilter
+  }, "id" | "nome">
+
+  export type DepartamentoOrderByWithAggregationInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    descricao?: SortOrderInput | SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    _count?: DepartamentoCountOrderByAggregateInput
+    _max?: DepartamentoMaxOrderByAggregateInput
+    _min?: DepartamentoMinOrderByAggregateInput
+  }
+
+  export type DepartamentoScalarWhereWithAggregatesInput = {
+    AND?: DepartamentoScalarWhereWithAggregatesInput | DepartamentoScalarWhereWithAggregatesInput[]
+    OR?: DepartamentoScalarWhereWithAggregatesInput[]
+    NOT?: DepartamentoScalarWhereWithAggregatesInput | DepartamentoScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Departamento"> | string
+    nome?: StringWithAggregatesFilter<"Departamento"> | string
+    descricao?: StringNullableWithAggregatesFilter<"Departamento"> | string | null
+    ativo?: BoolWithAggregatesFilter<"Departamento"> | boolean
+    criadoEm?: DateTimeWithAggregatesFilter<"Departamento"> | Date | string
+    atualizadoEm?: DateTimeWithAggregatesFilter<"Departamento"> | Date | string
+  }
+
+  export type AtendenteWhereInput = {
+    AND?: AtendenteWhereInput | AtendenteWhereInput[]
+    OR?: AtendenteWhereInput[]
+    NOT?: AtendenteWhereInput | AtendenteWhereInput[]
+    id?: StringFilter<"Atendente"> | string
+    userId?: StringFilter<"Atendente"> | string
+    ativo?: BoolFilter<"Atendente"> | boolean
+    criadoEm?: DateTimeFilter<"Atendente"> | Date | string
+    atualizadoEm?: DateTimeFilter<"Atendente"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    departamentos?: AtendenteDepartamentoListRelationFilter
+    atendimentos?: LeadAtendimentoListRelationFilter
+  }
+
+  export type AtendenteOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    user?: UserOrderByWithRelationInput
+    departamentos?: AtendenteDepartamentoOrderByRelationAggregateInput
+    atendimentos?: LeadAtendimentoOrderByRelationAggregateInput
+  }
+
+  export type AtendenteWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId?: string
+    AND?: AtendenteWhereInput | AtendenteWhereInput[]
+    OR?: AtendenteWhereInput[]
+    NOT?: AtendenteWhereInput | AtendenteWhereInput[]
+    ativo?: BoolFilter<"Atendente"> | boolean
+    criadoEm?: DateTimeFilter<"Atendente"> | Date | string
+    atualizadoEm?: DateTimeFilter<"Atendente"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    departamentos?: AtendenteDepartamentoListRelationFilter
+    atendimentos?: LeadAtendimentoListRelationFilter
+  }, "id" | "userId">
+
+  export type AtendenteOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    _count?: AtendenteCountOrderByAggregateInput
+    _max?: AtendenteMaxOrderByAggregateInput
+    _min?: AtendenteMinOrderByAggregateInput
+  }
+
+  export type AtendenteScalarWhereWithAggregatesInput = {
+    AND?: AtendenteScalarWhereWithAggregatesInput | AtendenteScalarWhereWithAggregatesInput[]
+    OR?: AtendenteScalarWhereWithAggregatesInput[]
+    NOT?: AtendenteScalarWhereWithAggregatesInput | AtendenteScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Atendente"> | string
+    userId?: StringWithAggregatesFilter<"Atendente"> | string
+    ativo?: BoolWithAggregatesFilter<"Atendente"> | boolean
+    criadoEm?: DateTimeWithAggregatesFilter<"Atendente"> | Date | string
+    atualizadoEm?: DateTimeWithAggregatesFilter<"Atendente"> | Date | string
+  }
+
+  export type AtendenteDepartamentoWhereInput = {
+    AND?: AtendenteDepartamentoWhereInput | AtendenteDepartamentoWhereInput[]
+    OR?: AtendenteDepartamentoWhereInput[]
+    NOT?: AtendenteDepartamentoWhereInput | AtendenteDepartamentoWhereInput[]
+    atendenteId?: StringFilter<"AtendenteDepartamento"> | string
+    departamentoId?: StringFilter<"AtendenteDepartamento"> | string
+    atendente?: XOR<AtendenteScalarRelationFilter, AtendenteWhereInput>
+    departamento?: XOR<DepartamentoScalarRelationFilter, DepartamentoWhereInput>
+  }
+
+  export type AtendenteDepartamentoOrderByWithRelationInput = {
+    atendenteId?: SortOrder
+    departamentoId?: SortOrder
+    atendente?: AtendenteOrderByWithRelationInput
+    departamento?: DepartamentoOrderByWithRelationInput
+  }
+
+  export type AtendenteDepartamentoWhereUniqueInput = Prisma.AtLeast<{
+    atendenteId_departamentoId?: AtendenteDepartamentoAtendenteIdDepartamentoIdCompoundUniqueInput
+    AND?: AtendenteDepartamentoWhereInput | AtendenteDepartamentoWhereInput[]
+    OR?: AtendenteDepartamentoWhereInput[]
+    NOT?: AtendenteDepartamentoWhereInput | AtendenteDepartamentoWhereInput[]
+    atendenteId?: StringFilter<"AtendenteDepartamento"> | string
+    departamentoId?: StringFilter<"AtendenteDepartamento"> | string
+    atendente?: XOR<AtendenteScalarRelationFilter, AtendenteWhereInput>
+    departamento?: XOR<DepartamentoScalarRelationFilter, DepartamentoWhereInput>
+  }, "atendenteId_departamentoId">
+
+  export type AtendenteDepartamentoOrderByWithAggregationInput = {
+    atendenteId?: SortOrder
+    departamentoId?: SortOrder
+    _count?: AtendenteDepartamentoCountOrderByAggregateInput
+    _max?: AtendenteDepartamentoMaxOrderByAggregateInput
+    _min?: AtendenteDepartamentoMinOrderByAggregateInput
+  }
+
+  export type AtendenteDepartamentoScalarWhereWithAggregatesInput = {
+    AND?: AtendenteDepartamentoScalarWhereWithAggregatesInput | AtendenteDepartamentoScalarWhereWithAggregatesInput[]
+    OR?: AtendenteDepartamentoScalarWhereWithAggregatesInput[]
+    NOT?: AtendenteDepartamentoScalarWhereWithAggregatesInput | AtendenteDepartamentoScalarWhereWithAggregatesInput[]
+    atendenteId?: StringWithAggregatesFilter<"AtendenteDepartamento"> | string
+    departamentoId?: StringWithAggregatesFilter<"AtendenteDepartamento"> | string
+  }
+
+  export type LeadAtendimentoWhereInput = {
+    AND?: LeadAtendimentoWhereInput | LeadAtendimentoWhereInput[]
+    OR?: LeadAtendimentoWhereInput[]
+    NOT?: LeadAtendimentoWhereInput | LeadAtendimentoWhereInput[]
+    leadId?: StringFilter<"LeadAtendimento"> | string
+    departamentoId?: StringNullableFilter<"LeadAtendimento"> | string | null
+    atendenteId?: StringNullableFilter<"LeadAtendimento"> | string | null
+    transferidoEm?: DateTimeFilter<"LeadAtendimento"> | Date | string
+    lead?: XOR<LeadScalarRelationFilter, LeadWhereInput>
+    departamento?: XOR<DepartamentoNullableScalarRelationFilter, DepartamentoWhereInput> | null
+    atendente?: XOR<AtendenteNullableScalarRelationFilter, AtendenteWhereInput> | null
+  }
+
+  export type LeadAtendimentoOrderByWithRelationInput = {
+    leadId?: SortOrder
+    departamentoId?: SortOrderInput | SortOrder
+    atendenteId?: SortOrderInput | SortOrder
+    transferidoEm?: SortOrder
+    lead?: LeadOrderByWithRelationInput
+    departamento?: DepartamentoOrderByWithRelationInput
+    atendente?: AtendenteOrderByWithRelationInput
+  }
+
+  export type LeadAtendimentoWhereUniqueInput = Prisma.AtLeast<{
+    leadId?: string
+    AND?: LeadAtendimentoWhereInput | LeadAtendimentoWhereInput[]
+    OR?: LeadAtendimentoWhereInput[]
+    NOT?: LeadAtendimentoWhereInput | LeadAtendimentoWhereInput[]
+    departamentoId?: StringNullableFilter<"LeadAtendimento"> | string | null
+    atendenteId?: StringNullableFilter<"LeadAtendimento"> | string | null
+    transferidoEm?: DateTimeFilter<"LeadAtendimento"> | Date | string
+    lead?: XOR<LeadScalarRelationFilter, LeadWhereInput>
+    departamento?: XOR<DepartamentoNullableScalarRelationFilter, DepartamentoWhereInput> | null
+    atendente?: XOR<AtendenteNullableScalarRelationFilter, AtendenteWhereInput> | null
+  }, "leadId">
+
+  export type LeadAtendimentoOrderByWithAggregationInput = {
+    leadId?: SortOrder
+    departamentoId?: SortOrderInput | SortOrder
+    atendenteId?: SortOrderInput | SortOrder
+    transferidoEm?: SortOrder
+    _count?: LeadAtendimentoCountOrderByAggregateInput
+    _max?: LeadAtendimentoMaxOrderByAggregateInput
+    _min?: LeadAtendimentoMinOrderByAggregateInput
+  }
+
+  export type LeadAtendimentoScalarWhereWithAggregatesInput = {
+    AND?: LeadAtendimentoScalarWhereWithAggregatesInput | LeadAtendimentoScalarWhereWithAggregatesInput[]
+    OR?: LeadAtendimentoScalarWhereWithAggregatesInput[]
+    NOT?: LeadAtendimentoScalarWhereWithAggregatesInput | LeadAtendimentoScalarWhereWithAggregatesInput[]
+    leadId?: StringWithAggregatesFilter<"LeadAtendimento"> | string
+    departamentoId?: StringNullableWithAggregatesFilter<"LeadAtendimento"> | string | null
+    atendenteId?: StringNullableWithAggregatesFilter<"LeadAtendimento"> | string | null
+    transferidoEm?: DateTimeWithAggregatesFilter<"LeadAtendimento"> | Date | string
+  }
+
+  export type AtendimentoTransferenciaWhereInput = {
+    AND?: AtendimentoTransferenciaWhereInput | AtendimentoTransferenciaWhereInput[]
+    OR?: AtendimentoTransferenciaWhereInput[]
+    NOT?: AtendimentoTransferenciaWhereInput | AtendimentoTransferenciaWhereInput[]
+    id?: StringFilter<"AtendimentoTransferencia"> | string
+    leadId?: StringFilter<"AtendimentoTransferencia"> | string
+    deDepartamento?: StringNullableFilter<"AtendimentoTransferencia"> | string | null
+    paraDepartamento?: StringNullableFilter<"AtendimentoTransferencia"> | string | null
+    deAtendente?: StringNullableFilter<"AtendimentoTransferencia"> | string | null
+    paraAtendente?: StringNullableFilter<"AtendimentoTransferencia"> | string | null
+    porUsuario?: StringFilter<"AtendimentoTransferencia"> | string
+    motivo?: StringNullableFilter<"AtendimentoTransferencia"> | string | null
+    data?: DateTimeFilter<"AtendimentoTransferencia"> | Date | string
+    lead?: XOR<LeadScalarRelationFilter, LeadWhereInput>
+  }
+
+  export type AtendimentoTransferenciaOrderByWithRelationInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    deDepartamento?: SortOrderInput | SortOrder
+    paraDepartamento?: SortOrderInput | SortOrder
+    deAtendente?: SortOrderInput | SortOrder
+    paraAtendente?: SortOrderInput | SortOrder
+    porUsuario?: SortOrder
+    motivo?: SortOrderInput | SortOrder
+    data?: SortOrder
+    lead?: LeadOrderByWithRelationInput
+  }
+
+  export type AtendimentoTransferenciaWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AtendimentoTransferenciaWhereInput | AtendimentoTransferenciaWhereInput[]
+    OR?: AtendimentoTransferenciaWhereInput[]
+    NOT?: AtendimentoTransferenciaWhereInput | AtendimentoTransferenciaWhereInput[]
+    leadId?: StringFilter<"AtendimentoTransferencia"> | string
+    deDepartamento?: StringNullableFilter<"AtendimentoTransferencia"> | string | null
+    paraDepartamento?: StringNullableFilter<"AtendimentoTransferencia"> | string | null
+    deAtendente?: StringNullableFilter<"AtendimentoTransferencia"> | string | null
+    paraAtendente?: StringNullableFilter<"AtendimentoTransferencia"> | string | null
+    porUsuario?: StringFilter<"AtendimentoTransferencia"> | string
+    motivo?: StringNullableFilter<"AtendimentoTransferencia"> | string | null
+    data?: DateTimeFilter<"AtendimentoTransferencia"> | Date | string
+    lead?: XOR<LeadScalarRelationFilter, LeadWhereInput>
+  }, "id">
+
+  export type AtendimentoTransferenciaOrderByWithAggregationInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    deDepartamento?: SortOrderInput | SortOrder
+    paraDepartamento?: SortOrderInput | SortOrder
+    deAtendente?: SortOrderInput | SortOrder
+    paraAtendente?: SortOrderInput | SortOrder
+    porUsuario?: SortOrder
+    motivo?: SortOrderInput | SortOrder
+    data?: SortOrder
+    _count?: AtendimentoTransferenciaCountOrderByAggregateInput
+    _max?: AtendimentoTransferenciaMaxOrderByAggregateInput
+    _min?: AtendimentoTransferenciaMinOrderByAggregateInput
+  }
+
+  export type AtendimentoTransferenciaScalarWhereWithAggregatesInput = {
+    AND?: AtendimentoTransferenciaScalarWhereWithAggregatesInput | AtendimentoTransferenciaScalarWhereWithAggregatesInput[]
+    OR?: AtendimentoTransferenciaScalarWhereWithAggregatesInput[]
+    NOT?: AtendimentoTransferenciaScalarWhereWithAggregatesInput | AtendimentoTransferenciaScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AtendimentoTransferencia"> | string
+    leadId?: StringWithAggregatesFilter<"AtendimentoTransferencia"> | string
+    deDepartamento?: StringNullableWithAggregatesFilter<"AtendimentoTransferencia"> | string | null
+    paraDepartamento?: StringNullableWithAggregatesFilter<"AtendimentoTransferencia"> | string | null
+    deAtendente?: StringNullableWithAggregatesFilter<"AtendimentoTransferencia"> | string | null
+    paraAtendente?: StringNullableWithAggregatesFilter<"AtendimentoTransferencia"> | string | null
+    porUsuario?: StringWithAggregatesFilter<"AtendimentoTransferencia"> | string
+    motivo?: StringNullableWithAggregatesFilter<"AtendimentoTransferencia"> | string | null
+    data?: DateTimeWithAggregatesFilter<"AtendimentoTransferencia"> | Date | string
+  }
+
   export type LeadCreateInput = {
     id?: string
     nome: string
@@ -27089,6 +33615,8 @@ export namespace Prisma {
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateInput = {
@@ -27111,6 +33639,8 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUpdateInput = {
@@ -27133,6 +33663,8 @@ export namespace Prisma {
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateInput = {
@@ -27155,6 +33687,8 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadCreateManyInput = {
@@ -27935,6 +34469,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
     nocodePluginAtivo?: boolean
+    crmPluginAtivo?: boolean
     temaApp?: string
     appNome?: string
     appLogo?: string | null
@@ -27963,6 +34498,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
     nocodePluginAtivo?: boolean
+    crmPluginAtivo?: boolean
     temaApp?: string
     appNome?: string
     appLogo?: string | null
@@ -27991,6 +34527,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     nocodePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    crmPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     appNome?: StringFieldUpdateOperationsInput | string
     appLogo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28019,6 +34556,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     nocodePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    crmPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     appNome?: StringFieldUpdateOperationsInput | string
     appLogo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28047,6 +34585,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: boolean
     assistentePluginAtivo?: boolean
     nocodePluginAtivo?: boolean
+    crmPluginAtivo?: boolean
     temaApp?: string
     appNome?: string
     appLogo?: string | null
@@ -28075,6 +34614,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     nocodePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    crmPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     appNome?: StringFieldUpdateOperationsInput | string
     appLogo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28103,6 +34643,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     nocodePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    crmPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     appNome?: StringFieldUpdateOperationsInput | string
     appLogo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28691,6 +35232,7 @@ export namespace Prisma {
     chatIdentificarRemetente?: boolean
     criadoEm?: Date | string
     atualizadoEm?: Date | string
+    atendente?: AtendenteCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -28705,6 +35247,7 @@ export namespace Prisma {
     chatIdentificarRemetente?: boolean
     criadoEm?: Date | string
     atualizadoEm?: Date | string
+    atendente?: AtendenteUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -28719,6 +35262,7 @@ export namespace Prisma {
     chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendente?: AtendenteUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -28733,6 +35277,7 @@ export namespace Prisma {
     chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendente?: AtendenteUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -28775,6 +35320,303 @@ export namespace Prisma {
     chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DepartamentoCreateInput = {
+    id?: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendentes?: AtendenteDepartamentoCreateNestedManyWithoutDepartamentoInput
+    atendimentos?: LeadAtendimentoCreateNestedManyWithoutDepartamentoInput
+  }
+
+  export type DepartamentoUncheckedCreateInput = {
+    id?: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendentes?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput
+    atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutDepartamentoInput
+  }
+
+  export type DepartamentoUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendentes?: AtendenteDepartamentoUpdateManyWithoutDepartamentoNestedInput
+    atendimentos?: LeadAtendimentoUpdateManyWithoutDepartamentoNestedInput
+  }
+
+  export type DepartamentoUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendentes?: AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput
+    atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoNestedInput
+  }
+
+  export type DepartamentoCreateManyInput = {
+    id?: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type DepartamentoUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DepartamentoUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AtendenteCreateInput = {
+    id?: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    user: UserCreateNestedOneWithoutAtendenteInput
+    departamentos?: AtendenteDepartamentoCreateNestedManyWithoutAtendenteInput
+    atendimentos?: LeadAtendimentoCreateNestedManyWithoutAtendenteInput
+  }
+
+  export type AtendenteUncheckedCreateInput = {
+    id?: string
+    userId: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    departamentos?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutAtendenteInput
+    atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutAtendenteInput
+  }
+
+  export type AtendenteUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutAtendenteNestedInput
+    departamentos?: AtendenteDepartamentoUpdateManyWithoutAtendenteNestedInput
+    atendimentos?: LeadAtendimentoUpdateManyWithoutAtendenteNestedInput
+  }
+
+  export type AtendenteUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    departamentos?: AtendenteDepartamentoUncheckedUpdateManyWithoutAtendenteNestedInput
+    atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutAtendenteNestedInput
+  }
+
+  export type AtendenteCreateManyInput = {
+    id?: string
+    userId: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type AtendenteUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AtendenteUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AtendenteDepartamentoCreateInput = {
+    atendente: AtendenteCreateNestedOneWithoutDepartamentosInput
+    departamento: DepartamentoCreateNestedOneWithoutAtendentesInput
+  }
+
+  export type AtendenteDepartamentoUncheckedCreateInput = {
+    atendenteId: string
+    departamentoId: string
+  }
+
+  export type AtendenteDepartamentoUpdateInput = {
+    atendente?: AtendenteUpdateOneRequiredWithoutDepartamentosNestedInput
+    departamento?: DepartamentoUpdateOneRequiredWithoutAtendentesNestedInput
+  }
+
+  export type AtendenteDepartamentoUncheckedUpdateInput = {
+    atendenteId?: StringFieldUpdateOperationsInput | string
+    departamentoId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type AtendenteDepartamentoCreateManyInput = {
+    atendenteId: string
+    departamentoId: string
+  }
+
+  export type AtendenteDepartamentoUpdateManyMutationInput = {
+
+  }
+
+  export type AtendenteDepartamentoUncheckedUpdateManyInput = {
+    atendenteId?: StringFieldUpdateOperationsInput | string
+    departamentoId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type LeadAtendimentoCreateInput = {
+    transferidoEm?: Date | string
+    lead: LeadCreateNestedOneWithoutAtendimentoInput
+    departamento?: DepartamentoCreateNestedOneWithoutAtendimentosInput
+    atendente?: AtendenteCreateNestedOneWithoutAtendimentosInput
+  }
+
+  export type LeadAtendimentoUncheckedCreateInput = {
+    leadId: string
+    departamentoId?: string | null
+    atendenteId?: string | null
+    transferidoEm?: Date | string
+  }
+
+  export type LeadAtendimentoUpdateInput = {
+    transferidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    lead?: LeadUpdateOneRequiredWithoutAtendimentoNestedInput
+    departamento?: DepartamentoUpdateOneWithoutAtendimentosNestedInput
+    atendente?: AtendenteUpdateOneWithoutAtendimentosNestedInput
+  }
+
+  export type LeadAtendimentoUncheckedUpdateInput = {
+    leadId?: StringFieldUpdateOperationsInput | string
+    departamentoId?: NullableStringFieldUpdateOperationsInput | string | null
+    atendenteId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadAtendimentoCreateManyInput = {
+    leadId: string
+    departamentoId?: string | null
+    atendenteId?: string | null
+    transferidoEm?: Date | string
+  }
+
+  export type LeadAtendimentoUpdateManyMutationInput = {
+    transferidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadAtendimentoUncheckedUpdateManyInput = {
+    leadId?: StringFieldUpdateOperationsInput | string
+    departamentoId?: NullableStringFieldUpdateOperationsInput | string | null
+    atendenteId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AtendimentoTransferenciaCreateInput = {
+    id?: string
+    deDepartamento?: string | null
+    paraDepartamento?: string | null
+    deAtendente?: string | null
+    paraAtendente?: string | null
+    porUsuario: string
+    motivo?: string | null
+    data?: Date | string
+    lead: LeadCreateNestedOneWithoutTransferenciasInput
+  }
+
+  export type AtendimentoTransferenciaUncheckedCreateInput = {
+    id?: string
+    leadId: string
+    deDepartamento?: string | null
+    paraDepartamento?: string | null
+    deAtendente?: string | null
+    paraAtendente?: string | null
+    porUsuario: string
+    motivo?: string | null
+    data?: Date | string
+  }
+
+  export type AtendimentoTransferenciaUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    deDepartamento?: NullableStringFieldUpdateOperationsInput | string | null
+    paraDepartamento?: NullableStringFieldUpdateOperationsInput | string | null
+    deAtendente?: NullableStringFieldUpdateOperationsInput | string | null
+    paraAtendente?: NullableStringFieldUpdateOperationsInput | string | null
+    porUsuario?: StringFieldUpdateOperationsInput | string
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    data?: DateTimeFieldUpdateOperationsInput | Date | string
+    lead?: LeadUpdateOneRequiredWithoutTransferenciasNestedInput
+  }
+
+  export type AtendimentoTransferenciaUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    deDepartamento?: NullableStringFieldUpdateOperationsInput | string | null
+    paraDepartamento?: NullableStringFieldUpdateOperationsInput | string | null
+    deAtendente?: NullableStringFieldUpdateOperationsInput | string | null
+    paraAtendente?: NullableStringFieldUpdateOperationsInput | string | null
+    porUsuario?: StringFieldUpdateOperationsInput | string
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    data?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AtendimentoTransferenciaCreateManyInput = {
+    id?: string
+    leadId: string
+    deDepartamento?: string | null
+    paraDepartamento?: string | null
+    deAtendente?: string | null
+    paraAtendente?: string | null
+    porUsuario: string
+    motivo?: string | null
+    data?: Date | string
+  }
+
+  export type AtendimentoTransferenciaUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    deDepartamento?: NullableStringFieldUpdateOperationsInput | string | null
+    paraDepartamento?: NullableStringFieldUpdateOperationsInput | string | null
+    deAtendente?: NullableStringFieldUpdateOperationsInput | string | null
+    paraAtendente?: NullableStringFieldUpdateOperationsInput | string | null
+    porUsuario?: StringFieldUpdateOperationsInput | string
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    data?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AtendimentoTransferenciaUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    deDepartamento?: NullableStringFieldUpdateOperationsInput | string | null
+    paraDepartamento?: NullableStringFieldUpdateOperationsInput | string | null
+    deAtendente?: NullableStringFieldUpdateOperationsInput | string | null
+    paraAtendente?: NullableStringFieldUpdateOperationsInput | string | null
+    porUsuario?: StringFieldUpdateOperationsInput | string
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    data?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -28865,6 +35707,17 @@ export namespace Prisma {
     none?: ChatInternalNoteWhereInput
   }
 
+  export type LeadAtendimentoNullableScalarRelationFilter = {
+    is?: LeadAtendimentoWhereInput | null
+    isNot?: LeadAtendimentoWhereInput | null
+  }
+
+  export type AtendimentoTransferenciaListRelationFilter = {
+    every?: AtendimentoTransferenciaWhereInput
+    some?: AtendimentoTransferenciaWhereInput
+    none?: AtendimentoTransferenciaWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -28883,6 +35736,10 @@ export namespace Prisma {
   }
 
   export type ChatInternalNoteOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AtendimentoTransferenciaOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -29482,6 +36339,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
     nocodePluginAtivo?: SortOrder
+    crmPluginAtivo?: SortOrder
     temaApp?: SortOrder
     appNome?: SortOrder
     appLogo?: SortOrder
@@ -29516,6 +36374,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
     nocodePluginAtivo?: SortOrder
+    crmPluginAtivo?: SortOrder
     temaApp?: SortOrder
     appNome?: SortOrder
     appLogo?: SortOrder
@@ -29544,6 +36403,7 @@ export namespace Prisma {
     kanbanPluginAtivo?: SortOrder
     assistentePluginAtivo?: SortOrder
     nocodePluginAtivo?: SortOrder
+    crmPluginAtivo?: SortOrder
     temaApp?: SortOrder
     appNome?: SortOrder
     appLogo?: SortOrder
@@ -30000,6 +36860,11 @@ export namespace Prisma {
     not?: NestedEnumUserRoleFilter<$PrismaModel> | $Enums.UserRole
   }
 
+  export type AtendenteNullableScalarRelationFilter = {
+    is?: AtendenteWhereInput | null
+    isNot?: AtendenteWhereInput | null
+  }
+
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     username?: SortOrder
@@ -30050,6 +36915,174 @@ export namespace Prisma {
     _max?: NestedEnumUserRoleFilter<$PrismaModel>
   }
 
+  export type AtendenteDepartamentoListRelationFilter = {
+    every?: AtendenteDepartamentoWhereInput
+    some?: AtendenteDepartamentoWhereInput
+    none?: AtendenteDepartamentoWhereInput
+  }
+
+  export type LeadAtendimentoListRelationFilter = {
+    every?: LeadAtendimentoWhereInput
+    some?: LeadAtendimentoWhereInput
+    none?: LeadAtendimentoWhereInput
+  }
+
+  export type AtendenteDepartamentoOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LeadAtendimentoOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type DepartamentoCountOrderByAggregateInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    descricao?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type DepartamentoMaxOrderByAggregateInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    descricao?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type DepartamentoMinOrderByAggregateInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    descricao?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type UserScalarRelationFilter = {
+    is?: UserWhereInput
+    isNot?: UserWhereInput
+  }
+
+  export type AtendenteCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type AtendenteMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type AtendenteMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type AtendenteScalarRelationFilter = {
+    is?: AtendenteWhereInput
+    isNot?: AtendenteWhereInput
+  }
+
+  export type DepartamentoScalarRelationFilter = {
+    is?: DepartamentoWhereInput
+    isNot?: DepartamentoWhereInput
+  }
+
+  export type AtendenteDepartamentoAtendenteIdDepartamentoIdCompoundUniqueInput = {
+    atendenteId: string
+    departamentoId: string
+  }
+
+  export type AtendenteDepartamentoCountOrderByAggregateInput = {
+    atendenteId?: SortOrder
+    departamentoId?: SortOrder
+  }
+
+  export type AtendenteDepartamentoMaxOrderByAggregateInput = {
+    atendenteId?: SortOrder
+    departamentoId?: SortOrder
+  }
+
+  export type AtendenteDepartamentoMinOrderByAggregateInput = {
+    atendenteId?: SortOrder
+    departamentoId?: SortOrder
+  }
+
+  export type DepartamentoNullableScalarRelationFilter = {
+    is?: DepartamentoWhereInput | null
+    isNot?: DepartamentoWhereInput | null
+  }
+
+  export type LeadAtendimentoCountOrderByAggregateInput = {
+    leadId?: SortOrder
+    departamentoId?: SortOrder
+    atendenteId?: SortOrder
+    transferidoEm?: SortOrder
+  }
+
+  export type LeadAtendimentoMaxOrderByAggregateInput = {
+    leadId?: SortOrder
+    departamentoId?: SortOrder
+    atendenteId?: SortOrder
+    transferidoEm?: SortOrder
+  }
+
+  export type LeadAtendimentoMinOrderByAggregateInput = {
+    leadId?: SortOrder
+    departamentoId?: SortOrder
+    atendenteId?: SortOrder
+    transferidoEm?: SortOrder
+  }
+
+  export type AtendimentoTransferenciaCountOrderByAggregateInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    deDepartamento?: SortOrder
+    paraDepartamento?: SortOrder
+    deAtendente?: SortOrder
+    paraAtendente?: SortOrder
+    porUsuario?: SortOrder
+    motivo?: SortOrder
+    data?: SortOrder
+  }
+
+  export type AtendimentoTransferenciaMaxOrderByAggregateInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    deDepartamento?: SortOrder
+    paraDepartamento?: SortOrder
+    deAtendente?: SortOrder
+    paraAtendente?: SortOrder
+    porUsuario?: SortOrder
+    motivo?: SortOrder
+    data?: SortOrder
+  }
+
+  export type AtendimentoTransferenciaMinOrderByAggregateInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    deDepartamento?: SortOrder
+    paraDepartamento?: SortOrder
+    deAtendente?: SortOrder
+    paraAtendente?: SortOrder
+    porUsuario?: SortOrder
+    motivo?: SortOrder
+    data?: SortOrder
+  }
+
   export type CampaignCreateNestedOneWithoutLeadsInput = {
     create?: XOR<CampaignCreateWithoutLeadsInput, CampaignUncheckedCreateWithoutLeadsInput>
     connectOrCreate?: CampaignCreateOrConnectWithoutLeadsInput
@@ -30084,6 +37117,19 @@ export namespace Prisma {
     connect?: ChatInternalNoteWhereUniqueInput | ChatInternalNoteWhereUniqueInput[]
   }
 
+  export type LeadAtendimentoCreateNestedOneWithoutLeadInput = {
+    create?: XOR<LeadAtendimentoCreateWithoutLeadInput, LeadAtendimentoUncheckedCreateWithoutLeadInput>
+    connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutLeadInput
+    connect?: LeadAtendimentoWhereUniqueInput
+  }
+
+  export type AtendimentoTransferenciaCreateNestedManyWithoutLeadInput = {
+    create?: XOR<AtendimentoTransferenciaCreateWithoutLeadInput, AtendimentoTransferenciaUncheckedCreateWithoutLeadInput> | AtendimentoTransferenciaCreateWithoutLeadInput[] | AtendimentoTransferenciaUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: AtendimentoTransferenciaCreateOrConnectWithoutLeadInput | AtendimentoTransferenciaCreateOrConnectWithoutLeadInput[]
+    createMany?: AtendimentoTransferenciaCreateManyLeadInputEnvelope
+    connect?: AtendimentoTransferenciaWhereUniqueInput | AtendimentoTransferenciaWhereUniqueInput[]
+  }
+
   export type LeadCampaignUncheckedCreateNestedManyWithoutLeadInput = {
     create?: XOR<LeadCampaignCreateWithoutLeadInput, LeadCampaignUncheckedCreateWithoutLeadInput> | LeadCampaignCreateWithoutLeadInput[] | LeadCampaignUncheckedCreateWithoutLeadInput[]
     connectOrCreate?: LeadCampaignCreateOrConnectWithoutLeadInput | LeadCampaignCreateOrConnectWithoutLeadInput[]
@@ -30110,6 +37156,19 @@ export namespace Prisma {
     connectOrCreate?: ChatInternalNoteCreateOrConnectWithoutLeadInput | ChatInternalNoteCreateOrConnectWithoutLeadInput[]
     createMany?: ChatInternalNoteCreateManyLeadInputEnvelope
     connect?: ChatInternalNoteWhereUniqueInput | ChatInternalNoteWhereUniqueInput[]
+  }
+
+  export type LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput = {
+    create?: XOR<LeadAtendimentoCreateWithoutLeadInput, LeadAtendimentoUncheckedCreateWithoutLeadInput>
+    connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutLeadInput
+    connect?: LeadAtendimentoWhereUniqueInput
+  }
+
+  export type AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput = {
+    create?: XOR<AtendimentoTransferenciaCreateWithoutLeadInput, AtendimentoTransferenciaUncheckedCreateWithoutLeadInput> | AtendimentoTransferenciaCreateWithoutLeadInput[] | AtendimentoTransferenciaUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: AtendimentoTransferenciaCreateOrConnectWithoutLeadInput | AtendimentoTransferenciaCreateOrConnectWithoutLeadInput[]
+    createMany?: AtendimentoTransferenciaCreateManyLeadInputEnvelope
+    connect?: AtendimentoTransferenciaWhereUniqueInput | AtendimentoTransferenciaWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -30198,6 +37257,30 @@ export namespace Prisma {
     deleteMany?: ChatInternalNoteScalarWhereInput | ChatInternalNoteScalarWhereInput[]
   }
 
+  export type LeadAtendimentoUpdateOneWithoutLeadNestedInput = {
+    create?: XOR<LeadAtendimentoCreateWithoutLeadInput, LeadAtendimentoUncheckedCreateWithoutLeadInput>
+    connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutLeadInput
+    upsert?: LeadAtendimentoUpsertWithoutLeadInput
+    disconnect?: LeadAtendimentoWhereInput | boolean
+    delete?: LeadAtendimentoWhereInput | boolean
+    connect?: LeadAtendimentoWhereUniqueInput
+    update?: XOR<XOR<LeadAtendimentoUpdateToOneWithWhereWithoutLeadInput, LeadAtendimentoUpdateWithoutLeadInput>, LeadAtendimentoUncheckedUpdateWithoutLeadInput>
+  }
+
+  export type AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput = {
+    create?: XOR<AtendimentoTransferenciaCreateWithoutLeadInput, AtendimentoTransferenciaUncheckedCreateWithoutLeadInput> | AtendimentoTransferenciaCreateWithoutLeadInput[] | AtendimentoTransferenciaUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: AtendimentoTransferenciaCreateOrConnectWithoutLeadInput | AtendimentoTransferenciaCreateOrConnectWithoutLeadInput[]
+    upsert?: AtendimentoTransferenciaUpsertWithWhereUniqueWithoutLeadInput | AtendimentoTransferenciaUpsertWithWhereUniqueWithoutLeadInput[]
+    createMany?: AtendimentoTransferenciaCreateManyLeadInputEnvelope
+    set?: AtendimentoTransferenciaWhereUniqueInput | AtendimentoTransferenciaWhereUniqueInput[]
+    disconnect?: AtendimentoTransferenciaWhereUniqueInput | AtendimentoTransferenciaWhereUniqueInput[]
+    delete?: AtendimentoTransferenciaWhereUniqueInput | AtendimentoTransferenciaWhereUniqueInput[]
+    connect?: AtendimentoTransferenciaWhereUniqueInput | AtendimentoTransferenciaWhereUniqueInput[]
+    update?: AtendimentoTransferenciaUpdateWithWhereUniqueWithoutLeadInput | AtendimentoTransferenciaUpdateWithWhereUniqueWithoutLeadInput[]
+    updateMany?: AtendimentoTransferenciaUpdateManyWithWhereWithoutLeadInput | AtendimentoTransferenciaUpdateManyWithWhereWithoutLeadInput[]
+    deleteMany?: AtendimentoTransferenciaScalarWhereInput | AtendimentoTransferenciaScalarWhereInput[]
+  }
+
   export type LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput = {
     create?: XOR<LeadCampaignCreateWithoutLeadInput, LeadCampaignUncheckedCreateWithoutLeadInput> | LeadCampaignCreateWithoutLeadInput[] | LeadCampaignUncheckedCreateWithoutLeadInput[]
     connectOrCreate?: LeadCampaignCreateOrConnectWithoutLeadInput | LeadCampaignCreateOrConnectWithoutLeadInput[]
@@ -30252,6 +37335,30 @@ export namespace Prisma {
     update?: ChatInternalNoteUpdateWithWhereUniqueWithoutLeadInput | ChatInternalNoteUpdateWithWhereUniqueWithoutLeadInput[]
     updateMany?: ChatInternalNoteUpdateManyWithWhereWithoutLeadInput | ChatInternalNoteUpdateManyWithWhereWithoutLeadInput[]
     deleteMany?: ChatInternalNoteScalarWhereInput | ChatInternalNoteScalarWhereInput[]
+  }
+
+  export type LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput = {
+    create?: XOR<LeadAtendimentoCreateWithoutLeadInput, LeadAtendimentoUncheckedCreateWithoutLeadInput>
+    connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutLeadInput
+    upsert?: LeadAtendimentoUpsertWithoutLeadInput
+    disconnect?: LeadAtendimentoWhereInput | boolean
+    delete?: LeadAtendimentoWhereInput | boolean
+    connect?: LeadAtendimentoWhereUniqueInput
+    update?: XOR<XOR<LeadAtendimentoUpdateToOneWithWhereWithoutLeadInput, LeadAtendimentoUpdateWithoutLeadInput>, LeadAtendimentoUncheckedUpdateWithoutLeadInput>
+  }
+
+  export type AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput = {
+    create?: XOR<AtendimentoTransferenciaCreateWithoutLeadInput, AtendimentoTransferenciaUncheckedCreateWithoutLeadInput> | AtendimentoTransferenciaCreateWithoutLeadInput[] | AtendimentoTransferenciaUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: AtendimentoTransferenciaCreateOrConnectWithoutLeadInput | AtendimentoTransferenciaCreateOrConnectWithoutLeadInput[]
+    upsert?: AtendimentoTransferenciaUpsertWithWhereUniqueWithoutLeadInput | AtendimentoTransferenciaUpsertWithWhereUniqueWithoutLeadInput[]
+    createMany?: AtendimentoTransferenciaCreateManyLeadInputEnvelope
+    set?: AtendimentoTransferenciaWhereUniqueInput | AtendimentoTransferenciaWhereUniqueInput[]
+    disconnect?: AtendimentoTransferenciaWhereUniqueInput | AtendimentoTransferenciaWhereUniqueInput[]
+    delete?: AtendimentoTransferenciaWhereUniqueInput | AtendimentoTransferenciaWhereUniqueInput[]
+    connect?: AtendimentoTransferenciaWhereUniqueInput | AtendimentoTransferenciaWhereUniqueInput[]
+    update?: AtendimentoTransferenciaUpdateWithWhereUniqueWithoutLeadInput | AtendimentoTransferenciaUpdateWithWhereUniqueWithoutLeadInput[]
+    updateMany?: AtendimentoTransferenciaUpdateManyWithWhereWithoutLeadInput | AtendimentoTransferenciaUpdateManyWithWhereWithoutLeadInput[]
+    deleteMany?: AtendimentoTransferenciaScalarWhereInput | AtendimentoTransferenciaScalarWhereInput[]
   }
 
   export type LeadCreateNestedOneWithoutNotasInternasInput = {
@@ -30689,6 +37796,18 @@ export namespace Prisma {
     set: string[]
   }
 
+  export type AtendenteCreateNestedOneWithoutUserInput = {
+    create?: XOR<AtendenteCreateWithoutUserInput, AtendenteUncheckedCreateWithoutUserInput>
+    connectOrCreate?: AtendenteCreateOrConnectWithoutUserInput
+    connect?: AtendenteWhereUniqueInput
+  }
+
+  export type AtendenteUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<AtendenteCreateWithoutUserInput, AtendenteUncheckedCreateWithoutUserInput>
+    connectOrCreate?: AtendenteCreateOrConnectWithoutUserInput
+    connect?: AtendenteWhereUniqueInput
+  }
+
   export type EnumUserRoleFieldUpdateOperationsInput = {
     set?: $Enums.UserRole
   }
@@ -30696,6 +37815,296 @@ export namespace Prisma {
   export type UserUpdatesecoesInput = {
     set?: string[]
     push?: string | string[]
+  }
+
+  export type AtendenteUpdateOneWithoutUserNestedInput = {
+    create?: XOR<AtendenteCreateWithoutUserInput, AtendenteUncheckedCreateWithoutUserInput>
+    connectOrCreate?: AtendenteCreateOrConnectWithoutUserInput
+    upsert?: AtendenteUpsertWithoutUserInput
+    disconnect?: AtendenteWhereInput | boolean
+    delete?: AtendenteWhereInput | boolean
+    connect?: AtendenteWhereUniqueInput
+    update?: XOR<XOR<AtendenteUpdateToOneWithWhereWithoutUserInput, AtendenteUpdateWithoutUserInput>, AtendenteUncheckedUpdateWithoutUserInput>
+  }
+
+  export type AtendenteUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<AtendenteCreateWithoutUserInput, AtendenteUncheckedCreateWithoutUserInput>
+    connectOrCreate?: AtendenteCreateOrConnectWithoutUserInput
+    upsert?: AtendenteUpsertWithoutUserInput
+    disconnect?: AtendenteWhereInput | boolean
+    delete?: AtendenteWhereInput | boolean
+    connect?: AtendenteWhereUniqueInput
+    update?: XOR<XOR<AtendenteUpdateToOneWithWhereWithoutUserInput, AtendenteUpdateWithoutUserInput>, AtendenteUncheckedUpdateWithoutUserInput>
+  }
+
+  export type AtendenteDepartamentoCreateNestedManyWithoutDepartamentoInput = {
+    create?: XOR<AtendenteDepartamentoCreateWithoutDepartamentoInput, AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput> | AtendenteDepartamentoCreateWithoutDepartamentoInput[] | AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput[]
+    connectOrCreate?: AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput | AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput[]
+    createMany?: AtendenteDepartamentoCreateManyDepartamentoInputEnvelope
+    connect?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+  }
+
+  export type LeadAtendimentoCreateNestedManyWithoutDepartamentoInput = {
+    create?: XOR<LeadAtendimentoCreateWithoutDepartamentoInput, LeadAtendimentoUncheckedCreateWithoutDepartamentoInput> | LeadAtendimentoCreateWithoutDepartamentoInput[] | LeadAtendimentoUncheckedCreateWithoutDepartamentoInput[]
+    connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutDepartamentoInput | LeadAtendimentoCreateOrConnectWithoutDepartamentoInput[]
+    createMany?: LeadAtendimentoCreateManyDepartamentoInputEnvelope
+    connect?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+  }
+
+  export type AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput = {
+    create?: XOR<AtendenteDepartamentoCreateWithoutDepartamentoInput, AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput> | AtendenteDepartamentoCreateWithoutDepartamentoInput[] | AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput[]
+    connectOrCreate?: AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput | AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput[]
+    createMany?: AtendenteDepartamentoCreateManyDepartamentoInputEnvelope
+    connect?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+  }
+
+  export type LeadAtendimentoUncheckedCreateNestedManyWithoutDepartamentoInput = {
+    create?: XOR<LeadAtendimentoCreateWithoutDepartamentoInput, LeadAtendimentoUncheckedCreateWithoutDepartamentoInput> | LeadAtendimentoCreateWithoutDepartamentoInput[] | LeadAtendimentoUncheckedCreateWithoutDepartamentoInput[]
+    connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutDepartamentoInput | LeadAtendimentoCreateOrConnectWithoutDepartamentoInput[]
+    createMany?: LeadAtendimentoCreateManyDepartamentoInputEnvelope
+    connect?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+  }
+
+  export type AtendenteDepartamentoUpdateManyWithoutDepartamentoNestedInput = {
+    create?: XOR<AtendenteDepartamentoCreateWithoutDepartamentoInput, AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput> | AtendenteDepartamentoCreateWithoutDepartamentoInput[] | AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput[]
+    connectOrCreate?: AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput | AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput[]
+    upsert?: AtendenteDepartamentoUpsertWithWhereUniqueWithoutDepartamentoInput | AtendenteDepartamentoUpsertWithWhereUniqueWithoutDepartamentoInput[]
+    createMany?: AtendenteDepartamentoCreateManyDepartamentoInputEnvelope
+    set?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+    disconnect?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+    delete?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+    connect?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+    update?: AtendenteDepartamentoUpdateWithWhereUniqueWithoutDepartamentoInput | AtendenteDepartamentoUpdateWithWhereUniqueWithoutDepartamentoInput[]
+    updateMany?: AtendenteDepartamentoUpdateManyWithWhereWithoutDepartamentoInput | AtendenteDepartamentoUpdateManyWithWhereWithoutDepartamentoInput[]
+    deleteMany?: AtendenteDepartamentoScalarWhereInput | AtendenteDepartamentoScalarWhereInput[]
+  }
+
+  export type LeadAtendimentoUpdateManyWithoutDepartamentoNestedInput = {
+    create?: XOR<LeadAtendimentoCreateWithoutDepartamentoInput, LeadAtendimentoUncheckedCreateWithoutDepartamentoInput> | LeadAtendimentoCreateWithoutDepartamentoInput[] | LeadAtendimentoUncheckedCreateWithoutDepartamentoInput[]
+    connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutDepartamentoInput | LeadAtendimentoCreateOrConnectWithoutDepartamentoInput[]
+    upsert?: LeadAtendimentoUpsertWithWhereUniqueWithoutDepartamentoInput | LeadAtendimentoUpsertWithWhereUniqueWithoutDepartamentoInput[]
+    createMany?: LeadAtendimentoCreateManyDepartamentoInputEnvelope
+    set?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+    disconnect?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+    delete?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+    connect?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+    update?: LeadAtendimentoUpdateWithWhereUniqueWithoutDepartamentoInput | LeadAtendimentoUpdateWithWhereUniqueWithoutDepartamentoInput[]
+    updateMany?: LeadAtendimentoUpdateManyWithWhereWithoutDepartamentoInput | LeadAtendimentoUpdateManyWithWhereWithoutDepartamentoInput[]
+    deleteMany?: LeadAtendimentoScalarWhereInput | LeadAtendimentoScalarWhereInput[]
+  }
+
+  export type AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput = {
+    create?: XOR<AtendenteDepartamentoCreateWithoutDepartamentoInput, AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput> | AtendenteDepartamentoCreateWithoutDepartamentoInput[] | AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput[]
+    connectOrCreate?: AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput | AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput[]
+    upsert?: AtendenteDepartamentoUpsertWithWhereUniqueWithoutDepartamentoInput | AtendenteDepartamentoUpsertWithWhereUniqueWithoutDepartamentoInput[]
+    createMany?: AtendenteDepartamentoCreateManyDepartamentoInputEnvelope
+    set?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+    disconnect?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+    delete?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+    connect?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+    update?: AtendenteDepartamentoUpdateWithWhereUniqueWithoutDepartamentoInput | AtendenteDepartamentoUpdateWithWhereUniqueWithoutDepartamentoInput[]
+    updateMany?: AtendenteDepartamentoUpdateManyWithWhereWithoutDepartamentoInput | AtendenteDepartamentoUpdateManyWithWhereWithoutDepartamentoInput[]
+    deleteMany?: AtendenteDepartamentoScalarWhereInput | AtendenteDepartamentoScalarWhereInput[]
+  }
+
+  export type LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoNestedInput = {
+    create?: XOR<LeadAtendimentoCreateWithoutDepartamentoInput, LeadAtendimentoUncheckedCreateWithoutDepartamentoInput> | LeadAtendimentoCreateWithoutDepartamentoInput[] | LeadAtendimentoUncheckedCreateWithoutDepartamentoInput[]
+    connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutDepartamentoInput | LeadAtendimentoCreateOrConnectWithoutDepartamentoInput[]
+    upsert?: LeadAtendimentoUpsertWithWhereUniqueWithoutDepartamentoInput | LeadAtendimentoUpsertWithWhereUniqueWithoutDepartamentoInput[]
+    createMany?: LeadAtendimentoCreateManyDepartamentoInputEnvelope
+    set?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+    disconnect?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+    delete?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+    connect?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+    update?: LeadAtendimentoUpdateWithWhereUniqueWithoutDepartamentoInput | LeadAtendimentoUpdateWithWhereUniqueWithoutDepartamentoInput[]
+    updateMany?: LeadAtendimentoUpdateManyWithWhereWithoutDepartamentoInput | LeadAtendimentoUpdateManyWithWhereWithoutDepartamentoInput[]
+    deleteMany?: LeadAtendimentoScalarWhereInput | LeadAtendimentoScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutAtendenteInput = {
+    create?: XOR<UserCreateWithoutAtendenteInput, UserUncheckedCreateWithoutAtendenteInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAtendenteInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type AtendenteDepartamentoCreateNestedManyWithoutAtendenteInput = {
+    create?: XOR<AtendenteDepartamentoCreateWithoutAtendenteInput, AtendenteDepartamentoUncheckedCreateWithoutAtendenteInput> | AtendenteDepartamentoCreateWithoutAtendenteInput[] | AtendenteDepartamentoUncheckedCreateWithoutAtendenteInput[]
+    connectOrCreate?: AtendenteDepartamentoCreateOrConnectWithoutAtendenteInput | AtendenteDepartamentoCreateOrConnectWithoutAtendenteInput[]
+    createMany?: AtendenteDepartamentoCreateManyAtendenteInputEnvelope
+    connect?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+  }
+
+  export type LeadAtendimentoCreateNestedManyWithoutAtendenteInput = {
+    create?: XOR<LeadAtendimentoCreateWithoutAtendenteInput, LeadAtendimentoUncheckedCreateWithoutAtendenteInput> | LeadAtendimentoCreateWithoutAtendenteInput[] | LeadAtendimentoUncheckedCreateWithoutAtendenteInput[]
+    connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutAtendenteInput | LeadAtendimentoCreateOrConnectWithoutAtendenteInput[]
+    createMany?: LeadAtendimentoCreateManyAtendenteInputEnvelope
+    connect?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+  }
+
+  export type AtendenteDepartamentoUncheckedCreateNestedManyWithoutAtendenteInput = {
+    create?: XOR<AtendenteDepartamentoCreateWithoutAtendenteInput, AtendenteDepartamentoUncheckedCreateWithoutAtendenteInput> | AtendenteDepartamentoCreateWithoutAtendenteInput[] | AtendenteDepartamentoUncheckedCreateWithoutAtendenteInput[]
+    connectOrCreate?: AtendenteDepartamentoCreateOrConnectWithoutAtendenteInput | AtendenteDepartamentoCreateOrConnectWithoutAtendenteInput[]
+    createMany?: AtendenteDepartamentoCreateManyAtendenteInputEnvelope
+    connect?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+  }
+
+  export type LeadAtendimentoUncheckedCreateNestedManyWithoutAtendenteInput = {
+    create?: XOR<LeadAtendimentoCreateWithoutAtendenteInput, LeadAtendimentoUncheckedCreateWithoutAtendenteInput> | LeadAtendimentoCreateWithoutAtendenteInput[] | LeadAtendimentoUncheckedCreateWithoutAtendenteInput[]
+    connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutAtendenteInput | LeadAtendimentoCreateOrConnectWithoutAtendenteInput[]
+    createMany?: LeadAtendimentoCreateManyAtendenteInputEnvelope
+    connect?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+  }
+
+  export type UserUpdateOneRequiredWithoutAtendenteNestedInput = {
+    create?: XOR<UserCreateWithoutAtendenteInput, UserUncheckedCreateWithoutAtendenteInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAtendenteInput
+    upsert?: UserUpsertWithoutAtendenteInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAtendenteInput, UserUpdateWithoutAtendenteInput>, UserUncheckedUpdateWithoutAtendenteInput>
+  }
+
+  export type AtendenteDepartamentoUpdateManyWithoutAtendenteNestedInput = {
+    create?: XOR<AtendenteDepartamentoCreateWithoutAtendenteInput, AtendenteDepartamentoUncheckedCreateWithoutAtendenteInput> | AtendenteDepartamentoCreateWithoutAtendenteInput[] | AtendenteDepartamentoUncheckedCreateWithoutAtendenteInput[]
+    connectOrCreate?: AtendenteDepartamentoCreateOrConnectWithoutAtendenteInput | AtendenteDepartamentoCreateOrConnectWithoutAtendenteInput[]
+    upsert?: AtendenteDepartamentoUpsertWithWhereUniqueWithoutAtendenteInput | AtendenteDepartamentoUpsertWithWhereUniqueWithoutAtendenteInput[]
+    createMany?: AtendenteDepartamentoCreateManyAtendenteInputEnvelope
+    set?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+    disconnect?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+    delete?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+    connect?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+    update?: AtendenteDepartamentoUpdateWithWhereUniqueWithoutAtendenteInput | AtendenteDepartamentoUpdateWithWhereUniqueWithoutAtendenteInput[]
+    updateMany?: AtendenteDepartamentoUpdateManyWithWhereWithoutAtendenteInput | AtendenteDepartamentoUpdateManyWithWhereWithoutAtendenteInput[]
+    deleteMany?: AtendenteDepartamentoScalarWhereInput | AtendenteDepartamentoScalarWhereInput[]
+  }
+
+  export type LeadAtendimentoUpdateManyWithoutAtendenteNestedInput = {
+    create?: XOR<LeadAtendimentoCreateWithoutAtendenteInput, LeadAtendimentoUncheckedCreateWithoutAtendenteInput> | LeadAtendimentoCreateWithoutAtendenteInput[] | LeadAtendimentoUncheckedCreateWithoutAtendenteInput[]
+    connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutAtendenteInput | LeadAtendimentoCreateOrConnectWithoutAtendenteInput[]
+    upsert?: LeadAtendimentoUpsertWithWhereUniqueWithoutAtendenteInput | LeadAtendimentoUpsertWithWhereUniqueWithoutAtendenteInput[]
+    createMany?: LeadAtendimentoCreateManyAtendenteInputEnvelope
+    set?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+    disconnect?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+    delete?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+    connect?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+    update?: LeadAtendimentoUpdateWithWhereUniqueWithoutAtendenteInput | LeadAtendimentoUpdateWithWhereUniqueWithoutAtendenteInput[]
+    updateMany?: LeadAtendimentoUpdateManyWithWhereWithoutAtendenteInput | LeadAtendimentoUpdateManyWithWhereWithoutAtendenteInput[]
+    deleteMany?: LeadAtendimentoScalarWhereInput | LeadAtendimentoScalarWhereInput[]
+  }
+
+  export type AtendenteDepartamentoUncheckedUpdateManyWithoutAtendenteNestedInput = {
+    create?: XOR<AtendenteDepartamentoCreateWithoutAtendenteInput, AtendenteDepartamentoUncheckedCreateWithoutAtendenteInput> | AtendenteDepartamentoCreateWithoutAtendenteInput[] | AtendenteDepartamentoUncheckedCreateWithoutAtendenteInput[]
+    connectOrCreate?: AtendenteDepartamentoCreateOrConnectWithoutAtendenteInput | AtendenteDepartamentoCreateOrConnectWithoutAtendenteInput[]
+    upsert?: AtendenteDepartamentoUpsertWithWhereUniqueWithoutAtendenteInput | AtendenteDepartamentoUpsertWithWhereUniqueWithoutAtendenteInput[]
+    createMany?: AtendenteDepartamentoCreateManyAtendenteInputEnvelope
+    set?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+    disconnect?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+    delete?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+    connect?: AtendenteDepartamentoWhereUniqueInput | AtendenteDepartamentoWhereUniqueInput[]
+    update?: AtendenteDepartamentoUpdateWithWhereUniqueWithoutAtendenteInput | AtendenteDepartamentoUpdateWithWhereUniqueWithoutAtendenteInput[]
+    updateMany?: AtendenteDepartamentoUpdateManyWithWhereWithoutAtendenteInput | AtendenteDepartamentoUpdateManyWithWhereWithoutAtendenteInput[]
+    deleteMany?: AtendenteDepartamentoScalarWhereInput | AtendenteDepartamentoScalarWhereInput[]
+  }
+
+  export type LeadAtendimentoUncheckedUpdateManyWithoutAtendenteNestedInput = {
+    create?: XOR<LeadAtendimentoCreateWithoutAtendenteInput, LeadAtendimentoUncheckedCreateWithoutAtendenteInput> | LeadAtendimentoCreateWithoutAtendenteInput[] | LeadAtendimentoUncheckedCreateWithoutAtendenteInput[]
+    connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutAtendenteInput | LeadAtendimentoCreateOrConnectWithoutAtendenteInput[]
+    upsert?: LeadAtendimentoUpsertWithWhereUniqueWithoutAtendenteInput | LeadAtendimentoUpsertWithWhereUniqueWithoutAtendenteInput[]
+    createMany?: LeadAtendimentoCreateManyAtendenteInputEnvelope
+    set?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+    disconnect?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+    delete?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+    connect?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+    update?: LeadAtendimentoUpdateWithWhereUniqueWithoutAtendenteInput | LeadAtendimentoUpdateWithWhereUniqueWithoutAtendenteInput[]
+    updateMany?: LeadAtendimentoUpdateManyWithWhereWithoutAtendenteInput | LeadAtendimentoUpdateManyWithWhereWithoutAtendenteInput[]
+    deleteMany?: LeadAtendimentoScalarWhereInput | LeadAtendimentoScalarWhereInput[]
+  }
+
+  export type AtendenteCreateNestedOneWithoutDepartamentosInput = {
+    create?: XOR<AtendenteCreateWithoutDepartamentosInput, AtendenteUncheckedCreateWithoutDepartamentosInput>
+    connectOrCreate?: AtendenteCreateOrConnectWithoutDepartamentosInput
+    connect?: AtendenteWhereUniqueInput
+  }
+
+  export type DepartamentoCreateNestedOneWithoutAtendentesInput = {
+    create?: XOR<DepartamentoCreateWithoutAtendentesInput, DepartamentoUncheckedCreateWithoutAtendentesInput>
+    connectOrCreate?: DepartamentoCreateOrConnectWithoutAtendentesInput
+    connect?: DepartamentoWhereUniqueInput
+  }
+
+  export type AtendenteUpdateOneRequiredWithoutDepartamentosNestedInput = {
+    create?: XOR<AtendenteCreateWithoutDepartamentosInput, AtendenteUncheckedCreateWithoutDepartamentosInput>
+    connectOrCreate?: AtendenteCreateOrConnectWithoutDepartamentosInput
+    upsert?: AtendenteUpsertWithoutDepartamentosInput
+    connect?: AtendenteWhereUniqueInput
+    update?: XOR<XOR<AtendenteUpdateToOneWithWhereWithoutDepartamentosInput, AtendenteUpdateWithoutDepartamentosInput>, AtendenteUncheckedUpdateWithoutDepartamentosInput>
+  }
+
+  export type DepartamentoUpdateOneRequiredWithoutAtendentesNestedInput = {
+    create?: XOR<DepartamentoCreateWithoutAtendentesInput, DepartamentoUncheckedCreateWithoutAtendentesInput>
+    connectOrCreate?: DepartamentoCreateOrConnectWithoutAtendentesInput
+    upsert?: DepartamentoUpsertWithoutAtendentesInput
+    connect?: DepartamentoWhereUniqueInput
+    update?: XOR<XOR<DepartamentoUpdateToOneWithWhereWithoutAtendentesInput, DepartamentoUpdateWithoutAtendentesInput>, DepartamentoUncheckedUpdateWithoutAtendentesInput>
+  }
+
+  export type LeadCreateNestedOneWithoutAtendimentoInput = {
+    create?: XOR<LeadCreateWithoutAtendimentoInput, LeadUncheckedCreateWithoutAtendimentoInput>
+    connectOrCreate?: LeadCreateOrConnectWithoutAtendimentoInput
+    connect?: LeadWhereUniqueInput
+  }
+
+  export type DepartamentoCreateNestedOneWithoutAtendimentosInput = {
+    create?: XOR<DepartamentoCreateWithoutAtendimentosInput, DepartamentoUncheckedCreateWithoutAtendimentosInput>
+    connectOrCreate?: DepartamentoCreateOrConnectWithoutAtendimentosInput
+    connect?: DepartamentoWhereUniqueInput
+  }
+
+  export type AtendenteCreateNestedOneWithoutAtendimentosInput = {
+    create?: XOR<AtendenteCreateWithoutAtendimentosInput, AtendenteUncheckedCreateWithoutAtendimentosInput>
+    connectOrCreate?: AtendenteCreateOrConnectWithoutAtendimentosInput
+    connect?: AtendenteWhereUniqueInput
+  }
+
+  export type LeadUpdateOneRequiredWithoutAtendimentoNestedInput = {
+    create?: XOR<LeadCreateWithoutAtendimentoInput, LeadUncheckedCreateWithoutAtendimentoInput>
+    connectOrCreate?: LeadCreateOrConnectWithoutAtendimentoInput
+    upsert?: LeadUpsertWithoutAtendimentoInput
+    connect?: LeadWhereUniqueInput
+    update?: XOR<XOR<LeadUpdateToOneWithWhereWithoutAtendimentoInput, LeadUpdateWithoutAtendimentoInput>, LeadUncheckedUpdateWithoutAtendimentoInput>
+  }
+
+  export type DepartamentoUpdateOneWithoutAtendimentosNestedInput = {
+    create?: XOR<DepartamentoCreateWithoutAtendimentosInput, DepartamentoUncheckedCreateWithoutAtendimentosInput>
+    connectOrCreate?: DepartamentoCreateOrConnectWithoutAtendimentosInput
+    upsert?: DepartamentoUpsertWithoutAtendimentosInput
+    disconnect?: DepartamentoWhereInput | boolean
+    delete?: DepartamentoWhereInput | boolean
+    connect?: DepartamentoWhereUniqueInput
+    update?: XOR<XOR<DepartamentoUpdateToOneWithWhereWithoutAtendimentosInput, DepartamentoUpdateWithoutAtendimentosInput>, DepartamentoUncheckedUpdateWithoutAtendimentosInput>
+  }
+
+  export type AtendenteUpdateOneWithoutAtendimentosNestedInput = {
+    create?: XOR<AtendenteCreateWithoutAtendimentosInput, AtendenteUncheckedCreateWithoutAtendimentosInput>
+    connectOrCreate?: AtendenteCreateOrConnectWithoutAtendimentosInput
+    upsert?: AtendenteUpsertWithoutAtendimentosInput
+    disconnect?: AtendenteWhereInput | boolean
+    delete?: AtendenteWhereInput | boolean
+    connect?: AtendenteWhereUniqueInput
+    update?: XOR<XOR<AtendenteUpdateToOneWithWhereWithoutAtendimentosInput, AtendenteUpdateWithoutAtendimentosInput>, AtendenteUncheckedUpdateWithoutAtendimentosInput>
+  }
+
+  export type LeadCreateNestedOneWithoutTransferenciasInput = {
+    create?: XOR<LeadCreateWithoutTransferenciasInput, LeadUncheckedCreateWithoutTransferenciasInput>
+    connectOrCreate?: LeadCreateOrConnectWithoutTransferenciasInput
+    connect?: LeadWhereUniqueInput
+  }
+
+  export type LeadUpdateOneRequiredWithoutTransferenciasNestedInput = {
+    create?: XOR<LeadCreateWithoutTransferenciasInput, LeadUncheckedCreateWithoutTransferenciasInput>
+    connectOrCreate?: LeadCreateOrConnectWithoutTransferenciasInput
+    upsert?: LeadUpsertWithoutTransferenciasInput
+    connect?: LeadWhereUniqueInput
+    update?: XOR<XOR<LeadUpdateToOneWithWhereWithoutTransferenciasInput, LeadUpdateWithoutTransferenciasInput>, LeadUncheckedUpdateWithoutTransferenciasInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -31233,6 +38642,55 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type LeadAtendimentoCreateWithoutLeadInput = {
+    transferidoEm?: Date | string
+    departamento?: DepartamentoCreateNestedOneWithoutAtendimentosInput
+    atendente?: AtendenteCreateNestedOneWithoutAtendimentosInput
+  }
+
+  export type LeadAtendimentoUncheckedCreateWithoutLeadInput = {
+    departamentoId?: string | null
+    atendenteId?: string | null
+    transferidoEm?: Date | string
+  }
+
+  export type LeadAtendimentoCreateOrConnectWithoutLeadInput = {
+    where: LeadAtendimentoWhereUniqueInput
+    create: XOR<LeadAtendimentoCreateWithoutLeadInput, LeadAtendimentoUncheckedCreateWithoutLeadInput>
+  }
+
+  export type AtendimentoTransferenciaCreateWithoutLeadInput = {
+    id?: string
+    deDepartamento?: string | null
+    paraDepartamento?: string | null
+    deAtendente?: string | null
+    paraAtendente?: string | null
+    porUsuario: string
+    motivo?: string | null
+    data?: Date | string
+  }
+
+  export type AtendimentoTransferenciaUncheckedCreateWithoutLeadInput = {
+    id?: string
+    deDepartamento?: string | null
+    paraDepartamento?: string | null
+    deAtendente?: string | null
+    paraAtendente?: string | null
+    porUsuario: string
+    motivo?: string | null
+    data?: Date | string
+  }
+
+  export type AtendimentoTransferenciaCreateOrConnectWithoutLeadInput = {
+    where: AtendimentoTransferenciaWhereUniqueInput
+    create: XOR<AtendimentoTransferenciaCreateWithoutLeadInput, AtendimentoTransferenciaUncheckedCreateWithoutLeadInput>
+  }
+
+  export type AtendimentoTransferenciaCreateManyLeadInputEnvelope = {
+    data: AtendimentoTransferenciaCreateManyLeadInput | AtendimentoTransferenciaCreateManyLeadInput[]
+    skipDuplicates?: boolean
+  }
+
   export type CampaignUpsertWithoutLeadsInput = {
     update: XOR<CampaignUpdateWithoutLeadsInput, CampaignUncheckedUpdateWithoutLeadsInput>
     create: XOR<CampaignCreateWithoutLeadsInput, CampaignUncheckedCreateWithoutLeadsInput>
@@ -31407,6 +38865,60 @@ export namespace Prisma {
     leadId?: StringFilter<"ChatInternalNote"> | string
   }
 
+  export type LeadAtendimentoUpsertWithoutLeadInput = {
+    update: XOR<LeadAtendimentoUpdateWithoutLeadInput, LeadAtendimentoUncheckedUpdateWithoutLeadInput>
+    create: XOR<LeadAtendimentoCreateWithoutLeadInput, LeadAtendimentoUncheckedCreateWithoutLeadInput>
+    where?: LeadAtendimentoWhereInput
+  }
+
+  export type LeadAtendimentoUpdateToOneWithWhereWithoutLeadInput = {
+    where?: LeadAtendimentoWhereInput
+    data: XOR<LeadAtendimentoUpdateWithoutLeadInput, LeadAtendimentoUncheckedUpdateWithoutLeadInput>
+  }
+
+  export type LeadAtendimentoUpdateWithoutLeadInput = {
+    transferidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    departamento?: DepartamentoUpdateOneWithoutAtendimentosNestedInput
+    atendente?: AtendenteUpdateOneWithoutAtendimentosNestedInput
+  }
+
+  export type LeadAtendimentoUncheckedUpdateWithoutLeadInput = {
+    departamentoId?: NullableStringFieldUpdateOperationsInput | string | null
+    atendenteId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AtendimentoTransferenciaUpsertWithWhereUniqueWithoutLeadInput = {
+    where: AtendimentoTransferenciaWhereUniqueInput
+    update: XOR<AtendimentoTransferenciaUpdateWithoutLeadInput, AtendimentoTransferenciaUncheckedUpdateWithoutLeadInput>
+    create: XOR<AtendimentoTransferenciaCreateWithoutLeadInput, AtendimentoTransferenciaUncheckedCreateWithoutLeadInput>
+  }
+
+  export type AtendimentoTransferenciaUpdateWithWhereUniqueWithoutLeadInput = {
+    where: AtendimentoTransferenciaWhereUniqueInput
+    data: XOR<AtendimentoTransferenciaUpdateWithoutLeadInput, AtendimentoTransferenciaUncheckedUpdateWithoutLeadInput>
+  }
+
+  export type AtendimentoTransferenciaUpdateManyWithWhereWithoutLeadInput = {
+    where: AtendimentoTransferenciaScalarWhereInput
+    data: XOR<AtendimentoTransferenciaUpdateManyMutationInput, AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadInput>
+  }
+
+  export type AtendimentoTransferenciaScalarWhereInput = {
+    AND?: AtendimentoTransferenciaScalarWhereInput | AtendimentoTransferenciaScalarWhereInput[]
+    OR?: AtendimentoTransferenciaScalarWhereInput[]
+    NOT?: AtendimentoTransferenciaScalarWhereInput | AtendimentoTransferenciaScalarWhereInput[]
+    id?: StringFilter<"AtendimentoTransferencia"> | string
+    leadId?: StringFilter<"AtendimentoTransferencia"> | string
+    deDepartamento?: StringNullableFilter<"AtendimentoTransferencia"> | string | null
+    paraDepartamento?: StringNullableFilter<"AtendimentoTransferencia"> | string | null
+    deAtendente?: StringNullableFilter<"AtendimentoTransferencia"> | string | null
+    paraAtendente?: StringNullableFilter<"AtendimentoTransferencia"> | string | null
+    porUsuario?: StringFilter<"AtendimentoTransferencia"> | string
+    motivo?: StringNullableFilter<"AtendimentoTransferencia"> | string | null
+    data?: DateTimeFilter<"AtendimentoTransferencia"> | Date | string
+  }
+
   export type LeadCreateWithoutNotasInternasInput = {
     id?: string
     nome: string
@@ -31426,6 +38938,8 @@ export namespace Prisma {
     campanhas?: LeadCampaignCreateNestedManyWithoutLeadInput
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutNotasInternasInput = {
@@ -31447,6 +38961,8 @@ export namespace Prisma {
     campanhas?: LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutNotasInternasInput = {
@@ -31484,6 +39000,8 @@ export namespace Prisma {
     campanhas?: LeadCampaignUpdateManyWithoutLeadNestedInput
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutNotasInternasInput = {
@@ -31505,6 +39023,8 @@ export namespace Prisma {
     campanhas?: LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
   }
 
   export type CampaignMessageCreateWithoutCampanhaInput = {
@@ -31552,6 +39072,8 @@ export namespace Prisma {
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutCampanhaInput = {
@@ -31573,6 +39095,8 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutCampanhaInput = {
@@ -31762,6 +39286,8 @@ export namespace Prisma {
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutCampanhasInput = {
@@ -31783,6 +39309,8 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutCampanhasInput = {
@@ -31869,6 +39397,8 @@ export namespace Prisma {
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutCampanhasInput = {
@@ -31890,6 +39420,8 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
   }
 
   export type CampaignUpsertWithoutLeadCampaignsInput = {
@@ -32116,6 +39648,8 @@ export namespace Prisma {
     campanhas?: LeadCampaignCreateNestedManyWithoutLeadInput
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutMensagensAgendadasInput = {
@@ -32137,6 +39671,8 @@ export namespace Prisma {
     campanhas?: LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutMensagensAgendadasInput = {
@@ -32174,6 +39710,8 @@ export namespace Prisma {
     campanhas?: LeadCampaignUpdateManyWithoutLeadNestedInput
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutMensagensAgendadasInput = {
@@ -32195,6 +39733,8 @@ export namespace Prisma {
     campanhas?: LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadCreateWithoutEventosInput = {
@@ -32216,6 +39756,8 @@ export namespace Prisma {
     campanhas?: LeadCampaignCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutEventosInput = {
@@ -32237,6 +39779,8 @@ export namespace Prisma {
     campanhas?: LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutEventosInput = {
@@ -32344,6 +39888,8 @@ export namespace Prisma {
     campanhas?: LeadCampaignUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutEventosInput = {
@@ -32365,6 +39911,8 @@ export namespace Prisma {
     campanhas?: LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
   }
 
   export type CampaignUpsertWithoutEventosInput = {
@@ -32567,6 +40115,724 @@ export namespace Prisma {
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AtendenteCreateWithoutUserInput = {
+    id?: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    departamentos?: AtendenteDepartamentoCreateNestedManyWithoutAtendenteInput
+    atendimentos?: LeadAtendimentoCreateNestedManyWithoutAtendenteInput
+  }
+
+  export type AtendenteUncheckedCreateWithoutUserInput = {
+    id?: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    departamentos?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutAtendenteInput
+    atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutAtendenteInput
+  }
+
+  export type AtendenteCreateOrConnectWithoutUserInput = {
+    where: AtendenteWhereUniqueInput
+    create: XOR<AtendenteCreateWithoutUserInput, AtendenteUncheckedCreateWithoutUserInput>
+  }
+
+  export type AtendenteUpsertWithoutUserInput = {
+    update: XOR<AtendenteUpdateWithoutUserInput, AtendenteUncheckedUpdateWithoutUserInput>
+    create: XOR<AtendenteCreateWithoutUserInput, AtendenteUncheckedCreateWithoutUserInput>
+    where?: AtendenteWhereInput
+  }
+
+  export type AtendenteUpdateToOneWithWhereWithoutUserInput = {
+    where?: AtendenteWhereInput
+    data: XOR<AtendenteUpdateWithoutUserInput, AtendenteUncheckedUpdateWithoutUserInput>
+  }
+
+  export type AtendenteUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    departamentos?: AtendenteDepartamentoUpdateManyWithoutAtendenteNestedInput
+    atendimentos?: LeadAtendimentoUpdateManyWithoutAtendenteNestedInput
+  }
+
+  export type AtendenteUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    departamentos?: AtendenteDepartamentoUncheckedUpdateManyWithoutAtendenteNestedInput
+    atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutAtendenteNestedInput
+  }
+
+  export type AtendenteDepartamentoCreateWithoutDepartamentoInput = {
+    atendente: AtendenteCreateNestedOneWithoutDepartamentosInput
+  }
+
+  export type AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput = {
+    atendenteId: string
+  }
+
+  export type AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput = {
+    where: AtendenteDepartamentoWhereUniqueInput
+    create: XOR<AtendenteDepartamentoCreateWithoutDepartamentoInput, AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput>
+  }
+
+  export type AtendenteDepartamentoCreateManyDepartamentoInputEnvelope = {
+    data: AtendenteDepartamentoCreateManyDepartamentoInput | AtendenteDepartamentoCreateManyDepartamentoInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LeadAtendimentoCreateWithoutDepartamentoInput = {
+    transferidoEm?: Date | string
+    lead: LeadCreateNestedOneWithoutAtendimentoInput
+    atendente?: AtendenteCreateNestedOneWithoutAtendimentosInput
+  }
+
+  export type LeadAtendimentoUncheckedCreateWithoutDepartamentoInput = {
+    leadId: string
+    atendenteId?: string | null
+    transferidoEm?: Date | string
+  }
+
+  export type LeadAtendimentoCreateOrConnectWithoutDepartamentoInput = {
+    where: LeadAtendimentoWhereUniqueInput
+    create: XOR<LeadAtendimentoCreateWithoutDepartamentoInput, LeadAtendimentoUncheckedCreateWithoutDepartamentoInput>
+  }
+
+  export type LeadAtendimentoCreateManyDepartamentoInputEnvelope = {
+    data: LeadAtendimentoCreateManyDepartamentoInput | LeadAtendimentoCreateManyDepartamentoInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type AtendenteDepartamentoUpsertWithWhereUniqueWithoutDepartamentoInput = {
+    where: AtendenteDepartamentoWhereUniqueInput
+    update: XOR<AtendenteDepartamentoUpdateWithoutDepartamentoInput, AtendenteDepartamentoUncheckedUpdateWithoutDepartamentoInput>
+    create: XOR<AtendenteDepartamentoCreateWithoutDepartamentoInput, AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput>
+  }
+
+  export type AtendenteDepartamentoUpdateWithWhereUniqueWithoutDepartamentoInput = {
+    where: AtendenteDepartamentoWhereUniqueInput
+    data: XOR<AtendenteDepartamentoUpdateWithoutDepartamentoInput, AtendenteDepartamentoUncheckedUpdateWithoutDepartamentoInput>
+  }
+
+  export type AtendenteDepartamentoUpdateManyWithWhereWithoutDepartamentoInput = {
+    where: AtendenteDepartamentoScalarWhereInput
+    data: XOR<AtendenteDepartamentoUpdateManyMutationInput, AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoInput>
+  }
+
+  export type AtendenteDepartamentoScalarWhereInput = {
+    AND?: AtendenteDepartamentoScalarWhereInput | AtendenteDepartamentoScalarWhereInput[]
+    OR?: AtendenteDepartamentoScalarWhereInput[]
+    NOT?: AtendenteDepartamentoScalarWhereInput | AtendenteDepartamentoScalarWhereInput[]
+    atendenteId?: StringFilter<"AtendenteDepartamento"> | string
+    departamentoId?: StringFilter<"AtendenteDepartamento"> | string
+  }
+
+  export type LeadAtendimentoUpsertWithWhereUniqueWithoutDepartamentoInput = {
+    where: LeadAtendimentoWhereUniqueInput
+    update: XOR<LeadAtendimentoUpdateWithoutDepartamentoInput, LeadAtendimentoUncheckedUpdateWithoutDepartamentoInput>
+    create: XOR<LeadAtendimentoCreateWithoutDepartamentoInput, LeadAtendimentoUncheckedCreateWithoutDepartamentoInput>
+  }
+
+  export type LeadAtendimentoUpdateWithWhereUniqueWithoutDepartamentoInput = {
+    where: LeadAtendimentoWhereUniqueInput
+    data: XOR<LeadAtendimentoUpdateWithoutDepartamentoInput, LeadAtendimentoUncheckedUpdateWithoutDepartamentoInput>
+  }
+
+  export type LeadAtendimentoUpdateManyWithWhereWithoutDepartamentoInput = {
+    where: LeadAtendimentoScalarWhereInput
+    data: XOR<LeadAtendimentoUpdateManyMutationInput, LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoInput>
+  }
+
+  export type LeadAtendimentoScalarWhereInput = {
+    AND?: LeadAtendimentoScalarWhereInput | LeadAtendimentoScalarWhereInput[]
+    OR?: LeadAtendimentoScalarWhereInput[]
+    NOT?: LeadAtendimentoScalarWhereInput | LeadAtendimentoScalarWhereInput[]
+    leadId?: StringFilter<"LeadAtendimento"> | string
+    departamentoId?: StringNullableFilter<"LeadAtendimento"> | string | null
+    atendenteId?: StringNullableFilter<"LeadAtendimento"> | string | null
+    transferidoEm?: DateTimeFilter<"LeadAtendimento"> | Date | string
+  }
+
+  export type UserCreateWithoutAtendenteInput = {
+    id?: string
+    username: string
+    nome: string
+    senhaHash: string
+    role?: $Enums.UserRole
+    secoes?: UserCreatesecoesInput | string[]
+    ativo?: boolean
+    temaApp?: string
+    chatIdentificarRemetente?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type UserUncheckedCreateWithoutAtendenteInput = {
+    id?: string
+    username: string
+    nome: string
+    senhaHash: string
+    role?: $Enums.UserRole
+    secoes?: UserCreatesecoesInput | string[]
+    ativo?: boolean
+    temaApp?: string
+    chatIdentificarRemetente?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type UserCreateOrConnectWithoutAtendenteInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAtendenteInput, UserUncheckedCreateWithoutAtendenteInput>
+  }
+
+  export type AtendenteDepartamentoCreateWithoutAtendenteInput = {
+    departamento: DepartamentoCreateNestedOneWithoutAtendentesInput
+  }
+
+  export type AtendenteDepartamentoUncheckedCreateWithoutAtendenteInput = {
+    departamentoId: string
+  }
+
+  export type AtendenteDepartamentoCreateOrConnectWithoutAtendenteInput = {
+    where: AtendenteDepartamentoWhereUniqueInput
+    create: XOR<AtendenteDepartamentoCreateWithoutAtendenteInput, AtendenteDepartamentoUncheckedCreateWithoutAtendenteInput>
+  }
+
+  export type AtendenteDepartamentoCreateManyAtendenteInputEnvelope = {
+    data: AtendenteDepartamentoCreateManyAtendenteInput | AtendenteDepartamentoCreateManyAtendenteInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LeadAtendimentoCreateWithoutAtendenteInput = {
+    transferidoEm?: Date | string
+    lead: LeadCreateNestedOneWithoutAtendimentoInput
+    departamento?: DepartamentoCreateNestedOneWithoutAtendimentosInput
+  }
+
+  export type LeadAtendimentoUncheckedCreateWithoutAtendenteInput = {
+    leadId: string
+    departamentoId?: string | null
+    transferidoEm?: Date | string
+  }
+
+  export type LeadAtendimentoCreateOrConnectWithoutAtendenteInput = {
+    where: LeadAtendimentoWhereUniqueInput
+    create: XOR<LeadAtendimentoCreateWithoutAtendenteInput, LeadAtendimentoUncheckedCreateWithoutAtendenteInput>
+  }
+
+  export type LeadAtendimentoCreateManyAtendenteInputEnvelope = {
+    data: LeadAtendimentoCreateManyAtendenteInput | LeadAtendimentoCreateManyAtendenteInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserUpsertWithoutAtendenteInput = {
+    update: XOR<UserUpdateWithoutAtendenteInput, UserUncheckedUpdateWithoutAtendenteInput>
+    create: XOR<UserCreateWithoutAtendenteInput, UserUncheckedCreateWithoutAtendenteInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAtendenteInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAtendenteInput, UserUncheckedUpdateWithoutAtendenteInput>
+  }
+
+  export type UserUpdateWithoutAtendenteInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    senhaHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    secoes?: UserUpdatesecoesInput | string[]
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    temaApp?: StringFieldUpdateOperationsInput | string
+    chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUncheckedUpdateWithoutAtendenteInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    senhaHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    secoes?: UserUpdatesecoesInput | string[]
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    temaApp?: StringFieldUpdateOperationsInput | string
+    chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AtendenteDepartamentoUpsertWithWhereUniqueWithoutAtendenteInput = {
+    where: AtendenteDepartamentoWhereUniqueInput
+    update: XOR<AtendenteDepartamentoUpdateWithoutAtendenteInput, AtendenteDepartamentoUncheckedUpdateWithoutAtendenteInput>
+    create: XOR<AtendenteDepartamentoCreateWithoutAtendenteInput, AtendenteDepartamentoUncheckedCreateWithoutAtendenteInput>
+  }
+
+  export type AtendenteDepartamentoUpdateWithWhereUniqueWithoutAtendenteInput = {
+    where: AtendenteDepartamentoWhereUniqueInput
+    data: XOR<AtendenteDepartamentoUpdateWithoutAtendenteInput, AtendenteDepartamentoUncheckedUpdateWithoutAtendenteInput>
+  }
+
+  export type AtendenteDepartamentoUpdateManyWithWhereWithoutAtendenteInput = {
+    where: AtendenteDepartamentoScalarWhereInput
+    data: XOR<AtendenteDepartamentoUpdateManyMutationInput, AtendenteDepartamentoUncheckedUpdateManyWithoutAtendenteInput>
+  }
+
+  export type LeadAtendimentoUpsertWithWhereUniqueWithoutAtendenteInput = {
+    where: LeadAtendimentoWhereUniqueInput
+    update: XOR<LeadAtendimentoUpdateWithoutAtendenteInput, LeadAtendimentoUncheckedUpdateWithoutAtendenteInput>
+    create: XOR<LeadAtendimentoCreateWithoutAtendenteInput, LeadAtendimentoUncheckedCreateWithoutAtendenteInput>
+  }
+
+  export type LeadAtendimentoUpdateWithWhereUniqueWithoutAtendenteInput = {
+    where: LeadAtendimentoWhereUniqueInput
+    data: XOR<LeadAtendimentoUpdateWithoutAtendenteInput, LeadAtendimentoUncheckedUpdateWithoutAtendenteInput>
+  }
+
+  export type LeadAtendimentoUpdateManyWithWhereWithoutAtendenteInput = {
+    where: LeadAtendimentoScalarWhereInput
+    data: XOR<LeadAtendimentoUpdateManyMutationInput, LeadAtendimentoUncheckedUpdateManyWithoutAtendenteInput>
+  }
+
+  export type AtendenteCreateWithoutDepartamentosInput = {
+    id?: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    user: UserCreateNestedOneWithoutAtendenteInput
+    atendimentos?: LeadAtendimentoCreateNestedManyWithoutAtendenteInput
+  }
+
+  export type AtendenteUncheckedCreateWithoutDepartamentosInput = {
+    id?: string
+    userId: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutAtendenteInput
+  }
+
+  export type AtendenteCreateOrConnectWithoutDepartamentosInput = {
+    where: AtendenteWhereUniqueInput
+    create: XOR<AtendenteCreateWithoutDepartamentosInput, AtendenteUncheckedCreateWithoutDepartamentosInput>
+  }
+
+  export type DepartamentoCreateWithoutAtendentesInput = {
+    id?: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendimentos?: LeadAtendimentoCreateNestedManyWithoutDepartamentoInput
+  }
+
+  export type DepartamentoUncheckedCreateWithoutAtendentesInput = {
+    id?: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutDepartamentoInput
+  }
+
+  export type DepartamentoCreateOrConnectWithoutAtendentesInput = {
+    where: DepartamentoWhereUniqueInput
+    create: XOR<DepartamentoCreateWithoutAtendentesInput, DepartamentoUncheckedCreateWithoutAtendentesInput>
+  }
+
+  export type AtendenteUpsertWithoutDepartamentosInput = {
+    update: XOR<AtendenteUpdateWithoutDepartamentosInput, AtendenteUncheckedUpdateWithoutDepartamentosInput>
+    create: XOR<AtendenteCreateWithoutDepartamentosInput, AtendenteUncheckedCreateWithoutDepartamentosInput>
+    where?: AtendenteWhereInput
+  }
+
+  export type AtendenteUpdateToOneWithWhereWithoutDepartamentosInput = {
+    where?: AtendenteWhereInput
+    data: XOR<AtendenteUpdateWithoutDepartamentosInput, AtendenteUncheckedUpdateWithoutDepartamentosInput>
+  }
+
+  export type AtendenteUpdateWithoutDepartamentosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutAtendenteNestedInput
+    atendimentos?: LeadAtendimentoUpdateManyWithoutAtendenteNestedInput
+  }
+
+  export type AtendenteUncheckedUpdateWithoutDepartamentosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutAtendenteNestedInput
+  }
+
+  export type DepartamentoUpsertWithoutAtendentesInput = {
+    update: XOR<DepartamentoUpdateWithoutAtendentesInput, DepartamentoUncheckedUpdateWithoutAtendentesInput>
+    create: XOR<DepartamentoCreateWithoutAtendentesInput, DepartamentoUncheckedCreateWithoutAtendentesInput>
+    where?: DepartamentoWhereInput
+  }
+
+  export type DepartamentoUpdateToOneWithWhereWithoutAtendentesInput = {
+    where?: DepartamentoWhereInput
+    data: XOR<DepartamentoUpdateWithoutAtendentesInput, DepartamentoUncheckedUpdateWithoutAtendentesInput>
+  }
+
+  export type DepartamentoUpdateWithoutAtendentesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendimentos?: LeadAtendimentoUpdateManyWithoutDepartamentoNestedInput
+  }
+
+  export type DepartamentoUncheckedUpdateWithoutAtendentesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoNestedInput
+  }
+
+  export type LeadCreateWithoutAtendimentoInput = {
+    id?: string
+    nome: string
+    telefone: string
+    produto: string
+    marca: string
+    persona: string
+    regiao: string
+    status?: $Enums.LeadStatus
+    notas?: string | null
+    negocio?: string | null
+    atividade?: string | null
+    entradaCampanhaEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    campanha?: CampaignCreateNestedOneWithoutLeadsInput
+    campanhas?: LeadCampaignCreateNestedManyWithoutLeadInput
+    eventos?: TimelineEventCreateNestedManyWithoutLeadInput
+    mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
+    notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
+  }
+
+  export type LeadUncheckedCreateWithoutAtendimentoInput = {
+    id?: string
+    nome: string
+    telefone: string
+    produto: string
+    marca: string
+    persona: string
+    regiao: string
+    status?: $Enums.LeadStatus
+    notas?: string | null
+    negocio?: string | null
+    atividade?: string | null
+    campanhaId?: string | null
+    entradaCampanhaEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    campanhas?: LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
+    eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
+    mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
+    notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
+  }
+
+  export type LeadCreateOrConnectWithoutAtendimentoInput = {
+    where: LeadWhereUniqueInput
+    create: XOR<LeadCreateWithoutAtendimentoInput, LeadUncheckedCreateWithoutAtendimentoInput>
+  }
+
+  export type DepartamentoCreateWithoutAtendimentosInput = {
+    id?: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendentes?: AtendenteDepartamentoCreateNestedManyWithoutDepartamentoInput
+  }
+
+  export type DepartamentoUncheckedCreateWithoutAtendimentosInput = {
+    id?: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendentes?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput
+  }
+
+  export type DepartamentoCreateOrConnectWithoutAtendimentosInput = {
+    where: DepartamentoWhereUniqueInput
+    create: XOR<DepartamentoCreateWithoutAtendimentosInput, DepartamentoUncheckedCreateWithoutAtendimentosInput>
+  }
+
+  export type AtendenteCreateWithoutAtendimentosInput = {
+    id?: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    user: UserCreateNestedOneWithoutAtendenteInput
+    departamentos?: AtendenteDepartamentoCreateNestedManyWithoutAtendenteInput
+  }
+
+  export type AtendenteUncheckedCreateWithoutAtendimentosInput = {
+    id?: string
+    userId: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    departamentos?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutAtendenteInput
+  }
+
+  export type AtendenteCreateOrConnectWithoutAtendimentosInput = {
+    where: AtendenteWhereUniqueInput
+    create: XOR<AtendenteCreateWithoutAtendimentosInput, AtendenteUncheckedCreateWithoutAtendimentosInput>
+  }
+
+  export type LeadUpsertWithoutAtendimentoInput = {
+    update: XOR<LeadUpdateWithoutAtendimentoInput, LeadUncheckedUpdateWithoutAtendimentoInput>
+    create: XOR<LeadCreateWithoutAtendimentoInput, LeadUncheckedCreateWithoutAtendimentoInput>
+    where?: LeadWhereInput
+  }
+
+  export type LeadUpdateToOneWithWhereWithoutAtendimentoInput = {
+    where?: LeadWhereInput
+    data: XOR<LeadUpdateWithoutAtendimentoInput, LeadUncheckedUpdateWithoutAtendimentoInput>
+  }
+
+  export type LeadUpdateWithoutAtendimentoInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    produto?: StringFieldUpdateOperationsInput | string
+    marca?: StringFieldUpdateOperationsInput | string
+    persona?: StringFieldUpdateOperationsInput | string
+    regiao?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
+    notas?: NullableStringFieldUpdateOperationsInput | string | null
+    negocio?: NullableStringFieldUpdateOperationsInput | string | null
+    atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    campanha?: CampaignUpdateOneWithoutLeadsNestedInput
+    campanhas?: LeadCampaignUpdateManyWithoutLeadNestedInput
+    eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
+    mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
+    notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
+  }
+
+  export type LeadUncheckedUpdateWithoutAtendimentoInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    produto?: StringFieldUpdateOperationsInput | string
+    marca?: StringFieldUpdateOperationsInput | string
+    persona?: StringFieldUpdateOperationsInput | string
+    regiao?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
+    notas?: NullableStringFieldUpdateOperationsInput | string | null
+    negocio?: NullableStringFieldUpdateOperationsInput | string | null
+    atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
+    entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    campanhas?: LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
+    eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
+    mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
+    notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
+  }
+
+  export type DepartamentoUpsertWithoutAtendimentosInput = {
+    update: XOR<DepartamentoUpdateWithoutAtendimentosInput, DepartamentoUncheckedUpdateWithoutAtendimentosInput>
+    create: XOR<DepartamentoCreateWithoutAtendimentosInput, DepartamentoUncheckedCreateWithoutAtendimentosInput>
+    where?: DepartamentoWhereInput
+  }
+
+  export type DepartamentoUpdateToOneWithWhereWithoutAtendimentosInput = {
+    where?: DepartamentoWhereInput
+    data: XOR<DepartamentoUpdateWithoutAtendimentosInput, DepartamentoUncheckedUpdateWithoutAtendimentosInput>
+  }
+
+  export type DepartamentoUpdateWithoutAtendimentosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendentes?: AtendenteDepartamentoUpdateManyWithoutDepartamentoNestedInput
+  }
+
+  export type DepartamentoUncheckedUpdateWithoutAtendimentosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendentes?: AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput
+  }
+
+  export type AtendenteUpsertWithoutAtendimentosInput = {
+    update: XOR<AtendenteUpdateWithoutAtendimentosInput, AtendenteUncheckedUpdateWithoutAtendimentosInput>
+    create: XOR<AtendenteCreateWithoutAtendimentosInput, AtendenteUncheckedCreateWithoutAtendimentosInput>
+    where?: AtendenteWhereInput
+  }
+
+  export type AtendenteUpdateToOneWithWhereWithoutAtendimentosInput = {
+    where?: AtendenteWhereInput
+    data: XOR<AtendenteUpdateWithoutAtendimentosInput, AtendenteUncheckedUpdateWithoutAtendimentosInput>
+  }
+
+  export type AtendenteUpdateWithoutAtendimentosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutAtendenteNestedInput
+    departamentos?: AtendenteDepartamentoUpdateManyWithoutAtendenteNestedInput
+  }
+
+  export type AtendenteUncheckedUpdateWithoutAtendimentosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    departamentos?: AtendenteDepartamentoUncheckedUpdateManyWithoutAtendenteNestedInput
+  }
+
+  export type LeadCreateWithoutTransferenciasInput = {
+    id?: string
+    nome: string
+    telefone: string
+    produto: string
+    marca: string
+    persona: string
+    regiao: string
+    status?: $Enums.LeadStatus
+    notas?: string | null
+    negocio?: string | null
+    atividade?: string | null
+    entradaCampanhaEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    campanha?: CampaignCreateNestedOneWithoutLeadsInput
+    campanhas?: LeadCampaignCreateNestedManyWithoutLeadInput
+    eventos?: TimelineEventCreateNestedManyWithoutLeadInput
+    mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
+    notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
+  }
+
+  export type LeadUncheckedCreateWithoutTransferenciasInput = {
+    id?: string
+    nome: string
+    telefone: string
+    produto: string
+    marca: string
+    persona: string
+    regiao: string
+    status?: $Enums.LeadStatus
+    notas?: string | null
+    negocio?: string | null
+    atividade?: string | null
+    campanhaId?: string | null
+    entradaCampanhaEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    campanhas?: LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
+    eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
+    mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
+    notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
+  }
+
+  export type LeadCreateOrConnectWithoutTransferenciasInput = {
+    where: LeadWhereUniqueInput
+    create: XOR<LeadCreateWithoutTransferenciasInput, LeadUncheckedCreateWithoutTransferenciasInput>
+  }
+
+  export type LeadUpsertWithoutTransferenciasInput = {
+    update: XOR<LeadUpdateWithoutTransferenciasInput, LeadUncheckedUpdateWithoutTransferenciasInput>
+    create: XOR<LeadCreateWithoutTransferenciasInput, LeadUncheckedCreateWithoutTransferenciasInput>
+    where?: LeadWhereInput
+  }
+
+  export type LeadUpdateToOneWithWhereWithoutTransferenciasInput = {
+    where?: LeadWhereInput
+    data: XOR<LeadUpdateWithoutTransferenciasInput, LeadUncheckedUpdateWithoutTransferenciasInput>
+  }
+
+  export type LeadUpdateWithoutTransferenciasInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    produto?: StringFieldUpdateOperationsInput | string
+    marca?: StringFieldUpdateOperationsInput | string
+    persona?: StringFieldUpdateOperationsInput | string
+    regiao?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
+    notas?: NullableStringFieldUpdateOperationsInput | string | null
+    negocio?: NullableStringFieldUpdateOperationsInput | string | null
+    atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    campanha?: CampaignUpdateOneWithoutLeadsNestedInput
+    campanhas?: LeadCampaignUpdateManyWithoutLeadNestedInput
+    eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
+    mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
+    notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
+  }
+
+  export type LeadUncheckedUpdateWithoutTransferenciasInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    produto?: StringFieldUpdateOperationsInput | string
+    marca?: StringFieldUpdateOperationsInput | string
+    persona?: StringFieldUpdateOperationsInput | string
+    regiao?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
+    notas?: NullableStringFieldUpdateOperationsInput | string | null
+    negocio?: NullableStringFieldUpdateOperationsInput | string | null
+    atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
+    entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    campanhas?: LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
+    eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
+    mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
+    notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
+  }
+
   export type LeadCampaignCreateManyLeadInput = {
     id?: string
     campanhaId: string
@@ -32604,6 +40870,17 @@ export namespace Prisma {
   export type ChatInternalNoteCreateManyLeadInput = {
     id?: string
     texto: string
+    data?: Date | string
+  }
+
+  export type AtendimentoTransferenciaCreateManyLeadInput = {
+    id?: string
+    deDepartamento?: string | null
+    paraDepartamento?: string | null
+    deAtendente?: string | null
+    paraAtendente?: string | null
+    porUsuario: string
+    motivo?: string | null
     data?: Date | string
   }
 
@@ -32727,6 +41004,39 @@ export namespace Prisma {
     data?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AtendimentoTransferenciaUpdateWithoutLeadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    deDepartamento?: NullableStringFieldUpdateOperationsInput | string | null
+    paraDepartamento?: NullableStringFieldUpdateOperationsInput | string | null
+    deAtendente?: NullableStringFieldUpdateOperationsInput | string | null
+    paraAtendente?: NullableStringFieldUpdateOperationsInput | string | null
+    porUsuario?: StringFieldUpdateOperationsInput | string
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    data?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AtendimentoTransferenciaUncheckedUpdateWithoutLeadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    deDepartamento?: NullableStringFieldUpdateOperationsInput | string | null
+    paraDepartamento?: NullableStringFieldUpdateOperationsInput | string | null
+    deAtendente?: NullableStringFieldUpdateOperationsInput | string | null
+    paraAtendente?: NullableStringFieldUpdateOperationsInput | string | null
+    porUsuario?: StringFieldUpdateOperationsInput | string
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    data?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    deDepartamento?: NullableStringFieldUpdateOperationsInput | string | null
+    paraDepartamento?: NullableStringFieldUpdateOperationsInput | string | null
+    deAtendente?: NullableStringFieldUpdateOperationsInput | string | null
+    paraAtendente?: NullableStringFieldUpdateOperationsInput | string | null
+    porUsuario?: StringFieldUpdateOperationsInput | string
+    motivo?: NullableStringFieldUpdateOperationsInput | string | null
+    data?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type CampaignMessageCreateManyCampanhaInput = {
     id?: string
     dia: number
@@ -32814,6 +41124,8 @@ export namespace Prisma {
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutCampanhaInput = {
@@ -32835,6 +41147,8 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateManyWithoutCampanhaInput = {
@@ -33003,6 +41317,86 @@ export namespace Prisma {
     erro?: NullableStringFieldUpdateOperationsInput | string | null
     duracaoMs?: IntFieldUpdateOperationsInput | number
     iniciadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AtendenteDepartamentoCreateManyDepartamentoInput = {
+    atendenteId: string
+  }
+
+  export type LeadAtendimentoCreateManyDepartamentoInput = {
+    leadId: string
+    atendenteId?: string | null
+    transferidoEm?: Date | string
+  }
+
+  export type AtendenteDepartamentoUpdateWithoutDepartamentoInput = {
+    atendente?: AtendenteUpdateOneRequiredWithoutDepartamentosNestedInput
+  }
+
+  export type AtendenteDepartamentoUncheckedUpdateWithoutDepartamentoInput = {
+    atendenteId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoInput = {
+    atendenteId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type LeadAtendimentoUpdateWithoutDepartamentoInput = {
+    transferidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    lead?: LeadUpdateOneRequiredWithoutAtendimentoNestedInput
+    atendente?: AtendenteUpdateOneWithoutAtendimentosNestedInput
+  }
+
+  export type LeadAtendimentoUncheckedUpdateWithoutDepartamentoInput = {
+    leadId?: StringFieldUpdateOperationsInput | string
+    atendenteId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoInput = {
+    leadId?: StringFieldUpdateOperationsInput | string
+    atendenteId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AtendenteDepartamentoCreateManyAtendenteInput = {
+    departamentoId: string
+  }
+
+  export type LeadAtendimentoCreateManyAtendenteInput = {
+    leadId: string
+    departamentoId?: string | null
+    transferidoEm?: Date | string
+  }
+
+  export type AtendenteDepartamentoUpdateWithoutAtendenteInput = {
+    departamento?: DepartamentoUpdateOneRequiredWithoutAtendentesNestedInput
+  }
+
+  export type AtendenteDepartamentoUncheckedUpdateWithoutAtendenteInput = {
+    departamentoId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type AtendenteDepartamentoUncheckedUpdateManyWithoutAtendenteInput = {
+    departamentoId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type LeadAtendimentoUpdateWithoutAtendenteInput = {
+    transferidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    lead?: LeadUpdateOneRequiredWithoutAtendimentoNestedInput
+    departamento?: DepartamentoUpdateOneWithoutAtendimentosNestedInput
+  }
+
+  export type LeadAtendimentoUncheckedUpdateWithoutAtendenteInput = {
+    leadId?: StringFieldUpdateOperationsInput | string
+    departamentoId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadAtendimentoUncheckedUpdateManyWithoutAtendenteInput = {
+    leadId?: StringFieldUpdateOperationsInput | string
+    departamentoId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 
