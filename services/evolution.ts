@@ -811,8 +811,8 @@ export async function sendCampaignMessageToLead(input: {
 // Foto de perfil do lead
 // ---------------------------------------------------------------------------
 
-/** "foto" achou; "sem_foto" existe no WhatsApp mas não tem foto visível (tentar de novo);
- *  "nao_existe" não está no WhatsApp (não consultar até o lead ser editado); "erro" falha temporária. */
+/** "foto" achou; "sem_foto" existe no WhatsApp mas não tem foto visível e "nao_existe" não está no WhatsApp
+ *  (nos dois casos não consulta de novo até o lead ser editado); "erro" falha temporária (tenta de novo). */
 export type LeadFotoStatus = "foto" | "sem_foto" | "nao_existe" | "erro"
 export interface LeadFotoResultado {
   status: LeadFotoStatus
@@ -820,15 +820,13 @@ export interface LeadFotoResultado {
 }
 
 const FOTO_TTL_ENCONTRADA_MS = 30 * 60 * 1000
-/** Evita rajada de chamadas repetidas à Evolution; o cliente refaz a tentativa a cada 10 s. */
-const FOTO_TTL_SEM_FOTO_MS = 10 * 1000
 const FOTO_TTL_ERRO_MS = 5 * 1000
 const INSTANCIAS_TTL_MS = 60 * 1000
 const FOTO_CONCORRENCIA = 4
 
 const fotoCache = new Map<string, { resultado: LeadFotoResultado; expiraEm: number }>()
 const fotoEmAndamento = new Map<string, Promise<LeadFotoResultado>>()
-/** leadId -> atualizadoEm (ms) do lead quando se descobriu que o número não está no WhatsApp. */
+/** leadId -> atualizadoEm (ms) do lead quando se descobriu que não há foto (ou que o número não está no WhatsApp). */
 const naoExisteNoWhatsapp = new Map<string, number>()
 let instanciasCache: { nomes: string[]; expiraEm: number } | null = null
 
@@ -949,7 +947,10 @@ async function resolverFoto(lead: { id: string; telefone: string; atualizadoEm: 
 
   // 2) Sem foto: descobre se o número sequer existe no WhatsApp.
   const existencia = await Promise.all(instancias.map((nome) => numeroExisteNaInstancia(nome, variantes)))
-  if (existencia.some((e) => e === true)) return { status: "sem_foto" }
+  if (existencia.some((e) => e === true)) {
+    naoExisteNoWhatsapp.set(lead.id, lead.atualizadoEm.getTime())
+    return { status: "sem_foto" }
+  }
   if (!houveErro && existencia.every((e) => e === false)) {
     naoExisteNoWhatsapp.set(lead.id, lead.atualizadoEm.getTime())
     return { status: "nao_existe" }
@@ -959,11 +960,10 @@ async function resolverFoto(lead: { id: string; telefone: string; atualizadoEm: 
 
 /**
  * Foto de perfil do lead, buscada em TODAS as instâncias cadastradas.
- * - Número fora do WhatsApp: não consulta mais até o lead ser editado (muda `atualizadoEm`).
- * - Existe mas sem foto: quem chama tenta de novo (o cache dura 10 s).
+ * - Sem foto, ou número fora do WhatsApp: não consulta mais até o lead ser editado (muda `atualizadoEm`).
  */
 export async function getLeadProfilePicture(lead: { id: string; telefone: string; atualizadoEm: Date }): Promise<LeadFotoResultado> {
-  if (naoExisteNoWhatsapp.get(lead.id) === lead.atualizadoEm.getTime()) return { status: "nao_existe" }
+  if (naoExisteNoWhatsapp.get(lead.id) === lead.atualizadoEm.getTime()) return { status: "sem_foto" }
   naoExisteNoWhatsapp.delete(lead.id)
 
   const chave = `${lead.id}:${lead.telefone}`
@@ -975,9 +975,8 @@ export async function getLeadProfilePicture(lead: { id: string; telefone: string
 
   const busca = comLimiteDeFotos(async () => {
     const resultado = await resolverFoto(lead)
-    if (resultado.status !== "nao_existe") {
-      const ttl =
-        resultado.status === "foto" ? FOTO_TTL_ENCONTRADA_MS : resultado.status === "sem_foto" ? FOTO_TTL_SEM_FOTO_MS : FOTO_TTL_ERRO_MS
+    if (resultado.status === "foto" || resultado.status === "erro") {
+      const ttl = resultado.status === "foto" ? FOTO_TTL_ENCONTRADA_MS : FOTO_TTL_ERRO_MS
       fotoCache.set(chave, { resultado, expiraEm: Date.now() + ttl })
     }
     return resultado

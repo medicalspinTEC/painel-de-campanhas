@@ -13,8 +13,9 @@ function iniciais(nome: string) {
 /**
  * Avatar com a foto do WhatsApp do lead.
  * - Só busca quando está visível na tela.
- * - Sem foto (404) ou falha (502): tenta de novo a cada 10 s.
- * - Número fora do WhatsApp (410): para de tentar (volta quando o lead for editado e a tela recarregar).
+ * - Falha temporária (502/rede): tenta de novo a cada 10 s.
+ * - Sem foto ou número fora do WhatsApp (410): mostra só as iniciais e para de tentar
+ *   (volta a consultar quando o lead for editado).
  */
 export function LeadAvatar({
   leadId,
@@ -46,6 +47,8 @@ export function LeadAvatar({
   }, [])
 
   useEffect(() => {
+    // Nunca reaproveita a foto de outro lead (o componente é reutilizado ao trocar de conversa).
+    setSrc(null)
     if (!visivel) return
     let cancelado = false
     let timer: ReturnType<typeof setTimeout> | undefined

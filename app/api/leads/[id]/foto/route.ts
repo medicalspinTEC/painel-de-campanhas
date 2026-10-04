@@ -10,8 +10,7 @@ import { guardApi } from "@/lib/session"
  * as URLs do WhatsApp expiram.
  *
  *   200  imagem
- *   404  existe no WhatsApp mas sem foto visível -> o cliente tenta de novo
- *   410  número fora do WhatsApp -> não tentar até o lead ser editado
+ *   410  sem foto (ou número fora do WhatsApp) -> não tentar até o lead ser editado
  *   502  falha temporária -> o cliente tenta de novo
  */
 const SEM_CACHE = { "Cache-Control": "no-store" }
@@ -26,7 +25,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
   const resultado = await getLeadProfilePicture(lead)
   if (resultado.status === "nao_existe") return new Response(null, { status: 410, headers: SEM_CACHE })
-  if (resultado.status === "sem_foto") return new Response(null, { status: 404, headers: SEM_CACHE })
+  if (resultado.status === "sem_foto") return new Response(null, { status: 410, headers: SEM_CACHE })
   if (resultado.status !== "foto" || !resultado.url) return new Response(null, { status: 502, headers: SEM_CACHE })
 
   try {
