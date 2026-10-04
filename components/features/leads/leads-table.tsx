@@ -17,6 +17,7 @@ import { toast } from "sonner"
 
 import { assignCampaignAction, deleteLeadAction, deleteLeadsAction, setLeadStatusAction } from "@/app/actions/leads"
 import { LeadFormDialog, type CampanhaOpcao } from "@/components/features/leads/lead-form-dialog"
+import { LeadsExportMenu } from "@/components/features/leads/leads-export-menu"
 import { LeadsBulkMessageDialog } from "@/components/features/leads/leads-bulk-message-dialog"
 import { LeadsImportDialog } from "@/components/features/leads/leads-import-dialog"
 import { LeadRespostaDialog } from "@/components/shared/lead-resposta-dialog"
@@ -148,6 +149,15 @@ export function LeadsTable({
       return true
     })
   }, [leads, busca, status, produto, marca, regiao, campanhaFiltro])
+
+  // Exporta os selecionados, se houver; senão tudo o que o filtro mostra (todas as páginas).
+  const paraExportar = useMemo(() => {
+    if (selecionados.length > 0) {
+      const ids = new Set(selecionados)
+      return { leads: leads.filter((l) => ids.has(l.id)), escopo: "selecionados" as const }
+    }
+    return { leads: filtrados, escopo: filtrados.length === leads.length ? ("todos" as const) : ("filtrados" as const) }
+  }, [leads, filtrados, selecionados])
 
   const totalPaginas = Math.max(1, Math.ceil(filtrados.length / porPagina))
   const paginaAtual = Math.min(pagina, totalPaginas)
@@ -296,6 +306,7 @@ export function LeadsTable({
               />
             </div>
             <div className="flex gap-2">
+              <LeadsExportMenu leads={paraExportar.leads} escopo={paraExportar.escopo} />
               <Button variant="outline" onClick={() => setImportarAberto(true)} className="flex-1 sm:flex-none">
                 <Upload className="size-4" />
                 Importar Excel
