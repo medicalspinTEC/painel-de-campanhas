@@ -2,11 +2,12 @@
 
 import { revalidatePath } from "next/cache"
 
-import { modeloFluxoResposta, validarGrafo, type FlowEdge, type FlowNode } from "@/lib/nocode/catalog"
+import { modeloFluxoResposta, PAYLOAD_EXEMPLO, validarGrafo, type FlowEdge, type FlowNode } from "@/lib/nocode/catalog"
 import { recordAppLog } from "@/services/app-logs"
 import {
   createFlow,
   deleteFlow,
+  contarExecucoes,
   executarEGravar,
   getFlow,
   listExecutions,
@@ -15,6 +16,13 @@ import {
   updateFlow,
   type ExecutionRow,
 } from "@/services/nocode"
+import {
+  atualizarConfigWebhookExecucoes,
+  enviarTesteWebhook,
+  segredoSalvoDoFluxo,
+  validarUrlWebhook,
+  type ConfigWebhookExecucoes,
+} from "@/services/nocode-webhook-execucoes"
 import { assertSecao } from "@/lib/session"
 
 type Resultado<T = object> = ({ ok: true; message: string } & T) | { ok: false; message: string }
@@ -165,11 +173,90 @@ export async function testFlowAction(
   }
 }
 
-export async function listExecutionsAction(flowId: string): Promise<ExecutionRow[] | null> {
+/** Uma página de execuções (a primeira, ou a seguinte a `depoisDeId`) e o total guardado. */
+export async function listExecutionsAction(
+  flowId: string,
+  depoisDeId?: string,
+): Promise<{ itens: ExecutionRow[]; total: number } | null> {
   await assertSecao("nocode")
   try {
-    return await listExecutions(flowId)
+    const [itens, total] = await Promise.all([
+      listExecutions(flowId, { depoisDeId: typeof depoisDeId === "string" ? depoisDeId : undefined }),
+      contarExecucoes(flowId),
+    ])
+    return { itens, total }
   } catch {
     return null
+  }
+}
+
+const LIMITE_SEGREDO = 200
+
+/**
+ * Liga/desliga o envio de cada execução para um webhook externo.
+ * `segredo`: `undefined` mantém o atual, `null` remove, texto define um novo.
+ */
+export async function salvarWebhookExecucoesAction(
+  id: string,
+  input: { ativo: boolean; url: string; segredo?: string | null },
+): Promise<Resultado<{ config: ConfigWebhookExecucoes }>> {
+  await assertSecao("nocode")
+  if (typeof input?.ativo !== "boolean") return { ok: false, message: "Estado inválido." }
+
+  const url = String(input.url ?? "").trim()
+  let urlFinal = ""
+  if (url || input.ativo) {
+    const validacao = validarUrlWebhook(url)
+    if (!validacao.ok) return { ok: false, message: validacao.erro }
+    urlFinal = validacao.url
+  }
+
+  let segredo: string | null | undefined
+  if (input.segredo === null) segredo = null
+  else if (typeof input.segredo === "string" && input.segredo.trim()) {
+    segredo = input.segredo.trim()
+    if (segredo.length > LIMITE_SEGREDO) return { ok: false, message: `O segredo pode ter no máximo ${LIMITE_SEGREDO} caracteres.` }
+  }
+
+  try {
+    if (!(await getFlow(id))) return { ok: false, message: "Fluxo não encontrado." }
+    const config = await atualizarConfigWebhookExecucoes(id, { ativo: input.ativo, url: urlFinal, segredo })
+    revalidatePath("/nocode")
+    return {
+      ok: true,
+      message: input.ativo ? "Webhook de execuções ativado." : "Webhook de execuções desativado.",
+      config,
+    }
+  } catch (error) {
+    return falha("Não foi possível salvar o webhook de execuções.", error)
+  }
+}
+
+/** Envia uma execução de exemplo (marcada como teste) para a URL informada, sem gravar nada. */
+export async function testarWebhookExecucoesAction(
+  id: string,
+  input: { url: string; segredo?: string | null },
+): Promise<Resultado> {
+  await assertSecao("nocode")
+  const validacao = validarUrlWebhook(input?.url)
+  if (!validacao.ok) return { ok: false, message: validacao.erro }
+
+  try {
+    const fluxo = await getFlow(id)
+    if (!fluxo) return { ok: false, message: "Fluxo não encontrado." }
+    // Segredo em branco no formulário = usar o já salvo (ele nunca é devolvido à tela).
+    const segredo =
+      typeof input.segredo === "string" && input.segredo.trim()
+        ? input.segredo.trim()
+        : input.segredo === null
+          ? null
+          : await segredoSalvoDoFluxo(id)
+    const resultado = await enviarTesteWebhook(
+      { url: validacao.url, segredo },
+      { entrada: PAYLOAD_EXEMPLO, fluxo: { id: fluxo.id, nome: fluxo.nome, sistema: fluxo.sistema } },
+    )
+    return resultado.ok ? { ok: true, message: resultado.message } : { ok: false, message: resultado.message }
+  } catch (error) {
+    return falha("Não foi possível enviar o teste.", error)
   }
 }

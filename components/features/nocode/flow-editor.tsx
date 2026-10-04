@@ -1,11 +1,12 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react"
-import { ArrowLeft, FlaskConical, Loader2, Lock, RefreshCw, Save } from "lucide-react"
+import { ArrowLeft, FlaskConical, Loader2, Lock, RefreshCw, Save, Send } from "lucide-react"
 import { toast } from "sonner"
 
 import { listExecutionsAction, saveFlowAction, testFlowAction, toggleFlowAction } from "@/app/actions/nocode"
 import { ExecutionItem, ExecutionsPanel } from "@/components/features/nocode/executions-panel"
+import { ExecutionWebhookDialog } from "@/components/features/nocode/execution-webhook-dialog"
 import { FlowCanvas, type Selecao } from "@/components/features/nocode/flow-canvas"
 import { NodeConfigPanel } from "@/components/features/nocode/node-config-panel"
 import { ICONES } from "@/components/features/nocode/node-visuals"
@@ -45,7 +46,15 @@ const VARIAVEIS_WEBHOOK = [
 ]
 const VARIAVEIS_LEAD = ["lead.encontrado", "lead.id", "lead.nome", "lead.status", "lead.temCampanha", "lead.campanhasIds"]
 
-export function FlowEditor({ fluxo, execucoesIniciais }: { fluxo: FlowRow; execucoesIniciais: ExecutionRow[] }) {
+export function FlowEditor({
+  fluxo,
+  execucoesIniciais,
+  totalExecucoes,
+}: {
+  fluxo: FlowRow
+  execucoesIniciais: ExecutionRow[]
+  totalExecucoes: number
+}) {
   const [nome, setNome] = useState(fluxo.nome)
   const [nodes, setNodes] = useState<FlowNode[]>(fluxo.nodes)
   const [edges, setEdges] = useState<FlowEdge[]>(fluxo.edges)
@@ -54,6 +63,10 @@ export function FlowEditor({ fluxo, execucoesIniciais }: { fluxo: FlowRow; execu
   const [selecao, setSelecao] = useState<Selecao>(null)
   const [aba, setAba] = useState<"editor" | "execucoes">("editor")
   const [execucoes, setExecucoes] = useState(execucoesIniciais)
+  const [total, setTotal] = useState(totalExecucoes)
+  const [carregandoMais, setCarregandoMais] = useState(false)
+  const [webhookCfg, setWebhookCfg] = useState(fluxo.webhookExecucoes)
+  const [webhookAberto, setWebhookAberto] = useState(false)
   const [salvo, setSalvo] = useState(() => JSON.stringify({ nome: fluxo.nome, nodes: fluxo.nodes, edges: fluxo.edges }))
   const [pending, startTransition] = useTransition()
   const [testeAberto, setTesteAberto] = useState(false)
@@ -170,15 +183,38 @@ export function FlowEditor({ fluxo, execucoesIniciais }: { fluxo: FlowRow; execu
       }
       setResultadoTeste(resultado.execucao)
       setExecucoes((atual) => [resultado.execucao, ...atual])
+      setTotal((atual) => atual + 1)
     } finally {
       setTestando(false)
     }
   }
 
   async function atualizarExecucoes() {
-    const lista = await listExecutionsAction(fluxo.id)
-    if (lista) setExecucoes(lista)
-    else toast.error("Não foi possível atualizar as execuções.")
+    const pagina = await listExecutionsAction(fluxo.id)
+    if (pagina) {
+      setExecucoes(pagina.itens)
+      setTotal(pagina.total)
+    } else toast.error("Não foi possível atualizar as execuções.")
+  }
+
+  async function carregarMaisExecucoes() {
+    const ultima = execucoes[execucoes.length - 1]
+    if (!ultima) return
+    setCarregandoMais(true)
+    try {
+      const pagina = await listExecutionsAction(fluxo.id, ultima.id)
+      if (!pagina) {
+        toast.error("Não foi possível carregar mais execuções.")
+        return
+      }
+      setExecucoes((atual) => {
+        const vistos = new Set(atual.map((e) => e.id))
+        return [...atual, ...pagina.itens.filter((e) => !vistos.has(e.id))]
+      })
+      setTotal(pagina.total)
+    } finally {
+      setCarregandoMais(false)
+    }
   }
 
   return (
@@ -212,6 +248,11 @@ export function FlowEditor({ fluxo, execucoesIniciais }: { fluxo: FlowRow; execu
             />
             {ativo ? "Ativo" : "Desativado"}
           </label>
+          <Button variant="outline" onClick={() => setWebhookAberto(true)}>
+            <Send className="size-4" />
+            Webhook de execuções
+            {webhookCfg.ativo ? <Badge className="ml-1">Ativo</Badge> : null}
+          </Button>
           <Button variant="outline" onClick={() => setTesteAberto(true)}>
             <FlaskConical className="size-4" />
             Testar
@@ -234,7 +275,7 @@ export function FlowEditor({ fluxo, execucoesIniciais }: { fluxo: FlowRow; execu
               aba === valor ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
             )}
           >
-            {valor === "editor" ? "Editor" : `Execuções (${execucoes.length})`}
+            {valor === "editor" ? "Editor" : `Execuções (${total})`}
           </button>
         ))}
         {aba === "execucoes" ? (
@@ -247,7 +288,17 @@ export function FlowEditor({ fluxo, execucoesIniciais }: { fluxo: FlowRow; execu
 
       {aba === "execucoes" ? (
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <ExecutionsPanel execucoes={execucoes} />
+          <ExecutionsPanel
+            execucoes={execucoes}
+            total={total}
+            carregandoMais={carregandoMais}
+            onCarregarMais={() => void carregarMaisExecucoes()}
+            retencao={
+              fluxo.sistema
+                ? "As execuções deste fluxo ficam guardadas por 24 horas, sem limite de quantidade. Para guardá-las por mais tempo, use o webhook de execuções."
+                : undefined
+            }
+          />
         </div>
       ) : (
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[13rem_minmax(0,1fr)_20rem]">
@@ -331,6 +382,16 @@ export function FlowEditor({ fluxo, execucoesIniciais }: { fluxo: FlowRow; execu
           </aside>
         </div>
       )}
+
+      <ExecutionWebhookDialog
+        // Remonta a cada abertura: o formulário sempre começa com o que está salvo (o segredo nunca volta do servidor).
+        key={webhookAberto ? "aberto" : "fechado"}
+        open={webhookAberto}
+        onOpenChange={setWebhookAberto}
+        fluxoId={fluxo.id}
+        config={webhookCfg}
+        onSalvo={setWebhookCfg}
+      />
 
       <Dialog open={testeAberto} onOpenChange={setTesteAberto}>
         <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-2xl">

@@ -10,6 +10,12 @@ import {
   type FlowNode,
 } from "@/lib/nocode/catalog"
 import { recordAppLog } from "@/services/app-logs"
+import {
+  entregarExecucao,
+  podarExecucoesExpiradasComIntervalo,
+  RETENCAO_EXECUCOES_SISTEMA_MS,
+  type ConfigWebhookExecucoes,
+} from "@/services/nocode-webhook-execucoes"
 import { configurarWebhookEvolution, sendWhatsAppText } from "@/services/evolution"
 import { processarRespostaLead, telefonesBatem } from "@/services/lead-response"
 
@@ -23,6 +29,8 @@ export interface FlowRow {
   ativo: boolean
   /** Fluxo do sistema (“Fluxo de resposta”): sempre ativo, não pode ser desativado nem excluído. */
   sistema: boolean
+  /** Webhook que recebe cada execução. O segredo nunca sai do servidor: só se informa se existe. */
+  webhookExecucoes: ConfigWebhookExecucoes
   nodes: FlowNode[]
   edges: FlowEdge[]
   criadoEm: string
@@ -50,6 +58,13 @@ export interface ExecutionRow {
   erro: string | null
   duracaoMs: number
   iniciadoEm: string
+  /** Entrega ao webhook de execuções; `null` quando não se aplica (testes, webhook desligado). */
+  webhook: {
+    status: "pendente" | "enviando" | "enviado" | "falha"
+    tentativas: number
+    erro: string | null
+    enviadoEm: string | null
+  } | null
 }
 
 export const NOME_FLUXO_RESPOSTA = "Fluxo de resposta"
@@ -65,6 +80,9 @@ function paraFlow(row: {
   nome: string
   ativo: boolean
   sistema: boolean
+  execWebhookAtivo?: boolean
+  execWebhookUrl?: string | null
+  execWebhookSegredo?: string | null
   nodes: unknown
   edges: unknown
   criadoEm: Date
@@ -75,6 +93,11 @@ function paraFlow(row: {
     nome: row.nome,
     ativo: row.ativo || row.sistema,
     sistema: row.sistema,
+    webhookExecucoes: {
+      ativo: row.execWebhookAtivo ?? false,
+      url: row.execWebhookUrl ?? "",
+      temSegredo: Boolean(row.execWebhookSegredo),
+    },
     nodes: Array.isArray(row.nodes) ? (row.nodes as FlowNode[]) : [],
     edges: Array.isArray(row.edges) ? (row.edges as FlowEdge[]) : [],
     criadoEm: row.criadoEm.toISOString(),
@@ -92,6 +115,10 @@ function paraExecucao(row: {
   erro: string | null
   duracaoMs: number
   iniciadoEm: Date
+  webhookStatus?: string | null
+  webhookTentativas?: number
+  webhookErro?: string | null
+  webhookEnviadoEm?: Date | null
 }): ExecutionRow {
   return {
     id: row.id,
@@ -103,6 +130,14 @@ function paraExecucao(row: {
     erro: row.erro,
     duracaoMs: row.duracaoMs,
     iniciadoEm: row.iniciadoEm.toISOString(),
+    webhook: row.webhookStatus
+      ? {
+          status: row.webhookStatus as NonNullable<ExecutionRow["webhook"]>["status"],
+          tentativas: row.webhookTentativas ?? 0,
+          erro: row.webhookErro ?? null,
+          enviadoEm: row.webhookEnviadoEm ? row.webhookEnviadoEm.toISOString() : null,
+        }
+      : null,
   }
 }
 
@@ -184,13 +219,33 @@ export async function deleteFlow(id: string): Promise<void> {
   }
 }
 
-export async function listExecutions(flowId: string, limit = 30): Promise<ExecutionRow[]> {
+/**
+ * Quais execuções do fluxo aparecem: no fluxo do sistema, as das últimas 24h
+ * (sem limite de quantidade); nos demais, todas as que foram guardadas.
+ */
+async function filtroExecucoesVisiveis(flowId: string) {
+  const fluxo = await prisma.noCodeFlow.findUnique({ where: { id: flowId }, select: { sistema: true } })
+  return fluxo?.sistema
+    ? { flowId, iniciadoEm: { gte: new Date(Date.now() - RETENCAO_EXECUCOES_SISTEMA_MS) } }
+    : { flowId }
+}
+
+/** Página de execuções, da mais nova para a mais antiga. `depoisDeId` continua de onde a página anterior parou. */
+export async function listExecutions(
+  flowId: string,
+  opcoes: { limite?: number; depoisDeId?: string } = {},
+): Promise<ExecutionRow[]> {
   const rows = await prisma.noCodeExecution.findMany({
-    where: { flowId },
-    orderBy: { iniciadoEm: "desc" },
-    take: limit,
+    where: await filtroExecucoesVisiveis(flowId),
+    orderBy: [{ iniciadoEm: "desc" }, { id: "desc" }],
+    take: Math.min(Math.max(opcoes.limite ?? 50, 1), 200),
+    ...(opcoes.depoisDeId ? { cursor: { id: opcoes.depoisDeId }, skip: 1 } : {}),
   })
   return rows.map(paraExecucao)
+}
+
+export async function contarExecucoes(flowId: string): Promise<number> {
+  return prisma.noCodeExecution.count({ where: await filtroExecucoesVisiveis(flowId) })
 }
 
 // ---------------------------------------------------------------------------
@@ -450,6 +505,13 @@ export async function executarEGravar(
   origem: "webhook" | "teste",
 ): Promise<ExecutionRow> {
   const resultado = await executarFluxo(fluxo, entrada, origem === "teste")
+  const config = await prisma.noCodeFlow.findUnique({
+    where: { id: flowId },
+    select: { sistema: true, execWebhookAtivo: true, execWebhookUrl: true },
+  })
+  // Só execuções reais vão para o webhook; testes feitos na tela ficam só no app.
+  const enviarAoWebhook = origem === "webhook" && Boolean(config?.execWebhookAtivo && config.execWebhookUrl)
+
   const gravada = await prisma.noCodeExecution.create({
     data: {
       flowId,
@@ -459,6 +521,7 @@ export async function executarEGravar(
       passos: resultado.passos as never,
       erro: resultado.erro,
       duracaoMs: resultado.duracaoMs,
+      webhookStatus: enviarAoWebhook ? "pendente" : null,
     },
   })
 
@@ -471,16 +534,23 @@ export async function executarEGravar(
     })
   }
 
-  // Poda o histórico antigo.
-  const antigos = await prisma.noCodeExecution.findMany({
-    where: { flowId },
-    orderBy: { iniciadoEm: "desc" },
-    skip: MAX_EXECUCOES_POR_FLUXO,
-    select: { id: true },
-  })
-  if (antigos.length > 0) {
-    await prisma.noCodeExecution.deleteMany({ where: { id: { in: antigos.map((a) => a.id) } } })
+  // Fluxo do sistema: guarda 24h, sem limite de quantidade. Os demais mantêm só as últimas.
+  if (config?.sistema) {
+    await podarExecucoesExpiradasComIntervalo().catch(() => undefined)
+  } else {
+    const antigos = await prisma.noCodeExecution.findMany({
+      where: { flowId },
+      orderBy: { iniciadoEm: "desc" },
+      skip: MAX_EXECUCOES_POR_FLUXO,
+      select: { id: true },
+    })
+    if (antigos.length > 0) {
+      await prisma.noCodeExecution.deleteMany({ where: { id: { in: antigos.map((a) => a.id) } } })
+    }
   }
+
+  // Envia já; se falhar, a rotina periódica repete até dar certo (ou a execução expirar).
+  if (enviarAoWebhook) await entregarExecucao(gravada.id)
 
   return paraExecucao(gravada)
 }

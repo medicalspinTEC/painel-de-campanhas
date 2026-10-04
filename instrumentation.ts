@@ -44,5 +44,23 @@ export async function register() {
   setTimeout(tick, 10_000)
   setInterval(tick, intervaloMs)
 
+  // Manutenção do No Code: apaga execuções com mais de 24h e reenvia ao webhook as entregas que falharam.
+  let ultimoErroNoCode = ""
+  const tickNoCode = async () => {
+    try {
+      const { manutencaoNoCode } = await import("@/services/nocode-webhook-execucoes")
+      const resultado = await manutencaoNoCode()
+      ultimoErroNoCode = ""
+      if (resultado.enviadas || resultado.falhas) console.log("[v0] webhook de execuções (No Code):", resultado)
+    } catch (error) {
+      // Só loga quando o erro muda (ex.: migration ainda não aplicada), para não encher o log a cada 30s.
+      const mensagem = error instanceof Error ? error.message : String(error)
+      if (mensagem !== ultimoErroNoCode) console.error("[v0] falha na manutenção do No Code:", error)
+      ultimoErroNoCode = mensagem
+    }
+  }
+  setTimeout(tickNoCode, 20_000)
+  setInterval(tickNoCode, 30_000)
+
   console.log(`[v0] engine de campanhas ativa (intervalo ${intervaloMs}ms).`)
 }

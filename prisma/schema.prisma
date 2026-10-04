@@ -472,6 +472,11 @@ model NoCodeFlow {
   /// Fluxo do sistema (o "Fluxo de resposta" do app): nasce ativo e não pode ser
   /// desativado nem excluído. Só existe um (índice único parcial na migration).
   sistema Boolean @default(false)
+  /// Envia cada execução (completa) para um webhook externo, para guardá-la fora do app.
+  execWebhookAtivo   Boolean @default(false)
+  execWebhookUrl     String?
+  /// Segredo opcional: assina o corpo enviado (HMAC-SHA256 no header X-Execution-Signature).
+  execWebhookSegredo String?
   /// Nós do canvas: [{ id, type, name, position: {x,y}, config }].
   nodes Json    @default("[]")
   /// Conexões: [{ id, source, sourceHandle, target }].
@@ -501,8 +506,16 @@ model NoCodeExecution {
   duracaoMs Int      @default(0)
   iniciadoEm DateTime @default(now())
 
+  /// Entrega ao webhook de execuções: null (não se aplica) | "pendente" | "enviando" | "enviado" | "falha".
+  webhookStatus            String?
+  webhookTentativas        Int       @default(0)
+  webhookErro              String?
+  webhookUltimaTentativaEm DateTime?
+  webhookEnviadoEm         DateTime?
+
   @@index([flowId, iniciadoEm])
   @@index([iniciadoEm])
+  @@index([webhookStatus, iniciadoEm])
 }
 
 /// Usuários do painel. O primeiro admin é criado no primeiro login com as

@@ -22331,6 +22331,9 @@ export namespace Prisma {
     nome: string | null
     ativo: boolean | null
     sistema: boolean | null
+    execWebhookAtivo: boolean | null
+    execWebhookUrl: string | null
+    execWebhookSegredo: string | null
     criadoEm: Date | null
     atualizadoEm: Date | null
   }
@@ -22340,6 +22343,9 @@ export namespace Prisma {
     nome: string | null
     ativo: boolean | null
     sistema: boolean | null
+    execWebhookAtivo: boolean | null
+    execWebhookUrl: string | null
+    execWebhookSegredo: string | null
     criadoEm: Date | null
     atualizadoEm: Date | null
   }
@@ -22349,6 +22355,9 @@ export namespace Prisma {
     nome: number
     ativo: number
     sistema: number
+    execWebhookAtivo: number
+    execWebhookUrl: number
+    execWebhookSegredo: number
     nodes: number
     edges: number
     criadoEm: number
@@ -22362,6 +22371,9 @@ export namespace Prisma {
     nome?: true
     ativo?: true
     sistema?: true
+    execWebhookAtivo?: true
+    execWebhookUrl?: true
+    execWebhookSegredo?: true
     criadoEm?: true
     atualizadoEm?: true
   }
@@ -22371,6 +22383,9 @@ export namespace Prisma {
     nome?: true
     ativo?: true
     sistema?: true
+    execWebhookAtivo?: true
+    execWebhookUrl?: true
+    execWebhookSegredo?: true
     criadoEm?: true
     atualizadoEm?: true
   }
@@ -22380,6 +22395,9 @@ export namespace Prisma {
     nome?: true
     ativo?: true
     sistema?: true
+    execWebhookAtivo?: true
+    execWebhookUrl?: true
+    execWebhookSegredo?: true
     nodes?: true
     edges?: true
     criadoEm?: true
@@ -22464,6 +22482,9 @@ export namespace Prisma {
     nome: string
     ativo: boolean
     sistema: boolean
+    execWebhookAtivo: boolean
+    execWebhookUrl: string | null
+    execWebhookSegredo: string | null
     nodes: JsonValue
     edges: JsonValue
     criadoEm: Date
@@ -22492,6 +22513,9 @@ export namespace Prisma {
     nome?: boolean
     ativo?: boolean
     sistema?: boolean
+    execWebhookAtivo?: boolean
+    execWebhookUrl?: boolean
+    execWebhookSegredo?: boolean
     nodes?: boolean
     edges?: boolean
     criadoEm?: boolean
@@ -22505,6 +22529,9 @@ export namespace Prisma {
     nome?: boolean
     ativo?: boolean
     sistema?: boolean
+    execWebhookAtivo?: boolean
+    execWebhookUrl?: boolean
+    execWebhookSegredo?: boolean
     nodes?: boolean
     edges?: boolean
     criadoEm?: boolean
@@ -22516,6 +22543,9 @@ export namespace Prisma {
     nome?: boolean
     ativo?: boolean
     sistema?: boolean
+    execWebhookAtivo?: boolean
+    execWebhookUrl?: boolean
+    execWebhookSegredo?: boolean
     nodes?: boolean
     edges?: boolean
     criadoEm?: boolean
@@ -22527,13 +22557,16 @@ export namespace Prisma {
     nome?: boolean
     ativo?: boolean
     sistema?: boolean
+    execWebhookAtivo?: boolean
+    execWebhookUrl?: boolean
+    execWebhookSegredo?: boolean
     nodes?: boolean
     edges?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
   }
 
-  export type NoCodeFlowOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "ativo" | "sistema" | "nodes" | "edges" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["noCodeFlow"]>
+  export type NoCodeFlowOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "ativo" | "sistema" | "execWebhookAtivo" | "execWebhookUrl" | "execWebhookSegredo" | "nodes" | "edges" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["noCodeFlow"]>
   export type NoCodeFlowInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     execucoes?: boolean | NoCodeFlow$execucoesArgs<ExtArgs>
     _count?: boolean | NoCodeFlowCountOutputTypeDefaultArgs<ExtArgs>
@@ -22555,6 +22588,15 @@ export namespace Prisma {
        * desativado nem excluído. Só existe um (índice único parcial na migration).
        */
       sistema: boolean
+      /**
+       * Envia cada execução (completa) para um webhook externo, para guardá-la fora do app.
+       */
+      execWebhookAtivo: boolean
+      execWebhookUrl: string | null
+      /**
+       * Segredo opcional: assina o corpo enviado (HMAC-SHA256 no header X-Execution-Signature).
+       */
+      execWebhookSegredo: string | null
       /**
        * Nós do canvas: [{ id, type, name, position: {x,y}, config }].
        */
@@ -22993,6 +23035,9 @@ export namespace Prisma {
     readonly nome: FieldRef<"NoCodeFlow", 'String'>
     readonly ativo: FieldRef<"NoCodeFlow", 'Boolean'>
     readonly sistema: FieldRef<"NoCodeFlow", 'Boolean'>
+    readonly execWebhookAtivo: FieldRef<"NoCodeFlow", 'Boolean'>
+    readonly execWebhookUrl: FieldRef<"NoCodeFlow", 'String'>
+    readonly execWebhookSegredo: FieldRef<"NoCodeFlow", 'String'>
     readonly nodes: FieldRef<"NoCodeFlow", 'Json'>
     readonly edges: FieldRef<"NoCodeFlow", 'Json'>
     readonly criadoEm: FieldRef<"NoCodeFlow", 'DateTime'>
@@ -23441,10 +23486,12 @@ export namespace Prisma {
 
   export type NoCodeExecutionAvgAggregateOutputType = {
     duracaoMs: number | null
+    webhookTentativas: number | null
   }
 
   export type NoCodeExecutionSumAggregateOutputType = {
     duracaoMs: number | null
+    webhookTentativas: number | null
   }
 
   export type NoCodeExecutionMinAggregateOutputType = {
@@ -23455,6 +23502,11 @@ export namespace Prisma {
     erro: string | null
     duracaoMs: number | null
     iniciadoEm: Date | null
+    webhookStatus: string | null
+    webhookTentativas: number | null
+    webhookErro: string | null
+    webhookUltimaTentativaEm: Date | null
+    webhookEnviadoEm: Date | null
   }
 
   export type NoCodeExecutionMaxAggregateOutputType = {
@@ -23465,6 +23517,11 @@ export namespace Prisma {
     erro: string | null
     duracaoMs: number | null
     iniciadoEm: Date | null
+    webhookStatus: string | null
+    webhookTentativas: number | null
+    webhookErro: string | null
+    webhookUltimaTentativaEm: Date | null
+    webhookEnviadoEm: Date | null
   }
 
   export type NoCodeExecutionCountAggregateOutputType = {
@@ -23477,16 +23534,23 @@ export namespace Prisma {
     erro: number
     duracaoMs: number
     iniciadoEm: number
+    webhookStatus: number
+    webhookTentativas: number
+    webhookErro: number
+    webhookUltimaTentativaEm: number
+    webhookEnviadoEm: number
     _all: number
   }
 
 
   export type NoCodeExecutionAvgAggregateInputType = {
     duracaoMs?: true
+    webhookTentativas?: true
   }
 
   export type NoCodeExecutionSumAggregateInputType = {
     duracaoMs?: true
+    webhookTentativas?: true
   }
 
   export type NoCodeExecutionMinAggregateInputType = {
@@ -23497,6 +23561,11 @@ export namespace Prisma {
     erro?: true
     duracaoMs?: true
     iniciadoEm?: true
+    webhookStatus?: true
+    webhookTentativas?: true
+    webhookErro?: true
+    webhookUltimaTentativaEm?: true
+    webhookEnviadoEm?: true
   }
 
   export type NoCodeExecutionMaxAggregateInputType = {
@@ -23507,6 +23576,11 @@ export namespace Prisma {
     erro?: true
     duracaoMs?: true
     iniciadoEm?: true
+    webhookStatus?: true
+    webhookTentativas?: true
+    webhookErro?: true
+    webhookUltimaTentativaEm?: true
+    webhookEnviadoEm?: true
   }
 
   export type NoCodeExecutionCountAggregateInputType = {
@@ -23519,6 +23593,11 @@ export namespace Prisma {
     erro?: true
     duracaoMs?: true
     iniciadoEm?: true
+    webhookStatus?: true
+    webhookTentativas?: true
+    webhookErro?: true
+    webhookUltimaTentativaEm?: true
+    webhookEnviadoEm?: true
     _all?: true
   }
 
@@ -23618,6 +23697,11 @@ export namespace Prisma {
     erro: string | null
     duracaoMs: number
     iniciadoEm: Date
+    webhookStatus: string | null
+    webhookTentativas: number
+    webhookErro: string | null
+    webhookUltimaTentativaEm: Date | null
+    webhookEnviadoEm: Date | null
     _count: NoCodeExecutionCountAggregateOutputType | null
     _avg: NoCodeExecutionAvgAggregateOutputType | null
     _sum: NoCodeExecutionSumAggregateOutputType | null
@@ -23649,6 +23733,11 @@ export namespace Prisma {
     erro?: boolean
     duracaoMs?: boolean
     iniciadoEm?: boolean
+    webhookStatus?: boolean
+    webhookTentativas?: boolean
+    webhookErro?: boolean
+    webhookUltimaTentativaEm?: boolean
+    webhookEnviadoEm?: boolean
     flow?: boolean | NoCodeFlowDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["noCodeExecution"]>
 
@@ -23662,6 +23751,11 @@ export namespace Prisma {
     erro?: boolean
     duracaoMs?: boolean
     iniciadoEm?: boolean
+    webhookStatus?: boolean
+    webhookTentativas?: boolean
+    webhookErro?: boolean
+    webhookUltimaTentativaEm?: boolean
+    webhookEnviadoEm?: boolean
     flow?: boolean | NoCodeFlowDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["noCodeExecution"]>
 
@@ -23675,6 +23769,11 @@ export namespace Prisma {
     erro?: boolean
     duracaoMs?: boolean
     iniciadoEm?: boolean
+    webhookStatus?: boolean
+    webhookTentativas?: boolean
+    webhookErro?: boolean
+    webhookUltimaTentativaEm?: boolean
+    webhookEnviadoEm?: boolean
     flow?: boolean | NoCodeFlowDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["noCodeExecution"]>
 
@@ -23688,9 +23787,14 @@ export namespace Prisma {
     erro?: boolean
     duracaoMs?: boolean
     iniciadoEm?: boolean
+    webhookStatus?: boolean
+    webhookTentativas?: boolean
+    webhookErro?: boolean
+    webhookUltimaTentativaEm?: boolean
+    webhookEnviadoEm?: boolean
   }
 
-  export type NoCodeExecutionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "flowId" | "status" | "origem" | "entrada" | "passos" | "erro" | "duracaoMs" | "iniciadoEm", ExtArgs["result"]["noCodeExecution"]>
+  export type NoCodeExecutionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "flowId" | "status" | "origem" | "entrada" | "passos" | "erro" | "duracaoMs" | "iniciadoEm" | "webhookStatus" | "webhookTentativas" | "webhookErro" | "webhookUltimaTentativaEm" | "webhookEnviadoEm", ExtArgs["result"]["noCodeExecution"]>
   export type NoCodeExecutionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     flow?: boolean | NoCodeFlowDefaultArgs<ExtArgs>
   }
@@ -23725,6 +23829,14 @@ export namespace Prisma {
       erro: string | null
       duracaoMs: number
       iniciadoEm: Date
+      /**
+       * Entrega ao webhook de execuções: null (não se aplica) | "pendente" | "enviando" | "enviado" | "falha".
+       */
+      webhookStatus: string | null
+      webhookTentativas: number
+      webhookErro: string | null
+      webhookUltimaTentativaEm: Date | null
+      webhookEnviadoEm: Date | null
     }, ExtArgs["result"]["noCodeExecution"]>
     composites: {}
   }
@@ -24158,6 +24270,11 @@ export namespace Prisma {
     readonly erro: FieldRef<"NoCodeExecution", 'String'>
     readonly duracaoMs: FieldRef<"NoCodeExecution", 'Int'>
     readonly iniciadoEm: FieldRef<"NoCodeExecution", 'DateTime'>
+    readonly webhookStatus: FieldRef<"NoCodeExecution", 'String'>
+    readonly webhookTentativas: FieldRef<"NoCodeExecution", 'Int'>
+    readonly webhookErro: FieldRef<"NoCodeExecution", 'String'>
+    readonly webhookUltimaTentativaEm: FieldRef<"NoCodeExecution", 'DateTime'>
+    readonly webhookEnviadoEm: FieldRef<"NoCodeExecution", 'DateTime'>
   }
     
 
@@ -31488,6 +31605,9 @@ export namespace Prisma {
     nome: 'nome',
     ativo: 'ativo',
     sistema: 'sistema',
+    execWebhookAtivo: 'execWebhookAtivo',
+    execWebhookUrl: 'execWebhookUrl',
+    execWebhookSegredo: 'execWebhookSegredo',
     nodes: 'nodes',
     edges: 'edges',
     criadoEm: 'criadoEm',
@@ -31506,7 +31626,12 @@ export namespace Prisma {
     passos: 'passos',
     erro: 'erro',
     duracaoMs: 'duracaoMs',
-    iniciadoEm: 'iniciadoEm'
+    iniciadoEm: 'iniciadoEm',
+    webhookStatus: 'webhookStatus',
+    webhookTentativas: 'webhookTentativas',
+    webhookErro: 'webhookErro',
+    webhookUltimaTentativaEm: 'webhookUltimaTentativaEm',
+    webhookEnviadoEm: 'webhookEnviadoEm'
   };
 
   export type NoCodeExecutionScalarFieldEnum = (typeof NoCodeExecutionScalarFieldEnum)[keyof typeof NoCodeExecutionScalarFieldEnum]
@@ -33130,6 +33255,9 @@ export namespace Prisma {
     nome?: StringFilter<"NoCodeFlow"> | string
     ativo?: BoolFilter<"NoCodeFlow"> | boolean
     sistema?: BoolFilter<"NoCodeFlow"> | boolean
+    execWebhookAtivo?: BoolFilter<"NoCodeFlow"> | boolean
+    execWebhookUrl?: StringNullableFilter<"NoCodeFlow"> | string | null
+    execWebhookSegredo?: StringNullableFilter<"NoCodeFlow"> | string | null
     nodes?: JsonFilter<"NoCodeFlow">
     edges?: JsonFilter<"NoCodeFlow">
     criadoEm?: DateTimeFilter<"NoCodeFlow"> | Date | string
@@ -33142,6 +33270,9 @@ export namespace Prisma {
     nome?: SortOrder
     ativo?: SortOrder
     sistema?: SortOrder
+    execWebhookAtivo?: SortOrder
+    execWebhookUrl?: SortOrderInput | SortOrder
+    execWebhookSegredo?: SortOrderInput | SortOrder
     nodes?: SortOrder
     edges?: SortOrder
     criadoEm?: SortOrder
@@ -33157,6 +33288,9 @@ export namespace Prisma {
     nome?: StringFilter<"NoCodeFlow"> | string
     ativo?: BoolFilter<"NoCodeFlow"> | boolean
     sistema?: BoolFilter<"NoCodeFlow"> | boolean
+    execWebhookAtivo?: BoolFilter<"NoCodeFlow"> | boolean
+    execWebhookUrl?: StringNullableFilter<"NoCodeFlow"> | string | null
+    execWebhookSegredo?: StringNullableFilter<"NoCodeFlow"> | string | null
     nodes?: JsonFilter<"NoCodeFlow">
     edges?: JsonFilter<"NoCodeFlow">
     criadoEm?: DateTimeFilter<"NoCodeFlow"> | Date | string
@@ -33169,6 +33303,9 @@ export namespace Prisma {
     nome?: SortOrder
     ativo?: SortOrder
     sistema?: SortOrder
+    execWebhookAtivo?: SortOrder
+    execWebhookUrl?: SortOrderInput | SortOrder
+    execWebhookSegredo?: SortOrderInput | SortOrder
     nodes?: SortOrder
     edges?: SortOrder
     criadoEm?: SortOrder
@@ -33186,6 +33323,9 @@ export namespace Prisma {
     nome?: StringWithAggregatesFilter<"NoCodeFlow"> | string
     ativo?: BoolWithAggregatesFilter<"NoCodeFlow"> | boolean
     sistema?: BoolWithAggregatesFilter<"NoCodeFlow"> | boolean
+    execWebhookAtivo?: BoolWithAggregatesFilter<"NoCodeFlow"> | boolean
+    execWebhookUrl?: StringNullableWithAggregatesFilter<"NoCodeFlow"> | string | null
+    execWebhookSegredo?: StringNullableWithAggregatesFilter<"NoCodeFlow"> | string | null
     nodes?: JsonWithAggregatesFilter<"NoCodeFlow">
     edges?: JsonWithAggregatesFilter<"NoCodeFlow">
     criadoEm?: DateTimeWithAggregatesFilter<"NoCodeFlow"> | Date | string
@@ -33205,6 +33345,11 @@ export namespace Prisma {
     erro?: StringNullableFilter<"NoCodeExecution"> | string | null
     duracaoMs?: IntFilter<"NoCodeExecution"> | number
     iniciadoEm?: DateTimeFilter<"NoCodeExecution"> | Date | string
+    webhookStatus?: StringNullableFilter<"NoCodeExecution"> | string | null
+    webhookTentativas?: IntFilter<"NoCodeExecution"> | number
+    webhookErro?: StringNullableFilter<"NoCodeExecution"> | string | null
+    webhookUltimaTentativaEm?: DateTimeNullableFilter<"NoCodeExecution"> | Date | string | null
+    webhookEnviadoEm?: DateTimeNullableFilter<"NoCodeExecution"> | Date | string | null
     flow?: XOR<NoCodeFlowScalarRelationFilter, NoCodeFlowWhereInput>
   }
 
@@ -33218,6 +33363,11 @@ export namespace Prisma {
     erro?: SortOrderInput | SortOrder
     duracaoMs?: SortOrder
     iniciadoEm?: SortOrder
+    webhookStatus?: SortOrderInput | SortOrder
+    webhookTentativas?: SortOrder
+    webhookErro?: SortOrderInput | SortOrder
+    webhookUltimaTentativaEm?: SortOrderInput | SortOrder
+    webhookEnviadoEm?: SortOrderInput | SortOrder
     flow?: NoCodeFlowOrderByWithRelationInput
   }
 
@@ -33234,6 +33384,11 @@ export namespace Prisma {
     erro?: StringNullableFilter<"NoCodeExecution"> | string | null
     duracaoMs?: IntFilter<"NoCodeExecution"> | number
     iniciadoEm?: DateTimeFilter<"NoCodeExecution"> | Date | string
+    webhookStatus?: StringNullableFilter<"NoCodeExecution"> | string | null
+    webhookTentativas?: IntFilter<"NoCodeExecution"> | number
+    webhookErro?: StringNullableFilter<"NoCodeExecution"> | string | null
+    webhookUltimaTentativaEm?: DateTimeNullableFilter<"NoCodeExecution"> | Date | string | null
+    webhookEnviadoEm?: DateTimeNullableFilter<"NoCodeExecution"> | Date | string | null
     flow?: XOR<NoCodeFlowScalarRelationFilter, NoCodeFlowWhereInput>
   }, "id">
 
@@ -33247,6 +33402,11 @@ export namespace Prisma {
     erro?: SortOrderInput | SortOrder
     duracaoMs?: SortOrder
     iniciadoEm?: SortOrder
+    webhookStatus?: SortOrderInput | SortOrder
+    webhookTentativas?: SortOrder
+    webhookErro?: SortOrderInput | SortOrder
+    webhookUltimaTentativaEm?: SortOrderInput | SortOrder
+    webhookEnviadoEm?: SortOrderInput | SortOrder
     _count?: NoCodeExecutionCountOrderByAggregateInput
     _avg?: NoCodeExecutionAvgOrderByAggregateInput
     _max?: NoCodeExecutionMaxOrderByAggregateInput
@@ -33267,6 +33427,11 @@ export namespace Prisma {
     erro?: StringNullableWithAggregatesFilter<"NoCodeExecution"> | string | null
     duracaoMs?: IntWithAggregatesFilter<"NoCodeExecution"> | number
     iniciadoEm?: DateTimeWithAggregatesFilter<"NoCodeExecution"> | Date | string
+    webhookStatus?: StringNullableWithAggregatesFilter<"NoCodeExecution"> | string | null
+    webhookTentativas?: IntWithAggregatesFilter<"NoCodeExecution"> | number
+    webhookErro?: StringNullableWithAggregatesFilter<"NoCodeExecution"> | string | null
+    webhookUltimaTentativaEm?: DateTimeNullableWithAggregatesFilter<"NoCodeExecution"> | Date | string | null
+    webhookEnviadoEm?: DateTimeNullableWithAggregatesFilter<"NoCodeExecution"> | Date | string | null
   }
 
   export type UserWhereInput = {
@@ -35138,6 +35303,9 @@ export namespace Prisma {
     nome: string
     ativo?: boolean
     sistema?: boolean
+    execWebhookAtivo?: boolean
+    execWebhookUrl?: string | null
+    execWebhookSegredo?: string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: Date | string
@@ -35150,6 +35318,9 @@ export namespace Prisma {
     nome: string
     ativo?: boolean
     sistema?: boolean
+    execWebhookAtivo?: boolean
+    execWebhookUrl?: string | null
+    execWebhookSegredo?: string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: Date | string
@@ -35162,6 +35333,9 @@ export namespace Prisma {
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
     sistema?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35174,6 +35348,9 @@ export namespace Prisma {
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
     sistema?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35186,6 +35363,9 @@ export namespace Prisma {
     nome: string
     ativo?: boolean
     sistema?: boolean
+    execWebhookAtivo?: boolean
+    execWebhookUrl?: string | null
+    execWebhookSegredo?: string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: Date | string
@@ -35197,6 +35377,9 @@ export namespace Prisma {
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
     sistema?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35208,6 +35391,9 @@ export namespace Prisma {
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
     sistema?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35223,6 +35409,11 @@ export namespace Prisma {
     erro?: string | null
     duracaoMs?: number
     iniciadoEm?: Date | string
+    webhookStatus?: string | null
+    webhookTentativas?: number
+    webhookErro?: string | null
+    webhookUltimaTentativaEm?: Date | string | null
+    webhookEnviadoEm?: Date | string | null
     flow: NoCodeFlowCreateNestedOneWithoutExecucoesInput
   }
 
@@ -35236,6 +35427,11 @@ export namespace Prisma {
     erro?: string | null
     duracaoMs?: number
     iniciadoEm?: Date | string
+    webhookStatus?: string | null
+    webhookTentativas?: number
+    webhookErro?: string | null
+    webhookUltimaTentativaEm?: Date | string | null
+    webhookEnviadoEm?: Date | string | null
   }
 
   export type NoCodeExecutionUpdateInput = {
@@ -35247,6 +35443,11 @@ export namespace Prisma {
     erro?: NullableStringFieldUpdateOperationsInput | string | null
     duracaoMs?: IntFieldUpdateOperationsInput | number
     iniciadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    webhookStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    webhookTentativas?: IntFieldUpdateOperationsInput | number
+    webhookErro?: NullableStringFieldUpdateOperationsInput | string | null
+    webhookUltimaTentativaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    webhookEnviadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     flow?: NoCodeFlowUpdateOneRequiredWithoutExecucoesNestedInput
   }
 
@@ -35260,6 +35461,11 @@ export namespace Prisma {
     erro?: NullableStringFieldUpdateOperationsInput | string | null
     duracaoMs?: IntFieldUpdateOperationsInput | number
     iniciadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    webhookStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    webhookTentativas?: IntFieldUpdateOperationsInput | number
+    webhookErro?: NullableStringFieldUpdateOperationsInput | string | null
+    webhookUltimaTentativaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    webhookEnviadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type NoCodeExecutionCreateManyInput = {
@@ -35272,6 +35478,11 @@ export namespace Prisma {
     erro?: string | null
     duracaoMs?: number
     iniciadoEm?: Date | string
+    webhookStatus?: string | null
+    webhookTentativas?: number
+    webhookErro?: string | null
+    webhookUltimaTentativaEm?: Date | string | null
+    webhookEnviadoEm?: Date | string | null
   }
 
   export type NoCodeExecutionUpdateManyMutationInput = {
@@ -35283,6 +35494,11 @@ export namespace Prisma {
     erro?: NullableStringFieldUpdateOperationsInput | string | null
     duracaoMs?: IntFieldUpdateOperationsInput | number
     iniciadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    webhookStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    webhookTentativas?: IntFieldUpdateOperationsInput | number
+    webhookErro?: NullableStringFieldUpdateOperationsInput | string | null
+    webhookUltimaTentativaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    webhookEnviadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type NoCodeExecutionUncheckedUpdateManyInput = {
@@ -35295,6 +35511,11 @@ export namespace Prisma {
     erro?: NullableStringFieldUpdateOperationsInput | string | null
     duracaoMs?: IntFieldUpdateOperationsInput | number
     iniciadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    webhookStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    webhookTentativas?: IntFieldUpdateOperationsInput | number
+    webhookErro?: NullableStringFieldUpdateOperationsInput | string | null
+    webhookUltimaTentativaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    webhookEnviadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type UserCreateInput = {
@@ -36825,6 +37046,9 @@ export namespace Prisma {
     nome?: SortOrder
     ativo?: SortOrder
     sistema?: SortOrder
+    execWebhookAtivo?: SortOrder
+    execWebhookUrl?: SortOrder
+    execWebhookSegredo?: SortOrder
     nodes?: SortOrder
     edges?: SortOrder
     criadoEm?: SortOrder
@@ -36836,6 +37060,9 @@ export namespace Prisma {
     nome?: SortOrder
     ativo?: SortOrder
     sistema?: SortOrder
+    execWebhookAtivo?: SortOrder
+    execWebhookUrl?: SortOrder
+    execWebhookSegredo?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
   }
@@ -36845,6 +37072,9 @@ export namespace Prisma {
     nome?: SortOrder
     ativo?: SortOrder
     sistema?: SortOrder
+    execWebhookAtivo?: SortOrder
+    execWebhookUrl?: SortOrder
+    execWebhookSegredo?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
   }
@@ -36887,10 +37117,16 @@ export namespace Prisma {
     erro?: SortOrder
     duracaoMs?: SortOrder
     iniciadoEm?: SortOrder
+    webhookStatus?: SortOrder
+    webhookTentativas?: SortOrder
+    webhookErro?: SortOrder
+    webhookUltimaTentativaEm?: SortOrder
+    webhookEnviadoEm?: SortOrder
   }
 
   export type NoCodeExecutionAvgOrderByAggregateInput = {
     duracaoMs?: SortOrder
+    webhookTentativas?: SortOrder
   }
 
   export type NoCodeExecutionMaxOrderByAggregateInput = {
@@ -36901,6 +37137,11 @@ export namespace Prisma {
     erro?: SortOrder
     duracaoMs?: SortOrder
     iniciadoEm?: SortOrder
+    webhookStatus?: SortOrder
+    webhookTentativas?: SortOrder
+    webhookErro?: SortOrder
+    webhookUltimaTentativaEm?: SortOrder
+    webhookEnviadoEm?: SortOrder
   }
 
   export type NoCodeExecutionMinOrderByAggregateInput = {
@@ -36911,10 +37152,16 @@ export namespace Prisma {
     erro?: SortOrder
     duracaoMs?: SortOrder
     iniciadoEm?: SortOrder
+    webhookStatus?: SortOrder
+    webhookTentativas?: SortOrder
+    webhookErro?: SortOrder
+    webhookUltimaTentativaEm?: SortOrder
+    webhookEnviadoEm?: SortOrder
   }
 
   export type NoCodeExecutionSumOrderByAggregateInput = {
     duracaoMs?: SortOrder
+    webhookTentativas?: SortOrder
   }
   export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -40108,6 +40355,11 @@ export namespace Prisma {
     erro?: string | null
     duracaoMs?: number
     iniciadoEm?: Date | string
+    webhookStatus?: string | null
+    webhookTentativas?: number
+    webhookErro?: string | null
+    webhookUltimaTentativaEm?: Date | string | null
+    webhookEnviadoEm?: Date | string | null
   }
 
   export type NoCodeExecutionUncheckedCreateWithoutFlowInput = {
@@ -40119,6 +40371,11 @@ export namespace Prisma {
     erro?: string | null
     duracaoMs?: number
     iniciadoEm?: Date | string
+    webhookStatus?: string | null
+    webhookTentativas?: number
+    webhookErro?: string | null
+    webhookUltimaTentativaEm?: Date | string | null
+    webhookEnviadoEm?: Date | string | null
   }
 
   export type NoCodeExecutionCreateOrConnectWithoutFlowInput = {
@@ -40160,6 +40417,11 @@ export namespace Prisma {
     erro?: StringNullableFilter<"NoCodeExecution"> | string | null
     duracaoMs?: IntFilter<"NoCodeExecution"> | number
     iniciadoEm?: DateTimeFilter<"NoCodeExecution"> | Date | string
+    webhookStatus?: StringNullableFilter<"NoCodeExecution"> | string | null
+    webhookTentativas?: IntFilter<"NoCodeExecution"> | number
+    webhookErro?: StringNullableFilter<"NoCodeExecution"> | string | null
+    webhookUltimaTentativaEm?: DateTimeNullableFilter<"NoCodeExecution"> | Date | string | null
+    webhookEnviadoEm?: DateTimeNullableFilter<"NoCodeExecution"> | Date | string | null
   }
 
   export type NoCodeFlowCreateWithoutExecucoesInput = {
@@ -40167,6 +40429,9 @@ export namespace Prisma {
     nome: string
     ativo?: boolean
     sistema?: boolean
+    execWebhookAtivo?: boolean
+    execWebhookUrl?: string | null
+    execWebhookSegredo?: string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: Date | string
@@ -40178,6 +40443,9 @@ export namespace Prisma {
     nome: string
     ativo?: boolean
     sistema?: boolean
+    execWebhookAtivo?: boolean
+    execWebhookUrl?: string | null
+    execWebhookSegredo?: string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: Date | string
@@ -40205,6 +40473,9 @@ export namespace Prisma {
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
     sistema?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40216,6 +40487,9 @@ export namespace Prisma {
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
     sistema?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41399,6 +41673,11 @@ export namespace Prisma {
     erro?: string | null
     duracaoMs?: number
     iniciadoEm?: Date | string
+    webhookStatus?: string | null
+    webhookTentativas?: number
+    webhookErro?: string | null
+    webhookUltimaTentativaEm?: Date | string | null
+    webhookEnviadoEm?: Date | string | null
   }
 
   export type NoCodeExecutionUpdateWithoutFlowInput = {
@@ -41410,6 +41689,11 @@ export namespace Prisma {
     erro?: NullableStringFieldUpdateOperationsInput | string | null
     duracaoMs?: IntFieldUpdateOperationsInput | number
     iniciadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    webhookStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    webhookTentativas?: IntFieldUpdateOperationsInput | number
+    webhookErro?: NullableStringFieldUpdateOperationsInput | string | null
+    webhookUltimaTentativaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    webhookEnviadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type NoCodeExecutionUncheckedUpdateWithoutFlowInput = {
@@ -41421,6 +41705,11 @@ export namespace Prisma {
     erro?: NullableStringFieldUpdateOperationsInput | string | null
     duracaoMs?: IntFieldUpdateOperationsInput | number
     iniciadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    webhookStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    webhookTentativas?: IntFieldUpdateOperationsInput | number
+    webhookErro?: NullableStringFieldUpdateOperationsInput | string | null
+    webhookUltimaTentativaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    webhookEnviadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type NoCodeExecutionUncheckedUpdateManyWithoutFlowInput = {
@@ -41432,6 +41721,11 @@ export namespace Prisma {
     erro?: NullableStringFieldUpdateOperationsInput | string | null
     duracaoMs?: IntFieldUpdateOperationsInput | number
     iniciadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    webhookStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    webhookTentativas?: IntFieldUpdateOperationsInput | number
+    webhookErro?: NullableStringFieldUpdateOperationsInput | string | null
+    webhookUltimaTentativaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    webhookEnviadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type AtendenteDepartamentoCreateManyDepartamentoInput = {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { processDueMessages } from "@/services/campaign-engine"
+import { manutencaoNoCode } from "@/services/nocode-webhook-execucoes"
 
 /**
  * Aciona a engine de disparo sob demanda.
@@ -24,7 +25,12 @@ async function handle(request: Request) {
 
   try {
     const resultado = await processDueMessages()
-    return NextResponse.json({ ok: true, ...resultado })
+    // Poda as execuções com mais de 24h e reenvia ao webhook as que falharam (não derruba a engine se falhar).
+    const nocode = await manutencaoNoCode().catch((error) => {
+      console.error("[v0] manutenção do No Code falhou:", error)
+      return null
+    })
+    return NextResponse.json({ ok: true, ...resultado, ...(nocode ? { nocode } : {}) })
   } catch (error) {
     console.error("[v0] GET/POST /api/cron falhou:", error)
     return NextResponse.json({ ok: false, erro: "Falha ao processar a engine." }, { status: 500 })

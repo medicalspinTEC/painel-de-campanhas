@@ -1,8 +1,9 @@
 "use client"
 
-import { CheckCircle2, CircleSlash, FlaskConical, Webhook, XCircle } from "lucide-react"
+import { CheckCircle2, CircleSlash, FlaskConical, Loader2, Send, Webhook, XCircle } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { formatDateTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import type { ExecutionRow, PassoExecucao } from "@/services/nocode"
@@ -19,6 +20,13 @@ const STATUS_PASSO: Record<PassoExecucao["status"], string> = {
   simulado: "text-amber-600 dark:text-amber-400",
   ignorado: "text-muted-foreground",
 }
+
+const STATUS_ENTREGA = {
+  pendente: { label: "Aguardando envio", classe: "text-amber-600 dark:text-amber-400" },
+  enviando: { label: "Enviando", classe: "text-amber-600 dark:text-amber-400" },
+  enviado: { label: "Enviada ao webhook", classe: "text-emerald-600 dark:text-emerald-400" },
+  falha: { label: "Falha no envio", classe: "text-destructive" },
+} as const
 
 function json(valor: unknown, limite = 4000): string {
   try {
@@ -45,6 +53,14 @@ export function ExecutionItem({ execucao, aberto = false }: { execucao: Executio
             {execucao.passos.length === 1 ? "" : "s"}
           </span>
         </div>
+        {execucao.webhook ? (
+          <span
+            className={cn("shrink-0", STATUS_ENTREGA[execucao.webhook.status].classe)}
+            title={STATUS_ENTREGA[execucao.webhook.status].label}
+          >
+            <Send className="size-3.5" />
+          </span>
+        ) : null}
         <Badge variant="secondary" className="gap-1">
           <OrigemIcone className="size-3" />
           {execucao.origem === "teste" ? "Teste" : "Webhook"}
@@ -54,6 +70,22 @@ export function ExecutionItem({ execucao, aberto = false }: { execucao: Executio
       <div className="flex flex-col gap-3 border-t px-3 py-3">
         {execucao.erro ? (
           <p className="rounded-md bg-destructive/10 px-2.5 py-1.5 text-xs text-destructive">{execucao.erro}</p>
+        ) : null}
+
+        {execucao.webhook ? (
+          <div className="flex flex-col gap-0.5 rounded-md bg-muted/40 px-2.5 py-1.5 text-xs">
+            <span className={cn("flex items-center gap-1.5 font-medium", STATUS_ENTREGA[execucao.webhook.status].classe)}>
+              <Send className="size-3" />
+              {STATUS_ENTREGA[execucao.webhook.status].label}
+              <span className="font-normal text-muted-foreground">
+                · {execucao.webhook.tentativas} tentativa{execucao.webhook.tentativas === 1 ? "" : "s"}
+                {execucao.webhook.enviadoEm ? ` · ${formatDateTime(execucao.webhook.enviadoEm)}` : ""}
+              </span>
+            </span>
+            {execucao.webhook.status === "falha" && execucao.webhook.erro ? (
+              <span className="text-destructive">{execucao.webhook.erro}</span>
+            ) : null}
+          </div>
         ) : null}
 
         <ol className="flex flex-col gap-1.5">
@@ -90,7 +122,21 @@ export function ExecutionItem({ execucao, aberto = false }: { execucao: Executio
   )
 }
 
-export function ExecutionsPanel({ execucoes }: { execucoes: ExecutionRow[] }) {
+export function ExecutionsPanel({
+  execucoes,
+  total,
+  carregandoMais = false,
+  onCarregarMais,
+  retencao,
+}: {
+  execucoes: ExecutionRow[]
+  /** Quantas execuções existem no total (para saber se há mais páginas). */
+  total?: number
+  carregandoMais?: boolean
+  onCarregarMais?: () => void
+  /** Aviso fixo sobre quanto tempo as execuções ficam guardadas. */
+  retencao?: string
+}) {
   if (execucoes.length === 0) {
     return (
       <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
@@ -98,11 +144,19 @@ export function ExecutionsPanel({ execucoes }: { execucoes: ExecutionRow[] }) {
       </div>
     )
   }
+  const restantes = total !== undefined ? total - execucoes.length : 0
   return (
     <div className="flex flex-col gap-2">
+      {retencao ? <p className="px-1 text-xs text-muted-foreground">{retencao}</p> : null}
       {execucoes.map((execucao) => (
         <ExecutionItem key={execucao.id} execucao={execucao} />
       ))}
+      {onCarregarMais && restantes > 0 ? (
+        <Button variant="outline" size="sm" className="self-center" onClick={onCarregarMais} disabled={carregandoMais}>
+          {carregandoMais ? <Loader2 className="size-3.5 animate-spin" /> : null}
+          Carregar mais ({restantes})
+        </Button>
+      ) : null}
     </div>
   )
 }
