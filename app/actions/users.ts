@@ -5,11 +5,12 @@ import { cookies } from "next/headers"
 
 import { isTemaApp } from "@/lib/temas"
 import { TEMA_COOKIE } from "@/lib/temas"
-import { assertAdmin, assertUsuario, ForbiddenError } from "@/lib/session"
+import { assertAdmin, assertSecao, assertUsuario, ForbiddenError } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
 import {
   createUser,
   deleteUser,
+  setUserChatIdentificar,
   setUserNome,
   setUserTema,
   trocarSenha,
@@ -81,6 +82,18 @@ export async function saveMeuTemaAction(tema: string): Promise<UserActionResult>
   }
   revalidatePath("/", "layout")
   return { ok: true, message: "Tema salvo só para você." }
+}
+
+/** Chat: liga/desliga o nome do remetente nas mensagens. Vale só para o próprio usuário. */
+export async function saveChatIdentificarAction(ativo: boolean): Promise<UserActionResult> {
+  try {
+    const usuario = await assertSecao("chat")
+    if (typeof ativo !== "boolean") return { ok: false, message: "Valor inválido." }
+    await setUserChatIdentificar(usuario.id, ativo)
+  } catch (error) {
+    return falha(error, "Não foi possível salvar a preferência.")
+  }
+  return { ok: true, message: ativo ? "Seu nome será enviado junto com as mensagens." : "Suas mensagens serão enviadas sem identificação." }
 }
 
 export async function saveMeuNomeAction(nome: string): Promise<UserActionResult> {

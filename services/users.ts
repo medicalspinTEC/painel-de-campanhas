@@ -13,6 +13,7 @@ export type Usuario = {
   secoes: SecaoKey[]
   ativo: boolean
   temaApp: TemaApp
+  chatIdentificarRemetente: boolean
   criadoEm: Date
 }
 
@@ -24,6 +25,7 @@ type UserRow = {
   secoes: string[]
   ativo: boolean
   temaApp: string
+  chatIdentificarRemetente: boolean
   criadoEm: Date
 }
 
@@ -36,6 +38,7 @@ export function toUsuario(row: UserRow): Usuario {
     secoes: normalizarSecoes(row.secoes),
     ativo: row.ativo,
     temaApp: temaOuPadrao(row.temaApp),
+    chatIdentificarRemetente: row.chatIdentificarRemetente,
     criadoEm: row.criadoEm,
   }
 }
@@ -152,6 +155,11 @@ export async function deleteUser(id: string, solicitanteId: string): Promise<voi
 /** Preferência pessoal: altera só o tema do próprio usuário. */
 export async function setUserTema(id: string, tema: TemaApp): Promise<void> {
   await prisma.user.update({ where: { id }, data: { temaApp: tema } })
+}
+
+/** Preferência pessoal: liga/desliga o nome do remetente nas mensagens do chat. */
+export async function setUserChatIdentificar(id: string, ativo: boolean): Promise<void> {
+  await prisma.user.update({ where: { id }, data: { chatIdentificarRemetente: ativo } })
 }
 
 export async function setUserNome(id: string, nome: string): Promise<void> {

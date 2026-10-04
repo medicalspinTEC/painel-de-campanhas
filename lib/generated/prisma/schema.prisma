@@ -513,6 +513,10 @@ model User {
   /// Preferência PESSOAL: o tema escolhido vale só para este usuário.
   temaApp String @default("esmeralda")
 
+  /// Preferência PESSOAL do chat: quando ligada, as mensagens enviadas por este
+  /// usuário chegam ao lead com o nome dele no início (ver `sendLeadMessageAction`).
+  chatIdentificarRemetente Boolean @default(false)
+
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 

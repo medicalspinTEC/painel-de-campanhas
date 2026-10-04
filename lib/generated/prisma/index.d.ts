@@ -23940,6 +23940,7 @@ export namespace Prisma {
     role: $Enums.UserRole | null
     ativo: boolean | null
     temaApp: string | null
+    chatIdentificarRemetente: boolean | null
     criadoEm: Date | null
     atualizadoEm: Date | null
   }
@@ -23952,6 +23953,7 @@ export namespace Prisma {
     role: $Enums.UserRole | null
     ativo: boolean | null
     temaApp: string | null
+    chatIdentificarRemetente: boolean | null
     criadoEm: Date | null
     atualizadoEm: Date | null
   }
@@ -23965,6 +23967,7 @@ export namespace Prisma {
     secoes: number
     ativo: number
     temaApp: number
+    chatIdentificarRemetente: number
     criadoEm: number
     atualizadoEm: number
     _all: number
@@ -23979,6 +23982,7 @@ export namespace Prisma {
     role?: true
     ativo?: true
     temaApp?: true
+    chatIdentificarRemetente?: true
     criadoEm?: true
     atualizadoEm?: true
   }
@@ -23991,6 +23995,7 @@ export namespace Prisma {
     role?: true
     ativo?: true
     temaApp?: true
+    chatIdentificarRemetente?: true
     criadoEm?: true
     atualizadoEm?: true
   }
@@ -24004,6 +24009,7 @@ export namespace Prisma {
     secoes?: true
     ativo?: true
     temaApp?: true
+    chatIdentificarRemetente?: true
     criadoEm?: true
     atualizadoEm?: true
     _all?: true
@@ -24090,6 +24096,7 @@ export namespace Prisma {
     secoes: string[]
     ativo: boolean
     temaApp: string
+    chatIdentificarRemetente: boolean
     criadoEm: Date
     atualizadoEm: Date
     _count: UserCountAggregateOutputType | null
@@ -24120,6 +24127,7 @@ export namespace Prisma {
     secoes?: boolean
     ativo?: boolean
     temaApp?: boolean
+    chatIdentificarRemetente?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
   }, ExtArgs["result"]["user"]>
@@ -24133,6 +24141,7 @@ export namespace Prisma {
     secoes?: boolean
     ativo?: boolean
     temaApp?: boolean
+    chatIdentificarRemetente?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
   }, ExtArgs["result"]["user"]>
@@ -24146,6 +24155,7 @@ export namespace Prisma {
     secoes?: boolean
     ativo?: boolean
     temaApp?: boolean
+    chatIdentificarRemetente?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
   }, ExtArgs["result"]["user"]>
@@ -24159,11 +24169,12 @@ export namespace Prisma {
     secoes?: boolean
     ativo?: boolean
     temaApp?: boolean
+    chatIdentificarRemetente?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "nome" | "senhaHash" | "role" | "secoes" | "ativo" | "temaApp" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "nome" | "senhaHash" | "role" | "secoes" | "ativo" | "temaApp" | "chatIdentificarRemetente" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["user"]>
 
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
@@ -24193,6 +24204,11 @@ export namespace Prisma {
        * Preferência PESSOAL: o tema escolhido vale só para este usuário.
        */
       temaApp: string
+      /**
+       * Preferência PESSOAL do chat: quando ligada, as mensagens enviadas por este
+       * usuário chegam ao lead com o nome dele no início (ver `sendLeadMessageAction`).
+       */
+      chatIdentificarRemetente: boolean
       criadoEm: Date
       atualizadoEm: Date
     }, ExtArgs["result"]["user"]>
@@ -24626,6 +24642,7 @@ export namespace Prisma {
     readonly secoes: FieldRef<"User", 'String[]'>
     readonly ativo: FieldRef<"User", 'Boolean'>
     readonly temaApp: FieldRef<"User", 'String'>
+    readonly chatIdentificarRemetente: FieldRef<"User", 'Boolean'>
     readonly criadoEm: FieldRef<"User", 'DateTime'>
     readonly atualizadoEm: FieldRef<"User", 'DateTime'>
   }
@@ -25300,6 +25317,7 @@ export namespace Prisma {
     secoes: 'secoes',
     ativo: 'ativo',
     temaApp: 'temaApp',
+    chatIdentificarRemetente: 'chatIdentificarRemetente',
     criadoEm: 'criadoEm',
     atualizadoEm: 'atualizadoEm'
   };
@@ -26981,6 +26999,7 @@ export namespace Prisma {
     secoes?: StringNullableListFilter<"User">
     ativo?: BoolFilter<"User"> | boolean
     temaApp?: StringFilter<"User"> | string
+    chatIdentificarRemetente?: BoolFilter<"User"> | boolean
     criadoEm?: DateTimeFilter<"User"> | Date | string
     atualizadoEm?: DateTimeFilter<"User"> | Date | string
   }
@@ -26994,6 +27013,7 @@ export namespace Prisma {
     secoes?: SortOrder
     ativo?: SortOrder
     temaApp?: SortOrder
+    chatIdentificarRemetente?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
   }
@@ -27010,6 +27030,7 @@ export namespace Prisma {
     secoes?: StringNullableListFilter<"User">
     ativo?: BoolFilter<"User"> | boolean
     temaApp?: StringFilter<"User"> | string
+    chatIdentificarRemetente?: BoolFilter<"User"> | boolean
     criadoEm?: DateTimeFilter<"User"> | Date | string
     atualizadoEm?: DateTimeFilter<"User"> | Date | string
   }, "id" | "username">
@@ -27023,6 +27044,7 @@ export namespace Prisma {
     secoes?: SortOrder
     ativo?: SortOrder
     temaApp?: SortOrder
+    chatIdentificarRemetente?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
     _count?: UserCountOrderByAggregateInput
@@ -27042,6 +27064,7 @@ export namespace Prisma {
     secoes?: StringNullableListFilter<"User">
     ativo?: BoolWithAggregatesFilter<"User"> | boolean
     temaApp?: StringWithAggregatesFilter<"User"> | string
+    chatIdentificarRemetente?: BoolWithAggregatesFilter<"User"> | boolean
     criadoEm?: DateTimeWithAggregatesFilter<"User"> | Date | string
     atualizadoEm?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
@@ -28665,6 +28688,7 @@ export namespace Prisma {
     secoes?: UserCreatesecoesInput | string[]
     ativo?: boolean
     temaApp?: string
+    chatIdentificarRemetente?: boolean
     criadoEm?: Date | string
     atualizadoEm?: Date | string
   }
@@ -28678,6 +28702,7 @@ export namespace Prisma {
     secoes?: UserCreatesecoesInput | string[]
     ativo?: boolean
     temaApp?: string
+    chatIdentificarRemetente?: boolean
     criadoEm?: Date | string
     atualizadoEm?: Date | string
   }
@@ -28691,6 +28716,7 @@ export namespace Prisma {
     secoes?: UserUpdatesecoesInput | string[]
     ativo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
+    chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28704,6 +28730,7 @@ export namespace Prisma {
     secoes?: UserUpdatesecoesInput | string[]
     ativo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
+    chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28717,6 +28744,7 @@ export namespace Prisma {
     secoes?: UserCreatesecoesInput | string[]
     ativo?: boolean
     temaApp?: string
+    chatIdentificarRemetente?: boolean
     criadoEm?: Date | string
     atualizadoEm?: Date | string
   }
@@ -28730,6 +28758,7 @@ export namespace Prisma {
     secoes?: UserUpdatesecoesInput | string[]
     ativo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
+    chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28743,6 +28772,7 @@ export namespace Prisma {
     secoes?: UserUpdatesecoesInput | string[]
     ativo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
+    chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29979,6 +30009,7 @@ export namespace Prisma {
     secoes?: SortOrder
     ativo?: SortOrder
     temaApp?: SortOrder
+    chatIdentificarRemetente?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
   }
@@ -29991,6 +30022,7 @@ export namespace Prisma {
     role?: SortOrder
     ativo?: SortOrder
     temaApp?: SortOrder
+    chatIdentificarRemetente?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
   }
@@ -30003,6 +30035,7 @@ export namespace Prisma {
     role?: SortOrder
     ativo?: SortOrder
     temaApp?: SortOrder
+    chatIdentificarRemetente?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
   }

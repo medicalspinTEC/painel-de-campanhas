@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react"
 import { toast } from "sonner"
-import { ArrowLeft, CheckCheck, Filter, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Search, Send, Smile, StickyNote, UserRound, X } from "lucide-react"
+import { ArrowLeft, CheckCheck, Filter, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Search, Send, Smile, StickyNote, UserCheck, UserRound, X } from "lucide-react"
 
 import { createChatInternalNoteAction, loadChatMessagesAction, refreshChatInboxAction } from "@/app/actions/chat"
 import { sendLeadMessageAction, setLeadStatusAction } from "@/app/actions/leads"
+import { saveChatIdentificarAction } from "@/app/actions/users"
 import { LinkButton } from "@/components/shared/link-button"
 import {
   Popover,
@@ -79,7 +80,18 @@ function preview(mensagem: ChatMessage | null) {
   return `${autor}: ${mensagem.texto}`
 }
 
-export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot; instancias: InstanceOption[] }) {
+export function ChatInbox({
+  inicial,
+  instancias,
+  nomeUsuario = "",
+  identificarRemetenteInicial = false,
+}: {
+  inicial: ChatInboxSnapshot
+  instancias: InstanceOption[]
+  nomeUsuario?: string
+  identificarRemetenteInicial?: boolean
+}) {
+  const [identificarRemetente, setIdentificarRemetente] = useState(identificarRemetenteInicial)
   const [conversas, setConversas] = useState(inicial.conversas)
   const [conversaSelecionadaId, setConversaSelecionadaId] = useState(inicial.conversaSelecionadaId)
   const [conversaFechada, setConversaFechada] = useState(false)
@@ -290,7 +302,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
       ? await createChatInternalNoteAction(leadId, mensagem)
       : modoComposicao === "resposta"
         ? await setLeadStatusAction(leadId, "respondeu", mensagem)
-        : await sendLeadMessageAction(leadId, mensagem, instancia || null)
+        : await sendLeadMessageAction(leadId, mensagem, instancia || null, null, identificarRemetente)
     setEnviando(false)
 
     if (!resultado.ok) {
@@ -308,6 +320,18 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
     } catch {
       toast.message("Mensagem enviada. O histórico será atualizado em instantes.")
     }
+  }
+
+  async function alternarIdentificacao() {
+    const proximo = !identificarRemetente
+    setIdentificarRemetente(proximo)
+    const resultado = await saveChatIdentificarAction(proximo)
+    if (!resultado.ok) {
+      setIdentificarRemetente(!proximo)
+      toast.error(resultado.message)
+      return
+    }
+    toast.success(resultado.message)
   }
 
   function tratarTecla(event: KeyboardEvent<HTMLTextAreaElement>) {
@@ -711,6 +735,25 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                       >
                         <MessageSquareReply className="size-4" />
                       </Button>
+                      {modoComposicao === "mensagem" ? (
+                        <Button
+                          type="button"
+                          variant={identificarRemetente ? "secondary" : "ghost"}
+                          size="icon"
+                          className="rounded-full"
+                          aria-label="Enviar meu nome junto com a mensagem"
+                          aria-pressed={identificarRemetente}
+                          title={
+                            identificarRemetente
+                              ? `Identificação ativa: o lead recebe "${nomeUsuario}" junto com a mensagem`
+                              : "Identificar remetente: enviar meu nome junto com a mensagem"
+                          }
+                          disabled={enviando}
+                          onClick={() => void alternarIdentificacao()}
+                        >
+                          <UserCheck className="size-4" />
+                        </Button>
+                      ) : null}
                       {modoComposicao !== "mensagem" ? (
                         <>
                           <Button type="button" variant="ghost" size="icon" className="rounded-full" aria-label="Cancelar registro" title="Cancelar registro" disabled={enviando} onClick={() => trocarModoComposicao("mensagem")}>
@@ -754,7 +797,7 @@ export function ChatInbox({ inicial, instancias }: { inicial: ChatInboxSnapshot;
                       </Button>
                     </div>
                     <div className="mt-2 flex justify-between gap-3 px-2 text-[11px] text-muted-foreground">
-                      <span>Enter para {modoComposicao === "nota" ? "salvar nota" : modoComposicao === "resposta" ? "registrar resposta" : "enviar"} · Shift+Enter para nova linha</span>
+                      <span>{modoComposicao === "mensagem" && identificarRemetente && nomeUsuario ? `Enviando como ${nomeUsuario} · ` : ""}Enter para {modoComposicao === "nota" ? "salvar nota" : modoComposicao === "resposta" ? "registrar resposta" : "enviar"} · Shift+Enter para nova linha</span>
                       <span className="shrink-0 tabular-nums">{texto.length}/{limiteTexto}</span>
                     </div>
                   </div>

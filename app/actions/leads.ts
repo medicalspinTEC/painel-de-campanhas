@@ -203,12 +203,22 @@ export async function updateLeadNotesAction(id: string, notas: string) {
 const MAX_MENSAGEM_INDIVIDUAL = 4096
 
 /** Envia uma mensagem avulsa a um lead específico, fora de qualquer campanha. */
-export async function sendLeadMessageAction(leadId: string, texto: string, instanciaNome?: string | null, agendadoPara?: string | null) {
-  await assertSecao("leads", "campanhas", "kanban", "chat")
-  const textoLimpo = texto.trim()
-  if (!textoLimpo) {
+export async function sendLeadMessageAction(
+  leadId: string,
+  texto: string,
+  instanciaNome?: string | null,
+  agendadoPara?: string | null,
+  identificarRemetente = false,
+) {
+  const usuario = await assertSecao("leads", "campanhas", "kanban", "chat")
+  const corpo = texto.trim()
+  if (!corpo) {
     return { ok: false, message: "Escreva uma mensagem antes de enviar." }
   }
+  // O nome vem SEMPRE do usuário logado (nunca do cliente), então não dá para se passar por outra pessoa.
+  // Em negrito do WhatsApp, numa linha própria acima do texto.
+  const nomeRemetente = usuario.nome.replace(/[*_~`{}]/g, "").trim()
+  const textoLimpo = identificarRemetente && nomeRemetente ? `*${nomeRemetente}:*\n${corpo}` : corpo
   if (textoLimpo.length > MAX_MENSAGEM_INDIVIDUAL) {
     return { ok: false, message: `A mensagem é muito longa (máximo de ${MAX_MENSAGEM_INDIVIDUAL} caracteres).` }
   }
