@@ -19,7 +19,7 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
-import type { UserRole } from "@/lib/permissoes"
+import { nomeDoNivel, type UserRole } from "@/lib/permissoes"
 import type { AtendenteItem, DepartamentoItem, UsuarioDisponivel } from "@/services/crm"
 
 type Origem = "novo" | "existente"
@@ -31,6 +31,7 @@ export function AtendenteFormDialog({
   departamentos,
   usuariosDisponiveis,
   usuarioAtualId,
+  ehRoot,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -38,6 +39,8 @@ export function AtendenteFormDialog({
   departamentos: DepartamentoItem[]
   usuariosDisponiveis: UsuarioDisponivel[]
   usuarioAtualId: string
+  /** Só o Root pode criar/promover administradores; os demais criam apenas usuários padrão. */
+  ehRoot: boolean
 }) {
   const editando = Boolean(atendente)
   const editandoASiMesmo = atendente?.userId === usuarioAtualId
@@ -102,7 +105,7 @@ export function AtendenteFormDialog({
         <DialogHeader className="shrink-0">
           <DialogTitle>{editando ? "Editar atendente" : "Novo atendente"}</DialogTitle>
           <DialogDescription>
-            Todo atendente é um usuário do painel, administrador ou comum. Os departamentos definem para quem a conversa pode ser transferida.
+            Todo atendente é um usuário do painel (administrador ou comum). Os departamentos definem para quem a conversa pode ser transferida.
           </DialogDescription>
         </DialogHeader>
 
@@ -136,7 +139,7 @@ export function AtendenteFormDialog({
                 disabled={usuariosDisponiveis.length === 0}
                 opcoes={usuariosDisponiveis.map((usuario) => ({
                   value: usuario.id,
-                  label: `${usuario.nome} (${usuario.username}) · ${usuario.role === "admin" ? "Administrador" : "Usuário padrão"}`,
+                  label: `${usuario.nome} (${usuario.username}) · ${nomeDoNivel(usuario.role)}`,
                 }))}
               />
               <FieldDescription>
@@ -181,9 +184,11 @@ export function AtendenteFormDialog({
                     id="atendente-nivel"
                     value={role}
                     onValueChange={(valor) => setRole(valor === "admin" ? "admin" : "padrao")}
+                    disabled={!ehRoot || role === "root"}
                     opcoes={[
                       { value: "padrao", label: "Usuário padrão" },
-                      { value: "admin", label: "Administrador" },
+                      ...(ehRoot || role === "admin" ? [{ value: "admin", label: "Administrador" }] : []),
+                      ...(role === "root" ? [{ value: "root", label: "Root" }] : []),
                     ]}
                   />
                   {editandoASiMesmo ? <FieldDescription>Você está editando o próprio usuário.</FieldDescription> : null}

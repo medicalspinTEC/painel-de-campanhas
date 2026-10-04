@@ -11,10 +11,13 @@ export function CrmManager({
   dados,
   chatAtivo,
   usuarioAtualId,
+  ehRoot,
 }: {
   dados: CrmData
   chatAtivo: boolean
   usuarioAtualId: string
+  /** Só o Root pode criar/promover administradores. */
+  ehRoot: boolean
 }) {
   return (
     <Tabs defaultValue="departamentos">
@@ -39,6 +42,7 @@ export function CrmManager({
           usuariosDisponiveis={dados.usuariosDisponiveis}
           chatAtivo={chatAtivo}
           usuarioAtualId={usuarioAtualId}
+          ehRoot={ehRoot}
         />
       </TabsContent>
     </Tabs>

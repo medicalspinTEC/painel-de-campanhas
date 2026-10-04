@@ -52,12 +52,16 @@ enum EventType {
   removido_campanha
 }
 
-/// Nível de acesso do usuário do painel.
-///  - `admin`: acesso total; gerencia usuários e define as seções de cada um.
-///  - `padrao`: acessa apenas as seções liberadas por um admin (`User.secoes`).
+/// Nível de acesso do usuário do painel (hierarquia: root > admin > padrao).
+///  - `root`: acesso total; controla todos os níveis e define o que cada admin
+///    pode acessar (`User.secoes`) e controlar (`User.poderes`).
+///  - `admin`: acessa só as seções liberadas pelo root e só controla o que o
+///    root permitiu; gerencia apenas usuários `padrao`.
+///  - `padrao`: acessa apenas as seções liberadas por quem o gerencia (`User.secoes`).
 enum UserRole {
   admin
   padrao
+  root
 }
 
 enum ScheduledMessageStatus {
@@ -508,12 +512,16 @@ model User {
   /// Hash scrypt no formato `scrypt$<salt>$<hash>` (ver `lib/password.ts`).
   senhaHash String
 
-  role   UserRole @default(padrao)
-  /// Chaves das seções liberadas (ver `lib/permissoes.ts`). Ignorado para admin,
-  /// que sempre acessa tudo.
-  secoes String[] @default([])
+  role    UserRole @default(padrao)
+  /// Chaves das seções liberadas (ver `lib/permissoes.ts`). Ignorado para root,
+  /// que sempre acessa tudo. Para admin, define o que ele acessa e também o teto
+  /// do que ele pode liberar para usuários padrão.
+  secoes  String[] @default([])
+  /// Poderes de gestão do admin, definidos pelo root (ver `PODERES` em
+  /// `lib/permissoes.ts`). Ignorado para root (tem todos) e para usuário padrão (nenhum).
+  poderes String[] @default([])
   /// Usuário inativo não consegue entrar e perde a sessão na hora.
-  ativo  Boolean  @default(true)
+  ativo   Boolean  @default(true)
 
   /// Preferência PESSOAL: o tema escolhido vale só para este usuário.
   temaApp String @default("esmeralda")

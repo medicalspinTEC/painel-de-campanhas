@@ -5,14 +5,14 @@ import { NextResponse } from "next/server"
 
 import { requestHasValidApiToken } from "@/lib/api-auth"
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth"
-import { podeAcessar, type SecaoKey } from "@/lib/permissoes"
+import { podeAcessar, podeGerenciarUsuarios, temPoder, type PoderKey, type SecaoKey } from "@/lib/permissoes"
 import { prisma } from "@/lib/prisma"
 import { toUsuario, type Usuario } from "@/services/users"
 
 /**
  * Usuário logado, lido do BANCO a cada requisição (memoizado por requisição).
  * Devolve `null` sem sessão válida, ou quando o usuário foi desativado/excluído
- * — assim o que o admin altera vale imediatamente, sem esperar o cookie expirar.
+ * — assim o que o root/admin altera vale imediatamente, sem esperar o cookie expirar.
  */
 export const getCurrentUser = cache(async (): Promise<Usuario | null> => {
   const store = await cookies()
@@ -48,10 +48,17 @@ export async function requireSecao(secao: SecaoKey): Promise<Usuario> {
   return user
 }
 
-/** Páginas exclusivas de admin (ex.: gestão de usuários). */
-export async function requireAdminPage(): Promise<Usuario> {
+/** Tela de Usuários: root, ou admin com ao menos um poder de gestão de usuários. */
+export async function requireGestaoUsuarios(): Promise<Usuario> {
   const user = await requireUser()
-  if (user.role !== "admin") redirect("/sem-acesso")
+  if (!podeGerenciarUsuarios(user)) redirect("/sem-acesso")
+  return user
+}
+
+/** Páginas que dependem de um poder do admin (root sempre passa). */
+export async function requirePoder(poder: PoderKey): Promise<Usuario> {
+  const user = await requireUser()
+  if (!temPoder(user, poder)) redirect("/sem-acesso")
   return user
 }
 
@@ -59,11 +66,11 @@ export async function requireAdminPage(): Promise<Usuario> {
 // Server Actions: lançam erro (a chamada é interrompida antes de tocar nos dados).
 // ---------------------------------------------------------------------------
 
-/** Exige login e acesso a QUALQUER uma das seções informadas (admin sempre passa). */
+/** Exige login e acesso a QUALQUER uma das seções informadas (root sempre passa). */
 export async function assertSecao(...secoes: SecaoKey[]): Promise<Usuario> {
   const user = await getCurrentUser()
   if (!user) throw new ForbiddenError("Sessão expirada. Faça login novamente.")
-  if (user.role === "admin" || secoes.some((s) => podeAcessar(user, s))) return user
+  if (secoes.some((s) => podeAcessar(user, s))) return user
   throw new ForbiddenError()
 }
 
@@ -73,9 +80,17 @@ export async function assertUsuario(): Promise<Usuario> {
   return user
 }
 
-export async function assertAdmin(): Promise<Usuario> {
+/** Exige um poder específico do admin (root sempre passa). */
+export async function assertPoder(poder: PoderKey): Promise<Usuario> {
   const user = await assertUsuario()
-  if (user.role !== "admin") throw new ForbiddenError("Apenas administradores podem realizar esta ação.")
+  if (!temPoder(user, poder)) throw new ForbiddenError("Você não tem permissão para realizar esta ação.")
+  return user
+}
+
+/** Exige acesso à gestão de usuários (root, ou admin com algum poder de usuários). */
+export async function assertGestaoUsuarios(): Promise<Usuario> {
+  const user = await assertUsuario()
+  if (!podeGerenciarUsuarios(user)) throw new ForbiddenError("Você não tem permissão para gerenciar usuários.")
   return user
 }
 
@@ -94,6 +109,6 @@ export async function guardApi(...secoes: SecaoKey[]): Promise<NextResponse | nu
 
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ ok: false, erro: "Não autorizado." }, { status: 401 })
-  if (user.role === "admin" || secoes.some((s) => podeAcessar(user, s))) return null
+  if (secoes.some((s) => podeAcessar(user, s))) return null
   return NextResponse.json({ ok: false, erro: "Sem permissão para acessar este recurso." }, { status: 403 })
 }

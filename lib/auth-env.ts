@@ -1,4 +1,4 @@
-/** Credenciais do `.env` — usadas somente para criar o primeiro admin. */
+/** Credenciais do `.env` — usadas somente para criar o primeiro usuário (Root). */
 export function getConfiguredCredentials(): { username: string; password: string } | null {
   const username = process.env.AUTH_USERNAME ?? ""
   const password = process.env.AUTH_PASSWORD ?? ""

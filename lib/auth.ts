@@ -3,12 +3,12 @@
  *
  * Os usuários ficam no banco (`User`, ver `services/users.ts`). O cookie guarda
  * apenas o ID do usuário e a expiração, assinados com HMAC-SHA256 (sem estado
- * no servidor). Papel (admin/padrão), seções liberadas e status ativo NÃO vão
+ * no servidor). Nível (root/admin/padrão), seções, poderes e status ativo NÃO vão
  * no cookie: são lidos do banco a cada requisição (`lib/session.ts`), então
- * qualquer mudança feita por um admin vale imediatamente.
+ * qualquer mudança feita por quem tem autoridade vale imediatamente.
  *
  * `AUTH_USERNAME`/`AUTH_PASSWORD` do `.env` servem só para criar o primeiro
- * admin, no primeiro login, quando ainda não existe nenhum usuário.
+ * usuário (Root), no primeiro login, quando ainda não existe nenhum usuário.
  *
  * Todo o código aqui usa apenas Web Crypto (`crypto.subtle`) e APIs padrão, para
  * funcionar tanto no runtime Node (Server Actions) quanto no Edge (proxy.ts).

@@ -94,7 +94,7 @@ export async function AppSidebarData() {
       appNome={marca.nome}
       appLogo={marca.logo}
       urlsPermitidas={urlsPermitidas}
-      usuario={usuario ? { nome: usuario.nome, username: usuario.username, role: usuario.role } : null}
+      usuario={usuario ? { nome: usuario.nome, username: usuario.username, role: usuario.role, poderes: usuario.poderes } : null}
     />
   )
 }

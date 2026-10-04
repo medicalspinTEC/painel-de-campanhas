@@ -7,6 +7,7 @@ import {
   ClipboardList,
   Columns3,
   Contact,
+  Crown,
   MessagesSquare,
   LayoutDashboard,
   LogOut,
@@ -27,6 +28,7 @@ import {
 } from "lucide-react"
 
 import { logoutAction } from "@/app/actions/auth"
+import { nomeDoNivel, podeGerenciarUsuarios, temPoder, type UserRole } from "@/lib/permissoes"
 
 import {
   Sidebar,
@@ -81,7 +83,7 @@ interface AppSidebarProps {
   /** URLs das seções que o usuário logado pode acessar (admin recebe todas). */
   urlsPermitidas?: string[]
   /** Usuário logado (nome, login e nível), exibido no rodapé. */
-  usuario?: { nome: string; username: string; role: "admin" | "padrao" } | null
+  usuario?: { nome: string; username: string; role: UserRole; poderes: string[] } | null
 }
 
 function getStatusMeta(state?: string) {
@@ -151,13 +153,15 @@ export function AppSidebar({
       (item.url !== "/assistente" || assistenteAtivo) &&
       (item.url !== "/nocode" || nocodeAtivo),
   )
-  // O CRM (departamentos e atendentes) é gerenciado só por administradores, como Usuários.
+  // O CRM (departamentos e atendentes) aparece para o Root e para admins com o poder "Gerenciar o CRM".
   const itensGestaoComCrm =
-    crmAtivo && usuario?.role === "admin" ? [...itensGestao, { title: "CRM", url: "/crm", icon: Contact }] : itensGestao
+    crmAtivo && usuario && temPoder(usuario, "crm_gerenciar")
+      ? [...itensGestao, { title: "CRM", url: "/crm", icon: Contact }]
+      : itensGestao
   const itensOperacao = navOperacao.filter((item) => visivel(item.url))
   const itensSistema = [
     ...navSistema.filter((item) => visivel(item.url )),
-    ...(usuario?.role === "admin" ? [{ title: "Usuários", url: "/usuarios", icon: UserCog }] : []),
+    ...(usuario && podeGerenciarUsuarios(usuario) ? [{ title: "Usuários", url: "/usuarios", icon: UserCog }] : []),
   ]
 
   return (
@@ -275,8 +279,9 @@ export function AppSidebar({
                     <div className="flex min-w-0 flex-col text-left leading-tight">
                       <span className="truncate text-sm font-medium">{usuario.nome}</span>
                       <span className="flex items-center gap-1 truncate text-xs text-muted-foreground">
+                        {usuario.role === "root" ? <Crown className="size-3" /> : null}
                         {usuario.role === "admin" ? <ShieldCheck className="size-3" /> : null}
-                        {usuario.role === "admin" ? "Administrador" : "Usuário"}
+                        {usuario.role === "padrao" ? "Usuário" : nomeDoNivel(usuario.role)}
                       </span>
                     </div>
                   </Link>

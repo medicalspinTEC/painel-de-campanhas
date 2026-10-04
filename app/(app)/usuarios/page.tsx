@@ -1,6 +1,6 @@
 import { UsuariosManager } from "@/components/features/usuarios/usuarios-manager"
 import { PageHeader } from "@/components/shared/page-header"
-import { requireAdminPage } from "@/lib/session"
+import { requireGestaoUsuarios } from "@/lib/session"
 import { listUsers } from "@/services/users"
 
 export const metadata = {
@@ -8,16 +8,23 @@ export const metadata = {
 }
 
 export default async function UsuariosPage() {
-  const admin = await requireAdminPage()
-  const usuarios = await listUsers()
+  const ator = await requireGestaoUsuarios()
+  const usuarios = await listUsers(ator)
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         titulo="Usuários"
-        descricao="Crie, edite e exclua usuários e defina quais seções cada um pode acessar."
+        descricao={
+          ator.role === "root"
+            ? "Controle administradores e usuários: defina o que cada administrador pode acessar e controlar."
+            : "Gerencie os usuários padrão dentro do que o Root liberou para você."
+        }
       />
-      <UsuariosManager usuarios={usuarios} usuarioAtualId={admin.id} />
+      <UsuariosManager
+        usuarios={usuarios}
+        ator={{ id: ator.id, role: ator.role, secoes: ator.secoes, poderes: ator.poderes }}
+      />
     </div>
   )
 }

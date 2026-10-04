@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { Pencil, Plus, ShieldCheck, Trash2, UserCog } from "lucide-react"
+import { Crown, Pencil, Plus, ShieldCheck, Trash2, UserCog } from "lucide-react"
 import { toast } from "sonner"
 
 import { deleteUserAction } from "@/app/actions/users"
-import { UsuarioFormDialog } from "@/components/features/usuarios/usuario-form-dialog"
+import { UsuarioFormDialog, type AtorUsuario } from "@/components/features/usuarios/usuario-form-dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,14 +21,25 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
-import { SECOES } from "@/lib/permissoes"
+import { PODERES, podeGerenciarNivel, SECOES, temPoder } from "@/lib/permissoes"
 import type { Usuario } from "@/services/users"
 
-export function UsuariosManager({ usuarios, usuarioAtualId }: { usuarios: Usuario[]; usuarioAtualId: string }) {
+function rotuloSecoes(chaves: readonly string[]) {
+  return chaves.map((key) => SECOES.find((s) => s.key === key)?.label ?? key).join(", ")
+}
+
+function rotuloPoderes(chaves: readonly string[]) {
+  return chaves.map((key) => PODERES.find((p) => p.key === key)?.label ?? key).join(", ")
+}
+
+export function UsuariosManager({ usuarios, ator }: { usuarios: Usuario[]; ator: AtorUsuario }) {
   const [dialogAberto, setDialogAberto] = useState(false)
   const [emEdicao, setEmEdicao] = useState<Usuario | null>(null)
   const [excluindo, setExcluindo] = useState<Usuario | null>(null)
   const [pending, startTransition] = useTransition()
+
+  const ehRoot = ator.role === "root"
+  const podeCriar = temPoder(ator, "usuarios_criar")
 
   function abrirNovo() {
     setEmEdicao(null)
@@ -65,10 +76,12 @@ export function UsuariosManager({ usuarios, usuarioAtualId }: { usuarios: Usuari
               acesso valem imediatamente.
             </CardDescription>
           </div>
-          <Button onClick={abrirNovo} className="shrink-0">
-            <Plus className="size-4" />
-            Novo usuário
-          </Button>
+          {podeCriar ? (
+            <Button onClick={abrirNovo} className="shrink-0">
+              <Plus className="size-4" />
+              Novo usuário
+            </Button>
+          ) : null}
         </CardHeader>
 
         <CardContent>
@@ -79,61 +92,83 @@ export function UsuariosManager({ usuarios, usuarioAtualId }: { usuarios: Usuari
                   <UserCog className="size-5" aria-hidden="true" />
                 </EmptyMedia>
                 <EmptyTitle>Nenhum usuário</EmptyTitle>
-                <EmptyDescription>Crie o primeiro usuário para dar acesso ao painel.</EmptyDescription>
+                <EmptyDescription>
+                  {podeCriar ? "Crie o primeiro usuário para dar acesso ao painel." : "Ainda não há usuários para gerenciar."}
+                </EmptyDescription>
               </EmptyHeader>
-              <EmptyContent>
-                <Button onClick={abrirNovo}>
-                  <Plus className="size-4" />
-                  Novo usuário
-                </Button>
-              </EmptyContent>
+              {podeCriar ? (
+                <EmptyContent>
+                  <Button onClick={abrirNovo}>
+                    <Plus className="size-4" />
+                    Novo usuário
+                  </Button>
+                </EmptyContent>
+              ) : null}
             </Empty>
           ) : (
             <ul className="flex flex-col gap-3">
               {usuarios.map((usuario) => {
-                const ehVoce = usuario.id === usuarioAtualId
+                const ehVoce = usuario.id === ator.id
+                // Root edita a si mesmo (nome/login/senha) e a todos; admin só os usuários padrão.
+                const hierarquiaOk = ehVoce ? ehRoot : podeGerenciarNivel(ator, usuario.role)
+                const podeEditar = hierarquiaOk && (ehRoot || temPoder(ator, "usuarios_editar") || temPoder(ator, "usuarios_secoes"))
+                const podeExcluir = !ehVoce && podeGerenciarNivel(ator, usuario.role) && temPoder(ator, "usuarios_excluir")
                 return (
                   <li key={usuario.id} className="flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex min-w-0 flex-col gap-1.5">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="truncate font-medium">{usuario.nome}</span>
                         {ehVoce ? <Badge variant="outline">Você</Badge> : null}
-                        {usuario.role === "admin" ? (
+                        {usuario.role === "root" ? (
                           <Badge className="gap-1">
+                            <Crown className="size-3" />
+                            Root
+                          </Badge>
+                        ) : usuario.role === "admin" ? (
+                          <Badge className="gap-1" variant="secondary">
                             <ShieldCheck className="size-3" />
                             Administrador
                           </Badge>
                         ) : (
-                          <Badge variant="secondary">Usuário padrão</Badge>
+                          <Badge variant="outline">Usuário padrão</Badge>
                         )}
                         {!usuario.ativo ? <Badge variant="outline">Inativo</Badge> : null}
                       </div>
                       <span className="text-sm text-muted-foreground">{usuario.username}</span>
                       <span className="text-xs text-muted-foreground">
-                        {usuario.role === "admin"
-                          ? "Acesso total ao painel."
+                        {usuario.role === "root"
+                          ? "Acesso total e controle sobre todos os níveis."
                           : usuario.secoes.length === 0
                             ? "Nenhuma seção liberada."
-                            : `Acessa: ${usuario.secoes
-                                .map((key) => SECOES.find((s) => s.key === key)?.label ?? key)
-                                .join(", ")}.`}
+                            : `Acessa: ${rotuloSecoes(usuario.secoes)}.`}
                       </span>
+                      {usuario.role === "admin" ? (
+                        <span className="text-xs text-muted-foreground">
+                          {usuario.poderes.length === 0
+                            ? "Não controla nada além do que acessa."
+                            : `Pode controlar: ${rotuloPoderes(usuario.poderes)}.`}
+                        </span>
+                      ) : null}
                     </div>
                     <div className="flex shrink-0 gap-2">
-                      <Button variant="outline" size="sm" onClick={() => abrirEdicao(usuario)}>
-                        <Pencil className="size-3.5" />
-                        Editar
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={ehVoce}
-                        title={ehVoce ? "Você não pode excluir o próprio usuário" : undefined}
-                        onClick={() => setExcluindo(usuario)}
-                      >
-                        <Trash2 className="size-3.5" />
-                        Excluir
-                      </Button>
+                      {podeEditar ? (
+                        <Button variant="outline" size="sm" onClick={() => abrirEdicao(usuario)}>
+                          <Pencil className="size-3.5" />
+                          Editar
+                        </Button>
+                      ) : null}
+                      {podeExcluir || ehVoce ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={ehVoce}
+                          title={ehVoce ? "Você não pode excluir o próprio usuário" : undefined}
+                          onClick={() => setExcluindo(usuario)}
+                        >
+                          <Trash2 className="size-3.5" />
+                          Excluir
+                        </Button>
+                      ) : null}
                     </div>
                   </li>
                 )
@@ -143,12 +178,7 @@ export function UsuariosManager({ usuarios, usuarioAtualId }: { usuarios: Usuari
         </CardContent>
       </Card>
 
-      <UsuarioFormDialog
-        open={dialogAberto}
-        onOpenChange={setDialogAberto}
-        usuario={emEdicao}
-        usuarioAtualId={usuarioAtualId}
-      />
+      <UsuarioFormDialog open={dialogAberto} onOpenChange={setDialogAberto} usuario={emEdicao} ator={ator} />
 
       <AlertDialog open={Boolean(excluindo)} onOpenChange={(aberto) => !aberto && setExcluindo(null)}>
         <AlertDialogContent>

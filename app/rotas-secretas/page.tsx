@@ -7,7 +7,7 @@ import { RouteExplorer, type EndpointView } from "@/components/rotas-secretas/ro
 import { getConfiguredApiToken } from "@/lib/api-auth"
 import { getEndpointDoc } from "@/lib/api-docs"
 import { listApiRoutes } from "@/lib/api-routes"
-import { requireAdminPage } from "@/lib/session"
+import { requirePoder } from "@/lib/session"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -41,7 +41,7 @@ export default async function RotasSecretasPage({
 }: {
   searchParams: Promise<{ token?: string }>
 }) {
-  await requireAdminPage()
+  await requirePoder("rotas_secretas")
   // Gate opcional: se ROTAS_SECRET_TOKEN estiver definido, exige ?token= correto.
   // Sem o token correto a página responde 404 para não revelar sua existência.
   const esperado = process.env.ROTAS_SECRET_TOKEN

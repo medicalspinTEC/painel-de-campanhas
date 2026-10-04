@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { Headset, Pencil, Plus, Power, PowerOff, ShieldCheck, Trash2, TriangleAlert } from "lucide-react"
+import { Crown, Headset, Pencil, Plus, Power, PowerOff, ShieldCheck, Trash2, TriangleAlert } from "lucide-react"
 import { toast } from "sonner"
 
 import { deleteAtendenteAction, setAtendenteAtivoAction } from "@/app/actions/crm"
@@ -30,12 +30,14 @@ export function AtendentesPanel({
   usuariosDisponiveis,
   chatAtivo,
   usuarioAtualId,
+  ehRoot,
 }: {
   atendentes: AtendenteItem[]
   departamentos: DepartamentoItem[]
   usuariosDisponiveis: UsuarioDisponivel[]
   chatAtivo: boolean
   usuarioAtualId: string
+  ehRoot: boolean
 }) {
   const [dialogAberto, setDialogAberto] = useState(false)
   const [emEdicao, setEmEdicao] = useState<AtendenteItem | null>(null)
@@ -134,7 +136,12 @@ export function AtendentesPanel({
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="truncate font-medium">{atendente.nome}</span>
                         {ehVoce ? <Badge variant="outline">Você</Badge> : null}
-                        {atendente.role === "admin" ? (
+                        {atendente.role === "root" ? (
+                          <Badge className="gap-1">
+                            <Crown className="size-3" />
+                            Root
+                          </Badge>
+                        ) : atendente.role === "admin" ? (
                           <Badge className="gap-1">
                             <ShieldCheck className="size-3" />
                             Administrador
@@ -192,6 +199,7 @@ export function AtendentesPanel({
         departamentos={departamentos}
         usuariosDisponiveis={usuariosDisponiveis}
         usuarioAtualId={usuarioAtualId}
+        ehRoot={ehRoot}
       />
 
       <AlertDialog open={Boolean(excluindo)} onOpenChange={(aberto) => !aberto && setExcluindo(null)}>

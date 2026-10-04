@@ -134,7 +134,7 @@ export function TransferirConversaDialog({
                 },
                 ...atendentesDisponiveis.map((atendente) => ({
                   value: atendente.id,
-                  label: `${atendente.nome}${atendente.role === "admin" ? " · Admin" : ""}`,
+                  label: `${atendente.nome}${atendente.role === "root" ? " · Root" : atendente.role === "admin" ? " · Admin" : ""}`,
                 })),
               ]}
             />

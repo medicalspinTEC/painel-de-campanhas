@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
-import { normalizarSecoes, type SecaoKey, type UserRole } from "@/lib/permissoes"
+import { normalizarSecoes, podeAcessar, podeGerenciarNivel, type SecaoKey, type UserRole } from "@/lib/permissoes"
 import { avaliarAtendimento, type ContextoAtendimento } from "@/lib/crm-permissoes"
-import { createUser, deleteUser, updateUser } from "@/services/users"
+import { createUser, deleteUser, updateUser, type Ator } from "@/services/users"
 import { getCrmPluginAtivo } from "@/services/settings"
 import { emitWebhookEvent } from "@/services/webhooks"
 
@@ -9,7 +9,7 @@ import { emitWebhookEvent } from "@/services/webhooks"
  * Plugin CRM — departamentos, atendentes e transferência de conversas do chat.
  *
  * Atendente não é um cadastro paralelo de pessoas: é um perfil em cima de um
- * `User` (admin ou padrão). Login, senha e nível continuam em `services/users.ts`;
+ * `User` (root, admin ou padrão). Login, senha e nível continuam em `services/users.ts`;
  * aqui ficam só os dados de atendimento (departamentos e se recebe conversas).
  */
 
@@ -41,7 +41,7 @@ export type AtendenteItem = {
   usuarioAtivo: boolean
   departamentoIds: string[]
   totalConversas: number
-  /** Admin sempre acessa; usuário padrão precisa da seção Chat liberada para atender. */
+  /** Root sempre acessa; admin e usuário padrão precisam da seção Chat liberada para atender. */
   acessaChat: boolean
 }
 
@@ -159,7 +159,7 @@ async function validarDepartamentoIds(valor: unknown): Promise<string[]> {
   return ids
 }
 
-export async function createAtendente(input: AtendenteInput): Promise<void> {
+export async function createAtendente(input: AtendenteInput, ator: Ator): Promise<void> {
   const departamentoIds = await validarDepartamentoIds(input.departamentoIds)
   const userIdExistente = limparTexto(input.userId)
 
@@ -167,9 +167,12 @@ export async function createAtendente(input: AtendenteInput): Promise<void> {
   if (userIdExistente) {
     const usuario = await prisma.user.findUnique({
       where: { id: userIdExistente },
-      select: { id: true, ativo: true, atendente: { select: { id: true } } },
+      select: { id: true, ativo: true, role: true, atendente: { select: { id: true } } },
     })
     if (!usuario) throw new CrmError("Usuário não encontrado.")
+    if (usuario.id !== ator.id && !podeGerenciarNivel(ator, usuario.role)) {
+      throw new CrmError("Você não tem permissão para tornar esse usuário atendente.")
+    }
     if (!usuario.ativo) throw new CrmError("Esse usuário está inativo. Ative-o em Usuários antes de torná-lo atendente.")
     if (usuario.atendente) throw new CrmError("Esse usuário já é atendente.")
 
@@ -186,14 +189,21 @@ export async function createAtendente(input: AtendenteInput): Promise<void> {
   // Usuário novo: reaproveita as validações e o hash de senha de `services/users.ts`.
   // Usuário padrão nasce com a seção Chat liberada, já que é lá que ele atende.
   const role: UserRole = input.role === "admin" ? "admin" : "padrao"
-  const usuario = await createUser({
-    username: input.username,
-    nome: input.nome,
-    senha: input.senha,
-    role,
-    secoes: role === "admin" ? [] : ["chat"],
-    ativo: true,
-  })
+  // Quem pode criar um admin por aqui é só o Root (a hierarquia é checada em `createUser`);
+  // o admin criado nasce só com a seção Chat e sem poderes — o Root ajusta em Usuários.
+  const usuario = await createUser(
+    {
+      username: input.username,
+      nome: input.nome,
+      senha: input.senha,
+      role,
+      secoes: ["chat"],
+      poderes: [],
+      ativo: true,
+    },
+    ator,
+    "crm",
+  )
 
   try {
     await prisma.atendente.create({
@@ -210,29 +220,36 @@ export async function createAtendente(input: AtendenteInput): Promise<void> {
   }
 }
 
-export async function updateAtendente(id: string, input: AtendenteInput): Promise<void> {
+export async function updateAtendente(id: string, input: AtendenteInput, ator: Ator): Promise<void> {
   const departamentoIds = await validarDepartamentoIds(input.departamentoIds)
   const atual = await prisma.atendente.findUnique({
     where: { id },
-    select: { id: true, userId: true, user: { select: { role: true, secoes: true, ativo: true } } },
+    select: { id: true, userId: true, user: { select: { role: true, secoes: true, poderes: true, ativo: true } } },
   })
   if (!atual) throw new CrmError("Atendente não encontrado.")
 
-  const role: UserRole = input.role === "admin" ? "admin" : "padrao"
+  // Root nunca é rebaixado por aqui (o formulário só oferece admin/padrão).
+  const role: UserRole = atual.user.role === "root" ? "root" : input.role === "admin" ? "admin" : "padrao"
   const secoesAtuais = normalizarSecoes(atual.user.secoes)
   // Rebaixado de admin para padrão sem nenhuma seção? Libera o Chat para ele continuar atendendo.
   const secoes: SecaoKey[] = role === "padrao" && atual.user.role === "admin" && secoesAtuais.length === 0 ? ["chat"] : secoesAtuais
 
   // Login, nome, senha e nível passam pelas mesmas regras de Usuários (inclusive
   // a de nunca ficar sem um admin ativo).
-  await updateUser(atual.userId, {
-    username: input.username,
-    nome: input.nome,
-    senha: input.senha,
-    role,
-    secoes,
-    ativo: atual.user.ativo,
-  })
+  await updateUser(
+    atual.userId,
+    {
+      username: input.username,
+      nome: input.nome,
+      senha: input.senha,
+      role,
+      secoes,
+      poderes: atual.user.poderes,
+      ativo: atual.user.ativo,
+    },
+    ator,
+    "crm",
+  )
 
   await prisma.$transaction([
     prisma.atendenteDepartamento.deleteMany({ where: { atendenteId: id } }),
@@ -252,13 +269,13 @@ export async function setAtendenteAtivo(id: string, ativo: boolean): Promise<voi
  * departamento). Com `excluirUsuario`, apaga também o login — respeitando as
  * regras de Usuários (não excluir a si mesmo nem o último admin ativo).
  */
-export async function deleteAtendente(id: string, solicitanteId: string, excluirUsuario: boolean): Promise<void> {
+export async function deleteAtendente(id: string, ator: Ator, excluirUsuario: boolean): Promise<void> {
   const atual = await prisma.atendente.findUnique({ where: { id }, select: { id: true, userId: true } })
   if (!atual) throw new CrmError("Atendente não encontrado.")
 
   if (excluirUsuario) {
     // O perfil sai junto (onDelete: Cascade em Atendente.userId).
-    await deleteUser(atual.userId, solicitanteId)
+    await deleteUser(atual.userId, ator, "crm")
     return
   }
   await prisma.atendente.delete({ where: { id } })
@@ -268,7 +285,7 @@ export async function deleteAtendente(id: string, solicitanteId: string, excluir
 // Leitura para a página do CRM
 // ---------------------------------------------------------------------------
 
-export async function getCrmData(): Promise<CrmData> {
+export async function getCrmData(ator: Pick<Ator, "id" | "role">): Promise<CrmData> {
   const [departamentos, atendentes, conversasPorDepartamento, conversasPorAtendente, usuarios] = await Promise.all([
     prisma.departamento.findMany({
       orderBy: [{ ativo: "desc" }, { nome: "asc" }],
@@ -287,7 +304,8 @@ export async function getCrmData(): Promise<CrmData> {
     prisma.leadAtendimento.groupBy({ by: ["departamentoId"], _count: { _all: true } }),
     prisma.leadAtendimento.groupBy({ by: ["atendenteId"], _count: { _all: true } }),
     prisma.user.findMany({
-      where: { ativo: true, atendente: null },
+      // Root vincula qualquer usuário; admin só os que pode gerenciar (padrão) e ele mesmo.
+      where: { ativo: true, atendente: null, ...(ator.role === "root" ? {} : { OR: [{ role: "padrao" }, { id: ator.id }] }) },
       orderBy: { nome: "asc" },
       select: { id: true, nome: true, username: true, role: true },
     }),
@@ -321,7 +339,7 @@ export async function getCrmData(): Promise<CrmData> {
       usuarioAtivo: a.user.ativo,
       departamentoIds: a.departamentos.map((v) => v.departamentoId),
       totalConversas: porAtendente.get(a.id) ?? 0,
-      acessaChat: a.user.role === "admin" || normalizarSecoes(a.user.secoes).includes("chat"),
+      acessaChat: podeAcessar({ role: a.user.role, secoes: a.user.secoes }, "chat"),
     })),
     usuariosDisponiveis: usuarios,
   }
@@ -375,7 +393,8 @@ export async function getContextoAtendimento(usuario: { id: string; role: UserRo
     select: { id: true, ativo: true, departamentos: { select: { departamentoId: true } } },
   })
   return {
-    admin: usuario.role === "admin",
+    // Root e admin podem atuar em qualquer conversa (desde que tenham a seção Chat).
+    admin: usuario.role !== "padrao",
     atendenteId: meu?.id ?? null,
     atendenteAtivo: Boolean(meu?.ativo),
     departamentoIds: meu?.ativo ? meu.departamentos.map((v) => v.departamentoId) : [],

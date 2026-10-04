@@ -17,7 +17,7 @@ export default async function ChatPage() {
     getChatInbox(),
     listInstanceOptions(),
     // Com o CRM ativo o chat ganha a transferência por departamento e atendente.
-    crmAtivo ? getCrmChatOpcoes(usuario.id, usuario.role === "admin") : Promise.resolve(null),
+    crmAtivo ? getCrmChatOpcoes(usuario.id, usuario.role !== "padrao") : Promise.resolve(null),
   ])
 
   return (

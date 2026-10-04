@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 
-import { assertAdmin, assertSecao, ForbiddenError } from "@/lib/session"
+import { assertPoder, assertSecao, ForbiddenError } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
 import {
   createAtendente,
@@ -33,11 +33,11 @@ function falha(error: unknown, contexto: string): CrmActionResult {
   return { ok: false, message: contexto }
 }
 
-/** Gestão do CRM: só admin, e só com o plugin ativo. */
-async function exigirAdminComCrm() {
-  const admin = await assertAdmin()
+/** Gestão do CRM: root ou admin com o poder "Gerenciar o CRM", e só com o plugin ativo. */
+async function exigirGestaoCrm() {
+  const usuario = await assertPoder("crm_gerenciar")
   if (!(await getCrmPluginAtivo())) throw new CrmError("O plugin CRM está desativado.")
-  return admin
+  return usuario
 }
 
 function revalidarCrm() {
@@ -53,7 +53,7 @@ function revalidarCrm() {
 
 export async function createDepartamentoAction(input: DepartamentoInput): Promise<CrmActionResult> {
   try {
-    await exigirAdminComCrm()
+    await exigirGestaoCrm()
     await createDepartamento(input)
   } catch (error) {
     return falha(error, "Não foi possível criar o departamento.")
@@ -64,7 +64,7 @@ export async function createDepartamentoAction(input: DepartamentoInput): Promis
 
 export async function updateDepartamentoAction(id: string, input: DepartamentoInput): Promise<CrmActionResult> {
   try {
-    await exigirAdminComCrm()
+    await exigirGestaoCrm()
     await updateDepartamento(id, input)
   } catch (error) {
     return falha(error, "Não foi possível salvar o departamento.")
@@ -75,7 +75,7 @@ export async function updateDepartamentoAction(id: string, input: DepartamentoIn
 
 export async function setDepartamentoAtivoAction(id: string, ativo: boolean): Promise<CrmActionResult> {
   try {
-    await exigirAdminComCrm()
+    await exigirGestaoCrm()
     if (typeof ativo !== "boolean") return { ok: false, message: "Estado inválido." }
     await setDepartamentoAtivo(id, ativo)
   } catch (error) {
@@ -87,7 +87,7 @@ export async function setDepartamentoAtivoAction(id: string, ativo: boolean): Pr
 
 export async function deleteDepartamentoAction(id: string): Promise<CrmActionResult> {
   try {
-    await exigirAdminComCrm()
+    await exigirGestaoCrm()
     const { conversas } = await deleteDepartamento(id)
     revalidarCrm()
     return {
@@ -108,8 +108,8 @@ export async function deleteDepartamentoAction(id: string): Promise<CrmActionRes
 
 export async function createAtendenteAction(input: AtendenteInput): Promise<CrmActionResult> {
   try {
-    await exigirAdminComCrm()
-    await createAtendente(input)
+    const ator = await exigirGestaoCrm()
+    await createAtendente(input, ator)
   } catch (error) {
     return falha(error, "Não foi possível criar o atendente.")
   }
@@ -119,8 +119,8 @@ export async function createAtendenteAction(input: AtendenteInput): Promise<CrmA
 
 export async function updateAtendenteAction(id: string, input: AtendenteInput): Promise<CrmActionResult> {
   try {
-    await exigirAdminComCrm()
-    await updateAtendente(id, input)
+    const ator = await exigirGestaoCrm()
+    await updateAtendente(id, input, ator)
   } catch (error) {
     return falha(error, "Não foi possível salvar o atendente.")
   }
@@ -130,7 +130,7 @@ export async function updateAtendenteAction(id: string, input: AtendenteInput): 
 
 export async function setAtendenteAtivoAction(id: string, ativo: boolean): Promise<CrmActionResult> {
   try {
-    await exigirAdminComCrm()
+    await exigirGestaoCrm()
     if (typeof ativo !== "boolean") return { ok: false, message: "Estado inválido." }
     await setAtendenteAtivo(id, ativo)
   } catch (error) {
@@ -142,8 +142,8 @@ export async function setAtendenteAtivoAction(id: string, ativo: boolean): Promi
 
 export async function deleteAtendenteAction(id: string, excluirUsuario = false): Promise<CrmActionResult> {
   try {
-    const admin = await exigirAdminComCrm()
-    await deleteAtendente(id, admin.id, Boolean(excluirUsuario))
+    const ator = await exigirGestaoCrm()
+    await deleteAtendente(id, ator, Boolean(excluirUsuario))
   } catch (error) {
     return falha(error, "Não foi possível excluir o atendente.")
   }

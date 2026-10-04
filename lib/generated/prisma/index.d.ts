@@ -208,7 +208,8 @@ export type EventType = (typeof EventType)[keyof typeof EventType]
 
 export const UserRole: {
   admin: 'admin',
-  padrao: 'padrao'
+  padrao: 'padrao',
+  root: 'root'
 };
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
@@ -24597,6 +24598,7 @@ export namespace Prisma {
     senhaHash: number
     role: number
     secoes: number
+    poderes: number
     ativo: number
     temaApp: number
     chatIdentificarRemetente: number
@@ -24639,6 +24641,7 @@ export namespace Prisma {
     senhaHash?: true
     role?: true
     secoes?: true
+    poderes?: true
     ativo?: true
     temaApp?: true
     chatIdentificarRemetente?: true
@@ -24726,6 +24729,7 @@ export namespace Prisma {
     senhaHash: string
     role: $Enums.UserRole
     secoes: string[]
+    poderes: string[]
     ativo: boolean
     temaApp: string
     chatIdentificarRemetente: boolean
@@ -24757,6 +24761,7 @@ export namespace Prisma {
     senhaHash?: boolean
     role?: boolean
     secoes?: boolean
+    poderes?: boolean
     ativo?: boolean
     temaApp?: boolean
     chatIdentificarRemetente?: boolean
@@ -24772,6 +24777,7 @@ export namespace Prisma {
     senhaHash?: boolean
     role?: boolean
     secoes?: boolean
+    poderes?: boolean
     ativo?: boolean
     temaApp?: boolean
     chatIdentificarRemetente?: boolean
@@ -24786,6 +24792,7 @@ export namespace Prisma {
     senhaHash?: boolean
     role?: boolean
     secoes?: boolean
+    poderes?: boolean
     ativo?: boolean
     temaApp?: boolean
     chatIdentificarRemetente?: boolean
@@ -24800,6 +24807,7 @@ export namespace Prisma {
     senhaHash?: boolean
     role?: boolean
     secoes?: boolean
+    poderes?: boolean
     ativo?: boolean
     temaApp?: boolean
     chatIdentificarRemetente?: boolean
@@ -24807,7 +24815,7 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "nome" | "senhaHash" | "role" | "secoes" | "ativo" | "temaApp" | "chatIdentificarRemetente" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "nome" | "senhaHash" | "role" | "secoes" | "poderes" | "ativo" | "temaApp" | "chatIdentificarRemetente" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     atendente?: boolean | User$atendenteArgs<ExtArgs>
   }
@@ -24835,10 +24843,16 @@ export namespace Prisma {
       senhaHash: string
       role: $Enums.UserRole
       /**
-       * Chaves das seções liberadas (ver `lib/permissoes.ts`). Ignorado para admin,
-       * que sempre acessa tudo.
+       * Chaves das seções liberadas (ver `lib/permissoes.ts`). Ignorado para root,
+       * que sempre acessa tudo. Para admin, define o que ele acessa e também o teto
+       * do que ele pode liberar para usuários padrão.
        */
       secoes: string[]
+      /**
+       * Poderes de gestão do admin, definidos pelo root (ver `PODERES` em
+       * `lib/permissoes.ts`). Ignorado para root (tem todos) e para usuário padrão (nenhum).
+       */
+      poderes: string[]
       /**
        * Usuário inativo não consegue entrar e perde a sessão na hora.
        */
@@ -25284,6 +25298,7 @@ export namespace Prisma {
     readonly senhaHash: FieldRef<"User", 'String'>
     readonly role: FieldRef<"User", 'UserRole'>
     readonly secoes: FieldRef<"User", 'String[]'>
+    readonly poderes: FieldRef<"User", 'String[]'>
     readonly ativo: FieldRef<"User", 'Boolean'>
     readonly temaApp: FieldRef<"User", 'String'>
     readonly chatIdentificarRemetente: FieldRef<"User", 'Boolean'>
@@ -31486,6 +31501,7 @@ export namespace Prisma {
     senhaHash: 'senhaHash',
     role: 'role',
     secoes: 'secoes',
+    poderes: 'poderes',
     ativo: 'ativo',
     temaApp: 'temaApp',
     chatIdentificarRemetente: 'chatIdentificarRemetente',
@@ -33240,6 +33256,7 @@ export namespace Prisma {
     senhaHash?: StringFilter<"User"> | string
     role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     secoes?: StringNullableListFilter<"User">
+    poderes?: StringNullableListFilter<"User">
     ativo?: BoolFilter<"User"> | boolean
     temaApp?: StringFilter<"User"> | string
     chatIdentificarRemetente?: BoolFilter<"User"> | boolean
@@ -33255,6 +33272,7 @@ export namespace Prisma {
     senhaHash?: SortOrder
     role?: SortOrder
     secoes?: SortOrder
+    poderes?: SortOrder
     ativo?: SortOrder
     temaApp?: SortOrder
     chatIdentificarRemetente?: SortOrder
@@ -33273,6 +33291,7 @@ export namespace Prisma {
     senhaHash?: StringFilter<"User"> | string
     role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     secoes?: StringNullableListFilter<"User">
+    poderes?: StringNullableListFilter<"User">
     ativo?: BoolFilter<"User"> | boolean
     temaApp?: StringFilter<"User"> | string
     chatIdentificarRemetente?: BoolFilter<"User"> | boolean
@@ -33288,6 +33307,7 @@ export namespace Prisma {
     senhaHash?: SortOrder
     role?: SortOrder
     secoes?: SortOrder
+    poderes?: SortOrder
     ativo?: SortOrder
     temaApp?: SortOrder
     chatIdentificarRemetente?: SortOrder
@@ -33308,6 +33328,7 @@ export namespace Prisma {
     senhaHash?: StringWithAggregatesFilter<"User"> | string
     role?: EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole
     secoes?: StringNullableListFilter<"User">
+    poderes?: StringNullableListFilter<"User">
     ativo?: BoolWithAggregatesFilter<"User"> | boolean
     temaApp?: StringWithAggregatesFilter<"User"> | string
     chatIdentificarRemetente?: BoolWithAggregatesFilter<"User"> | boolean
@@ -35253,6 +35274,7 @@ export namespace Prisma {
     senhaHash: string
     role?: $Enums.UserRole
     secoes?: UserCreatesecoesInput | string[]
+    poderes?: UserCreatepoderesInput | string[]
     ativo?: boolean
     temaApp?: string
     chatIdentificarRemetente?: boolean
@@ -35268,6 +35290,7 @@ export namespace Prisma {
     senhaHash: string
     role?: $Enums.UserRole
     secoes?: UserCreatesecoesInput | string[]
+    poderes?: UserCreatepoderesInput | string[]
     ativo?: boolean
     temaApp?: string
     chatIdentificarRemetente?: boolean
@@ -35283,6 +35306,7 @@ export namespace Prisma {
     senhaHash?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     secoes?: UserUpdatesecoesInput | string[]
+    poderes?: UserUpdatepoderesInput | string[]
     ativo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
@@ -35298,6 +35322,7 @@ export namespace Prisma {
     senhaHash?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     secoes?: UserUpdatesecoesInput | string[]
+    poderes?: UserUpdatepoderesInput | string[]
     ativo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
@@ -35313,6 +35338,7 @@ export namespace Prisma {
     senhaHash: string
     role?: $Enums.UserRole
     secoes?: UserCreatesecoesInput | string[]
+    poderes?: UserCreatepoderesInput | string[]
     ativo?: boolean
     temaApp?: string
     chatIdentificarRemetente?: boolean
@@ -35327,6 +35353,7 @@ export namespace Prisma {
     senhaHash?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     secoes?: UserUpdatesecoesInput | string[]
+    poderes?: UserUpdatepoderesInput | string[]
     ativo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
@@ -35341,6 +35368,7 @@ export namespace Prisma {
     senhaHash?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     secoes?: UserUpdatesecoesInput | string[]
+    poderes?: UserUpdatepoderesInput | string[]
     ativo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
@@ -36901,6 +36929,7 @@ export namespace Prisma {
     senhaHash?: SortOrder
     role?: SortOrder
     secoes?: SortOrder
+    poderes?: SortOrder
     ativo?: SortOrder
     temaApp?: SortOrder
     chatIdentificarRemetente?: SortOrder
@@ -37825,6 +37854,10 @@ export namespace Prisma {
     set: string[]
   }
 
+  export type UserCreatepoderesInput = {
+    set: string[]
+  }
+
   export type AtendenteCreateNestedOneWithoutUserInput = {
     create?: XOR<AtendenteCreateWithoutUserInput, AtendenteUncheckedCreateWithoutUserInput>
     connectOrCreate?: AtendenteCreateOrConnectWithoutUserInput
@@ -37842,6 +37875,11 @@ export namespace Prisma {
   }
 
   export type UserUpdatesecoesInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type UserUpdatepoderesInput = {
     set?: string[]
     push?: string | string[]
   }
@@ -40296,6 +40334,7 @@ export namespace Prisma {
     senhaHash: string
     role?: $Enums.UserRole
     secoes?: UserCreatesecoesInput | string[]
+    poderes?: UserCreatepoderesInput | string[]
     ativo?: boolean
     temaApp?: string
     chatIdentificarRemetente?: boolean
@@ -40310,6 +40349,7 @@ export namespace Prisma {
     senhaHash: string
     role?: $Enums.UserRole
     secoes?: UserCreatesecoesInput | string[]
+    poderes?: UserCreatepoderesInput | string[]
     ativo?: boolean
     temaApp?: string
     chatIdentificarRemetente?: boolean
@@ -40380,6 +40420,7 @@ export namespace Prisma {
     senhaHash?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     secoes?: UserUpdatesecoesInput | string[]
+    poderes?: UserUpdatepoderesInput | string[]
     ativo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
@@ -40394,6 +40435,7 @@ export namespace Prisma {
     senhaHash?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     secoes?: UserUpdatesecoesInput | string[]
+    poderes?: UserUpdatepoderesInput | string[]
     ativo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean

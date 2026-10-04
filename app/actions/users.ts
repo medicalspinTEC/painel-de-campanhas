@@ -5,7 +5,7 @@ import { cookies } from "next/headers"
 
 import { isTemaApp } from "@/lib/temas"
 import { TEMA_COOKIE } from "@/lib/temas"
-import { assertAdmin, assertSecao, assertUsuario, ForbiddenError } from "@/lib/session"
+import { assertGestaoUsuarios, assertSecao, assertUsuario, ForbiddenError } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
 import {
   createUser,
@@ -28,13 +28,13 @@ function falha(error: unknown, contexto: string): UserActionResult {
 }
 
 // ---------------------------------------------------------------------------
-// Gestão de usuários — somente admin
+// Gestão de usuários — root e admins com poder de usuários (a hierarquia é checada no serviço)
 // ---------------------------------------------------------------------------
 
 export async function createUserAction(input: UserInput): Promise<UserActionResult> {
   try {
-    await assertAdmin()
-    await createUser(input)
+    const ator = await assertGestaoUsuarios()
+    await createUser(input, ator)
   } catch (error) {
     return falha(error, "Não foi possível criar o usuário.")
   }
@@ -44,8 +44,8 @@ export async function createUserAction(input: UserInput): Promise<UserActionResu
 
 export async function updateUserAction(id: string, input: UserInput): Promise<UserActionResult> {
   try {
-    await assertAdmin()
-    await updateUser(id, input)
+    const ator = await assertGestaoUsuarios()
+    await updateUser(id, input, ator)
   } catch (error) {
     return falha(error, "Não foi possível salvar o usuário.")
   }
@@ -56,8 +56,8 @@ export async function updateUserAction(id: string, input: UserInput): Promise<Us
 
 export async function deleteUserAction(id: string): Promise<UserActionResult> {
   try {
-    const admin = await assertAdmin()
-    await deleteUser(id, admin.id)
+    const ator = await assertGestaoUsuarios()
+    await deleteUser(id, ator)
   } catch (error) {
     return falha(error, "Não foi possível excluir o usuário.")
   }
