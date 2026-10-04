@@ -319,12 +319,12 @@ export function BackupPanel({
               ) : null}
             </div>
             <p>
-              Cada backup chega em várias partes (POST em JSON): <code>backup.parte</code> com <code>backup</code> (id,
-              origem, seções), <code>parte</code> (tabela, índice) e <code>dados</code>; no fim, <code>backup.concluido</code>{" "}
-              com o resumo de linhas por tabela. Headers: <code>X-Backup-Id</code>, <code>X-Backup-Event</code>,{" "}
-              <code>X-Backup-Part</code>, <code>X-Backup-Attempt</code> e, com segredo,{" "}
-              <code>X-Backup-Signature: sha256=…</code> (HMAC-SHA256 do corpo). Responda HTTP 2xx para confirmar cada
-              parte.
+              Cada backup chega num único envio: um POST binário (<code>Content-Type: application/octet-stream</code>)
+              cujo corpo é o arquivo <code>.json</code> completo, no mesmo formato do download. Salve o corpo como
+              arquivo (o nome vem em <code>Content-Disposition</code> e <code>X-Backup-Filename</code>). Headers:{" "}
+              <code>X-Backup-Id</code>, <code>X-Backup-Event</code>, <code>X-Backup-Attempt</code> e, com segredo,{" "}
+              <code>X-Backup-Signature: sha256=…</code> (HMAC-SHA256 do corpo). Responda HTTP 2xx para confirmar o
+              recebimento.
             </p>
             <p>
               Senhas (hash) dos usuários e segredos de webhooks nunca são enviados. Os dados dos leads, como telefones,
@@ -522,7 +522,7 @@ export function BackupPanel({
 
                 {backup.status === "enviando" ? (
                   <p className="text-xs text-muted-foreground">
-                    {backup.partesEnviadas} de ~{backup.partesTotal || "?"} partes · {formatarBytes(backup.bytes)}
+                    {backup.partesEnviadas} de {backup.partesTotal || "?"} etapas · {formatarBytes(backup.bytes)}
                   </p>
                 ) : null}
 

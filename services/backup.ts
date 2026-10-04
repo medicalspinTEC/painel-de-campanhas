@@ -1,4 +1,10 @@
 import { createHmac } from "node:crypto"
+import { createReadStream, createWriteStream } from "node:fs"
+import { mkdtemp, rm, stat } from "node:fs/promises"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+import { Readable } from "node:stream"
+import { finished } from "node:stream/promises"
 
 import { prisma } from "@/lib/prisma"
 import { proximaExecucao, type AgendaBackup } from "@/lib/backup/agenda"
@@ -9,13 +15,15 @@ import { recordAppLog } from "@/services/app-logs"
  * Backup para webhook externo (manual e automático).
  *
  * Como funciona:
- * - O usuário escolhe as seções (ver `lib/backup/secoes.ts`). Cada tabela das
- *   seções é lida em páginas e enviada em vários POSTs (`backup.parte`), para não
- *   carregar o banco inteiro na memória nem estourar o limite de corpo do destino.
- * - No fim sai um POST `backup.concluido` com o resumo (linhas e partes por
- *   tabela), para o destino conferir que recebeu tudo.
- * - Todos os envios de um backup levam o mesmo `X-Backup-Id`; `X-Backup-Part`
- *   (tabela:índice) identifica a parte. Reenvios são idempotentes por (id, parte).
+ * - O usuário escolhe as seções (ver `lib/backup/secoes.ts`). As tabelas são lidas
+ *   em páginas (sem carregar o banco inteiro na memória) e gravadas num arquivo
+ *   temporário no formato `painel-backup` (o mesmo do download).
+ * - Esse arquivo JSON COMPLETO é enviado ao webhook num único POST
+ *   (`backup.arquivo`), como binário (`application/octet-stream`): o corpo é o
+ *   arquivo inteiro, byte a byte. Nada de partes separadas.
+ * - O envio leva `X-Backup-Id`, `X-Backup-Filename` e, com segredo,
+ *   `X-Backup-Signature` (HMAC-SHA256 do corpo). Reenvios reaproveitam o mesmo
+ *   arquivo temporário, então o conteúdo é idêntico em todas as tentativas.
  * - Automático: a próxima execução fica em `BackupConfig.autoProximoEm`. Quem
  *   conseguir "reservar" esse valor roda o backup, então várias instâncias do app
  *   não duplicam. Se falhar, o backup automático é repetido com espera crescente.
@@ -24,9 +32,9 @@ import { recordAppLog } from "@/services/app-logs"
  */
 
 const ID_CONFIG = "default"
-const TIMEOUT_PARTE_MS = 30_000
-const TENTATIVAS_POR_PARTE = 3
-const ESPERA_PARTE_MS = [1_000, 4_000]
+const TIMEOUT_ENVIO_MS = 10 * 60 * 1000
+const TENTATIVAS_POR_ENVIO = 3
+const ESPERA_ENVIO_MS = [1_000, 4_000]
 /** Sem sinal de vida por tanto tempo = o processo caiu no meio do envio. */
 const SEM_SINAL_MS = 5 * 60 * 1000
 const MAX_TENTATIVAS_AUTOMATICO = 5
@@ -34,8 +42,7 @@ const ESPERA_MAXIMA_RETENTATIVA_MS = 60 * 60 * 1000
 const HISTORICO_MAXIMO = 50
 const RETENTATIVAS_POR_VARREDURA = 2
 
-export const EVENTO_PARTE = "backup.parte"
-export const EVENTO_CONCLUIDO = "backup.concluido"
+export const EVENTO_ARQUIVO = "backup.arquivo"
 export const EVENTO_TESTE = "backup.teste"
 
 // ---------------------------------------------------------------------------
@@ -335,7 +342,7 @@ async function postarUmaVez(
       cache: "no-store",
       // Redirecionar um POST reenviaria o backup para outro endereço sem você ver.
       redirect: "manual",
-      signal: AbortSignal.timeout(TIMEOUT_PARTE_MS),
+      signal: AbortSignal.timeout(TIMEOUT_ENVIO_MS),
     })
     if (resposta.status >= 200 && resposta.status < 300) return { ok: true, status: resposta.status, bytes }
 
@@ -352,7 +359,7 @@ async function postarUmaVez(
     return {
       ok: false,
       bytes,
-      erro: timeout ? `Sem resposta em ${TIMEOUT_PARTE_MS / 1000}s.` : error instanceof Error ? error.message : String(error),
+      erro: timeout ? `Sem resposta em ${TIMEOUT_ENVIO_MS / 1000}s.` : error instanceof Error ? error.message : String(error),
     }
   }
 }
@@ -365,18 +372,75 @@ function vale(resultado: ResultadoEnvio): boolean {
   return !s || s >= 500 || s === 408 || s === 429
 }
 
-async function postarComRepeticao(
+interface ArquivoBackup {
+  caminho: string
+  nome: string
+  bytes: number
+  assinatura: string | null
+}
+
+async function postarArquivoUmaVez(
   destino: Destino,
-  evento: string,
-  corpo: unknown,
+  arquivo: ArquivoBackup,
   backupId: string,
-  parte: string,
+  tentativa: number,
 ): Promise<ResultadoEnvio> {
+  const headers: Record<string, string> = {
+    // Binário puro: o destino recebe o arquivo como está e converte/salva onde quiser.
+    "content-type": "application/octet-stream",
+    "content-disposition": `attachment; filename="${arquivo.nome}"`,
+    "content-length": String(arquivo.bytes),
+    "user-agent": "painel-campanhas-backup/1.0",
+    "x-backup-event": EVENTO_ARQUIVO,
+    "x-backup-id": backupId,
+    "x-backup-filename": arquivo.nome,
+    "x-backup-attempt": String(tentativa),
+  }
+  if (arquivo.assinatura) headers["x-backup-signature"] = arquivo.assinatura
+
+  try {
+    const corpo = Readable.toWeb(createReadStream(arquivo.caminho)) as unknown as ReadableStream<Uint8Array>
+    const resposta = await fetch(destino.url, {
+      method: "POST",
+      headers,
+      body: corpo,
+      // Necessário para enviar um corpo em stream no fetch do Node.
+      duplex: "half",
+      cache: "no-store",
+      // Redirecionar um POST reenviaria o backup para outro endereço sem você ver.
+      redirect: "manual",
+      signal: AbortSignal.timeout(TIMEOUT_ENVIO_MS),
+    } as RequestInit & { duplex: "half" })
+    if (resposta.status >= 200 && resposta.status < 300) return { ok: true, status: resposta.status, bytes: arquivo.bytes }
+
+    const detalhe = (await resposta.text().catch(() => "")).replace(/\s+/g, " ").trim().slice(0, 200)
+    const redirecionou = resposta.status >= 300 && resposta.status < 400
+    return {
+      ok: false,
+      status: resposta.status,
+      bytes: arquivo.bytes,
+      erro: `${redirecionou ? "O destino respondeu com redirecionamento" : "O destino respondeu"} (HTTP ${resposta.status})${detalhe ? `: ${detalhe}` : ""}`,
+    }
+  } catch (error) {
+    const timeout = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError")
+    return {
+      ok: false,
+      bytes: arquivo.bytes,
+      erro: timeout
+        ? `Sem resposta em ${TIMEOUT_ENVIO_MS / 60_000} min.`
+        : error instanceof Error
+          ? error.message
+          : String(error),
+    }
+  }
+}
+
+async function postarArquivoComRepeticao(destino: Destino, arquivo: ArquivoBackup, backupId: string): Promise<ResultadoEnvio> {
   let ultimo: ResultadoEnvio = { ok: false, bytes: 0, erro: "Falha desconhecida." }
-  for (let tentativa = 1; tentativa <= TENTATIVAS_POR_PARTE; tentativa++) {
-    ultimo = await postarUmaVez(destino, evento, corpo, backupId, parte, tentativa)
+  for (let tentativa = 1; tentativa <= TENTATIVAS_POR_ENVIO; tentativa++) {
+    ultimo = await postarArquivoUmaVez(destino, arquivo, backupId, tentativa)
     if (ultimo.ok || !vale(ultimo)) return ultimo
-    if (tentativa < TENTATIVAS_POR_PARTE) await dormir(ESPERA_PARTE_MS[tentativa - 1] ?? 4_000)
+    if (tentativa < TENTATIVAS_POR_ENVIO) await dormir(ESPERA_ENVIO_MS[tentativa - 1] ?? 4_000)
   }
   return ultimo
 }
@@ -393,6 +457,91 @@ export async function enviarTesteBackup(destino: Destino, secoes: string[]): Pro
   return resultado.ok
     ? { ok: true, message: `Teste enviado: o destino respondeu HTTP ${resultado.status}.` }
     : { ok: false, message: resultado.erro ?? "Não foi possível enviar o teste." }
+}
+
+// ---------------------------------------------------------------------------
+// Arquivo de backup (usado pelo webhook e pelo download)
+// ---------------------------------------------------------------------------
+
+type TabelaBackup = { secao: string; tabela: string }
+type ResumoBackup = Record<string, { linhas: number; partes: number }>
+
+/**
+ * Gera o arquivo `painel-backup` completo, aos poucos. Formato:
+ * `{ formato, versao, id, geradoEm, secoes, tabelas: { Lead: [...], ... } }`.
+ * `resumo` é preenchido conforme as tabelas são lidas; `aoTerminarTabela`
+ * recebe quantas tabelas já foram lidas (para o progresso).
+ */
+async function* gerarArquivoBackup(opcoes: {
+  id: string
+  geradoEm: Date
+  secoes: string[]
+  tabelas: TabelaBackup[]
+  resumo: ResumoBackup
+  aoTerminarTabela?: (tabelasLidas: number) => Promise<void> | void
+}): AsyncGenerator<string> {
+  const { id, geradoEm, secoes, tabelas, resumo, aoTerminarTabela } = opcoes
+  yield `{"formato":"painel-backup","versao":1,"id":${JSON.stringify(id)},"geradoEm":${JSON.stringify(geradoEm.toISOString())},"secoes":${JSON.stringify(secoes)},"tabelas":{`
+  let primeiraTabela = true
+  let tabelasLidas = 0
+  for (const { tabela } of tabelas) {
+    const leitor = LEITORES[tabela]
+    yield `${primeiraTabela ? "" : ","}${JSON.stringify(tabela)}:[`
+    primeiraTabela = false
+
+    let cursor: string | null = null
+    let partes = 0
+    let linhas = 0
+    for (;;) {
+      const pagina = await leitor.pagina(cursor, leitor.tamanho)
+      if (!pagina.length) break
+      const texto = limpar(pagina, leitor.omitir)
+        .map((linha) => JSON.stringify(linha))
+        .join(",")
+      yield `${linhas > 0 ? "," : ""}${texto}`
+      linhas += pagina.length
+      partes += 1
+      if (leitor.unicaPagina || pagina.length < leitor.tamanho) break
+      const ultima = pagina[pagina.length - 1]
+      // A chave de paginação é `id` (ou `leadId` em LeadAtendimento, que não tem `id`).
+      cursor = String(ultima.id ?? ultima.leadId)
+    }
+    resumo[tabela] = { linhas, partes }
+    yield "]"
+    tabelasLidas += 1
+    await aoTerminarTabela?.(tabelasLidas)
+  }
+  yield "}}"
+}
+
+function nomeArquivoBackup(d: Date): string {
+  const dois = (n: number) => String(n).padStart(2, "0")
+  return `backup-${d.getFullYear()}-${dois(d.getMonth() + 1)}-${dois(d.getDate())}-${dois(d.getHours())}${dois(d.getMinutes())}.json`
+}
+
+/** Grava o arquivo completo em disco (temporário), calculando tamanho e assinatura sem carregá-lo na memória. */
+async function gravarArquivoTemporario(
+  dir: string,
+  nome: string,
+  gerador: AsyncGenerator<string>,
+  segredo: string | null,
+): Promise<ArquivoBackup> {
+  const caminho = join(dir, nome)
+  const saida = createWriteStream(caminho)
+  const hmac = segredo ? createHmac("sha256", segredo) : null
+  try {
+    for await (const pedaco of gerador) {
+      hmac?.update(pedaco)
+      if (!saida.write(pedaco)) await new Promise<void>((resolve) => saida.once("drain", () => resolve()))
+    }
+    saida.end()
+    await finished(saida)
+  } catch (error) {
+    saida.destroy()
+    throw error
+  }
+  const { size } = await stat(caminho)
+  return { caminho, nome, bytes: size, assinatura: hmac ? `sha256=${hmac.digest("hex")}` : null }
 }
 
 // ---------------------------------------------------------------------------
@@ -439,90 +588,56 @@ async function executarBackup(id: string): Promise<boolean> {
     if (!secoes.length) return await registrarFalha(id, "Nenhuma seção selecionada.", tentativas, origem)
     const tabelas = secoes.flatMap((secao) => SECOES_POR_CHAVE[secao].tabelas.map((tabela) => ({ secao, tabela })))
 
-    // Estimativa de partes (para a barra de progresso); o resumo final usa os números reais.
-    const contagens = await Promise.all(tabelas.map((t) => LEITORES[t.tabela].contar()))
-    const partesTotal =
-      contagens.reduce((soma, linhas, i) => soma + Math.ceil(linhas / LEITORES[tabelas[i].tabela].tamanho), 0) + 1
+    // Progresso: uma etapa por tabela lida + 1 para o envio do arquivo.
+    const partesTotal = tabelas.length + 1
     await prisma.backupExecucao.update({
       where: { id },
       data: { partesTotal, partesEnviadas: 0, bytes: 0, resumo: undefined, ultimaTentativaEm: new Date() },
     })
 
-    const meta = { id, origem, iniciadoEm: run.criadoEm.toISOString(), secoes }
-    const resumo: Record<string, { linhas: number; partes: number }> = {}
-    let partesEnviadas = 0
-    let bytes = 0
-
-    for (const { secao, tabela } of tabelas) {
-      const leitor = LEITORES[tabela]
-      let cursor: string | null = null
-      let indice = 0
-      let linhas = 0
-
-      for (;;) {
-        const pagina = await leitor.pagina(cursor, leitor.tamanho)
-        if (!pagina.length) break
-
-        const nome = `${tabela}:${indice}`
-        const corpo = {
-          evento: EVENTO_PARTE,
-          enviadoEm: new Date().toISOString(),
-          backup: meta,
-          parte: { secao, tabela, indice, linhas: pagina.length },
-          dados: limpar(pagina, leitor.omitir),
-        }
-        const resultado = await postarComRepeticao(destino, EVENTO_PARTE, corpo, id, nome)
-        if (!resultado.ok) {
-          return await registrarFalha(id, `Parte ${nome}: ${resultado.erro ?? "falha desconhecida."}`, tentativas, origem)
-        }
-
-        bytes += resultado.bytes
-        partesEnviadas += 1
-        linhas += pagina.length
-        indice += 1
-        await prisma.backupExecucao.update({
-          where: { id },
-          data: { partesEnviadas, bytes: Math.min(bytes, 2_147_483_647), ultimaTentativaEm: new Date() },
-        })
-
-        if (leitor.unicaPagina || pagina.length < leitor.tamanho) break
-        const ultima = pagina[pagina.length - 1]
-        // A chave de paginação é `id` (ou `leadId` em LeadAtendimento, que não tem `id`).
-        cursor = String(ultima.id ?? ultima.leadId)
-      }
-      resumo[tabela] = { linhas, partes: indice }
-    }
-
-    const concluido = await postarComRepeticao(
-      destino,
-      EVENTO_CONCLUIDO,
-      {
-        evento: EVENTO_CONCLUIDO,
-        enviadoEm: new Date().toISOString(),
-        backup: meta,
-        totalPartes: partesEnviadas,
+    const resumo: ResumoBackup = {}
+    const dir = await mkdtemp(join(tmpdir(), "backup-"))
+    try {
+      // 1) Monta o arquivo JSON completo em disco (lido aos poucos, sem estourar a memória).
+      const gerador = gerarArquivoBackup({
+        id,
+        geradoEm: run.criadoEm,
+        secoes,
+        tabelas,
         resumo,
-      },
-      id,
-      "concluido",
-    )
-    if (!concluido.ok) {
-      return await registrarFalha(id, `Resumo final: ${concluido.erro ?? "falha desconhecida."}`, tentativas, origem)
-    }
+        aoTerminarTabela: async (lidas) => {
+          await prisma.backupExecucao
+            .update({ where: { id }, data: { partesEnviadas: lidas, ultimaTentativaEm: new Date() } })
+            .catch(() => undefined)
+        },
+      })
+      const arquivo = await gravarArquivoTemporario(dir, nomeArquivoBackup(run.criadoEm), gerador, destino.segredo)
 
-    await prisma.backupExecucao.update({
-      where: { id },
-      data: {
-        status: "enviado",
-        erro: null,
-        resumo: resumo as never,
-        partesEnviadas: partesEnviadas + 1,
-        bytes: Math.min(bytes + concluido.bytes, 2_147_483_647),
-        concluidoEm: new Date(),
-        ultimaTentativaEm: new Date(),
-      },
-    })
-    return true
+      // 2) Envia o arquivo inteiro num único POST.
+      await prisma.backupExecucao
+        .update({ where: { id }, data: { bytes: Math.min(arquivo.bytes, 2_147_483_647), ultimaTentativaEm: new Date() } })
+        .catch(() => undefined)
+      const envio = await postarArquivoComRepeticao(destino, arquivo, id)
+      if (!envio.ok) {
+        return await registrarFalha(id, `Envio do arquivo: ${envio.erro ?? "falha desconhecida."}`, tentativas, origem)
+      }
+
+      await prisma.backupExecucao.update({
+        where: { id },
+        data: {
+          status: "enviado",
+          erro: null,
+          resumo: resumo as never,
+          partesEnviadas: partesTotal,
+          bytes: Math.min(arquivo.bytes, 2_147_483_647),
+          concluidoEm: new Date(),
+          ultimaTentativaEm: new Date(),
+        },
+      })
+      return true
+    } finally {
+      await rm(dir, { recursive: true, force: true }).catch(() => undefined)
+    }
   } catch (error) {
     return registrarFalha(id, error instanceof Error ? error.message : String(error), tentativas, origem)
   }
@@ -607,42 +722,22 @@ export async function criarDownloadBackup(secoesEscolhidas: unknown): Promise<Re
   await podarHistorico().catch(() => undefined)
 
   const codificador = new TextEncoder()
-  const resumo: Record<string, { linhas: number; partes: number }> = {}
+  const resumo: ResumoBackup = {}
   let bytes = 0
   let finalizado = false
 
-  async function* gerar(): AsyncGenerator<string> {
-    yield `{"formato":"painel-backup","versao":1,"id":${JSON.stringify(run.id)},"geradoEm":${JSON.stringify(run.criadoEm.toISOString())},"secoes":${JSON.stringify(secoes)},"tabelas":{`
-    let primeiraTabela = true
-    for (const { tabela } of tabelas) {
-      const leitor = LEITORES[tabela]
-      yield `${primeiraTabela ? "" : ","}${JSON.stringify(tabela)}:[`
-      primeiraTabela = false
-
-      let cursor: string | null = null
-      let partes = 0
-      let linhas = 0
-      for (;;) {
-        const pagina = await leitor.pagina(cursor, leitor.tamanho)
-        if (!pagina.length) break
-        const texto = limpar(pagina, leitor.omitir)
-          .map((linha) => JSON.stringify(linha))
-          .join(",")
-        yield `${linhas > 0 ? "," : ""}${texto}`
-        linhas += pagina.length
-        partes += 1
-        await prisma.backupExecucao
-          .update({ where: { id: run.id }, data: { partesEnviadas: partes, ultimaTentativaEm: new Date() } })
-          .catch(() => undefined)
-        if (leitor.unicaPagina || pagina.length < leitor.tamanho) break
-        const ultima = pagina[pagina.length - 1]
-        cursor = String(ultima.id ?? ultima.leadId)
-      }
-      resumo[tabela] = { linhas, partes }
-      yield "]"
-    }
-    yield "}}"
-  }
+  const iterador = gerarArquivoBackup({
+    id: run.id,
+    geradoEm: run.criadoEm,
+    secoes,
+    tabelas,
+    resumo,
+    aoTerminarTabela: async (lidas) => {
+      await prisma.backupExecucao
+        .update({ where: { id: run.id }, data: { partesEnviadas: lidas, ultimaTentativaEm: new Date() } })
+        .catch(() => undefined)
+    },
+  })
 
   async function finalizar(status: "enviado" | "falha", erro: string | null) {
     if (finalizado) return
@@ -667,7 +762,6 @@ export async function criarDownloadBackup(secoesEscolhidas: unknown): Promise<Re
     }
   }
 
-  const iterador = gerar()
   const stream = new ReadableStream<Uint8Array>({
     async pull(controlador) {
       try {
@@ -691,9 +785,7 @@ export async function criarDownloadBackup(secoesEscolhidas: unknown): Promise<Re
     },
   })
 
-  const d = run.criadoEm
-  const dois = (n: number) => String(n).padStart(2, "0")
-  const nome = `backup-${d.getFullYear()}-${dois(d.getMonth() + 1)}-${dois(d.getDate())}-${dois(d.getHours())}${dois(d.getMinutes())}.json`
+  const nome = nomeArquivoBackup(run.criadoEm)
   return { ok: true, stream, nome }
 }
 
