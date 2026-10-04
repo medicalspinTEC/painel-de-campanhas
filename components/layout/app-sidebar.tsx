@@ -48,8 +48,7 @@ const navPrincipal = [
   { title: "Leads", url: "/leads", icon: Users },
   { title: "Kanban", url: "/kanban", icon: SquareKanban },
   { title: "Chat", url: "/chat", icon: MessagesSquare },
-  { title: "Assistente", url: "/assistente", icon: Bot },
-  { title: "No Code", url: "/nocode", icon: Workflow },
+  { title: "Assistente", url: "/assistente", icon: Bot }, 
   { title: "Campanhas", url: "/campanhas", icon: Megaphone },
   { title: "Segmentação", url: "/segmentacao", icon: Target },
 ]
@@ -62,6 +61,7 @@ const navOperacao = [
 
 const navSistema = [
   { title: "Instâncias", url: "/instancias", icon: Smartphone },
+  { title: "No Code", url: "/nocode", icon: Workflow },
   { title: "Integrações", url: "/integracoes", icon: Plug },
   { title: "Configurações", url: "/configuracoes", icon: Settings },
 ]
@@ -150,7 +150,7 @@ export function AppSidebar({
   )
   const itensOperacao = navOperacao.filter((item) => visivel(item.url))
   const itensSistema = [
-    ...navSistema.filter((item) => visivel(item.url)),
+    ...navSistema.filter((item) => visivel(item.url )),
     ...(usuario?.role === "admin" ? [{ title: "Usuários", url: "/usuarios", icon: UserCog }] : []),
   ]
 
@@ -167,7 +167,7 @@ export function AppSidebar({
           </div>
           <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
             <span className="truncate text-sm font-semibold leading-tight">{appNome}</span>
-            <span className="truncate text-xs text-muted-foreground leading-tight">Follow-up WhatsApp v1.3.0</span>
+            <span className="truncate text-xs text-muted-foreground leading-tight">Follow-up WhatsApp v1.9.0</span>
           </div>
         </div>
       </SidebarHeader>
