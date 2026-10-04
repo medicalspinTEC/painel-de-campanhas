@@ -13,6 +13,7 @@ import {
   type Settings,
 } from "@/services/settings"
 import { recordAppLog } from "@/services/app-logs"
+import { garantirFluxoResposta } from "@/services/nocode"
 import { assertSecao } from "@/lib/session"
 
 export type SettingsActionResult = { ok: boolean; message: string }
@@ -117,6 +118,8 @@ export async function setNocodePluginAtivoAction(ativo: boolean): Promise<Settin
 
   try {
     await setNocodePluginAtivo(ativo)
+    // Ao ligar o plugin, o fluxo de resposta do app já nasce configurado e ativo.
+    if (ativo) await garantirFluxoResposta()
   } catch (error) {
     await recordAppLog({ origem: "settings", mensagem: "Falha ao atualizar o plugin No Code.", detalhes: error })
     return { ok: false, message: "Não foi possível atualizar o plugin No Code. Aplique a migration mais recente." }

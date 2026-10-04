@@ -466,13 +466,16 @@ model Instance {
 
 /// Fluxos do plugin "No Code" (editor visual de automações do próprio app).
 model NoCodeFlow {
-  id    String  @id @default(cuid())
-  nome  String
-  ativo Boolean @default(false)
+  id      String  @id @default(cuid())
+  nome    String
+  ativo   Boolean @default(false)
+  /// Fluxo do sistema (o "Fluxo de resposta" do app): nasce ativo e não pode ser
+  /// desativado nem excluído. Só existe um (índice único parcial na migration).
+  sistema Boolean @default(false)
   /// Nós do canvas: [{ id, type, name, position: {x,y}, config }].
-  nodes Json    @default("[]")
+  nodes   Json    @default("[]")
   /// Conexões: [{ id, source, sourceHandle, target }].
-  edges Json    @default("[]")
+  edges   Json    @default("[]")
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt

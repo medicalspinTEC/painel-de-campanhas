@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 
 import { FlowList } from "@/components/features/nocode/flow-list"
 import { PageHeader } from "@/components/shared/page-header"
-import { listFlows } from "@/services/nocode"
+import { garantirFluxoResposta, listFlows } from "@/services/nocode"
 import { getNocodePluginAtivo } from "@/services/settings"
 import { requireSecao } from "@/lib/session"
 
@@ -14,7 +14,10 @@ export default async function NoCodePage() {
   await requireSecao("nocode")
   if (!(await getNocodePluginAtivo())) notFound()
 
-  const fluxos = await listFlows().catch(() => null)
+  // O fluxo de resposta do app sempre existe e fica ativo (cria na primeira visita, se ainda não houver).
+  const fluxos = await garantirFluxoResposta()
+    .then(() => listFlows())
+    .catch(() => null)
 
   return (
     <div className="flex flex-col gap-6">

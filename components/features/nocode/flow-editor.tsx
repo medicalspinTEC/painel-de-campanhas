@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react"
-import { ArrowLeft, FlaskConical, Loader2, RefreshCw, Save } from "lucide-react"
+import { ArrowLeft, FlaskConical, Loader2, Lock, RefreshCw, Save } from "lucide-react"
 import { toast } from "sonner"
 
 import { listExecutionsAction, saveFlowAction, testFlowAction, toggleFlowAction } from "@/app/actions/nocode"
@@ -50,6 +50,7 @@ export function FlowEditor({ fluxo, execucoesIniciais }: { fluxo: FlowRow; execu
   const [nodes, setNodes] = useState<FlowNode[]>(fluxo.nodes)
   const [edges, setEdges] = useState<FlowEdge[]>(fluxo.edges)
   const [ativo, setAtivo] = useState(fluxo.ativo)
+  const sistema = fluxo.sistema
   const [selecao, setSelecao] = useState<Selecao>(null)
   const [aba, setAba] = useState<"editor" | "execucoes">("editor")
   const [execucoes, setExecucoes] = useState(execucoesIniciais)
@@ -146,6 +147,7 @@ export function FlowEditor({ fluxo, execucoesIniciais }: { fluxo: FlowRow; execu
   }
 
   function alternarAtivo(valor: boolean) {
+    if (sistema) return
     startTransition(async () => {
       if (sujo && !(await salvarAgora())) return
       const resultado = await toggleFlowAction(fluxo.id, valor)
@@ -192,10 +194,22 @@ export function FlowEditor({ fluxo, execucoesIniciais }: { fluxo: FlowRow; execu
           aria-label="Nome do fluxo"
           className="h-8 w-56 font-medium sm:w-72"
         />
+        {sistema ? (
+          <Badge variant="outline" title="Responde aos leads do app; não pode ser desativado nem excluído">
+            <Lock className="size-3" />
+            Fluxo do sistema
+          </Badge>
+        ) : null}
         {sujo ? <Badge variant="secondary">Alterações não salvas</Badge> : null}
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <label className="flex items-center gap-2 text-sm">
-            <Switch checked={ativo} onCheckedChange={alternarAtivo} disabled={pending} aria-label="Ativar fluxo" />
+            <Switch
+              checked={ativo}
+              onCheckedChange={alternarAtivo}
+              disabled={pending || sistema}
+              title={sistema ? "Fluxo do sistema: sempre ativo" : undefined}
+              aria-label="Ativar fluxo"
+            />
             {ativo ? "Ativo" : "Desativado"}
           </label>
           <Button variant="outline" onClick={() => setTesteAberto(true)}>

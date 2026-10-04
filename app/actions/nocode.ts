@@ -10,6 +10,8 @@ import {
   executarEGravar,
   getFlow,
   listExecutions,
+  MSG_FLUXO_SISTEMA_DESATIVAR,
+  MSG_FLUXO_SISTEMA_EXCLUIR,
   updateFlow,
   type ExecutionRow,
 } from "@/services/nocode"
@@ -68,10 +70,22 @@ export async function saveFlowAction(
   try {
     const atual = await getFlow(id)
     if (!atual) return { ok: false, message: "Fluxo não encontrado." }
-    // Um fluxo ativo precisa continuar válido (com gatilho) depois da edição.
-    if (atual.ativo) {
+    // Um fluxo ativo (e o do sistema, que é sempre ativo) precisa continuar válido (com gatilho) depois da edição.
+    if (atual.ativo || atual.sistema) {
       const erro = validarGrafo(grafo.nodes, grafo.edges, true)
-      if (erro) return { ok: false, message: `${erro} Desative o fluxo para salvar assim.` }
+      if (erro) {
+        return {
+          ok: false,
+          message: atual.sistema ? erro : `${erro} Desative o fluxo para salvar assim.`,
+        }
+      }
+    }
+    if (atual.sistema) {
+      // Sem o token no gatilho a Evolution não consegue mais entregar os eventos.
+      const gatilho = grafo.nodes.find((n) => n.type === "webhook")
+      if (!String(gatilho?.config?.token ?? "").trim()) {
+        return { ok: false, message: "O gatilho Webhook do fluxo de resposta precisa ter um token." }
+      }
     }
     await updateFlow(id, { nome, ...grafo })
     revalidatePath("/nocode")
@@ -87,6 +101,12 @@ export async function toggleFlowAction(id: string, ativo: boolean): Promise<Resu
   try {
     const fluxo = await getFlow(id)
     if (!fluxo) return { ok: false, message: "Fluxo não encontrado." }
+    // O fluxo de resposta do app nunca pode ser desativado.
+    if (fluxo.sistema) {
+      return ativo
+        ? { ok: true, message: "O fluxo de resposta já fica sempre ativo.", ativo: true }
+        : { ok: false, message: MSG_FLUXO_SISTEMA_DESATIVAR }
+    }
     if (ativo) {
       const erro = validarGrafo(fluxo.nodes, fluxo.edges, true)
       if (erro) return { ok: false, message: erro }
@@ -102,6 +122,10 @@ export async function toggleFlowAction(id: string, ativo: boolean): Promise<Resu
 export async function deleteFlowAction(id: string): Promise<Resultado> {
   await assertSecao("nocode")
   try {
+    const fluxo = await getFlow(id)
+    if (!fluxo) return { ok: false, message: "Fluxo não encontrado." }
+    // O fluxo de resposta do app nunca pode ser excluído.
+    if (fluxo.sistema) return { ok: false, message: MSG_FLUXO_SISTEMA_EXCLUIR }
     await deleteFlow(id)
     revalidatePath("/nocode")
     return { ok: true, message: "Fluxo excluído." }

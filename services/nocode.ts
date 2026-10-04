@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto"
 
 import { prisma } from "@/lib/prisma"
 import {
+  modeloFluxoResposta,
   NODE_CATALOG,
   OPERADORES_SEM_VALOR,
   validarGrafo,
@@ -21,6 +22,8 @@ export interface FlowRow {
   id: string
   nome: string
   ativo: boolean
+  /** Fluxo do sistema (“Fluxo de resposta”): sempre ativo, não pode ser desativado nem excluído. */
+  sistema: boolean
   nodes: FlowNode[]
   edges: FlowEdge[]
   criadoEm: string
@@ -50,6 +53,10 @@ export interface ExecutionRow {
   iniciadoEm: string
 }
 
+export const NOME_FLUXO_RESPOSTA = "Fluxo de resposta"
+export const MSG_FLUXO_SISTEMA_DESATIVAR = "O fluxo de resposta é do sistema e precisa ficar sempre ativo."
+export const MSG_FLUXO_SISTEMA_EXCLUIR = "O fluxo de resposta é do sistema e não pode ser excluído."
+
 const MAX_EXECUCOES_POR_FLUXO = 200
 const MAX_PASSOS = 100
 const MAX_ESPERA_SEGUNDOS = 30
@@ -58,6 +65,7 @@ function paraFlow(row: {
   id: string
   nome: string
   ativo: boolean
+  sistema: boolean
   nodes: unknown
   edges: unknown
   criadoEm: Date
@@ -66,7 +74,8 @@ function paraFlow(row: {
   return {
     id: row.id,
     nome: row.nome,
-    ativo: row.ativo,
+    ativo: row.ativo || row.sistema,
+    sistema: row.sistema,
     nodes: Array.isArray(row.nodes) ? (row.nodes as FlowNode[]) : [],
     edges: Array.isArray(row.edges) ? (row.edges as FlowEdge[]) : [],
     criadoEm: row.criadoEm.toISOString(),
@@ -99,8 +108,41 @@ function paraExecucao(row: {
 }
 
 export async function listFlows(): Promise<FlowRow[]> {
-  const rows = await prisma.noCodeFlow.findMany({ orderBy: { atualizadoEm: "desc" } })
+  // O fluxo do sistema vem sempre primeiro; os demais, do mais recente para o mais antigo.
+  const rows = await prisma.noCodeFlow.findMany({ orderBy: [{ sistema: "desc" }, { atualizadoEm: "desc" }] })
   return rows.map(paraFlow)
+}
+
+/**
+ * Garante que o fluxo de resposta do app exista e esteja ativo. É idempotente:
+ * cria na primeira vez e, se alguém o tiver deixado inativo por fora (banco,
+ * restauração de backup), volta a ativá-lo.
+ */
+export async function garantirFluxoResposta(): Promise<FlowRow> {
+  const existente = await prisma.noCodeFlow.findFirst({ where: { sistema: true }, orderBy: { criadoEm: "asc" } })
+  if (existente) {
+    if (existente.ativo) return paraFlow(existente)
+    return paraFlow(await prisma.noCodeFlow.update({ where: { id: existente.id }, data: { ativo: true } }))
+  }
+
+  try {
+    const base = modeloFluxoResposta()
+    const criado = await prisma.noCodeFlow.create({
+      data: {
+        nome: NOME_FLUXO_RESPOSTA,
+        ativo: true,
+        sistema: true,
+        nodes: base.nodes as never,
+        edges: base.edges as never,
+      },
+    })
+    return paraFlow(criado)
+  } catch (error) {
+    // Outra requisição criou ao mesmo tempo (índice único parcial): usa o que ficou.
+    const criado = await prisma.noCodeFlow.findFirst({ where: { sistema: true } })
+    if (criado) return paraFlow(criado)
+    throw error
+  }
 }
 
 export async function getFlow(id: string): Promise<FlowRow | null> {
@@ -119,6 +161,10 @@ export async function updateFlow(
   id: string,
   input: { nome?: string; nodes?: FlowNode[]; edges?: FlowEdge[]; ativo?: boolean },
 ): Promise<FlowRow> {
+  if (input.ativo === false) {
+    const atual = await prisma.noCodeFlow.findUnique({ where: { id }, select: { sistema: true } })
+    if (atual?.sistema) throw new Error(MSG_FLUXO_SISTEMA_DESATIVAR)
+  }
   const row = await prisma.noCodeFlow.update({
     where: { id },
     data: {
@@ -132,7 +178,11 @@ export async function updateFlow(
 }
 
 export async function deleteFlow(id: string): Promise<void> {
-  await prisma.noCodeFlow.delete({ where: { id } })
+  // deleteMany com `sistema: false` nunca apaga o fluxo de resposta, nem por chamada direta.
+  const apagados = await prisma.noCodeFlow.deleteMany({ where: { id, sistema: false } })
+  if (apagados.count === 0 && (await prisma.noCodeFlow.findFirst({ where: { id, sistema: true }, select: { id: true } }))) {
+    throw new Error(MSG_FLUXO_SISTEMA_EXCLUIR)
+  }
 }
 
 export async function listExecutions(flowId: string, limit = 30): Promise<ExecutionRow[]> {
@@ -466,7 +516,7 @@ export async function prepararWebhook(flowId: string, token: string | null): Pro
     return { ok: false, status: 401, erro: "Token inválido." }
   }
   // 202: aceito mas sem processar, para a Evolution não ficar reenviando.
-  if (!fluxo.ativo) return { ok: false, status: 202, erro: "Fluxo desativado." }
+  if (!fluxo.ativo && !fluxo.sistema) return { ok: false, status: 202, erro: "Fluxo desativado." }
   const erroGrafo = validarGrafo(fluxo.nodes, fluxo.edges, true)
   if (erroGrafo) return { ok: false, status: 202, erro: erroGrafo }
   return { ok: true, fluxo }
@@ -514,9 +564,14 @@ export function enderecoInacessivel(url: string): boolean {
   }
 }
 
-/** Link do webhook do fluxo ativo mais recente que tenha gatilho Webhook com token. */
+/** Link do webhook do fluxo de resposta do app (ou, na falta, do fluxo ativo mais recente com gatilho Webhook e token). */
 export async function urlWebhookDoFluxoAtivo(origem: string): Promise<{ url: string; fluxo: string } | null> {
-  const ativos = await prisma.noCodeFlow.findMany({ where: { ativo: true }, orderBy: { atualizadoEm: "desc" } })
+  // Garante o fluxo de resposta do app (ele é o preferido: o mais recente fica só como reserva).
+  await garantirFluxoResposta()
+  const ativos = await prisma.noCodeFlow.findMany({
+    where: { OR: [{ ativo: true }, { sistema: true }] },
+    orderBy: [{ sistema: "desc" }, { atualizadoEm: "desc" }],
+  })
   for (const linha of ativos) {
     const fluxo = paraFlow(linha)
     const gatilho = fluxo.nodes.find((n) => n.type === "webhook")

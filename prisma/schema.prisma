@@ -469,6 +469,9 @@ model NoCodeFlow {
   id    String  @id @default(cuid())
   nome  String
   ativo Boolean @default(false)
+  /// Fluxo do sistema (o "Fluxo de resposta" do app): nasce ativo e não pode ser
+  /// desativado nem excluído. Só existe um (índice único parcial na migration).
+  sistema Boolean @default(false)
   /// Nós do canvas: [{ id, type, name, position: {x,y}, config }].
   nodes Json    @default("[]")
   /// Conexões: [{ id, source, sourceHandle, target }].

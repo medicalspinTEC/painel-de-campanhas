@@ -22330,6 +22330,7 @@ export namespace Prisma {
     id: string | null
     nome: string | null
     ativo: boolean | null
+    sistema: boolean | null
     criadoEm: Date | null
     atualizadoEm: Date | null
   }
@@ -22338,6 +22339,7 @@ export namespace Prisma {
     id: string | null
     nome: string | null
     ativo: boolean | null
+    sistema: boolean | null
     criadoEm: Date | null
     atualizadoEm: Date | null
   }
@@ -22346,6 +22348,7 @@ export namespace Prisma {
     id: number
     nome: number
     ativo: number
+    sistema: number
     nodes: number
     edges: number
     criadoEm: number
@@ -22358,6 +22361,7 @@ export namespace Prisma {
     id?: true
     nome?: true
     ativo?: true
+    sistema?: true
     criadoEm?: true
     atualizadoEm?: true
   }
@@ -22366,6 +22370,7 @@ export namespace Prisma {
     id?: true
     nome?: true
     ativo?: true
+    sistema?: true
     criadoEm?: true
     atualizadoEm?: true
   }
@@ -22374,6 +22379,7 @@ export namespace Prisma {
     id?: true
     nome?: true
     ativo?: true
+    sistema?: true
     nodes?: true
     edges?: true
     criadoEm?: true
@@ -22457,6 +22463,7 @@ export namespace Prisma {
     id: string
     nome: string
     ativo: boolean
+    sistema: boolean
     nodes: JsonValue
     edges: JsonValue
     criadoEm: Date
@@ -22484,6 +22491,7 @@ export namespace Prisma {
     id?: boolean
     nome?: boolean
     ativo?: boolean
+    sistema?: boolean
     nodes?: boolean
     edges?: boolean
     criadoEm?: boolean
@@ -22496,6 +22504,7 @@ export namespace Prisma {
     id?: boolean
     nome?: boolean
     ativo?: boolean
+    sistema?: boolean
     nodes?: boolean
     edges?: boolean
     criadoEm?: boolean
@@ -22506,6 +22515,7 @@ export namespace Prisma {
     id?: boolean
     nome?: boolean
     ativo?: boolean
+    sistema?: boolean
     nodes?: boolean
     edges?: boolean
     criadoEm?: boolean
@@ -22516,13 +22526,14 @@ export namespace Prisma {
     id?: boolean
     nome?: boolean
     ativo?: boolean
+    sistema?: boolean
     nodes?: boolean
     edges?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
   }
 
-  export type NoCodeFlowOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "ativo" | "nodes" | "edges" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["noCodeFlow"]>
+  export type NoCodeFlowOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "ativo" | "sistema" | "nodes" | "edges" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["noCodeFlow"]>
   export type NoCodeFlowInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     execucoes?: boolean | NoCodeFlow$execucoesArgs<ExtArgs>
     _count?: boolean | NoCodeFlowCountOutputTypeDefaultArgs<ExtArgs>
@@ -22539,6 +22550,11 @@ export namespace Prisma {
       id: string
       nome: string
       ativo: boolean
+      /**
+       * Fluxo do sistema (o "Fluxo de resposta" do app): nasce ativo e não pode ser
+       * desativado nem excluído. Só existe um (índice único parcial na migration).
+       */
+      sistema: boolean
       /**
        * Nós do canvas: [{ id, type, name, position: {x,y}, config }].
        */
@@ -22976,6 +22992,7 @@ export namespace Prisma {
     readonly id: FieldRef<"NoCodeFlow", 'String'>
     readonly nome: FieldRef<"NoCodeFlow", 'String'>
     readonly ativo: FieldRef<"NoCodeFlow", 'Boolean'>
+    readonly sistema: FieldRef<"NoCodeFlow", 'Boolean'>
     readonly nodes: FieldRef<"NoCodeFlow", 'Json'>
     readonly edges: FieldRef<"NoCodeFlow", 'Json'>
     readonly criadoEm: FieldRef<"NoCodeFlow", 'DateTime'>
@@ -31470,6 +31487,7 @@ export namespace Prisma {
     id: 'id',
     nome: 'nome',
     ativo: 'ativo',
+    sistema: 'sistema',
     nodes: 'nodes',
     edges: 'edges',
     criadoEm: 'criadoEm',
@@ -33111,6 +33129,7 @@ export namespace Prisma {
     id?: StringFilter<"NoCodeFlow"> | string
     nome?: StringFilter<"NoCodeFlow"> | string
     ativo?: BoolFilter<"NoCodeFlow"> | boolean
+    sistema?: BoolFilter<"NoCodeFlow"> | boolean
     nodes?: JsonFilter<"NoCodeFlow">
     edges?: JsonFilter<"NoCodeFlow">
     criadoEm?: DateTimeFilter<"NoCodeFlow"> | Date | string
@@ -33122,6 +33141,7 @@ export namespace Prisma {
     id?: SortOrder
     nome?: SortOrder
     ativo?: SortOrder
+    sistema?: SortOrder
     nodes?: SortOrder
     edges?: SortOrder
     criadoEm?: SortOrder
@@ -33136,6 +33156,7 @@ export namespace Prisma {
     NOT?: NoCodeFlowWhereInput | NoCodeFlowWhereInput[]
     nome?: StringFilter<"NoCodeFlow"> | string
     ativo?: BoolFilter<"NoCodeFlow"> | boolean
+    sistema?: BoolFilter<"NoCodeFlow"> | boolean
     nodes?: JsonFilter<"NoCodeFlow">
     edges?: JsonFilter<"NoCodeFlow">
     criadoEm?: DateTimeFilter<"NoCodeFlow"> | Date | string
@@ -33147,6 +33168,7 @@ export namespace Prisma {
     id?: SortOrder
     nome?: SortOrder
     ativo?: SortOrder
+    sistema?: SortOrder
     nodes?: SortOrder
     edges?: SortOrder
     criadoEm?: SortOrder
@@ -33163,6 +33185,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"NoCodeFlow"> | string
     nome?: StringWithAggregatesFilter<"NoCodeFlow"> | string
     ativo?: BoolWithAggregatesFilter<"NoCodeFlow"> | boolean
+    sistema?: BoolWithAggregatesFilter<"NoCodeFlow"> | boolean
     nodes?: JsonWithAggregatesFilter<"NoCodeFlow">
     edges?: JsonWithAggregatesFilter<"NoCodeFlow">
     criadoEm?: DateTimeWithAggregatesFilter<"NoCodeFlow"> | Date | string
@@ -35114,6 +35137,7 @@ export namespace Prisma {
     id?: string
     nome: string
     ativo?: boolean
+    sistema?: boolean
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: Date | string
@@ -35125,6 +35149,7 @@ export namespace Prisma {
     id?: string
     nome: string
     ativo?: boolean
+    sistema?: boolean
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: Date | string
@@ -35136,6 +35161,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
+    sistema?: BoolFieldUpdateOperationsInput | boolean
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35147,6 +35173,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
+    sistema?: BoolFieldUpdateOperationsInput | boolean
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35158,6 +35185,7 @@ export namespace Prisma {
     id?: string
     nome: string
     ativo?: boolean
+    sistema?: boolean
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: Date | string
@@ -35168,6 +35196,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
+    sistema?: BoolFieldUpdateOperationsInput | boolean
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35178,6 +35207,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
+    sistema?: BoolFieldUpdateOperationsInput | boolean
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36794,6 +36824,7 @@ export namespace Prisma {
     id?: SortOrder
     nome?: SortOrder
     ativo?: SortOrder
+    sistema?: SortOrder
     nodes?: SortOrder
     edges?: SortOrder
     criadoEm?: SortOrder
@@ -36804,6 +36835,7 @@ export namespace Prisma {
     id?: SortOrder
     nome?: SortOrder
     ativo?: SortOrder
+    sistema?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
   }
@@ -36812,6 +36844,7 @@ export namespace Prisma {
     id?: SortOrder
     nome?: SortOrder
     ativo?: SortOrder
+    sistema?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
   }
@@ -40133,6 +40166,7 @@ export namespace Prisma {
     id?: string
     nome: string
     ativo?: boolean
+    sistema?: boolean
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: Date | string
@@ -40143,6 +40177,7 @@ export namespace Prisma {
     id?: string
     nome: string
     ativo?: boolean
+    sistema?: boolean
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: Date | string
@@ -40169,6 +40204,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
+    sistema?: BoolFieldUpdateOperationsInput | boolean
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40179,6 +40215,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
+    sistema?: BoolFieldUpdateOperationsInput | boolean
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string

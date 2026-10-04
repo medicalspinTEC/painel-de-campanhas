@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { GitBranch, Plus, Sparkles, Trash2, Workflow } from "lucide-react"
+import { GitBranch, Lock, Plus, Trash2, Workflow } from "lucide-react"
 import { toast } from "sonner"
 
 import { createFlowAction, deleteFlowAction, toggleFlowAction } from "@/app/actions/nocode"
@@ -29,7 +29,6 @@ export function FlowList({ fluxos }: { fluxos: FlowRow[] | null }) {
   const [pending, startTransition] = useTransition()
   const [novoAberto, setNovoAberto] = useState(false)
   const [nome, setNome] = useState("")
-  const [modelo, setModelo] = useState<"resposta" | "vazio">("resposta")
   const [excluir, setExcluir] = useState<FlowRow | null>(null)
 
   if (fluxos === null) {
@@ -45,15 +44,14 @@ export function FlowList({ fluxos }: { fluxos: FlowRow[] | null }) {
     )
   }
 
-  function abrirNovo(modeloInicial: "resposta" | "vazio") {
-    setModelo(modeloInicial)
-    setNome(modeloInicial === "resposta" ? "Fluxo de resposta" : "")
+  function abrirNovo() {
+    setNome("")
     setNovoAberto(true)
   }
 
   function criar() {
     startTransition(async () => {
-      const resultado = await createFlowAction({ nome, modelo })
+      const resultado = await createFlowAction({ nome, modelo: "vazio" })
       if (!resultado.ok) {
         toast.error(resultado.message)
         return
@@ -93,13 +91,9 @@ export function FlowList({ fluxos }: { fluxos: FlowRow[] | null }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Button onClick={() => abrirNovo("vazio")}>
+        <Button onClick={abrirNovo}>
           <Plus className="size-4" />
           Novo fluxo
-        </Button>
-        <Button variant="outline" onClick={() => abrirNovo("resposta")}>
-          <Sparkles className="size-4" />
-          Modelo: fluxo de resposta
         </Button>
       </div>
 
@@ -110,15 +104,12 @@ export function FlowList({ fluxos }: { fluxos: FlowRow[] | null }) {
               <Workflow className="size-5" />
             </div>
             <CardTitle className="text-base">Nenhum fluxo ainda</CardTitle>
-            <CardDescription>
-              Comece pelo modelo “fluxo de resposta”: ele recebe a mensagem do WhatsApp, acha o lead pelo telefone e
-              registra a resposta quando o lead estiver em uma campanha.
-            </CardDescription>
+            <CardDescription>Crie um fluxo em branco e monte os blocos no editor.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => abrirNovo("resposta")}>
-              <Sparkles className="size-4" />
-              Criar fluxo de resposta
+            <Button onClick={abrirNovo}>
+              <Plus className="size-4" />
+              Novo fluxo
             </Button>
           </CardContent>
         </Card>
@@ -140,26 +131,37 @@ export function FlowList({ fluxos }: { fluxos: FlowRow[] | null }) {
                   <Switch
                     checked={fluxo.ativo}
                     onCheckedChange={(valor) => alternar(fluxo, valor)}
-                    disabled={pending}
+                    disabled={pending || fluxo.sistema}
+                    title={fluxo.sistema ? "Fluxo do sistema: sempre ativo" : undefined}
                     aria-label={fluxo.ativo ? "Desativar fluxo" : "Ativar fluxo"}
                   />
                 </div>
               </CardHeader>
               <CardContent className="flex items-center justify-between gap-2">
-                <Badge variant={fluxo.ativo ? "default" : "secondary"}>{fluxo.ativo ? "Ativo" : "Desativado"}</Badge>
+                <div className="flex items-center gap-1.5">
+                  <Badge variant={fluxo.ativo ? "default" : "secondary"}>{fluxo.ativo ? "Ativo" : "Desativado"}</Badge>
+                  {fluxo.sistema ? (
+                    <Badge variant="outline" title="Responde aos leads do app; não pode ser desativado nem excluído">
+                      <Lock className="size-3" />
+                      Sistema
+                    </Badge>
+                  ) : null}
+                </div>
                 <div className="flex items-center gap-1">
                   <LinkButton variant="outline" size="sm" href={`/nocode/${fluxo.id}`}>
                     Abrir editor
                   </LinkButton>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={`Excluir ${fluxo.nome}`}
-                    title="Excluir"
-                    onClick={() => setExcluir(fluxo)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  {fluxo.sistema ? null : (
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={`Excluir ${fluxo.nome}`}
+                      title="Excluir"
+                      onClick={() => setExcluir(fluxo)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -170,12 +172,8 @@ export function FlowList({ fluxos }: { fluxos: FlowRow[] | null }) {
       <Dialog open={novoAberto} onOpenChange={setNovoAberto}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{modelo === "resposta" ? "Novo fluxo de resposta" : "Novo fluxo"}</DialogTitle>
-            <DialogDescription>
-              {modelo === "resposta"
-                ? "Já vem montado: Webhook → telefone → busca o lead → registra a resposta."
-                : "Começa em branco; adicione os blocos no editor."}
-            </DialogDescription>
+            <DialogTitle>Novo fluxo</DialogTitle>
+            <DialogDescription>Começa em branco; adicione os blocos no editor.</DialogDescription>
           </DialogHeader>
           <Input
             value={nome}
