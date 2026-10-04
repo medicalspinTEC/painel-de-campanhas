@@ -3,10 +3,12 @@
 import { revalidatePath } from "next/cache"
 import { gerarToken, toggleToken, limparEventos } from "@/services/inbound-webhook"
 import { recordAppLog } from "@/services/app-logs"
+import { assertSecao } from "@/lib/session"
 
 export type InboundAction = { ok: boolean; message: string }
 
 export async function gerarTokenAction(): Promise<InboundAction & { token?: string }> {
+  await assertSecao("integracoes")
   try {
     const token = await gerarToken()
     revalidatePath("/integracoes")
@@ -23,6 +25,7 @@ export async function gerarTokenAction(): Promise<InboundAction & { token?: stri
 }
 
 export async function toggleTokenAction(ativo: boolean): Promise<InboundAction> {
+  await assertSecao("integracoes")
   try {
     await toggleToken(ativo)
     revalidatePath("/integracoes")
@@ -39,6 +42,7 @@ export async function toggleTokenAction(ativo: boolean): Promise<InboundAction> 
 }
 
 export async function limparEventosAction(): Promise<InboundAction> {
+  await assertSecao("integracoes")
   try {
     const count = await limparEventos()
     revalidatePath("/integracoes")

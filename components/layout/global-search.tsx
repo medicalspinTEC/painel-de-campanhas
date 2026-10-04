@@ -31,7 +31,17 @@ const paginas = [
   { title: "Logs", href: "/logs", icon: TriangleAlert },
 ]
 
-export function GlobalSearch({ leads, campanhas }: { leads: SearchItem[]; campanhas: SearchItem[] }) {
+export function GlobalSearch({
+  leads,
+  campanhas,
+  urlsPermitidas,
+}: {
+  leads: SearchItem[]
+  campanhas: SearchItem[]
+  /** Telas liberadas ao usuário. Sem a lista, mostra todas (compatibilidade). */
+  urlsPermitidas?: string[]
+}) {
+  const paginasVisiveis = urlsPermitidas ? paginas.filter((p) => urlsPermitidas.includes(p.href)) : paginas
   const [aberto, setAberto] = useState(false)
   const router = useRouter()
 
@@ -76,7 +86,7 @@ export function GlobalSearch({ leads, campanhas }: { leads: SearchItem[]; campan
         <CommandList>
           <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
           <CommandGroup heading="Navegação">
-            {paginas.map((p) => (
+            {paginasVisiveis.map((p) => (
               <CommandItem key={p.href} value={p.title} onSelect={() => navegar(p.href)}>
                 <p.icon className="size-4 text-muted-foreground" />
                 <span>{p.title}</span>

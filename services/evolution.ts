@@ -986,3 +986,56 @@ export async function getLeadProfilePicture(lead: { id: string; telefone: string
   fotoEmAndamento.set(chave, busca)
   return busca
 }
+
+// ---------------------------------------------------------------------------
+// Webhook da instância
+// ---------------------------------------------------------------------------
+
+/**
+ * Liga o webhook de uma instância na Evolution, só com o evento MESSAGES_UPSERT
+ * (mensagens recebidas). Tenta o formato da v2 (`{ webhook: {...} }`) e, se a
+ * Evolution rejeitar, o da v1 (campos soltos).
+ */
+export async function configurarWebhookEvolution(
+  instancia: string,
+  url: string,
+): Promise<{ ok: boolean; erro?: string }> {
+  const { apiUrl, apiKey } = getEvolutionCredentials()
+  if (!apiKey) return { ok: false, erro: "EVOLUTION_API_KEY não configurada no ambiente." }
+
+  const eventos = ["MESSAGES_UPSERT"]
+  const formatos: Array<Record<string, unknown>> = [
+    { webhook: { enabled: true, url, byEvents: false, base64: false, events: eventos } },
+    { enabled: true, url, webhook_by_events: false, webhook_base64: false, events: eventos },
+  ]
+
+  let ultimoErro = ""
+  for (const corpo of formatos) {
+    try {
+      const response = await fetch(`${apiUrl}/webhook/set/${encodeURIComponent(instancia)}`, {
+        method: "POST",
+        headers: { "content-type": "application/json", apikey: apiKey },
+        body: JSON.stringify(corpo),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      })
+      if (response.ok) return { ok: true }
+
+      const texto = (await response.text().catch(() => "")).slice(0, 300)
+      ultimoErro = `Evolution respondeu ${response.status}${texto ? `: ${texto}` : ""}`
+      // 5xx não é questão de formato: não adianta tentar de novo com outro.
+      if (response.status >= 500) break
+    } catch (error) {
+      ultimoErro = error instanceof Error ? error.message : String(error)
+      break
+    }
+  }
+
+  await recordAppLog({
+    nivel: "erro",
+    origem: "evolution",
+    mensagem: `Falha ao configurar o webhook da instância "${instancia}".`,
+    detalhes: ultimoErro,
+  })
+  return { ok: false, erro: ultimoErro }
+}

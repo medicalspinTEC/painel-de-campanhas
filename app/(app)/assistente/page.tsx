@@ -3,12 +3,14 @@ import { notFound } from "next/navigation"
 import { AssistantChat } from "@/components/features/assistant/assistant-leads"
 import { PageHeader } from "@/components/shared/page-header"
 import { getAssistentePluginAtivo } from "@/services/settings"
+import { requireSecao } from "@/lib/session"
 
 export const metadata = {
   title: "Assistente | Painel de Campanhas WhatsApp",
 }
 
 export default async function AssistentePage() {
+  await requireSecao("assistente")
   if (!(await getAssistentePluginAtivo())) notFound()
 
   return (

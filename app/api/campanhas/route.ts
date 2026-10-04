@@ -5,10 +5,13 @@
 import { NextResponse } from "next/server"
 import { createCampaign, listCampaigns, type CampaignInput } from "@/services/campaigns"
 import type { CampaignStatus } from "@/types"
+import { guardApi } from "@/lib/session"
 
 const STATUS_VALIDOS: CampaignStatus[] = ["rascunho", "ativa", "pausada", "encerrada"]
 
 export async function GET() {
+  const bloqueio = await guardApi("campanhas")
+  if (bloqueio) return bloqueio
   try {
     const campanhas = await listCampaigns()
     return NextResponse.json({ campanhas, total: campanhas.length })
@@ -19,6 +22,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const bloqueio = await guardApi("campanhas")
+  if (bloqueio) return bloqueio
   let body: Partial<CampaignInput>
   try {
     body = await request.json()

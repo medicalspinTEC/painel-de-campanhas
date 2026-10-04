@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma"
-import { TEMA_PADRAO, temaOuPadrao, type TemaApp } from "@/lib/temas"
 import { emitWebhookEvent } from "@/services/webhooks"
 
 export type Settings = {
@@ -16,7 +15,6 @@ export type Settings = {
   respeitarJanela: boolean
   pausarNoFimDeSemana: boolean
   notificarFalhas: boolean
-  temaApp: TemaApp
 }
 
 /** Id fixo da linha única de configurações. */
@@ -36,7 +34,6 @@ export const SETTINGS_PADRAO: Settings = {
   respeitarJanela: true,
   pausarNoFimDeSemana: true,
   notificarFalhas: true,
-  temaApp: TEMA_PADRAO,
 }
 
 export async function getSettings(): Promise<Settings> {
@@ -57,21 +54,6 @@ export async function getSettings(): Promise<Settings> {
     respeitarJanela: row.respeitarJanela,
     pausarNoFimDeSemana: row.pausarNoFimDeSemana,
     notificarFalhas: row.notificarFalhas,
-    temaApp: temaOuPadrao(row.temaApp),
-  }
-}
-
-export async function getAppTema(): Promise<TemaApp> {
-  try {
-    const row = await prisma.settings.findUnique({
-      where: { id: ID },
-      select: { temaApp: true },
-    })
-    return temaOuPadrao(row?.temaApp)
-  } catch (error) {
-    // P2022: a coluna ainda não existe (migration pendente) — segue com o tema padrão.
-    if (typeof error === "object" && error !== null && "code" in error && error.code === "P2022") return TEMA_PADRAO
-    throw error
   }
 }
 
@@ -129,6 +111,7 @@ export async function setAssistentePluginAtivo(ativo: boolean): Promise<void> {
 }
 
 export async function saveSettings(input: Settings): Promise<Settings> {
+  // O tema é preferência PESSOAL de cada usuário (User.temaApp) — não é gravado aqui.
   const row = await prisma.settings.upsert({
     where: { id: ID },
     create: { id: ID, ...input },
@@ -151,7 +134,6 @@ export async function saveSettings(input: Settings): Promise<Settings> {
     respeitarJanela: row.respeitarJanela,
     pausarNoFimDeSemana: row.pausarNoFimDeSemana,
     notificarFalhas: row.notificarFalhas,
-    temaApp: temaOuPadrao(row.temaApp),
   }
 }
 

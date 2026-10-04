@@ -12,10 +12,13 @@ import {
   type CampaignInput,
 } from "@/services/campaigns"
 import type { CampaignStatus } from "@/types"
+import { guardApi } from "@/lib/session"
 
 const STATUS_VALIDOS: CampaignStatus[] = ["rascunho", "ativa", "pausada", "encerrada"]
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const bloqueio = await guardApi("campanhas")
+  if (bloqueio) return bloqueio
   const { id } = await params
   try {
     const campanha = await getCampaign(id)
@@ -30,6 +33,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const bloqueio = await guardApi("campanhas")
+  if (bloqueio) return bloqueio
   const { id } = await params
   let body: Partial<CampaignInput>
   try {
@@ -73,6 +78,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const bloqueio = await guardApi("campanhas")
+  if (bloqueio) return bloqueio
   const { id } = await params
   let body: { status?: CampaignStatus }
   try {
@@ -101,6 +108,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const bloqueio = await guardApi("campanhas")
+  if (bloqueio) return bloqueio
   const { id } = await params
   try {
     await deleteCampaign(id)

@@ -23,6 +23,7 @@ import { listAppLogOrigens, listAppLogs, getAppLogStats, type AppLogNivel } from
 import { LogTechnicalDetails } from "@/components/features/logs/log-technical-details"
 import { LogsExportButton } from "@/components/features/logs/logs-export-button"
 import { LogsFilters } from "@/components/features/logs/logs-filters"
+import { requireSecao } from "@/lib/session"
 
 export const metadata = {
   title: "Logs | Painel de Campanhas WhatsApp",
@@ -104,6 +105,7 @@ export default async function LogsPage({
 }: {
   searchParams: Promise<{ nivel?: string; origem?: string; de?: string; ate?: string }>
 }) {
+  await requireSecao("logs")
   const sp = await searchParams
 
   const nivel = sp.nivel && NIVEIS_VALIDOS.includes(sp.nivel as AppLogNivel) ? (sp.nivel as AppLogNivel) : undefined

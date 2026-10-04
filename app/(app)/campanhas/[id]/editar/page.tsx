@@ -7,8 +7,10 @@ import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catal
 import { listInstanceOptions } from "@/services/evolution"
 import { listLeads } from "@/services/leads"
 import { listNomesProdutosAtivos } from "@/services/produtos"
+import { requireSecao } from "@/lib/session"
 
 export default async function EditarCampanhaPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireSecao("campanhas")
   const { id } = await params
   const [campanha, leads, produtos, marcas, personas, regioes, instancias] = await Promise.all([
     getCampaign(id),

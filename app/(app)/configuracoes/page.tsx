@@ -2,12 +2,14 @@ import { MarcaForm } from "@/components/features/settings/marca-form"
 import { SettingsForm } from "@/components/features/settings/settings-form"
 import { PageHeader } from "@/components/shared/page-header"
 import { getAppMarca, getSettings } from "@/services/settings"
+import { requireSecao } from "@/lib/session"
 
 export const metadata = {
   title: "Configurações | Painel de Campanhas WhatsApp",
 }
 
 export default async function ConfiguracoesPage() {
+  await requireSecao("configuracoes")
   const [settings, marca] = await Promise.all([getSettings(), getAppMarca()])
 
   return (

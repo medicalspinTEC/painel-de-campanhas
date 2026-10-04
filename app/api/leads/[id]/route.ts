@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import { deleteLead, getLead, getLeadTimeline, LeadValidationError, updateLead, type LeadInput } from "@/services/leads"
 import { validarTelefoneBR } from "@/lib/telefone"
 import { type LeadStatus } from "@/types"
+import { guardApi } from "@/lib/session"
 
 /**
  * Lead individual.
@@ -17,6 +18,8 @@ import { type LeadStatus } from "@/types"
 const STATUS_VALIDOS: LeadStatus[] = ["novo", "em_campanha", "sem_campanha", "respondeu", "encerrado"]
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const bloqueio = await guardApi("leads", "campanhas", "kanban", "chat")
+  if (bloqueio) return bloqueio
   const { id } = await params
   try {
     const lead = await getLead(id)
@@ -30,6 +33,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const bloqueio = await guardApi("leads", "campanhas", "kanban", "chat")
+  if (bloqueio) return bloqueio
   const { id } = await params
 
   let corpo: unknown
@@ -99,6 +104,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const bloqueio = await guardApi("leads", "campanhas", "kanban", "chat")
+  if (bloqueio) return bloqueio
   const { id } = await params
   try {
     const existente = await getLead(id)

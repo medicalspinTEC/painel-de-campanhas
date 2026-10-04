@@ -12,6 +12,7 @@ import {
   type WebhookInput,
 } from "@/services/webhooks"
 import { recordAppLog } from "@/services/app-logs"
+import { assertSecao } from "@/lib/session"
 
 export type WebhookActionResult = { ok: boolean; message: string }
 
@@ -37,6 +38,7 @@ function validar(input: WebhookInput): { erro: string } | { dados: WebhookInput 
 }
 
 export async function createWebhookAction(input: WebhookInput): Promise<WebhookActionResult> {
+  await assertSecao("integracoes")
   const validado = validar(input)
   if ("erro" in validado) return { ok: false, message: validado.erro }
 
@@ -55,6 +57,7 @@ export async function createWebhookAction(input: WebhookInput): Promise<WebhookA
 }
 
 export async function updateWebhookAction(id: string, input: WebhookInput): Promise<WebhookActionResult> {
+  await assertSecao("integracoes")
   const validado = validar(input)
   if ("erro" in validado) return { ok: false, message: validado.erro }
 
@@ -70,6 +73,7 @@ export async function updateWebhookAction(id: string, input: WebhookInput): Prom
 }
 
 export async function deleteWebhookAction(id: string): Promise<WebhookActionResult> {
+  await assertSecao("integracoes")
   try {
     await deleteWebhook(id)
   } catch (error) {
@@ -82,6 +86,7 @@ export async function deleteWebhookAction(id: string): Promise<WebhookActionResu
 }
 
 export async function testWebhookAction(id: string): Promise<WebhookActionResult> {
+  await assertSecao("integracoes")
   try {
     const entrega = await dispatchWebhook(id, "webhook.teste", {
       mensagem: "Disparo de teste enviado pelo painel.",

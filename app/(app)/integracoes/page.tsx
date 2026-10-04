@@ -8,6 +8,7 @@ import { getAssistentePluginAtivo, getChatPluginAtivo, getKanbanPluginAtivo, get
 import { getToken, listEventos } from "@/services/inbound-webhook"
 import { listWebhooks } from "@/services/webhooks"
 import { Plug, Puzzle } from "lucide-react"
+import { requireSecao } from "@/lib/session"
 
 export const metadata = {
   title: "Integrações | Painel de Campanhas WhatsApp",
@@ -36,6 +37,7 @@ x-ingest-token: <INGEST_TOKEN>
 }`
 
 export default async function IntegracoesPage() {
+  await requireSecao("integracoes")
   const [webhooks, tokenInicial, eventosIniciais, chatAtivo, kanbanAtivo, assistenteAtivo, nocodeAtivo] = await Promise.all([
     listWebhooks(),
     getToken(),

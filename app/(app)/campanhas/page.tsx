@@ -5,12 +5,14 @@ import { LinkButton } from "@/components/shared/link-button"
 import { PageHeader } from "@/components/shared/page-header"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { listCampaigns } from "@/services/campaigns"
+import { requireSecao } from "@/lib/session"
 
 export const metadata = {
   title: "Campanhas | Painel de Campanhas WhatsApp",
 }
 
 export default async function CampanhasPage() {
+  await requireSecao("campanhas")
   const campanhas = await listCampaigns()
   const ativas = campanhas.filter((c) => c.status === "ativa").length
 

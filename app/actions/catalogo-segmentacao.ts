@@ -12,6 +12,7 @@ import {
   type ItemCatalogoInput,
   type ServicoCatalogo,
 } from "@/services/catalogo-segmentacao"
+import { assertSecao } from "@/lib/session"
 
 export interface CatalogoActionResult {
   ok: boolean
@@ -126,33 +127,42 @@ const regioes = criarActionsCatalogo(servicoRegioes, "regioes", "uma região", "
 
 // Marcas
 export async function createMarcaAction(input: ItemCatalogoInput) {
+  await assertSecao("segmentacao")
   return marcas.criar(input)
 }
 export async function updateMarcaAction(id: string, input: ItemCatalogoInput) {
+  await assertSecao("segmentacao")
   return marcas.atualizar(id, input)
 }
 export async function deleteMarcaAction(id: string) {
+  await assertSecao("segmentacao")
   return marcas.excluir(id)
 }
 
 // Personas
 export async function createPersonaAction(input: ItemCatalogoInput) {
+  await assertSecao("segmentacao")
   return personas.criar(input)
 }
 export async function updatePersonaAction(id: string, input: ItemCatalogoInput) {
+  await assertSecao("segmentacao")
   return personas.atualizar(id, input)
 }
 export async function deletePersonaAction(id: string) {
+  await assertSecao("segmentacao")
   return personas.excluir(id)
 }
 
 // Regiões
 export async function createRegiaoAction(input: ItemCatalogoInput) {
+  await assertSecao("segmentacao")
   return regioes.criar(input)
 }
 export async function updateRegiaoAction(id: string, input: ItemCatalogoInput) {
+  await assertSecao("segmentacao")
   return regioes.atualizar(id, input)
 }
 export async function deleteRegiaoAction(id: string) {
+  await assertSecao("segmentacao")
   return regioes.excluir(id)
 }

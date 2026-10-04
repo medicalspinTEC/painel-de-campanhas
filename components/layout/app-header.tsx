@@ -12,21 +12,25 @@ export function AppHeader({
   campanhas,
   notificacoes,
   assistenteAtivo,
+  mostrarNotificacoes = true,
+  urlsPermitidas,
 }: {
   leads: SearchItem[]
   campanhas: SearchItem[]
   notificacoes: EventRow[]
   assistenteAtivo: boolean
+  mostrarNotificacoes?: boolean
+  urlsPermitidas?: string[]
 }) {
   return (
     <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b bg-background/85 px-4 backdrop-blur-sm">
       <SidebarTrigger />
       <div className="flex flex-1 items-center gap-2">
-        <GlobalSearch leads={leads} campanhas={campanhas} />
+        <GlobalSearch leads={leads} campanhas={campanhas} urlsPermitidas={urlsPermitidas} />
       </div>
       <div className="flex items-center gap-1">
         {assistenteAtivo ? <AssistantShortcut /> : null}
-        <NotificationBell notificacoes={notificacoes} />
+        {mostrarNotificacoes ? <NotificationBell notificacoes={notificacoes} /> : null}
         <ThemeToggle />
       </div>
     </header>

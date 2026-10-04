@@ -1,12 +1,16 @@
 /**
- * Autenticação simples de usuário único baseada em variáveis de ambiente.
+ * Sessão do painel baseada em cookie assinado.
  *
- * As credenciais ficam no `.env` (`AUTH_USERNAME` e `AUTH_PASSWORD`). Não há
- * banco de usuários — este painel é operado por uma equipe pequena, então um
- * único login compartilhado é suficiente.
+ * Os usuários ficam no banco (`User`, ver `services/users.ts`). O cookie guarda
+ * apenas o ID do usuário e a expiração, assinados com HMAC-SHA256 (sem estado
+ * no servidor). Papel (admin/padrão), seções liberadas e status ativo NÃO vão
+ * no cookie: são lidos do banco a cada requisição (`lib/session.ts`), então
+ * qualquer mudança feita por um admin vale imediatamente.
  *
- * A sessão é um cookie assinado com HMAC-SHA256 (sem estado no servidor). Todo
- * o código aqui usa apenas Web Crypto (`crypto.subtle`) e APIs padrão, para
+ * `AUTH_USERNAME`/`AUTH_PASSWORD` do `.env` servem só para criar o primeiro
+ * admin, no primeiro login, quando ainda não existe nenhum usuário.
+ *
+ * Todo o código aqui usa apenas Web Crypto (`crypto.subtle`) e APIs padrão, para
  * funcionar tanto no runtime Node (Server Actions) quanto no Edge (proxy.ts).
  */
 
@@ -16,7 +20,7 @@ export const SESSION_COOKIE = "campanhas_session"
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7
 
 interface SessionPayload {
-  /** Usuário autenticado. */
+  /** ID do usuário autenticado. */
   u: string
   /** Timestamp (segundos) de expiração. */
   exp: number
@@ -81,7 +85,7 @@ function timingSafeEqual(a: string, b: string): boolean {
   return diff === 0
 }
 
-/** Confere usuário e senha contra as variáveis de ambiente. */
+/** Confere usuário e senha contra as variáveis de ambiente (usado só no bootstrap do 1º admin). */
 export function verifyCredentials(username: string, password: string): boolean {
   if (!isAuthConfigured()) return false
   const okUser = timingSafeEqual(username, getConfiguredUsername())
@@ -89,10 +93,10 @@ export function verifyCredentials(username: string, password: string): boolean {
   return okUser && okPass
 }
 
-/** Cria um token de sessão assinado para o usuário informado. */
-export async function createSessionToken(username: string): Promise<string> {
+/** Cria um token de sessão assinado para o ID de usuário informado. */
+export async function createSessionToken(userId: string): Promise<string> {
   const payload: SessionPayload = {
-    u: username,
+    u: userId,
     exp: Math.floor(Date.now() / 1000) + SESSION_MAX_AGE_SECONDS,
   }
   const data = stringToBase64Url(JSON.stringify(payload))
@@ -100,7 +104,7 @@ export async function createSessionToken(username: string): Promise<string> {
   return `${data}.${signature}`
 }
 
-/** Valida um token de sessão. Retorna o usuário ou `null` se inválido/expirado. */
+/** Valida um token de sessão. Retorna o ID do usuário ou `null` se inválido/expirado. */
 export async function verifySessionToken(token: string | undefined | null): Promise<string | null> {
   if (!token) return null
   const [data, signature] = token.split(".")

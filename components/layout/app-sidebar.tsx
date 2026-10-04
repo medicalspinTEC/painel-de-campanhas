@@ -13,7 +13,9 @@ import {
   Plug,
   Megaphone,
   Settings,
+  ShieldCheck,
   Smartphone,
+  UserCog,
   Target,
   TriangleAlert,
   Users,
@@ -74,6 +76,10 @@ interface AppSidebarProps {
   nocodeAtivo?: boolean
   appNome?: string
   appLogo?: string | null
+  /** URLs das seções que o usuário logado pode acessar (admin recebe todas). */
+  urlsPermitidas?: string[]
+  /** Usuário logado (nome, login e nível), exibido no rodapé. */
+  usuario?: { nome: string; username: string; role: "admin" | "padrao" } | null
 }
 
 function getStatusMeta(state?: string) {
@@ -119,6 +125,8 @@ export function AppSidebar({
   nocodeAtivo = false,
   appNome = "Medical Spin",
   appLogo = null,
+  urlsPermitidas = [],
+  usuario = null,
 }: AppSidebarProps) {
   const pathname = usePathname()
 
@@ -131,6 +139,20 @@ export function AppSidebar({
     .map((part) => part[0]?.toUpperCase() ?? "")
     .join("") || "C"
   const statusMeta = getStatusMeta(instanceState)
+  const visivel = (url: string) => urlsPermitidas.includes(url)
+  const itensGestao = navPrincipal.filter(
+    (item) =>
+      visivel(item.url) &&
+      (item.url !== "/chat" || chatAtivo) &&
+      (item.url !== "/kanban" || kanbanAtivo) &&
+      (item.url !== "/assistente" || assistenteAtivo) &&
+      (item.url !== "/nocode" || nocodeAtivo),
+  )
+  const itensOperacao = navOperacao.filter((item) => visivel(item.url))
+  const itensSistema = [
+    ...navSistema.filter((item) => visivel(item.url)),
+    ...(usuario?.role === "admin" ? [{ title: "Usuários", url: "/usuarios", icon: UserCog }] : []),
+  ]
 
   return (
     <Sidebar collapsible="icon">
@@ -151,19 +173,12 @@ export function AppSidebar({
       </SidebarHeader>
 
       <SidebarContent>
+        {itensGestao.length > 0 ? (
         <SidebarGroup>
           <SidebarGroupLabel>Gestão</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navPrincipal
-                .filter(
-                  (item) =>
-                    (item.url !== "/chat" || chatAtivo) &&
-                    (item.url !== "/kanban" || kanbanAtivo) &&
-                    (item.url !== "/assistente" || assistenteAtivo) &&
-                    (item.url !== "/nocode" || nocodeAtivo),
-                )
-                .map((item) => (
+              {itensGestao.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton
                     isActive={isActive(item.url)}
@@ -180,12 +195,14 @@ export function AppSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        ) : null}
 
+        {itensOperacao.length > 0 ? (
         <SidebarGroup>
           <SidebarGroupLabel>Acompanhamento</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navOperacao.map((item) => (
+              {itensOperacao.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton
                     isActive={isActive(item.url)}
@@ -202,12 +219,14 @@ export function AppSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        ) : null}
 
+        {itensSistema.length > 0 ? (
         <SidebarGroup>
           <SidebarGroupLabel>Sistema</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navSistema.map((item) => (
+              {itensSistema.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton
                     isActive={isActive(item.url)}
@@ -224,10 +243,41 @@ export function AppSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        ) : null}
       </SidebarContent>
 
       <SidebarFooter>
         <SidebarMenu>
+          {usuario ? (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                size="lg"
+                isActive={isActive("/conta")}
+                title="Minha conta"
+                render={
+                  <Link href="/conta">
+                    <Avatar className="size-8 rounded-lg">
+                      <AvatarFallback className="rounded-lg text-xs">
+                        {usuario.nome
+                          .split(/\s+/)
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .map((parte) => parte[0]?.toUpperCase() ?? "")
+                          .join("") || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex min-w-0 flex-col text-left leading-tight">
+                      <span className="truncate text-sm font-medium">{usuario.nome}</span>
+                      <span className="flex items-center gap-1 truncate text-xs text-muted-foreground">
+                        {usuario.role === "admin" ? <ShieldCheck className="size-3" /> : null}
+                        {usuario.role === "admin" ? "Administrador" : "Usuário"}
+                      </span>
+                    </div>
+                  </Link>
+                }
+              />
+            </SidebarMenuItem>
+          ) : null}
           <SidebarMenuItem>
             <form action={logoutAction} className="w-full">
               <SidebarMenuButton

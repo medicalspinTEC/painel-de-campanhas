@@ -29,6 +29,10 @@ function timingSafeEqual(a: string, b: string): boolean {
 /**
  * Proteção de rotas (equivalente ao antigo middleware no Next 16).
  *
+ * Aqui só se verifica a ASSINATURA do cookie (o Edge não acessa o banco). Papel,
+ * seções liberadas e status ativo são checados no servidor, por página, action e
+ * rota de API (`lib/session.ts`).
+ *
  * Tudo exige sessão, exceto a própria tela de login e os endpoints públicos de
  * automação (`/api/webhook/entrada` e `/api/cron`), que são chamados por
  * serviços externos e se autenticam por conta própria.
@@ -61,10 +65,9 @@ export async function proxy(request: NextRequest) {
 
   const autenticado = sessaoValida || apiTokenValido
 
-  // Usuário logado tentando abrir /login: manda para o dashboard.
-  if (pathname === "/login" && sessaoValida) {
-    return NextResponse.redirect(new URL("/dashboard", request.url))
-  }
+  // /login: quem decide se já há sessão é a própria página (ela consulta o banco —
+  // o cookie pode apontar para um usuário desativado ou excluído, e redirecionar
+  // aqui só pela assinatura causaria um loop com as páginas protegidas).
 
   if (isPublica(pathname) || autenticado) {
     return NextResponse.next()

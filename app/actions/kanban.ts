@@ -7,6 +7,7 @@ import { recordAppLog } from "@/services/app-logs"
 import { assignCampaignBulk, setLeadStatus } from "@/services/leads"
 import { getKanbanPluginAtivo } from "@/services/settings"
 import { LEAD_STATUS_LABEL, type LeadStatus } from "@/types"
+import { assertSecao } from "@/lib/session"
 
 const MAX_MENSAGEM_INDIVIDUAL = 4096
 const MAX_RESPOSTA_LEAD = 4096
@@ -27,6 +28,7 @@ export type MoverKanbanOpcoes = {
  * paralelo.
  */
 export async function moveKanbanLeadAction(leadId: string, status: LeadStatus, opcoes: MoverKanbanOpcoes = {}) {
+  await assertSecao("kanban")
   if (!leadId || !Object.hasOwn(LEAD_STATUS_LABEL, status)) {
     return { ok: false, message: "Status inválido." }
   }

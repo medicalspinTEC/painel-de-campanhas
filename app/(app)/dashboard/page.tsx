@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { formatNumber, formatPercent } from "@/lib/format"
 import { getFunil, getKpis, getPerformancePorCampanha, getSerieDiaria } from "@/services/analytics"
 import { listEvents } from "@/services/events"
+import { requireSecao } from "@/lib/session"
 
 async function KpiGrid() {
   const kpis = await getKpis()
@@ -110,7 +111,8 @@ function BlocoSkeleton({ altura = "h-72" }: { altura?: string }) {
   return <Skeleton className={`w-full rounded-xl ${altura}`} />
 }
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  await requireSecao("dashboard")
   return (
     <div className="flex flex-col gap-4">
       <PageHeader

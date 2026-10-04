@@ -1,5 +1,7 @@
 import { AppSidebar } from "@/components/layout/app-sidebar"
+import { podeAcessar, SECOES } from "@/lib/permissoes"
 import { prisma } from "@/lib/prisma"
+import { getCurrentUser } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
 import { getAppMarca, getAssistentePluginAtivo, getChatPluginAtivo, getKanbanPluginAtivo, getNocodePluginAtivo } from "@/services/settings"
 
@@ -59,14 +61,17 @@ async function getEvolutionInstanceStatus() {
 }
 
 export async function AppSidebarData() {
-  const [status, chatAtivo, kanbanAtivo, assistenteAtivo, marca, nocodeAtivo] = await Promise.all([
+  const [status, chatAtivo, kanbanAtivo, assistenteAtivo, marca, nocodeAtivo, usuario] = await Promise.all([
     getEvolutionInstanceStatus(),
     getChatPluginAtivo(),
     getKanbanPluginAtivo(),
     getAssistentePluginAtivo(),
     getAppMarca(),
     getNocodePluginAtivo(),
+    getCurrentUser(),
   ])
+
+  const urlsPermitidas = usuario ? SECOES.filter((secao) => podeAcessar(usuario, secao.key)).map((secao) => secao.url) : []
 
   return (
     <AppSidebar
@@ -79,6 +84,8 @@ export async function AppSidebarData() {
       nocodeAtivo={nocodeAtivo}
       appNome={marca.nome}
       appLogo={marca.logo}
+      urlsPermitidas={urlsPermitidas}
+      usuario={usuario ? { nome: usuario.nome, username: usuario.username, role: usuario.role } : null}
     />
   )
 }

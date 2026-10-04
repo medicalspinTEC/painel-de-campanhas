@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { getLeadProfilePicture } from "@/services/evolution"
+import { guardApi } from "@/lib/session"
 
 /**
  * GET /api/leads/:id/foto
@@ -16,6 +17,8 @@ import { getLeadProfilePicture } from "@/services/evolution"
 const SEM_CACHE = { "Cache-Control": "no-store" }
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const bloqueio = await guardApi("leads", "campanhas", "kanban", "chat")
+  if (bloqueio) return bloqueio
   const { id } = await params
 
   const lead = await prisma.lead.findUnique({ where: { id }, select: { id: true, telefone: true, atualizadoEm: true } })

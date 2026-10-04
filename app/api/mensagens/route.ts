@@ -5,10 +5,13 @@
  */
 import { NextResponse } from "next/server"
 import { recordMessageEvent, type MessageEventInput, type MessageEventKind } from "@/services/message-events"
+import { guardApi } from "@/lib/session"
 
 const KINDS_VALIDOS: MessageEventKind[] = ["enviada", "falha", "resposta", "agendada"]
 
 export async function POST(request: Request) {
+  const bloqueio = await guardApi("chat", "leads", "campanhas")
+  if (bloqueio) return bloqueio
   let body: Partial<MessageEventInput>
   try {
     body = await request.json()

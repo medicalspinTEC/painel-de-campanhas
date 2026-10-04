@@ -13,9 +13,11 @@ import {
   Signal,
   Smartphone,
   Trash2,
+  Webhook,
 } from "lucide-react"
 
 import {
+  configurarWebhookInstanciaAction,
   criarInstanciaAction,
   desconectarInstanciaAction,
   removerInstanciaAction,
@@ -82,6 +84,7 @@ export function InstanciasManager({ instanciasIniciais }: { instanciasIniciais: 
   const [formAberto, setFormAberto] = useState(false)
   const [conectando, setConectando] = useState<Instance | null>(null)
   const [criando, iniciarCriacao] = useTransition()
+  const [, iniciarWebhook] = useTransition()
   const [atualizando, iniciarAtualizacao] = useTransition()
 
   // Quando a página recarrega os dados do servidor (após criar ou "Atualizar"),
@@ -98,6 +101,14 @@ export function InstanciasManager({ instanciasIniciais }: { instanciasIniciais: 
     }
   }, [instancias])
 
+  function configurarWebhook(instancia: { nome: string }) {
+    iniciarWebhook(async () => {
+      const resultado = await configurarWebhookInstanciaAction(instancia.nome)
+      if (resultado.ok) toast.success(resultado.message)
+      else toast.warning(resultado.message)
+    })
+  }
+
   function criarInstancia(dados: { nome: string; numero?: string; descricao?: string }) {
     iniciarCriacao(async () => {
       const resultado = await criarInstanciaAction({ nome: dados.nome, numero: dados.numero })
@@ -107,6 +118,10 @@ export function InstanciasManager({ instanciasIniciais }: { instanciasIniciais: 
       }
 
       toast.success(resultado.message)
+      if (resultado.webhook) {
+        if (resultado.webhook.ok) toast.success(resultado.webhook.message)
+        else toast.warning(resultado.webhook.message)
+      }
       setFormAberto(false)
 
       if (resultado.instancia) {
@@ -253,6 +268,10 @@ export function InstanciasManager({ instanciasIniciais }: { instanciasIniciais: 
                         <DropdownMenuItem onClick={() => alternarConexao(instancia)}>
                           <Power className="size-4" />
                           {instancia.estado === "conectado" ? "Desconectar" : "Conectar"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => configurarWebhook(instancia)}>
+                          <Webhook className="size-4" />
+                          Configurar webhook
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem variant="destructive" onClick={() => removerInstancia(instancia)}>

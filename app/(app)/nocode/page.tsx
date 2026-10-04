@@ -4,12 +4,14 @@ import { FlowList } from "@/components/features/nocode/flow-list"
 import { PageHeader } from "@/components/shared/page-header"
 import { listFlows } from "@/services/nocode"
 import { getNocodePluginAtivo } from "@/services/settings"
+import { requireSecao } from "@/lib/session"
 
 export const metadata = {
   title: "No Code | Painel de Campanhas WhatsApp",
 }
 
 export default async function NoCodePage() {
+  await requireSecao("nocode")
   if (!(await getNocodePluginAtivo())) notFound()
 
   const fluxos = await listFlows().catch(() => null)

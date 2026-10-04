@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache"
 
-import { isTemaApp } from "@/lib/temas"
 import {
   saveAppMarca,
   saveSettings,
@@ -13,12 +12,14 @@ import {
   type Settings,
 } from "@/services/settings"
 import { recordAppLog } from "@/services/app-logs"
+import { assertSecao } from "@/lib/session"
 
 export type SettingsActionResult = { ok: boolean; message: string }
 
 const HORARIO = /^([01]\d|2[0-3]):[0-5]\d$/
 
 export async function saveSettingsAction(input: Settings): Promise<SettingsActionResult> {
+  await assertSecao("configuracoes")
   const remetente = input.remetente.trim()
   if (!remetente) return { ok: false, message: "Informe o nome do remetente." }
 
@@ -40,9 +41,6 @@ export async function saveSettingsAction(input: Settings): Promise<SettingsActio
   if (input.periodoEsperaUnidade !== "minutos" && input.periodoEsperaUnidade !== "horas") {
     return { ok: false, message: "Selecione uma unidade válida para o tempo de espera." }
   }
-  if (!isTemaApp(input.temaApp)) {
-    return { ok: false, message: "Selecione um dos temas disponíveis." }
-  }
 
   try {
     await saveSettings({
@@ -62,6 +60,7 @@ export async function saveSettingsAction(input: Settings): Promise<SettingsActio
 }
 
 export async function setChatPluginAtivoAction(ativo: boolean): Promise<SettingsActionResult & { ativo?: boolean }> {
+  await assertSecao("integracoes")
   if (typeof ativo !== "boolean") return { ok: false, message: "Estado inválido para o plugin." }
 
   try {
@@ -78,6 +77,7 @@ export async function setChatPluginAtivoAction(ativo: boolean): Promise<Settings
 }
 
 export async function setKanbanPluginAtivoAction(ativo: boolean): Promise<SettingsActionResult & { ativo?: boolean }> {
+  await assertSecao("integracoes")
   if (typeof ativo !== "boolean") return { ok: false, message: "Estado inválido para o plugin." }
 
   try {
@@ -94,6 +94,7 @@ export async function setKanbanPluginAtivoAction(ativo: boolean): Promise<Settin
 }
 
 export async function setAssistentePluginAtivoAction(ativo: boolean): Promise<SettingsActionResult & { ativo?: boolean }> {
+  await assertSecao("integracoes")
   if (typeof ativo !== "boolean") return { ok: false, message: "Estado inválido para o plugin." }
 
   try {
@@ -110,6 +111,7 @@ export async function setAssistentePluginAtivoAction(ativo: boolean): Promise<Se
 }
 
 export async function setNocodePluginAtivoAction(ativo: boolean): Promise<SettingsActionResult & { ativo?: boolean }> {
+  await assertSecao("integracoes")
   if (typeof ativo !== "boolean") return { ok: false, message: "Estado inválido para o plugin." }
 
   try {
@@ -131,6 +133,7 @@ const LOGO_DATA_URL = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/
 
 /** Nome e logo exibidos no topo da sidebar. `logo: null` volta à logo padrão. */
 export async function saveAppMarcaAction(input: { nome: string; logo: string | null }): Promise<SettingsActionResult> {
+  await assertSecao("configuracoes")
   const nome = String(input?.nome ?? "").trim()
   const logo = input?.logo ?? null
 

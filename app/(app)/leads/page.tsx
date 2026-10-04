@@ -5,6 +5,7 @@ import { listCampaigns } from "@/services/campaigns"
 import { listInstanceOptions } from "@/services/evolution"
 import { listLeads } from "@/services/leads"
 import { listNomesProdutosAtivos } from "@/services/produtos"
+import { requireSecao } from "@/lib/session"
 
 export const metadata = {
   title: "Leads | Painel de Campanhas WhatsApp",
@@ -12,6 +13,7 @@ export const metadata = {
 }
 
 export default async function LeadsPage() {
+  await requireSecao("leads")
   const [leads, campanhas, produtos, marcas, personas, regioes, instancias] = await Promise.all([
     listLeads(),
     listCampaigns(),

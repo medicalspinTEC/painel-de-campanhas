@@ -13,8 +13,10 @@ import { Separator } from "@/components/ui/separator"
 import { formatDateTime, formatRelative, initials } from "@/lib/format"
 import { listInstanceOptions } from "@/services/evolution"
 import { getLead, getLeadTimeline } from "@/services/leads"
+import { requireSecao } from "@/lib/session"
 
 export default async function LeadDetalhePage({ params }: { params: Promise<{ id: string }> }) {
+  await requireSecao("leads")
   const { id } = await params
   const [lead, eventos, instancias] = await Promise.all([getLead(id), getLeadTimeline(id), listInstanceOptions()])
   if (!lead) notFound()

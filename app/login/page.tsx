@@ -1,17 +1,15 @@
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { Zap } from "lucide-react"
 
 import { LoginForm } from "@/components/features/auth/login-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth"
+import { getCurrentUser } from "@/lib/session"
 
 export const dynamic = "force-dynamic"
 
 export default async function LoginPage() {
   // Se já houver sessão válida, não faz sentido mostrar o formulário.
-  const store = await cookies()
-  const usuario = await verifySessionToken(store.get(SESSION_COOKIE)?.value)
+  const usuario = await getCurrentUser()
   if (usuario) redirect("/dashboard")
 
   return (

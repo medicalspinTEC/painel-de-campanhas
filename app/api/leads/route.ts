@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import { createLead, LeadValidationError, listLeads, type LeadInput } from "@/services/leads"
 import { validarTelefoneBR } from "@/lib/telefone"
 import { type LeadStatus } from "@/types"
+import { guardApi } from "@/lib/session"
 
 /**
  * Coleção de leads.
@@ -17,6 +18,8 @@ import { type LeadStatus } from "@/types"
 const STATUS_VALIDOS: LeadStatus[] = ["novo", "em_campanha", "sem_campanha", "respondeu", "encerrado"]
 
 export async function GET() {
+  const bloqueio = await guardApi("leads", "campanhas", "kanban", "chat")
+  if (bloqueio) return bloqueio
   try {
     const leads = await listLeads()
     return NextResponse.json({ ok: true, total: leads.length, leads })
@@ -27,6 +30,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const bloqueio = await guardApi("leads", "campanhas", "kanban", "chat")
+  if (bloqueio) return bloqueio
   let corpo: unknown
   try {
     corpo = await request.json()

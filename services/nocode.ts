@@ -9,8 +9,9 @@ import {
   type FlowNode,
 } from "@/lib/nocode/catalog"
 import { recordAppLog } from "@/services/app-logs"
-import { sendWhatsAppText } from "@/services/evolution"
+import { configurarWebhookEvolution, sendWhatsAppText } from "@/services/evolution"
 import { processarRespostaLead, telefonesBatem } from "@/services/lead-response"
+import { getNocodePluginAtivo } from "@/services/settings"
 
 // ---------------------------------------------------------------------------
 // Tipos e acesso aos dados
@@ -490,3 +491,83 @@ export async function processarEventoWebhook(fluxo: FlowRow, payload: unknown): 
   }
 }
 
+
+// ---------------------------------------------------------------------------
+// Webhook automático nas instâncias da Evolution
+// ---------------------------------------------------------------------------
+
+/** Endereços que a Evolution (fora da máquina do app) não consegue alcançar. */
+export function enderecoInacessivel(url: string): boolean {
+  try {
+    const host = new URL(url).hostname
+    return (
+      host === "localhost" ||
+      host === "0.0.0.0" ||
+      host.endsWith(".local") ||
+      /^127\./.test(host) ||
+      /^10\./.test(host) ||
+      /^192\.168\./.test(host) ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(host)
+    )
+  } catch {
+    return true
+  }
+}
+
+/** Link do webhook do fluxo ativo mais recente que tenha gatilho Webhook com token. */
+export async function urlWebhookDoFluxoAtivo(origem: string): Promise<{ url: string; fluxo: string } | null> {
+  const ativos = await prisma.noCodeFlow.findMany({ where: { ativo: true }, orderBy: { atualizadoEm: "desc" } })
+  for (const linha of ativos) {
+    const fluxo = paraFlow(linha)
+    const gatilho = fluxo.nodes.find((n) => n.type === "webhook")
+    const token = String(gatilho?.config.token ?? "")
+    if (gatilho && token) {
+      return { url: `${origem.replace(/\/$/, "")}/api/nocode/webhook/${fluxo.id}?token=${encodeURIComponent(token)}`, fluxo: fluxo.nome }
+    }
+  }
+  return null
+}
+
+export interface ResultadoWebhookInstancia {
+  ok: boolean
+  /** true quando nada foi tentado (plugin desligado, sem fluxo ativo…): não é falha. */
+  ignorado?: boolean
+  message: string
+}
+
+/**
+ * Aponta o webhook da instância (evento MESSAGES_UPSERT) para o fluxo No Code
+ * ativo. Nunca lança: o resultado diz o que aconteceu, para quem chama avisar.
+ */
+export async function configurarWebhookDaInstancia(instancia: string, origem: string | null): Promise<ResultadoWebhookInstancia> {
+  try {
+    if (!(await getNocodePluginAtivo())) {
+      return { ok: false, ignorado: true, message: "Plugin No Code desativado: webhook não configurado." }
+    }
+    if (!origem) {
+      return { ok: false, message: "Não foi possível descobrir o endereço público do app. Defina APP_PUBLIC_URL." }
+    }
+    if (enderecoInacessivel(origem)) {
+      return {
+        ok: false,
+        message: `O endereço do app (${origem}) não é acessível pela Evolution. Defina APP_PUBLIC_URL com o endereço público.`,
+      }
+    }
+    const alvo = await urlWebhookDoFluxoAtivo(origem)
+    if (!alvo) {
+      return {
+        ok: false,
+        ignorado: true,
+        message: "Nenhum fluxo No Code ativo com gatilho Webhook: webhook não configurado.",
+      }
+    }
+    const resultado = await configurarWebhookEvolution(instancia, alvo.url)
+    if (!resultado.ok) {
+      return { ok: false, message: `Não foi possível configurar o webhook na Evolution: ${resultado.erro ?? "erro desconhecido"}` }
+    }
+    return { ok: true, message: `Webhook ativado na Evolution (evento MESSAGES_UPSERT → fluxo “${alvo.fluxo}”).` }
+  } catch (error) {
+    await recordAppLog({ origem: "nocode", mensagem: `Falha ao configurar o webhook da instância "${instancia}".`, detalhes: error })
+    return { ok: false, message: "Erro inesperado ao configurar o webhook da instância." }
+  }
+}

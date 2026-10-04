@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { headers } from "next/headers"
 
 import {
   connectEvolutionInstance,
@@ -11,11 +12,26 @@ import {
   type EvolutionInstance,
   type EvolutionInstanceState,
 } from "@/services/evolution"
+import { configurarWebhookDaInstancia, type ResultadoWebhookInstancia } from "@/services/nocode"
+import { assertSecao } from "@/lib/session"
 
 export type CriarInstanciaResult = {
   ok: boolean
   message: string
   instancia?: EvolutionInstance
+  /** Resultado da configuração automática do webhook (plugin No Code). */
+  webhook?: ResultadoWebhookInstancia
+}
+
+/** Endereço público do app: `APP_PUBLIC_URL` ou o host da requisição atual. */
+async function origemPublica(): Promise<string | null> {
+  const env = process.env.APP_PUBLIC_URL?.trim()
+  if (env) return env.replace(/\/$/, "")
+  const h = await headers()
+  const host = h.get("x-forwarded-host") ?? h.get("host")
+  if (!host) return null
+  const proto = h.get("x-forwarded-proto")?.split(",")[0]?.trim() || (/^(localhost|127\.)/.test(host) ? "http" : "https")
+  return `${proto}://${host}`
 }
 
 export type ConectarInstanciaResult = {
@@ -44,6 +60,7 @@ export async function criarInstanciaAction(input: {
   nome: string
   numero?: string
 }): Promise<CriarInstanciaResult> {
+  await assertSecao("instancias")
   const nome = input.nome?.trim() ?? ""
   if (!nome) return { ok: false, message: "Informe um nome para a instância." }
   if (!NOME_VALIDO.test(nome)) {
@@ -58,12 +75,24 @@ export async function criarInstanciaAction(input: {
     return { ok: false, message: resultado.erro ?? "Não foi possível criar a instância." }
   }
 
+  // Facilita o setup: já liga o webhook da instância no fluxo No Code ativo.
+  const webhook = await configurarWebhookDaInstancia(nome, await origemPublica())
+
   revalidatePath("/instancias")
-  return { ok: true, message: `Instância "${nome}" criada na Evolution.`, instancia: resultado.instancia }
+  return { ok: true, message: `Instância "${nome}" criada na Evolution.`, instancia: resultado.instancia, webhook }
+}
+
+/** (Re)aplica o webhook do fluxo No Code ativo numa instância existente. */
+export async function configurarWebhookInstanciaAction(nome: string): Promise<ResultadoWebhookInstancia> {
+  await assertSecao("instancias")
+  const instancia = nome?.trim() ?? ""
+  if (!instancia) return { ok: false, message: "Nome da instância ausente." }
+  return configurarWebhookDaInstancia(instancia, await origemPublica())
 }
 
 /** Gera o QR Code / pairing code para parear a instância. */
 export async function conectarInstanciaAction(nome: string): Promise<ConectarInstanciaResult> {
+  await assertSecao("instancias")
   const instancia = nome?.trim() ?? ""
   if (!instancia) return { ok: false, message: "Nome da instância ausente." }
 
@@ -83,6 +112,7 @@ export async function conectarInstanciaAction(nome: string): Promise<ConectarIns
 
 /** Consulta o estado atual da conexão (usado no polling do diálogo). */
 export async function statusInstanciaAction(nome: string): Promise<StatusInstanciaResult> {
+  await assertSecao("instancias")
   const instancia = nome?.trim() ?? ""
   if (!instancia) return { ok: false, message: "Nome da instância ausente." }
 
@@ -96,6 +126,7 @@ export async function statusInstanciaAction(nome: string): Promise<StatusInstanc
 
 /** Desconecta o WhatsApp da instância (logout). */
 export async function desconectarInstanciaAction(nome: string): Promise<{ ok: boolean; message: string }> {
+  await assertSecao("instancias")
   const instancia = nome?.trim() ?? ""
   if (!instancia) return { ok: false, message: "Nome da instância ausente." }
 
@@ -110,6 +141,7 @@ export async function desconectarInstanciaAction(nome: string): Promise<{ ok: bo
 
 /** Remove a instância por completo na Evolution API. */
 export async function removerInstanciaAction(nome: string): Promise<{ ok: boolean; message: string }> {
+  await assertSecao("instancias")
   const instancia = nome?.trim() ?? ""
   if (!instancia) return { ok: false, message: "Nome da instância ausente." }
 

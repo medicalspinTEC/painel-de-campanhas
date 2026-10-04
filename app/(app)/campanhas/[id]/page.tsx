@@ -16,8 +16,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { formatDate, formatNumber, formatPercent, renderTemplate } from "@/lib/format"
 import { getCampaign, getCampaignFormerLeads, getCampaignResponders, getCampaignResponses, getCampaignSchedule, getIndividualLeadMessages } from "@/services/campaigns"
 import { listLeads } from "@/services/leads"
+import { requireSecao } from "@/lib/session"
 
 export default async function CampanhaPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireSecao("campanhas")
   const { id } = await params
   const [campanha, leads, agenda, respostas, respondentes, saidosSemResponder] = await Promise.all([
     getCampaign(id),

@@ -1,14 +1,11 @@
 "use client"
 
-import { useEffect, useState, useTransition } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Info } from "lucide-react"
 import { toast } from "sonner"
 
 import { saveSettingsAction } from "@/app/actions/settings"
-import { aplicarTemaNoDocumento } from "@/components/layout/app-theme-colors"
-import { TemaPicker } from "@/components/features/settings/tema-picker"
-import type { TemaApp } from "@/lib/temas"
 import type { Settings } from "@/services/settings"
 import { SelectField } from "@/components/shared/select-field"
 import { Button } from "@/components/ui/button"
@@ -47,15 +44,6 @@ export function SettingsForm({ inicial }: { inicial: Settings }) {
   const [respeitarJanela, setRespeitarJanela] = useState(inicial.respeitarJanela)
   const [pausarNoFimDeSemana, setPausarNoFimDeSemana] = useState(inicial.pausarNoFimDeSemana)
   const [notificarFalhas, setNotificarFalhas] = useState(inicial.notificarFalhas)
-  const [tema, setTema] = useState<TemaApp>(inicial.temaApp)
-  const [temaSalvo, setTemaSalvo] = useState<TemaApp>(inicial.temaApp)
-
-  // Pré-visualiza o tema escolhido na hora; se sair sem salvar, volta ao tema salvo.
-  useEffect(() => {
-    aplicarTemaNoDocumento(tema)
-    return () => aplicarTemaNoDocumento(temaSalvo)
-  }, [tema, temaSalvo])
-
   function salvar() {
     startTransition(async () => {
       const resultado = await saveSettingsAction({
@@ -73,10 +61,8 @@ export function SettingsForm({ inicial }: { inicial: Settings }) {
         respeitarJanela,
         pausarNoFimDeSemana,
         notificarFalhas,
-        temaApp: tema,
       })
       if (resultado.ok) {
-        setTemaSalvo(tema)
         toast.success(resultado.message)
         router.refresh()
       }
@@ -221,19 +207,6 @@ export function SettingsForm({ inicial }: { inicial: Settings }) {
             checked={notificarFalhas}
             onCheckedChange={setNotificarFalhas}
           />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Tema do aplicativo</CardTitle>
-          <CardDescription>
-            Escolha um tema pronto. Cada um já vem ajustado para o modo claro e o escuro — para alternar entre eles,
-            use o botão de tema no topo da página.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <TemaPicker valor={tema} onChange={setTema} />
         </CardContent>
       </Card>
 

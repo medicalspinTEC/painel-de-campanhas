@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/shared/page-header"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
 import { listLeads } from "@/services/leads"
 import { listProdutos } from "@/services/produtos"
+import { requireSecao } from "@/lib/session"
 
 export const metadata = {
   title: "Segmentação | Painel de Campanhas WhatsApp",
@@ -19,6 +20,7 @@ function contar<T>(leads: T[], seletor: (lead: T) => string | null | undefined):
 }
 
 export default async function SegmentacaoPage() {
+  await requireSecao("segmentacao")
   const [produtos, marcas, personas, regioes, leads] = await Promise.all([
     listProdutos(),
     servicoMarcas.listar(),

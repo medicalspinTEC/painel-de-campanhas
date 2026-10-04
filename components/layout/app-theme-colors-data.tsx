@@ -1,7 +1,9 @@
 import { AppThemeColors } from "@/components/layout/app-theme-colors"
-import { getAppTema } from "@/services/settings"
+import { getCurrentUser } from "@/lib/session"
+import { TEMA_PADRAO } from "@/lib/temas"
 
+/** Tema PESSOAL do usuário logado (cada usuário tem o seu). */
 export async function AppThemeColorsData() {
-  const tema = await getAppTema()
-  return <AppThemeColors tema={tema} />
+  const usuario = await getCurrentUser()
+  return <AppThemeColors tema={usuario?.temaApp ?? TEMA_PADRAO} />
 }

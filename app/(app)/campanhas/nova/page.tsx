@@ -4,12 +4,14 @@ import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catal
 import { listInstanceOptions } from "@/services/evolution"
 import { listLeads } from "@/services/leads"
 import { listNomesProdutosAtivos } from "@/services/produtos"
+import { requireSecao } from "@/lib/session"
 
 export const metadata = {
   title: "Nova campanha",
 }
 
 export default async function NovaCampanhaPage() {
+  await requireSecao("campanhas")
   const [leads, produtos, marcas, personas, regioes, instancias] = await Promise.all([
     listLeads(),
     listNomesProdutosAtivos(),

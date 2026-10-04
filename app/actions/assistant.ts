@@ -3,6 +3,7 @@
 import { recordAppLog } from "@/services/app-logs"
 import { consultarAssistente, type AssistenteConsulta } from "@/services/assistant"
 import { getAssistentePluginAtivo } from "@/services/settings"
+import { assertSecao } from "@/lib/session"
 
 const CONSULTAS_VALIDAS: AssistenteConsulta[] = [
   "kpis",
@@ -17,6 +18,7 @@ const CONSULTAS_VALIDAS: AssistenteConsulta[] = [
 ]
 
 export async function consultarAssistenteAction(tipo: AssistenteConsulta) {
+  await assertSecao("assistente")
   if (!CONSULTAS_VALIDAS.includes(tipo)) {
     return { ok: false as const, message: "Consulta inválida." }
   }

@@ -11,6 +11,7 @@ import {
   updateProduto,
   type ProdutoInput,
 } from "@/services/produtos"
+import { assertSecao } from "@/lib/session"
 
 export interface ProdutoActionResult {
   ok: boolean
@@ -46,6 +47,7 @@ function revalidar() {
 }
 
 export async function createProdutoAction(input: ProdutoInput): Promise<ProdutoActionResult> {
+  await assertSecao("segmentacao")
   const validado = validar(input)
   if ("erros" in validado) return { ok: false, message: "Corrija os campos destacados.", errors: validado.erros }
 
@@ -67,6 +69,7 @@ export async function createProdutoAction(input: ProdutoInput): Promise<ProdutoA
 }
 
 export async function updateProdutoAction(id: string, input: ProdutoInput): Promise<ProdutoActionResult> {
+  await assertSecao("segmentacao")
   const validado = validar(input)
   if ("erros" in validado) return { ok: false, message: "Corrija os campos destacados.", errors: validado.erros }
 
@@ -89,6 +92,7 @@ export async function updateProdutoAction(id: string, input: ProdutoInput): Prom
 }
 
 export async function deleteProdutoAction(id: string): Promise<ProdutoActionResult> {
+  await assertSecao("segmentacao")
   try {
     await deleteProduto(id)
   } catch (error) {

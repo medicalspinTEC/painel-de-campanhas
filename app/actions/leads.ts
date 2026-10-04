@@ -9,6 +9,7 @@ import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catal
 import { recordAppLog } from "@/services/app-logs"
 import { validarTelefoneBR } from "@/lib/telefone"
 import { type LeadStatus } from "@/types"
+import { assertSecao } from "@/lib/session"
 
 export interface ActionState {
   ok: boolean
@@ -90,6 +91,7 @@ function revalidarLeads() {
 }
 
 export async function createLeadAction(_prev: ActionState | undefined, formData: FormData): Promise<ActionState> {
+  await assertSecao("leads", "campanhas", "kanban", "chat")
   const { input, errors } = parseLead(formData)
   if (Object.keys(errors).length > 0) {
     return { ok: false, message: "Corrija os campos destacados.", errors }
@@ -108,6 +110,7 @@ export async function createLeadAction(_prev: ActionState | undefined, formData:
 }
 
 export async function updateLeadAction(_prev: ActionState | undefined, formData: FormData): Promise<ActionState> {
+  await assertSecao("leads", "campanhas", "kanban", "chat")
   const id = String(formData.get("id") ?? "")
   const { input, errors } = parseLead(formData)
   if (Object.keys(errors).length > 0) {
@@ -129,6 +132,7 @@ export async function updateLeadAction(_prev: ActionState | undefined, formData:
 }
 
 export async function deleteLeadAction(id: string) {
+  await assertSecao("leads", "campanhas", "kanban", "chat")
   try {
     await deleteLead(id)
   } catch (error) {
@@ -141,6 +145,7 @@ export async function deleteLeadAction(id: string) {
 
 /** Exclui vários leads de uma vez (seleção em massa na tabela). */
 export async function deleteLeadsAction(ids: string[]) {
+  await assertSecao("leads", "campanhas", "kanban", "chat")
   const idsUnicos = [...new Set(ids)].filter(Boolean)
   if (idsUnicos.length === 0) {
     return { ok: false, message: "Nenhum lead selecionado." }
@@ -166,6 +171,7 @@ export async function deleteLeadsAction(ids: string[]) {
 }
 
 export async function setLeadStatusAction(id: string, status: LeadStatus, resposta?: string) {
+  await assertSecao("leads", "campanhas", "kanban", "chat")
   try {
     await setLeadStatus(id, status, resposta)
   } catch (error) {
@@ -178,6 +184,7 @@ export async function setLeadStatusAction(id: string, status: LeadStatus, respos
 }
 
 export async function updateLeadNotesAction(id: string, notas: string) {
+  await assertSecao("leads", "campanhas", "kanban", "chat")
   if (notas.length > 5000) {
     return { ok: false, message: "As notas são muito longas (máximo de 5000 caracteres)." }
   }
@@ -197,6 +204,7 @@ const MAX_MENSAGEM_INDIVIDUAL = 4096
 
 /** Envia uma mensagem avulsa a um lead específico, fora de qualquer campanha. */
 export async function sendLeadMessageAction(leadId: string, texto: string, instanciaNome?: string | null, agendadoPara?: string | null) {
+  await assertSecao("leads", "campanhas", "kanban", "chat")
   const textoLimpo = texto.trim()
   if (!textoLimpo) {
     return { ok: false, message: "Escreva uma mensagem antes de enviar." }
@@ -218,6 +226,7 @@ export async function sendLeadMessageAction(leadId: string, texto: string, insta
 
 /** Envia a mesma mensagem avulsa para vários leads selecionados na tabela. */
 export async function sendLeadsMessageAction(leadIds: string[], texto: string, instanciaNome?: string | null, agendadoPara?: string | null) {
+  await assertSecao("leads", "campanhas", "kanban", "chat")
   const idsUnicos = [...new Set(leadIds)].filter(Boolean)
   if (idsUnicos.length === 0) {
     return { ok: false, message: "Nenhum lead selecionado.", enviados: 0, erros: [] }
@@ -299,6 +308,7 @@ const MAX_IMPORTACAO = 2000
  * o resultado reporta quantos foram criados/vinculados e o motivo de cada falha.
  */
 export async function importLeadsAction(linhas: LeadImportRow[]): Promise<ImportLeadsResult> {
+  await assertSecao("leads", "campanhas", "kanban", "chat")
   if (!Array.isArray(linhas) || linhas.length === 0) {
     return { ok: false, message: "Nenhuma linha encontrada no arquivo.", total: 0, criados: 0, vinculados: 0, erros: [] }
   }
@@ -514,6 +524,7 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
 }
 
 export async function assignCampaignAction(leadIds: string[], campanhaId: string | null, mensagemIndividual?: string | null) {
+  await assertSecao("leads", "campanhas", "kanban", "chat")
   let resultado: { atualizados: number }
   try {
     // Em lote: antes disparava uma chamada de serviço (e uma varredura da

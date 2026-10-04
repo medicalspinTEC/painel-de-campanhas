@@ -1,12 +1,14 @@
 import { EventsFeed } from "@/components/features/events/events-feed"
 import { PageHeader } from "@/components/shared/page-header"
 import { listEvents } from "@/services/events"
+import { requireSecao } from "@/lib/session"
 
 export const metadata = {
   title: "Eventos | Painel de Campanhas WhatsApp",
 }
 
 export default async function EventosPage() {
+  await requireSecao("eventos")
   const eventos = await listEvents(400)
 
   return (

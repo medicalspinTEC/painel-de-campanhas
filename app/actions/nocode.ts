@@ -13,6 +13,7 @@ import {
   updateFlow,
   type ExecutionRow,
 } from "@/services/nocode"
+import { assertSecao } from "@/lib/session"
 
 type Resultado<T = object> = ({ ok: true; message: string } & T) | { ok: false; message: string }
 
@@ -40,6 +41,7 @@ export async function createFlowAction(input: {
   nome: string
   modelo: "resposta" | "vazio"
 }): Promise<Resultado<{ id: string }>> {
+  await assertSecao("nocode")
   const nome = nomeValido(input?.nome)
   if (!nome) return { ok: false, message: `Informe um nome de até ${LIMITE_NOME} caracteres.` }
 
@@ -57,6 +59,7 @@ export async function saveFlowAction(
   id: string,
   input: { nome: string; nodes: FlowNode[]; edges: FlowEdge[] },
 ): Promise<Resultado> {
+  await assertSecao("nocode")
   const nome = nomeValido(input?.nome)
   if (!nome) return { ok: false, message: `Informe um nome de até ${LIMITE_NOME} caracteres.` }
   const grafo = grafoValido(input?.nodes, input?.edges)
@@ -79,6 +82,7 @@ export async function saveFlowAction(
 }
 
 export async function toggleFlowAction(id: string, ativo: boolean): Promise<Resultado<{ ativo: boolean }>> {
+  await assertSecao("nocode")
   if (typeof ativo !== "boolean") return { ok: false, message: "Estado inválido." }
   try {
     const fluxo = await getFlow(id)
@@ -96,6 +100,7 @@ export async function toggleFlowAction(id: string, ativo: boolean): Promise<Resu
 }
 
 export async function deleteFlowAction(id: string): Promise<Resultado> {
+  await assertSecao("nocode")
   try {
     await deleteFlow(id)
     revalidatePath("/nocode")
@@ -114,6 +119,7 @@ export async function testFlowAction(
   id: string,
   input: { nodes: FlowNode[]; edges: FlowEdge[]; payload: string },
 ): Promise<Resultado<{ execucao: ExecutionRow }>> {
+  await assertSecao("nocode")
   const grafo = grafoValido(input?.nodes, input?.edges)
   if (typeof grafo === "string") return { ok: false, message: grafo }
   const semGatilho = validarGrafo(grafo.nodes, grafo.edges, true)
@@ -136,6 +142,7 @@ export async function testFlowAction(
 }
 
 export async function listExecutionsAction(flowId: string): Promise<ExecutionRow[] | null> {
+  await assertSecao("nocode")
   try {
     return await listExecutions(flowId)
   } catch {

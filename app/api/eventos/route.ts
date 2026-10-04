@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { recordMessageEvent, type MessageEventKind } from "@/services/message-events"
+import { guardApi } from "@/lib/session"
 
 /**
  * Entrada de eventos de mensagem da engine de disparo.
@@ -14,6 +15,8 @@ import { recordMessageEvent, type MessageEventKind } from "@/services/message-ev
 const KINDS: MessageEventKind[] = ["enviada", "falha", "resposta", "agendada"]
 
 export async function POST(request: Request) {
+  const bloqueio = await guardApi("eventos")
+  if (bloqueio) return bloqueio
   /*
    * Quando INGEST_TOKEN está definido, a rota exige o token no header — é o que
    * impede terceiros de escrever na timeline em produção.

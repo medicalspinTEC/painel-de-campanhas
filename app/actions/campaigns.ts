@@ -14,6 +14,7 @@ import {
 } from "@/services/campaigns"
 import { recordAppLog } from "@/services/app-logs"
 import type { CampaignStatus } from "@/types"
+import { assertSecao } from "@/lib/session"
 
 export interface CampaignActionResult {
   ok: boolean
@@ -68,6 +69,7 @@ function validar(input: CampaignInput) {
 }
 
 export async function createCampaignAction(input: CampaignInput): Promise<CampaignActionResult> {
+  await assertSecao("campanhas")
   const errors = validar(input)
   if (Object.keys(errors).length > 0) return { ok: false, message: "Corrija os campos destacados.", errors }
   try {
@@ -81,6 +83,7 @@ export async function createCampaignAction(input: CampaignInput): Promise<Campai
 }
 
 export async function updateCampaignAction(id: string, input: CampaignInput): Promise<CampaignActionResult> {
+  await assertSecao("campanhas")
   const errors = validar(input)
   if (Object.keys(errors).length > 0) return { ok: false, message: "Corrija os campos destacados.", errors }
   try {
@@ -95,6 +98,7 @@ export async function updateCampaignAction(id: string, input: CampaignInput): Pr
 }
 
 export async function setCampaignStatusAction(id: string, status: CampaignStatus): Promise<CampaignActionResult> {
+  await assertSecao("campanhas")
   try {
     const campanha = await setCampaignStatus(id, status)
     if (!campanha) return { ok: false, message: "Campanha não encontrada." }
@@ -116,6 +120,7 @@ export async function skipCampaignMessageAction(
   leadId: string,
   campanhaId: string,
 ): Promise<SkipMessageActionResult> {
+  await assertSecao("campanhas")
   try {
     const resultado = await skipToNextMessage(leadId, campanhaId)
     if (resultado.ok) {
@@ -134,6 +139,7 @@ export async function skipCampaignMessageAction(
 }
 
 export async function duplicateCampaignAction(id: string): Promise<CampaignActionResult> {
+  await assertSecao("campanhas")
   try {
     const copia = await duplicateCampaign(id)
     if (!copia) return { ok: false, message: "Campanha não encontrada." }
@@ -146,6 +152,7 @@ export async function duplicateCampaignAction(id: string): Promise<CampaignActio
 }
 
 export async function createFollowUpCampaignAction(id: string): Promise<CampaignActionResult> {
+  await assertSecao("campanhas")
   try {
     const resultado = await createFollowUpCampaign(id)
     if (!resultado) {
@@ -172,6 +179,7 @@ export async function createFollowUpCampaignAction(id: string): Promise<Campaign
 }
 
 export async function deleteCampaignAction(id: string): Promise<CampaignActionResult> {
+  await assertSecao("campanhas")
   try {
     await deleteCampaign(id)
   } catch (error) {

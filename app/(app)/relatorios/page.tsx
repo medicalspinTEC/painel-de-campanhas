@@ -17,6 +17,7 @@ import {
   getPerformancePorCampanha,
   getPerformancePorMensagem,
 } from "@/services/analytics"
+import { requireSecao } from "@/lib/session"
 
 export const metadata = {
   title: "Relatórios | Painel de Campanhas WhatsApp",
@@ -27,6 +28,7 @@ export default async function RelatoriosPage({
 }: {
   searchParams: Promise<{ de?: string; ate?: string }>
 }) {
+  await requireSecao("relatorios")
   const sp = await searchParams
 
   const de = sp.de ? new Date(`${sp.de}T00:00:00`) : undefined
