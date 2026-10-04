@@ -2,7 +2,7 @@ import { createHmac } from "node:crypto"
 
 import { prisma } from "@/lib/prisma"
 import { proximaExecucao, type AgendaBackup } from "@/lib/backup/agenda"
-import { normalizarSecoes, SECOES_BACKUP, SECOES_POR_CHAVE } from "@/lib/backup/secoes"
+import { COLUNAS_SECRETAS, normalizarSecoes, SECOES_BACKUP, SECOES_POR_CHAVE } from "@/lib/backup/secoes"
 import { recordAppLog } from "@/services/app-logs"
 
 /**
@@ -111,10 +111,10 @@ const LEITORES: Record<string, Leitor> = {
     unicaPagina: true,
   },
   AtendimentoTransferencia: porId(prisma.atendimentoTransferencia),
-  NoCodeFlow: porId(prisma.noCodeFlow, { tamanho: 200, omitir: ["execWebhookSegredo"] }),
+  NoCodeFlow: porId(prisma.noCodeFlow, { tamanho: 200, omitir: [...COLUNAS_SECRETAS.NoCodeFlow] }),
   NoCodeExecution: porId(prisma.noCodeExecution, { tamanho: 300 }),
-  User: porId(prisma.user, { omitir: ["senhaHash"] }),
-  Webhook: porId(prisma.webhook, { omitir: ["secret"] }),
+  User: porId(prisma.user, { omitir: [...COLUNAS_SECRETAS.User] }),
+  Webhook: porId(prisma.webhook, { omitir: [...COLUNAS_SECRETAS.Webhook] }),
   Instance: porId(prisma.instance),
   Settings: porId(prisma.settings, { tamanho: 10 }),
   InboundEvent: porId(prisma.inboundEvent, { tamanho: 500 }),

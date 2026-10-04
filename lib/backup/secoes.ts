@@ -107,6 +107,18 @@ export const SECOES_POR_CHAVE: Record<string, SecaoBackup> = Object.fromEntries(
 /** Seleção inicial sugerida: tudo o que é cadastro; os históricos grandes ficam de fora. */
 export const SECOES_PADRAO: string[] = SECOES_BACKUP.filter((s) => !s.pesada).map((s) => s.chave)
 
+/**
+ * Colunas que NUNCA entram no backup nem voltam na restauração, por model.
+ * `services/backup.ts` as remove ao gerar o arquivo e `lib/backup/modelos.ts`
+ * as exclui da leitura e da atualização ao restaurar (vale mesmo para um
+ * arquivo adulterado).
+ */
+export const COLUNAS_SECRETAS: Readonly<Record<string, readonly string[]>> = {
+  User: ["senhaHash"],
+  Webhook: ["secret"],
+  NoCodeFlow: ["execWebhookSegredo"],
+}
+
 /** Mantém só chaves conhecidas, sem repetição e na ordem do catálogo. */
 export function normalizarSecoes(valor: unknown): string[] {
   if (!Array.isArray(valor)) return []

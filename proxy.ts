@@ -95,6 +95,13 @@ export const config = {
   /*
    * Aplica a todas as rotas, menos assets internos do Next e arquivos estáticos
    * (imagens, ícones, etc.), que não precisam de verificação de sessão.
+   *
+   * `/api/backup/restaurar` também fica de fora: ela recebe o arquivo de backup
+   * (centenas de MB) e o proxy faz buffer do corpo com um teto de ~10 MB, o que
+   * cortaria o arquivo. A rota se protege sozinha com `guardApi` (sessão lida do
+   * banco ou API_TOKEN), então continua exigindo login.
    */
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico|mp3)$).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|api/backup/restaurar|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico|mp3)$).*)",
+  ],
 }

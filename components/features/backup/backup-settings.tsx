@@ -1,4 +1,6 @@
 import { BackupPanel } from "@/components/features/backup/backup-panel"
+import { RestorePanel } from "@/components/features/backup/restore-panel"
+import { getCurrentUser } from "@/lib/session"
 import { SECOES_PADRAO } from "@/lib/backup/secoes"
 import { contarLinhasPorSecao, getConfigBackup, listarBackups, type ConfigBackup } from "@/services/backup"
 
@@ -19,24 +21,30 @@ const CONFIG_VAZIA: ConfigBackup = {
  */
 export async function BackupSettings() {
   let migrationPendente = false
-  const [config, backups, contagens] = await Promise.all([
+  const [config, backups, contagens, usuario] = await Promise.all([
     getConfigBackup().catch(() => {
       migrationPendente = true
       return CONFIG_VAZIA
     }),
     listarBackups().catch(() => []),
     contarLinhasPorSecao().catch(() => ({})),
+    getCurrentUser(),
   ])
 
   // Primeira vez: já vem com as seções de cadastro marcadas.
   const inicial = config.secoes.length === 0 && !config.url ? { ...config, secoes: SECOES_PADRAO } : config
 
   return (
-    <BackupPanel
-      configInicial={inicial}
-      backupsIniciais={backups}
-      contagens={contagens}
-      migrationPendente={migrationPendente}
-    />
+    <div className="flex flex-col gap-8">
+      <BackupPanel
+        configInicial={inicial}
+        backupsIniciais={backups}
+        contagens={contagens}
+        migrationPendente={migrationPendente}
+      />
+      <hr />
+      {/* Criar/alterar usuários muda níveis e permissões: só o root restaura essa seção. */}
+      <RestorePanel podeRestaurarUsuarios={usuario?.role === "root"} />
+    </div>
   )
 }
