@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react"
 import { toast } from "sonner"
-import { ArrowLeft, ArrowRightLeft, Building2, CheckCheck, Filter, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Search, Send, Smile, StickyNote, UserCheck, UserRound, X } from "lucide-react"
+import { ArrowLeft, ArrowRightLeft, Building2, CheckCheck, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Search, Send, Smile, StickyNote, UserCheck, UserRound, X } from "lucide-react"
 
+import { assumirConversaAction } from "@/app/actions/crm"
 import { createChatInternalNoteAction, loadChatMessagesAction, refreshChatInboxAction } from "@/app/actions/chat"
 import { sendLeadMessageAction, setLeadStatusAction } from "@/app/actions/leads"
 import { saveChatIdentificarAction } from "@/app/actions/users"
@@ -23,6 +24,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SelectField } from "@/components/shared/select-field"
 import { Textarea } from "@/components/ui/textarea"
+import { avaliarAtendimento } from "@/lib/crm-permissoes"
 import { formatRelative } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import type { InstanceOption } from "@/services/evolution"
@@ -82,7 +84,7 @@ function dataLista(data: string) {
 
 function preview(mensagem: ChatMessage | null) {
   if (!mensagem) return "Inicie uma conversa com este lead"
-  const autor = mensagem.lado === "lead" ? "Lead" : mensagem.lado === "interno" ? "Nota interna" : "Você"
+  const autor = mensagem.lado === "lead" ? "Lead" : mensagem.lado === "interno" ? (mensagem.autor ? `Nota de ${mensagem.autor}` : "Nota interna") : "Você"
   return `${autor}: ${mensagem.texto}`
 }
 
@@ -112,15 +114,21 @@ export function ChatInbox({
   const [somenteRespostas, setSomenteRespostas] = useState(false)
   const [filtroAtendimento, setFiltroAtendimento] = useState(FILTRO_TODOS)
   const [transferirAberto, setTransferirAberto] = useState(false)
-  const [modoComposicao, setModoComposicao] = useState<"mensagem" | "nota" | "resposta">("mensagem")
+  const [modoEscolhido, setModoComposicao] = useState<"mensagem" | "nota" | "resposta">("mensagem")
+  const [assumindo, setAssumindo] = useState(false)
   const [texto, setTexto] = useState("")
   const [seletorEmojiAberto, setSeletorEmojiAberto] = useState(false)
   const [instancia, setInstancia] = useState(instancias[0]?.nome ?? "")
   const [enviando, setEnviando] = useState(false)
   const [vistas, setVistas] = useState<Record<string, string>>({})
   const [vistasCarregadas, setVistasCarregadas] = useState(false)
-  const limiteTexto = modoComposicao === "nota" ? LIMITE_NOTA_INTERNA : LIMITE_MENSAGEM
   const conversaAtiva = conversas.find((conversa) => conversa.id === conversaSelecionadaId) ?? null
+
+  // Plugin CRM: quem pode responder, assumir e transferir esta conversa (notas são sempre livres).
+  const permissoes = crm && conversaAtiva ? avaliarAtendimento(conversaAtiva.atendimento, crm.contexto) : null
+  const envioBloqueado = permissoes ? !permissoes.podeEnviar : false
+  const modoComposicao = envioBloqueado && modoEscolhido === "mensagem" ? "nota" : modoEscolhido
+  const limiteTexto = modoComposicao === "nota" ? LIMITE_NOTA_INTERNA : LIMITE_MENSAGEM
   const idSelecionadoRef = useRef(conversaSelecionadaId)
   const areaMensagensRef = useRef<HTMLDivElement | null>(null)
   const pertoDoFimRef = useRef(true)
@@ -342,6 +350,10 @@ export function ChatInbox({
     const leadId = conversaAtiva?.id
     const mensagem = texto.trim()
     if (!leadId || !mensagem || enviando) return
+    if (modoComposicao === "mensagem" && envioBloqueado) {
+      toast.error(permissoes?.motivo ?? "Você não pode enviar mensagens nesta conversa.")
+      return
+    }
 
     setEnviando(true)
     const resultado = modoComposicao === "nota"
@@ -366,6 +378,22 @@ export function ChatInbox({
     } catch {
       toast.message("Mensagem enviada. O histórico será atualizado em instantes.")
     }
+  }
+
+  async function assumirConversaAtual() {
+    const leadId = conversaAtiva?.id
+    if (!leadId || assumindo) return
+    setAssumindo(true)
+    const resultado = await assumirConversaAction(leadId)
+    setAssumindo(false)
+    if (!resultado.ok) {
+      toast.error(resultado.message)
+      // Pode ter sido assumida por outra pessoa: recarrega para refletir o estado real.
+      await aoTransferir()
+      return
+    }
+    toast.success(resultado.message)
+    await aoTransferir()
   }
 
   async function alternarIdentificacao() {
@@ -706,16 +734,24 @@ export function ChatInbox({
                           ) : null}
                         </div>
                       ) : null}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-full"
-                        aria-label="Transferir conversa"
-                        title="Transferir conversa"
-                        onClick={() => setTransferirAberto(true)}
-                      >
-                        <ArrowRightLeft className="size-4" />
-                      </Button>
+                      {permissoes?.podeAssumir ? (
+                        <Button size="sm" className="rounded-full" disabled={assumindo} onClick={() => void assumirConversaAtual()}>
+                          <Hand className="size-4" />
+                          <span className="hidden sm:inline">{assumindo ? "Assumindo..." : "Assumir conversa"}</span>
+                        </Button>
+                      ) : null}
+                      {permissoes?.podeTransferir ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="rounded-full"
+                          aria-label="Transferir conversa"
+                          title="Transferir conversa"
+                          onClick={() => setTransferirAberto(true)}
+                        >
+                          <ArrowRightLeft className="size-4" />
+                        </Button>
+                      ) : null}
                     </>
                   ) : null}
                   <ChatExportMenu conversaAtualId={conversaAtiva.id} idsListados={conversasVisiveis.map((conversa) => conversa.id)} />
@@ -756,7 +792,7 @@ export function ChatInbox({
                               style={{ fontFamily: 'var(--font-sans), "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif' }}
                             >
                               {interna ? (
-                                <span className="mb-0.5 flex items-center gap-1 text-xs font-semibold"><StickyNote className="size-3" />Nota interna</span>
+                                <span className="mb-0.5 flex items-center gap-1 text-xs font-semibold"><StickyNote className="size-3" />{mensagem.autor ? `Nota interna · ${mensagem.autor}` : "Nota interna"}</span>
                               ) : null}
                               {mensagem.campanhaNome ? (
                                 <span className="mb-0.5 block max-w-56 truncate text-xs font-semibold text-primary">{mensagem.campanhaNome}</span>
@@ -780,6 +816,19 @@ export function ChatInbox({
                   </div>
 
                   <div className={cn("border-t px-4 py-4 sm:px-6", modoComposicao === "mensagem" ? "bg-card" : "bg-amber-50 dark:bg-amber-950/25")}>
+                    {envioBloqueado ? (
+                      <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-amber-300 bg-amber-100/60 px-3 py-2 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                        <span className="min-w-0 flex-1">{permissoes?.motivo}</span>
+                      </div>
+                    ) : permissoes?.podeAssumir && !conversaAtiva.atendimento?.atendenteId ? (
+                      <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                        <span className="min-w-0 flex-1">Esta conversa está no departamento sem atendente responsável.</span>
+                        <Button size="sm" className="rounded-full" disabled={assumindo} onClick={() => void assumirConversaAtual()}>
+                          <Hand className="size-4" />
+                          {assumindo ? "Assumindo..." : "Assumir conversa"}
+                        </Button>
+                      </div>
+                    ) : null}
                     <div className="mb-3 flex flex-wrap items-center gap-1.5">
                       <Popover open={seletorEmojiAberto} onOpenChange={setSeletorEmojiAberto}>
                         <PopoverTrigger
@@ -862,9 +911,11 @@ export function ChatInbox({
                       ) : null}
                       {modoComposicao !== "mensagem" ? (
                         <>
-                          <Button type="button" variant="ghost" size="icon" className="rounded-full" aria-label="Cancelar registro" title="Cancelar registro" disabled={enviando} onClick={() => trocarModoComposicao("mensagem")}>
-                            <X className="size-4" />
-                          </Button>
+                          {envioBloqueado && modoComposicao === "nota" ? null : (
+                            <Button type="button" variant="ghost" size="icon" className="rounded-full" aria-label="Cancelar registro" title="Cancelar registro" disabled={enviando} onClick={() => trocarModoComposicao("mensagem")}>
+                              <X className="size-4" />
+                            </Button>
+                          )}
                           <span className="ml-auto text-[11px] font-medium text-amber-800 dark:text-amber-300">
                             {modoComposicao === "nota" ? "Somente para a equipe" : "Registro manual · não será enviado"}
                           </span>

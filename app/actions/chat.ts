@@ -15,7 +15,7 @@ export async function loadChatMessagesAction(leadId: string) {
 }
 
 export async function createChatInternalNoteAction(leadId: string, texto: string) {
-  await assertSecao("chat")
+  const usuario = await assertSecao("chat")
   const leadIdLimpo = leadId.trim()
   const textoLimpo = texto.trim()
 
@@ -26,7 +26,7 @@ export async function createChatInternalNoteAction(leadId: string, texto: string
   }
 
   try {
-    await addChatInternalNote(leadIdLimpo, textoLimpo)
+    await addChatInternalNote(leadIdLimpo, textoLimpo, usuario.nome)
     return { ok: true, message: "Nota interna adicionada." }
   } catch {
     return { ok: false, message: "Não foi possível salvar a nota interna." }

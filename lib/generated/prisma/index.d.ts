@@ -4822,6 +4822,7 @@ export namespace Prisma {
   export type ChatInternalNoteMinAggregateOutputType = {
     id: string | null
     texto: string | null
+    autor: string | null
     data: Date | null
     leadId: string | null
   }
@@ -4829,6 +4830,7 @@ export namespace Prisma {
   export type ChatInternalNoteMaxAggregateOutputType = {
     id: string | null
     texto: string | null
+    autor: string | null
     data: Date | null
     leadId: string | null
   }
@@ -4836,6 +4838,7 @@ export namespace Prisma {
   export type ChatInternalNoteCountAggregateOutputType = {
     id: number
     texto: number
+    autor: number
     data: number
     leadId: number
     _all: number
@@ -4845,6 +4848,7 @@ export namespace Prisma {
   export type ChatInternalNoteMinAggregateInputType = {
     id?: true
     texto?: true
+    autor?: true
     data?: true
     leadId?: true
   }
@@ -4852,6 +4856,7 @@ export namespace Prisma {
   export type ChatInternalNoteMaxAggregateInputType = {
     id?: true
     texto?: true
+    autor?: true
     data?: true
     leadId?: true
   }
@@ -4859,6 +4864,7 @@ export namespace Prisma {
   export type ChatInternalNoteCountAggregateInputType = {
     id?: true
     texto?: true
+    autor?: true
     data?: true
     leadId?: true
     _all?: true
@@ -4939,6 +4945,7 @@ export namespace Prisma {
   export type ChatInternalNoteGroupByOutputType = {
     id: string
     texto: string
+    autor: string | null
     data: Date
     leadId: string
     _count: ChatInternalNoteCountAggregateOutputType | null
@@ -4963,6 +4970,7 @@ export namespace Prisma {
   export type ChatInternalNoteSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     texto?: boolean
+    autor?: boolean
     data?: boolean
     leadId?: boolean
     lead?: boolean | LeadDefaultArgs<ExtArgs>
@@ -4971,6 +4979,7 @@ export namespace Prisma {
   export type ChatInternalNoteSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     texto?: boolean
+    autor?: boolean
     data?: boolean
     leadId?: boolean
     lead?: boolean | LeadDefaultArgs<ExtArgs>
@@ -4979,6 +4988,7 @@ export namespace Prisma {
   export type ChatInternalNoteSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     texto?: boolean
+    autor?: boolean
     data?: boolean
     leadId?: boolean
     lead?: boolean | LeadDefaultArgs<ExtArgs>
@@ -4987,11 +4997,12 @@ export namespace Prisma {
   export type ChatInternalNoteSelectScalar = {
     id?: boolean
     texto?: boolean
+    autor?: boolean
     data?: boolean
     leadId?: boolean
   }
 
-  export type ChatInternalNoteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "texto" | "data" | "leadId", ExtArgs["result"]["chatInternalNote"]>
+  export type ChatInternalNoteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "texto" | "autor" | "data" | "leadId", ExtArgs["result"]["chatInternalNote"]>
   export type ChatInternalNoteInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     lead?: boolean | LeadDefaultArgs<ExtArgs>
   }
@@ -5010,6 +5021,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       texto: string
+      autor: string | null
       data: Date
       leadId: string
     }, ExtArgs["result"]["chatInternalNote"]>
@@ -5438,6 +5450,7 @@ export namespace Prisma {
   interface ChatInternalNoteFieldRefs {
     readonly id: FieldRef<"ChatInternalNote", 'String'>
     readonly texto: FieldRef<"ChatInternalNote", 'String'>
+    readonly autor: FieldRef<"ChatInternalNote", 'String'>
     readonly data: FieldRef<"ChatInternalNote", 'DateTime'>
     readonly leadId: FieldRef<"ChatInternalNote", 'String'>
   }
@@ -31205,6 +31218,7 @@ export namespace Prisma {
   export const ChatInternalNoteScalarFieldEnum: {
     id: 'id',
     texto: 'texto',
+    autor: 'autor',
     data: 'data',
     leadId: 'leadId'
   };
@@ -31898,6 +31912,7 @@ export namespace Prisma {
     NOT?: ChatInternalNoteWhereInput | ChatInternalNoteWhereInput[]
     id?: StringFilter<"ChatInternalNote"> | string
     texto?: StringFilter<"ChatInternalNote"> | string
+    autor?: StringNullableFilter<"ChatInternalNote"> | string | null
     data?: DateTimeFilter<"ChatInternalNote"> | Date | string
     leadId?: StringFilter<"ChatInternalNote"> | string
     lead?: XOR<LeadScalarRelationFilter, LeadWhereInput>
@@ -31906,6 +31921,7 @@ export namespace Prisma {
   export type ChatInternalNoteOrderByWithRelationInput = {
     id?: SortOrder
     texto?: SortOrder
+    autor?: SortOrderInput | SortOrder
     data?: SortOrder
     leadId?: SortOrder
     lead?: LeadOrderByWithRelationInput
@@ -31917,6 +31933,7 @@ export namespace Prisma {
     OR?: ChatInternalNoteWhereInput[]
     NOT?: ChatInternalNoteWhereInput | ChatInternalNoteWhereInput[]
     texto?: StringFilter<"ChatInternalNote"> | string
+    autor?: StringNullableFilter<"ChatInternalNote"> | string | null
     data?: DateTimeFilter<"ChatInternalNote"> | Date | string
     leadId?: StringFilter<"ChatInternalNote"> | string
     lead?: XOR<LeadScalarRelationFilter, LeadWhereInput>
@@ -31925,6 +31942,7 @@ export namespace Prisma {
   export type ChatInternalNoteOrderByWithAggregationInput = {
     id?: SortOrder
     texto?: SortOrder
+    autor?: SortOrderInput | SortOrder
     data?: SortOrder
     leadId?: SortOrder
     _count?: ChatInternalNoteCountOrderByAggregateInput
@@ -31938,6 +31956,7 @@ export namespace Prisma {
     NOT?: ChatInternalNoteScalarWhereWithAggregatesInput | ChatInternalNoteScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"ChatInternalNote"> | string
     texto?: StringWithAggregatesFilter<"ChatInternalNote"> | string
+    autor?: StringNullableWithAggregatesFilter<"ChatInternalNote"> | string | null
     data?: DateTimeWithAggregatesFilter<"ChatInternalNote"> | Date | string
     leadId?: StringWithAggregatesFilter<"ChatInternalNote"> | string
   }
@@ -33747,6 +33766,7 @@ export namespace Prisma {
   export type ChatInternalNoteCreateInput = {
     id?: string
     texto: string
+    autor?: string | null
     data?: Date | string
     lead: LeadCreateNestedOneWithoutNotasInternasInput
   }
@@ -33754,6 +33774,7 @@ export namespace Prisma {
   export type ChatInternalNoteUncheckedCreateInput = {
     id?: string
     texto: string
+    autor?: string | null
     data?: Date | string
     leadId: string
   }
@@ -33761,6 +33782,7 @@ export namespace Prisma {
   export type ChatInternalNoteUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    autor?: NullableStringFieldUpdateOperationsInput | string | null
     data?: DateTimeFieldUpdateOperationsInput | Date | string
     lead?: LeadUpdateOneRequiredWithoutNotasInternasNestedInput
   }
@@ -33768,6 +33790,7 @@ export namespace Prisma {
   export type ChatInternalNoteUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    autor?: NullableStringFieldUpdateOperationsInput | string | null
     data?: DateTimeFieldUpdateOperationsInput | Date | string
     leadId?: StringFieldUpdateOperationsInput | string
   }
@@ -33775,6 +33798,7 @@ export namespace Prisma {
   export type ChatInternalNoteCreateManyInput = {
     id?: string
     texto: string
+    autor?: string | null
     data?: Date | string
     leadId: string
   }
@@ -33782,12 +33806,14 @@ export namespace Prisma {
   export type ChatInternalNoteUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    autor?: NullableStringFieldUpdateOperationsInput | string | null
     data?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ChatInternalNoteUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    autor?: NullableStringFieldUpdateOperationsInput | string | null
     data?: DateTimeFieldUpdateOperationsInput | Date | string
     leadId?: StringFieldUpdateOperationsInput | string
   }
@@ -35879,6 +35905,7 @@ export namespace Prisma {
   export type ChatInternalNoteCountOrderByAggregateInput = {
     id?: SortOrder
     texto?: SortOrder
+    autor?: SortOrder
     data?: SortOrder
     leadId?: SortOrder
   }
@@ -35886,6 +35913,7 @@ export namespace Prisma {
   export type ChatInternalNoteMaxOrderByAggregateInput = {
     id?: SortOrder
     texto?: SortOrder
+    autor?: SortOrder
     data?: SortOrder
     leadId?: SortOrder
   }
@@ -35893,6 +35921,7 @@ export namespace Prisma {
   export type ChatInternalNoteMinOrderByAggregateInput = {
     id?: SortOrder
     texto?: SortOrder
+    autor?: SortOrder
     data?: SortOrder
     leadId?: SortOrder
   }
@@ -38623,12 +38652,14 @@ export namespace Prisma {
   export type ChatInternalNoteCreateWithoutLeadInput = {
     id?: string
     texto: string
+    autor?: string | null
     data?: Date | string
   }
 
   export type ChatInternalNoteUncheckedCreateWithoutLeadInput = {
     id?: string
     texto: string
+    autor?: string | null
     data?: Date | string
   }
 
@@ -38861,6 +38892,7 @@ export namespace Prisma {
     NOT?: ChatInternalNoteScalarWhereInput | ChatInternalNoteScalarWhereInput[]
     id?: StringFilter<"ChatInternalNote"> | string
     texto?: StringFilter<"ChatInternalNote"> | string
+    autor?: StringNullableFilter<"ChatInternalNote"> | string | null
     data?: DateTimeFilter<"ChatInternalNote"> | Date | string
     leadId?: StringFilter<"ChatInternalNote"> | string
   }
@@ -40870,6 +40902,7 @@ export namespace Prisma {
   export type ChatInternalNoteCreateManyLeadInput = {
     id?: string
     texto: string
+    autor?: string | null
     data?: Date | string
   }
 
@@ -40989,18 +41022,21 @@ export namespace Prisma {
   export type ChatInternalNoteUpdateWithoutLeadInput = {
     id?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    autor?: NullableStringFieldUpdateOperationsInput | string | null
     data?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ChatInternalNoteUncheckedUpdateWithoutLeadInput = {
     id?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    autor?: NullableStringFieldUpdateOperationsInput | string | null
     data?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ChatInternalNoteUncheckedUpdateManyWithoutLeadInput = {
     id?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    autor?: NullableStringFieldUpdateOperationsInput | string | null
     data?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

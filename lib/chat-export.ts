@@ -63,6 +63,7 @@ export function exportChatsToJson(conversas: ChatExportItem[]): void {
         texto: m.texto,
         data: m.data,
         campanha: m.campanhaNome,
+        ...(m.lado === "interno" ? { autor: m.autor ?? null } : {}),
       })),
     })),
   }
@@ -97,7 +98,7 @@ export function exportChatsToPdf(conversas: ChatExportItem[]): void {
       startY: 22 + linhasDetalhe.length * 4.2 + 3,
       head: [["Data e hora", "Remetente", "Mensagem"]],
       body: mensagens.length
-        ? mensagens.map((m) => [formatDateTime(m.data), REMETENTE[m.lado] ?? m.lado, textoPdf(m.texto) || "(sem texto)"])
+        ? mensagens.map((m) => [formatDateTime(m.data), (m.lado === "interno" && m.autor ? `Nota interna · ${m.autor}` : REMETENTE[m.lado] ?? m.lado), textoPdf(m.texto) || "(sem texto)"])
         : [["—", "—", "Nenhuma mensagem nesta conversa."]],
       styles: { fontSize: 8, cellPadding: 1.8, valign: "top" },
       headStyles: { fillColor: [30, 41, 59] },

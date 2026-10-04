@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma"
 import { normalizarSecoes, type SecaoKey, type UserRole } from "@/lib/permissoes"
+import { avaliarAtendimento, type ContextoAtendimento } from "@/lib/crm-permissoes"
 import { createUser, deleteUser, updateUser } from "@/services/users"
+import { getCrmPluginAtivo } from "@/services/settings"
 import { emitWebhookEvent } from "@/services/webhooks"
 
 /**
@@ -67,6 +69,8 @@ export type CrmChatOpcoes = {
   atendentes: { id: string; nome: string; role: UserRole; departamentoIds: string[] }[]
   /** Atendente do usuário logado (para o filtro "Meus chats"), se ele tiver perfil. */
   meuAtendenteId: string | null
+  /** Contexto de permissão do usuário logado (mesmas regras aplicadas no servidor). */
+  contexto: ContextoAtendimento
 }
 
 const LIMITE_NOME = 60
@@ -328,7 +332,7 @@ export async function getCrmData(): Promise<CrmData> {
 // ---------------------------------------------------------------------------
 
 /** Departamentos e atendentes ATIVOS, que podem receber uma transferência. */
-export async function getCrmChatOpcoes(usuarioId: string): Promise<CrmChatOpcoes> {
+export async function getCrmChatOpcoes(usuarioId: string, admin = false): Promise<CrmChatOpcoes> {
   const [departamentos, atendentes, meu] = await Promise.all([
     prisma.departamento.findMany({ where: { ativo: true }, orderBy: { nome: "asc" }, select: { id: true, nome: true } }),
     prisma.atendente.findMany({
@@ -340,7 +344,10 @@ export async function getCrmChatOpcoes(usuarioId: string): Promise<CrmChatOpcoes
         departamentos: { select: { departamentoId: true } },
       },
     }),
-    prisma.atendente.findUnique({ where: { userId: usuarioId }, select: { id: true } }),
+    prisma.atendente.findUnique({
+      where: { userId: usuarioId },
+      select: { id: true, ativo: true, departamentos: { select: { departamentoId: true } } },
+    }),
   ])
 
   return {
@@ -352,7 +359,144 @@ export async function getCrmChatOpcoes(usuarioId: string): Promise<CrmChatOpcoes
       departamentoIds: a.departamentos.map((v) => v.departamentoId),
     })),
     meuAtendenteId: meu?.id ?? null,
+    contexto: {
+      admin,
+      atendenteId: meu?.id ?? null,
+      atendenteAtivo: Boolean(meu?.ativo),
+      departamentoIds: meu?.ativo ? meu.departamentos.map((v) => v.departamentoId) : [],
+    },
   }
+}
+
+/** Contexto de permissão de um usuário (usado nas ações do servidor). */
+export async function getContextoAtendimento(usuario: { id: string; role: UserRole }): Promise<ContextoAtendimento> {
+  const meu = await prisma.atendente.findUnique({
+    where: { userId: usuario.id },
+    select: { id: true, ativo: true, departamentos: { select: { departamentoId: true } } },
+  })
+  return {
+    admin: usuario.role === "admin",
+    atendenteId: meu?.id ?? null,
+    atendenteAtivo: Boolean(meu?.ativo),
+    departamentoIds: meu?.ativo ? meu.departamentos.map((v) => v.departamentoId) : [],
+  }
+}
+
+/**
+ * Separa os leads em que o usuário pode enviar mensagem dos bloqueados.
+ * Com o plugin CRM desativado não há restrição.
+ */
+export async function filtrarLeadsParaEnvio(
+  leadIds: string[],
+  usuario: { id: string; role: UserRole },
+): Promise<{ permitidos: string[]; bloqueados: { leadId: string; motivo: string }[] }> {
+  if (leadIds.length === 0) return { permitidos: [], bloqueados: [] }
+  if (!(await getCrmPluginAtivo())) return { permitidos: leadIds, bloqueados: [] }
+
+  const [ctx, linhas] = await Promise.all([
+    getContextoAtendimento(usuario),
+    prisma.leadAtendimento.findMany({
+      where: { leadId: { in: leadIds } },
+      select: {
+        leadId: true,
+        departamentoId: true,
+        atendenteId: true,
+        departamento: { select: { nome: true } },
+        atendente: { select: { user: { select: { nome: true } } } },
+      },
+    }),
+  ])
+  const porLead = new Map(linhas.map((l) => [l.leadId, l]))
+
+  const permitidos: string[] = []
+  const bloqueados: { leadId: string; motivo: string }[] = []
+  for (const leadId of leadIds) {
+    const l = porLead.get(leadId)
+    const r = avaliarAtendimento(
+      l
+        ? {
+            departamentoId: l.departamentoId,
+            atendenteId: l.atendenteId,
+            departamentoNome: l.departamento?.nome ?? null,
+            atendenteNome: l.atendente?.user.nome ?? null,
+          }
+        : null,
+      ctx,
+    )
+    if (r.podeEnviar) permitidos.push(leadId)
+    else bloqueados.push({ leadId, motivo: r.motivo ?? "Sem permissão para enviar nesta conversa." })
+  }
+  return { permitidos, bloqueados }
+}
+
+/**
+ * Assume uma conversa que está num departamento sem responsável. A atualização
+ * é condicional: se duas pessoas clicarem ao mesmo tempo, só a primeira assume.
+ */
+export async function assumirConversa(
+  leadId: string,
+  executor: { id: string; nome: string; role: UserRole },
+): Promise<{ para: string }> {
+  const [lead, atual, ctx] = await Promise.all([
+    prisma.lead.findUnique({ where: { id: leadId }, select: { id: true, nome: true } }),
+    prisma.leadAtendimento.findUnique({
+      where: { leadId },
+      select: {
+        departamentoId: true,
+        atendenteId: true,
+        departamento: { select: { nome: true } },
+        atendente: { select: { user: { select: { nome: true } } } },
+      },
+    }),
+    getContextoAtendimento(executor),
+  ])
+  if (!lead) throw new CrmError("Lead não encontrado.")
+  if (!ctx.atendenteId || !ctx.atendenteAtivo) {
+    throw new CrmError("Você precisa de um perfil de atendente ativo para assumir conversas.")
+  }
+  if (!atual || !atual.departamentoId) throw new CrmError("Esta conversa não está em nenhum departamento.")
+  if (atual.atendenteId) {
+    throw new CrmError(`Esta conversa já está com ${atual.atendente?.user.nome ?? "outro atendente"}.`)
+  }
+  if (!avaliarAtendimento({ departamentoId: atual.departamentoId, atendenteId: null }, ctx).podeAssumir) {
+    throw new CrmError("Você não está vinculado a este departamento e não pode assumir a conversa.")
+  }
+
+  const de = rotuloResponsavel(atual.departamento?.nome, null)
+  const para = rotuloResponsavel(atual.departamento?.nome, executor.nome)
+  const nota = `Conversa assumida por ${executor.nome}: ${de} → ${para}.`
+
+  const claim = await prisma.leadAtendimento.updateMany({
+    where: { leadId, atendenteId: null, departamentoId: atual.departamentoId },
+    data: { atendenteId: ctx.atendenteId, transferidoEm: new Date() },
+  })
+  if (claim.count === 0) throw new CrmError("Outra pessoa assumiu esta conversa antes de você.")
+
+  await prisma.$transaction([
+    prisma.atendimentoTransferencia.create({
+      data: {
+        leadId,
+        deDepartamento: atual.departamento?.nome ?? null,
+        paraDepartamento: atual.departamento?.nome ?? null,
+        deAtendente: null,
+        paraAtendente: executor.nome,
+        porUsuario: executor.nome,
+        motivo: "Conversa assumida",
+      },
+    }),
+    prisma.chatInternalNote.create({ data: { leadId, texto: nota } }),
+  ])
+
+  void emitWebhookEvent("atendimento.transferido", {
+    leadId,
+    leadNome: lead.nome,
+    de: { departamento: atual.departamento?.nome ?? null, atendente: null },
+    para: { departamento: atual.departamento?.nome ?? null, atendente: executor.nome },
+    porUsuario: executor.nome,
+    motivo: "Conversa assumida",
+  })
+
+  return { para }
 }
 
 /** Responsável atual de cada conversa que já foi transferida (leads sem linha = sem responsável). */
@@ -401,7 +545,7 @@ function rotuloResponsavel(departamento: string | null | undefined, atendente: s
 export async function transferirConversa(
   leadId: string,
   input: TransferenciaInput,
-  executor: { id: string; nome: string },
+  executor: { id: string; nome: string; role: UserRole },
 ): Promise<{ para: string }> {
   const departamentoId = limparTexto(input.departamentoId) || null
   const atendenteId = limparTexto(input.atendenteId) || null
@@ -438,6 +582,23 @@ export async function transferirConversa(
   ])
 
   if (!lead) throw new CrmError("Lead não encontrado.")
+
+  // Só o responsável (ou, sem responsável, quem atende o departamento) transfere.
+  const permissoes = avaliarAtendimento(
+    atual
+      ? {
+          departamentoId: atual.departamentoId,
+          atendenteId: atual.atendenteId,
+          departamentoNome: atual.departamento?.nome ?? null,
+          atendenteNome: atual.atendente?.user.nome ?? null,
+        }
+      : null,
+    await getContextoAtendimento(executor),
+  )
+  if (!permissoes.podeTransferir) {
+    throw new CrmError(permissoes.motivo ?? "Você não pode transferir esta conversa.")
+  }
+
   if (departamentoId) {
     if (!departamento) throw new CrmError("Departamento não encontrado.")
     if (!departamento.ativo) throw new CrmError("O departamento selecionado está inativo.")

@@ -10,6 +10,7 @@ import { recordAppLog } from "@/services/app-logs"
 import { validarTelefoneBR } from "@/lib/telefone"
 import { type LeadStatus } from "@/types"
 import { assertSecao } from "@/lib/session"
+import { filtrarLeadsParaEnvio } from "@/services/crm"
 
 export interface ActionState {
   ok: boolean
@@ -223,6 +224,10 @@ export async function sendLeadMessageAction(
     return { ok: false, message: `A mensagem é muito longa (máximo de ${MAX_MENSAGEM_INDIVIDUAL} caracteres).` }
   }
   try {
+    // Plugin CRM: só quem é responsável (ou atende o departamento) responde ao lead.
+    const { bloqueados } = await filtrarLeadsParaEnvio([leadId], usuario)
+    if (bloqueados.length > 0) return { ok: false, message: bloqueados[0].motivo }
+
     const resultado = agendadoPara
       ? await scheduleLeadMessage(leadId, textoLimpo, agendadoPara, instanciaNome)
       : await sendLeadMessage(leadId, textoLimpo, instanciaNome)
@@ -236,7 +241,7 @@ export async function sendLeadMessageAction(
 
 /** Envia a mesma mensagem avulsa para vários leads selecionados na tabela. */
 export async function sendLeadsMessageAction(leadIds: string[], texto: string, instanciaNome?: string | null, agendadoPara?: string | null) {
-  await assertSecao("leads", "campanhas", "kanban", "chat")
+  const usuario = await assertSecao("leads", "campanhas", "kanban", "chat")
   const idsUnicos = [...new Set(leadIds)].filter(Boolean)
   if (idsUnicos.length === 0) {
     return { ok: false, message: "Nenhum lead selecionado.", enviados: 0, erros: [] }
@@ -254,10 +259,31 @@ export async function sendLeadsMessageAction(leadIds: string[], texto: string, i
     }
   }
   try {
+    // Plugin CRM: leads de outros responsáveis/departamentos ficam de fora e voltam como erro.
+    const { permitidos, bloqueados } = await filtrarLeadsParaEnvio(idsUnicos, usuario)
+    const errosBloqueio = bloqueados.length
+      ? await prisma.lead
+          .findMany({ where: { id: { in: bloqueados.map((b) => b.leadId) } }, select: { id: true, nome: true } })
+          .then((rows) => {
+            const nomes = new Map(rows.map((r) => [r.id, r.nome]))
+            return bloqueados.map((b) => ({ leadId: b.leadId, nome: nomes.get(b.leadId) ?? "(lead removido)", motivo: b.motivo }))
+          })
+      : []
+    if (permitidos.length === 0) {
+      return { ok: false, message: "Você não tem permissão para enviar mensagem aos leads selecionados.", enviados: 0, erros: errosBloqueio }
+    }
+
     const resultado = agendadoPara
-      ? await scheduleLeadsMessage(idsUnicos, textoLimpo, agendadoPara, instanciaNome)
-      : await sendLeadsMessage(idsUnicos, textoLimpo, instanciaNome)
+      ? await scheduleLeadsMessage(permitidos, textoLimpo, agendadoPara, instanciaNome)
+      : await sendLeadsMessage(permitidos, textoLimpo, instanciaNome)
     if (resultado.enviados > 0) revalidarLeads()
+    if (errosBloqueio.length) {
+      return {
+        ...resultado,
+        message: `${resultado.message} · ${errosBloqueio.length} bloqueado(s) por responsável/departamento.`,
+        erros: [...resultado.erros, ...errosBloqueio],
+      }
+    }
     return resultado
   } catch (error) {
     await recordAppLog({ origem: "leads", mensagem: `Falha ao enviar mensagem em massa para ${idsUnicos.length} lead(s).`, detalhes: error })

@@ -124,6 +124,7 @@ model Lead {
 model ChatInternalNote {
   id     String   @id @default(cuid())
   texto  String
+  autor  String?
   data   DateTime @default(now())
   leadId String
   lead   Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)

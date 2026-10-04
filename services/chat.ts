@@ -12,6 +12,8 @@ export interface ChatMessage {
   texto: string
   data: string
   campanhaNome: string | null
+  /** Só em notas internas: quem escreveu (nulo em notas automáticas do sistema). */
+  autor?: string | null
 }
 
 export interface ChatConversation {
@@ -64,18 +66,19 @@ function mapearMensagem(evento: {
   }
 }
 
-function mapearNota(nota: { id: string; texto: string; data: Date }): ChatMessage {
+function mapearNota(nota: { id: string; texto: string; data: Date; autor: string | null }): ChatMessage {
   return {
     id: nota.id,
     lado: "interno",
     texto: nota.texto,
     data: nota.data.toISOString(),
     campanhaNome: null,
+    autor: nota.autor,
   }
 }
 
-export async function addChatInternalNote(leadId: string, texto: string) {
-  return prisma.chatInternalNote.create({ data: { leadId, texto } })
+export async function addChatInternalNote(leadId: string, texto: string, autor?: string | null) {
+  return prisma.chatInternalNote.create({ data: { leadId, texto, autor: autor?.trim() || null } })
 }
 
 const LIMITE_PREVIA_LISTA = 160
@@ -162,7 +165,7 @@ export async function getChatMessages(leadId: string): Promise<ChatMessage[]> {
     }),
     prisma.chatInternalNote.findMany({
       where: { leadId },
-      select: { id: true, texto: true, data: true },
+      select: { id: true, texto: true, data: true, autor: true },
       orderBy: { data: "desc" },
       take: LIMITE_MENSAGENS_CONVERSA,
     }),
@@ -309,7 +312,7 @@ export async function getChatsForExport(leadIds?: string[] | null): Promise<Chat
     }),
     prisma.chatInternalNote.findMany({
       where: { leadId: { in: ids } },
-      select: { id: true, leadId: true, texto: true, data: true },
+      select: { id: true, leadId: true, texto: true, data: true, autor: true },
       orderBy: { data: "asc" },
     }),
   ])

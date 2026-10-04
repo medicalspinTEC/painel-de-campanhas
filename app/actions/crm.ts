@@ -7,6 +7,7 @@ import { recordAppLog } from "@/services/app-logs"
 import {
   createAtendente,
   createDepartamento,
+  assumirConversa,
   CrmError,
   deleteAtendente,
   deleteDepartamento,
@@ -167,10 +168,28 @@ export async function transferirConversaAction(leadId: string, input: Transferen
     const id = String(leadId ?? "").trim()
     if (!id) throw new CrmError("Selecione uma conversa para transferir.")
 
-    const { para } = await transferirConversa(id, input, { id: usuario.id, nome: usuario.nome })
+    const { para } = await transferirConversa(id, input, { id: usuario.id, nome: usuario.nome, role: usuario.role })
     revalidatePath("/chat")
     return { ok: true, message: `Conversa transferida para ${para}.` }
   } catch (error) {
     return falha(error, "Não foi possível transferir a conversa.")
+  }
+}
+
+/** Assume uma conversa que está num departamento sem atendente responsável. */
+export async function assumirConversaAction(leadId: string): Promise<CrmActionResult> {
+  try {
+    const usuario = await assertSecao("chat")
+    const [chatAtivo, crmAtivo] = await Promise.all([getChatPluginAtivo(), getCrmPluginAtivo()])
+    if (!chatAtivo || !crmAtivo) throw new CrmError("Assumir conversas exige os plugins Chat e CRM ativos.")
+
+    const id = String(leadId ?? "").trim()
+    if (!id) throw new CrmError("Selecione uma conversa para assumir.")
+
+    await assumirConversa(id, { id: usuario.id, nome: usuario.nome, role: usuario.role })
+    revalidatePath("/chat")
+    return { ok: true, message: "Você assumiu a conversa." }
+  } catch (error) {
+    return falha(error, "Não foi possível assumir a conversa.")
   }
 }
