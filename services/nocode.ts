@@ -12,7 +12,6 @@ import {
 import { recordAppLog } from "@/services/app-logs"
 import { configurarWebhookEvolution, sendWhatsAppText } from "@/services/evolution"
 import { processarRespostaLead, telefonesBatem } from "@/services/lead-response"
-import { getNocodePluginAtivo } from "@/services/settings"
 
 // ---------------------------------------------------------------------------
 // Tipos e acesso aos dados
@@ -591,14 +590,12 @@ export interface ResultadoWebhookInstancia {
 }
 
 /**
- * Aponta o webhook da instância (evento MESSAGES_UPSERT) para o fluxo No Code
- * ativo. Nunca lança: o resultado diz o que aconteceu, para quem chama avisar.
+ * Aponta o webhook da instância (evento MESSAGES_UPSERT) para o fluxo de
+ * resposta do app. Nunca lança: o resultado diz o que aconteceu, para quem chama avisar.
  */
 export async function configurarWebhookDaInstancia(instancia: string, origem: string | null): Promise<ResultadoWebhookInstancia> {
   try {
-    if (!(await getNocodePluginAtivo())) {
-      return { ok: false, ignorado: true, message: "Plugin No Code desativado: webhook não configurado." }
-    }
+    // O fluxo de resposta é do sistema (sempre ativo): o webhook não depende do plugin estar ligado.
     if (!origem) {
       return { ok: false, message: "Não foi possível descobrir o endereço público do app. Defina APP_PUBLIC_URL." }
     }
@@ -616,7 +613,12 @@ export async function configurarWebhookDaInstancia(instancia: string, origem: st
         message: "Nenhum fluxo No Code ativo com gatilho Webhook: webhook não configurado.",
       }
     }
-    const resultado = await configurarWebhookEvolution(instancia, alvo.url)
+    let resultado = await configurarWebhookEvolution(instancia, alvo.url)
+    if (!resultado.ok) {
+      // Logo após criar, a Evolution pode ainda não estar pronta para aceitar o webhook: tenta mais uma vez.
+      await pausa(2000)
+      resultado = await configurarWebhookEvolution(instancia, alvo.url)
+    }
     if (!resultado.ok) {
       return { ok: false, message: `Não foi possível configurar o webhook na Evolution: ${resultado.erro ?? "erro desconhecido"}` }
     }

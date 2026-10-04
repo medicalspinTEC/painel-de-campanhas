@@ -19,7 +19,7 @@ export type CriarInstanciaResult = {
   ok: boolean
   message: string
   instancia?: EvolutionInstance
-  /** Resultado da configuração automática do webhook (plugin No Code). */
+  /** Resultado da configuração automática do webhook (fluxo de resposta do app). */
   webhook?: ResultadoWebhookInstancia
 }
 
@@ -75,14 +75,14 @@ export async function criarInstanciaAction(input: {
     return { ok: false, message: resultado.erro ?? "Não foi possível criar a instância." }
   }
 
-  // Facilita o setup: já liga o webhook da instância no fluxo No Code ativo.
+  // Já liga o webhook da instância no fluxo de resposta do app (sem configurar nada na Evolution).
   const webhook = await configurarWebhookDaInstancia(nome, await origemPublica())
 
   revalidatePath("/instancias")
   return { ok: true, message: `Instância "${nome}" criada na Evolution.`, instancia: resultado.instancia, webhook }
 }
 
-/** (Re)aplica o webhook do fluxo No Code ativo numa instância existente. */
+/** (Re)aplica o webhook do fluxo de resposta do app numa instância existente. */
 export async function configurarWebhookInstanciaAction(nome: string): Promise<ResultadoWebhookInstancia> {
   await assertSecao("instancias")
   const instancia = nome?.trim() ?? ""
