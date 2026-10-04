@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { manutencaoBackup } from "@/services/backup"
 import { processDueMessages } from "@/services/campaign-engine"
 import { manutencaoNoCode } from "@/services/nocode-webhook-execucoes"
 
@@ -30,7 +31,17 @@ async function handle(request: Request) {
       console.error("[v0] manutenção do No Code falhou:", error)
       return null
     })
-    return NextResponse.json({ ok: true, ...resultado, ...(nocode ? { nocode } : {}) })
+    // Dispara o backup automático se já chegou a hora (e repete os que falharam).
+    const backup = await manutencaoBackup().catch((error) => {
+      console.error("[v0] rotina de backup falhou:", error)
+      return null
+    })
+    return NextResponse.json({
+      ok: true,
+      ...resultado,
+      ...(nocode ? { nocode } : {}),
+      ...(backup ? { backup } : {}),
+    })
   } catch (error) {
     console.error("[v0] GET/POST /api/cron falhou:", error)
     return NextResponse.json({ ok: false, erro: "Falha ao processar a engine." }, { status: 500 })

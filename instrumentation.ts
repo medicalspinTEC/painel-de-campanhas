@@ -62,5 +62,23 @@ export async function register() {
   setTimeout(tickNoCode, 20_000)
   setInterval(tickNoCode, 30_000)
 
+  // Backup automático para o webhook externo: dispara na hora marcada e repete os que falharam.
+  let ultimoErroBackup = ""
+  const tickBackup = async () => {
+    try {
+      const { manutencaoBackup } = await import("@/services/backup")
+      const resultado = await manutencaoBackup()
+      ultimoErroBackup = ""
+      if (resultado.iniciado || resultado.retentados) console.log("[v0] backup automático:", resultado)
+    } catch (error) {
+      // Só loga quando o erro muda (ex.: migration ainda não aplicada), para não encher o log a cada 60s.
+      const mensagem = error instanceof Error ? error.message : String(error)
+      if (mensagem !== ultimoErroBackup) console.error("[v0] falha na rotina de backup:", error)
+      ultimoErroBackup = mensagem
+    }
+  }
+  setTimeout(tickBackup, 30_000)
+  setInterval(tickBackup, 60_000)
+
   console.log(`[v0] engine de campanhas ativa (intervalo ${intervaloMs}ms).`)
 }

@@ -1,6 +1,8 @@
+import { BackupSettings } from "@/components/features/backup/backup-settings"
 import { MarcaForm } from "@/components/features/settings/marca-form"
 import { SettingsForm } from "@/components/features/settings/settings-form"
 import { PageHeader } from "@/components/shared/page-header"
+import { Card, CardContent } from "@/components/ui/card"
 import { getAppMarca, getSettings } from "@/services/settings"
 import { requireSecao } from "@/lib/session"
 
@@ -20,6 +22,11 @@ export default async function ConfiguracoesPage() {
       />
       <MarcaForm inicial={marca} />
       <SettingsForm inicial={settings} />
+      <Card id="backup">
+        <CardContent>
+          <BackupSettings />
+        </CardContent>
+      </Card>
     </div>
   )
 }

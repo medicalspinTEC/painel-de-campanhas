@@ -518,6 +518,62 @@ model NoCodeExecution {
   @@index([webhookStatus, iniciadoEm])
 }
 
+/// Configuração do backup para webhook externo (linha única: id="default").
+/// O backup (manual ou automático) envia os dados das seções escolhidas, em
+/// partes, para `url`. Ver `services/backup.ts`.
+model BackupConfig {
+  id String @id @default("default")
+
+  url     String  @default("")
+  /// Segredo opcional: assina cada envio (HMAC-SHA256 no header X-Backup-Signature).
+  segredo String?
+
+  /// Seções incluídas no backup (chaves de `lib/backup/secoes.ts`). Vale para o
+  /// automático e é o ponto de partida do manual.
+  secoes String[] @default([])
+
+  autoAtivo          Boolean   @default(false)
+  /// "intervalo" (a cada N horas) | "diario" (todo dia no horário) | "semanal" (dia da semana + horário).
+  autoModo           String    @default("diario")
+  autoIntervaloHoras Int       @default(24)
+  /// "HH:mm", no fuso do servidor (America/Sao_Paulo).
+  autoHorario        String    @default("03:00")
+  /// 0 = domingo … 6 = sábado.
+  autoDiaSemana      Int       @default(0)
+  /// Próxima execução automática. Quem conseguir "reservar" este valor roda o backup.
+  autoProximoEm      DateTime?
+
+  atualizadoEm DateTime @updatedAt
+}
+
+/// Histórico de backups enviados (manuais e automáticos), com o estado da entrega.
+model BackupExecucao {
+  id     String   @id @default(cuid())
+  /// "manual" | "automatico"
+  origem String
+  /// "enviando" | "enviado" | "falha"
+  status String
+  /// Seções incluídas neste backup.
+  secoes String[]
+  /// Linhas e partes enviadas por tabela: { Lead: { linhas, partes } }.
+  resumo Json?
+
+  partesEnviadas Int     @default(0)
+  /// Estimativa feita antes do envio (os dados podem mudar durante ele).
+  partesTotal    Int     @default(0)
+  bytes          Int     @default(0)
+  tentativas     Int     @default(1)
+  erro           String?
+
+  criadoEm          DateTime  @default(now())
+  /// Também serve de "sinal de vida": é atualizado a cada parte enviada.
+  ultimaTentativaEm DateTime?
+  concluidoEm       DateTime?
+
+  @@index([criadoEm])
+  @@index([status, ultimaTentativaEm])
+}
+
 /// Usuários do painel. O primeiro admin é criado no primeiro login com as
 /// credenciais de `AUTH_USERNAME`/`AUTH_PASSWORD` (ver `services/users.ts`).
 model User {
