@@ -13,7 +13,9 @@ import {
   type SecaoKey,
   type UserRole,
 } from "@/lib/permissoes"
-import { prisma } from "@/lib/prisma"
+import { prisma, prismaGlobal } from "@/lib/prisma"
+import { workspacePrincipalId } from "@/lib/workspace-context"
+import { excluirWorkspace } from "@/services/workspaces"
 import { TEMA_PADRAO, temaOuPadrao, type TemaApp } from "@/lib/temas"
 
 export type Usuario = {
@@ -27,10 +29,12 @@ export type Usuario = {
   temaApp: TemaApp
   chatIdentificarRemetente: boolean
   criadoEm: Date
+  /** Instância (espaço de dados) do usuário. Admin tem a própria; padrão herda a de quem o criou. */
+  workspaceId: string
 }
 
 /** Quem está executando a ação (o usuário logado). */
-export type Ator = Pick<Usuario, "id" | "role" | "secoes" | "poderes">
+export type Ator = Pick<Usuario, "id" | "role" | "secoes" | "poderes" | "workspaceId">
 
 /**
  * De onde vem a ação. Em "crm", o poder `crm_gerenciar` (checado na action) já
@@ -49,6 +53,7 @@ type UserRow = {
   temaApp: string
   chatIdentificarRemetente: boolean
   criadoEm: Date
+  workspaceId: string
 }
 
 export function toUsuario(row: UserRow): Usuario {
@@ -63,6 +68,7 @@ export function toUsuario(row: UserRow): Usuario {
     temaApp: temaOuPadrao(row.temaApp),
     chatIdentificarRemetente: row.chatIdentificarRemetente,
     criadoEm: row.criadoEm,
+    workspaceId: row.workspaceId,
   }
 }
 
@@ -76,26 +82,44 @@ export function normalizarUsername(valor: string): string {
 }
 
 /**
- * Lista os usuários que o ator pode ver na gestão: o root vê todos; o admin
- * vê só os usuários padrão (que são os que ele pode gerenciar).
+ * Lista os usuários que o ator pode ver na gestão:
+ *  - root: os usuários da instância principal + os admins (cada um com a própria
+ *    instância — o root gerencia a conta do admin, nunca os dados dele);
+ *  - admin: só os usuários padrão da instância dele.
  */
-export async function listUsers(ator: Pick<Ator, "role">): Promise<Usuario[]> {
-  const rows = await prisma.user.findMany({
-    where: ator.role === "root" ? undefined : { role: "padrao" },
-    orderBy: { nome: "asc" },
-  })
+export async function listUsers(ator: Pick<Ator, "role" | "workspaceId">): Promise<Usuario[]> {
+  const rows =
+    ator.role === "root"
+      ? await prismaGlobal.user.findMany({
+          where: { OR: [{ workspaceId: ator.workspaceId }, { role: "admin" }] },
+          orderBy: { nome: "asc" },
+        })
+      : await prisma.user.findMany({ where: { role: "padrao" }, orderBy: { nome: "asc" } })
   return rows
     .map(toUsuario)
     .sort((a, b) => ordemDoNivel(b.role) - ordemDoNivel(a.role) || a.nome.localeCompare(b.nome, "pt-BR"))
 }
 
+/** Usuário da instância atual (para outras instâncias, só pelas regras de gestão abaixo). */
 export async function getUserById(id: string): Promise<Usuario | null> {
   const row = await prisma.user.findUnique({ where: { id } })
   return row ? toUsuario(row) : null
 }
 
+/**
+ * Busca um usuário que o ator pode gerenciar: da própria instância, ou — só para
+ * o root — um admin (que vive na instância dele). Qualquer outro caso é "não encontrado".
+ */
+async function buscarGerenciavel(id: string, ator: Pick<Ator, "role" | "workspaceId">) {
+  const row = await prismaGlobal.user.findUnique({ where: { id } })
+  if (!row) return null
+  if (row.workspaceId === ator.workspaceId) return row
+  if (ator.role === "root" && row.role === "admin") return row
+  return null
+}
+
 async function contarRootsAtivos(excluirId?: string): Promise<number> {
-  return prisma.user.count({
+  return prismaGlobal.user.count({
     where: { role: "root", ativo: true, ...(excluirId ? { id: { not: excluirId } } : {}) },
   })
 }
@@ -155,22 +179,46 @@ export async function createUser(input: UserInput, ator: Ator, contexto: Context
   }
 
   const { username, nome, senha } = validar(input, true)
-  const existente = await prisma.user.findUnique({ where: { username }, select: { id: true } })
+  // O login é único no sistema todo (é por ele que se descobre a instância no acesso).
+  const existente = await prismaGlobal.user.findUnique({ where: { username }, select: { id: true } })
   if (existente) throw new UserError("Já existe um usuário com esse login.")
 
-  const settings = await prisma.settings.findUnique({ where: { id: "default" }, select: { temaApp: true } }).catch(() => null)
   const { secoes, poderes } = acessoParaCriar(input, ator, contexto)
+  const senhaHash = await hashSenha(senha)
 
+  // Admin = instância nova e privada (só o root cria). Os demais entram na instância de quem os cria.
+  if (input.role === "admin") {
+    const row = await prismaGlobal.$transaction(async (tx) => {
+      const workspace = await tx.workspace.create({ data: { nome, ativo: input.ativo } })
+      return tx.user.create({
+        data: {
+          workspaceId: workspace.id,
+          username,
+          nome,
+          senhaHash,
+          role: "admin",
+          secoes,
+          poderes,
+          ativo: input.ativo,
+          temaApp: TEMA_PADRAO,
+        },
+      })
+    })
+    return toUsuario(row)
+  }
+
+  const settings = await prisma.settings.findUnique({ where: { workspaceId: ator.workspaceId }, select: { temaApp: true } }).catch(() => null)
   const row = await prisma.user.create({
     data: {
       username,
       nome,
-      senhaHash: await hashSenha(senha),
+      senhaHash,
       role: input.role,
       secoes,
       poderes,
       ativo: input.ativo,
       temaApp: temaOuPadrao(settings?.temaApp ?? TEMA_PADRAO),
+      workspaceId: ator.workspaceId, // o filtro de instância grava o mesmo valor
     },
   })
   return toUsuario(row)
@@ -183,8 +231,14 @@ export async function updateUser(
   contexto: ContextoGestao = "usuarios",
 ): Promise<Usuario> {
   const dados = validar(input, false)
-  const atual = await prisma.user.findUnique({ where: { id } })
+  const atual = await buscarGerenciavel(id, ator)
   if (!atual) throw new UserError("Usuário não encontrado.")
+
+  // Admin e as demais contas vivem em instâncias diferentes: trocar entre os dois lados
+  // moveria (ou abandonaria) os dados. Para isso, crie um usuário novo.
+  if (input.role !== atual.role && (atual.role === "admin" || input.role === "admin")) {
+    throw new UserError("Não é possível converter um Administrador em outro nível (nem o contrário). Crie um novo usuário.")
+  }
 
   // Hierarquia: ninguém mexe em quem está no mesmo nível ou acima (só o Root, em todos).
   // Cada um altera os próprios dados em "Minha conta"; o Root também pode, aqui,
@@ -207,7 +261,7 @@ export async function updateUser(
   const role: UserRole = aSiMesmo ? atual.role : input.role
   const ativo = aSiMesmo || !podeEditarDados ? atual.ativo : input.ativo
 
-  const duplicado = await prisma.user.findFirst({ where: { username, id: { not: id } }, select: { id: true } })
+  const duplicado = await prismaGlobal.user.findFirst({ where: { username, id: { not: id } }, select: { id: true } })
   if (duplicado) throw new UserError("Já existe um usuário com esse login.")
 
   // Nunca pode ficar sem nenhum Root ativo: rebaixar/desativar o último é barrado.
@@ -242,7 +296,7 @@ export async function updateUser(
     }
   }
 
-  const row = await prisma.user.update({
+  const row = await prismaGlobal.user.update({
     where: { id },
     data: {
       username,
@@ -254,12 +308,16 @@ export async function updateUser(
       ...(senha ? { senhaHash: await hashSenha(senha) } : {}),
     },
   })
+  // Desativar um admin suspende a instância inteira (ele e os usuários dele); reativar libera de volta.
+  if (role === "admin" && !aSiMesmo) {
+    await prismaGlobal.workspace.update({ where: { id: row.workspaceId }, data: { ativo, nome } })
+  }
   return toUsuario(row)
 }
 
 export async function deleteUser(id: string, ator: Ator, contexto: ContextoGestao = "usuarios"): Promise<void> {
   if (id === ator.id) throw new UserError("Você não pode excluir o próprio usuário.")
-  const alvo = await prisma.user.findUnique({ where: { id } })
+  const alvo = await buscarGerenciavel(id, ator)
   if (!alvo) throw new UserError("Usuário não encontrado.")
   if (!podeGerenciarNivel(ator, alvo.role)) throw new UserError("Você não tem permissão para excluir este usuário.")
   if (contexto === "usuarios" && !temPoder(ator, "usuarios_excluir")) {
@@ -268,7 +326,12 @@ export async function deleteUser(id: string, ator: Ator, contexto: ContextoGesta
   if (alvo.role === "root" && alvo.ativo && (await contarRootsAtivos(id)) === 0) {
     throw new UserError("Deve existir ao menos um Root ativo.")
   }
-  await prisma.user.delete({ where: { id } })
+  // Excluir um admin apaga a instância dele: todos os dados e todos os usuários dessa instância.
+  if (alvo.role === "admin") {
+    await excluirWorkspace(alvo.workspaceId)
+    return
+  }
+  await prismaGlobal.user.delete({ where: { id } })
 }
 
 /** Preferência pessoal: altera só o tema do próprio usuário. */
@@ -300,14 +363,17 @@ export async function trocarSenha(id: string, senhaAtual: string, novaSenha: str
 export async function autenticar(usernameBruto: string, senha: string): Promise<Usuario | null> {
   const username = normalizarUsername(usernameBruto)
 
-  const total = await prisma.user.count()
+  const total = await prismaGlobal.user.count()
   if (total === 0) {
     const env = getConfiguredCredentials()
     if (!env) return null
     if (username !== normalizarUsername(env.username) || senha !== env.password) return null
-    const settings = await prisma.settings.findUnique({ where: { id: "default" }, select: { temaApp: true } }).catch(() => null)
-    const criado = await prisma.user.create({
+    const workspaceId = await workspacePrincipalId()
+    if (!workspaceId) return null
+    const settings = await prismaGlobal.settings.findUnique({ where: { workspaceId }, select: { temaApp: true } }).catch(() => null)
+    const criado = await prismaGlobal.user.create({
       data: {
+        workspaceId,
         username,
         nome: "Root",
         senhaHash: await hashSenha(senha),
@@ -321,9 +387,12 @@ export async function autenticar(usernameBruto: string, senha: string): Promise<
     return toUsuario(criado)
   }
 
-  const row = await prisma.user.findUnique({ where: { username } })
+  const row = await prismaGlobal.user.findUnique({ where: { username } })
   // Compara mesmo sem usuário para não vazar, pelo tempo de resposta, que o login não existe.
   const ok = await verificarSenha(senha, row?.senhaHash ?? "scrypt$00$00")
   if (!row || !ok || !row.ativo) return null
+  // Instância suspensa (admin desativado pelo Root): ninguém dela entra.
+  const workspace = await prismaGlobal.workspace.findUnique({ where: { id: row.workspaceId }, select: { ativo: true } })
+  if (!workspace?.ativo) return null
   return toUsuario(row)
 }

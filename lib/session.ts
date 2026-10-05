@@ -6,7 +6,7 @@ import { NextResponse } from "next/server"
 import { requestHasValidApiToken } from "@/lib/api-auth"
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth"
 import { podeAcessar, podeGerenciarUsuarios, temPoder, type PoderKey, type SecaoKey } from "@/lib/permissoes"
-import { prisma } from "@/lib/prisma"
+import { prismaGlobal } from "@/lib/prisma"
 import { toUsuario, type Usuario } from "@/services/users"
 
 /**
@@ -18,8 +18,11 @@ export const getCurrentUser = cache(async (): Promise<Usuario | null> => {
   const store = await cookies()
   const id = await verifySessionToken(store.get(SESSION_COOKIE)?.value)
   if (!id) return null
-  const row = await prisma.user.findUnique({ where: { id } })
+  const row = await prismaGlobal.user.findUnique({ where: { id } })
   if (!row || !row.ativo) return null
+  // Instância suspensa (admin desativado): perde o acesso na hora, como o próprio admin.
+  const workspace = await prismaGlobal.workspace.findUnique({ where: { id: row.workspaceId }, select: { ativo: true } })
+  if (!workspace?.ativo) return null
   return toUsuario(row)
 })
 

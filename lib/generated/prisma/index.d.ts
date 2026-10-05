@@ -70,8 +70,7 @@ export type Persona = $Result.DefaultSelection<Prisma.$PersonaPayload>
 export type Regiao = $Result.DefaultSelection<Prisma.$RegiaoPayload>
 /**
  * Model Settings
- * Preferências da engine. Tabela de linha única: `id` é fixo em "default"
- * para que um upsert simples sirva tanto para criar quanto para atualizar.
+ * Preferências da engine. Uma linha por instância (`workspaceId` é único).
  */
 export type Settings = $Result.DefaultSelection<Prisma.$SettingsPayload>
 /**
@@ -93,10 +92,18 @@ export type AppLog = $Result.DefaultSelection<Prisma.$AppLogPayload>
 export type TimelineEvent = $Result.DefaultSelection<Prisma.$TimelineEventPayload>
 /**
  * Model InboundWebhookToken
- * Token de autenticação para o webhook de entrada (linha única: id="default").
+ * Token de autenticação para o webhook de entrada (uma linha por instância).
  * Permite que sistemas externos enviem eventos para este painel via POST.
  */
 export type InboundWebhookToken = $Result.DefaultSelection<Prisma.$InboundWebhookTokenPayload>
+/**
+ * Model McpToken
+ * Token de acesso ao MCP (`/api/mcp`) de uma instância. O MCP vem DESLIGADO: só
+ * existe depois que alguém da instância gera o token em Integrações, e o token
+ * define em qual instância as ferramentas rodam (nunca em todas). Guardamos só o
+ * hash SHA-256 (o token aparece uma única vez, ao gerar) e um prefixo para identificá-lo.
+ */
+export type McpToken = $Result.DefaultSelection<Prisma.$McpTokenPayload>
 /**
  * Model InboundEvent
  * Eventos recebidos pelo webhook de entrada (/api/webhook/entrada).
@@ -123,9 +130,9 @@ export type NoCodeFlow = $Result.DefaultSelection<Prisma.$NoCodeFlowPayload>
 export type NoCodeExecution = $Result.DefaultSelection<Prisma.$NoCodeExecutionPayload>
 /**
  * Model BackupConfig
- * Configuração do backup para webhook externo (linha única: id="default").
- * O backup (manual ou automático) envia os dados das seções escolhidas, em
- * partes, para `url`. Ver `services/backup.ts`.
+ * Configuração do backup para webhook externo (uma linha por instância).
+ * O backup (manual ou automático) envia o arquivo JSON completo das seções
+ * escolhidas, num único POST binário, para `url`. Ver `services/backup.ts`.
  */
 export type BackupConfig = $Result.DefaultSelection<Prisma.$BackupConfigPayload>
 /**
@@ -133,6 +140,19 @@ export type BackupConfig = $Result.DefaultSelection<Prisma.$BackupConfigPayload>
  * Histórico de backups enviados (manuais e automáticos), com o estado da entrega.
  */
 export type BackupExecucao = $Result.DefaultSelection<Prisma.$BackupExecucaoPayload>
+/**
+ * Model Workspace
+ * Instância do painel: um espaço de dados isolado. Cada admin tem a sua (criada
+ * quando o Root cadastra o admin) e os usuários padrão que ele criar entram
+ * nela. A instância principal (`principal = true`) é a do Root e dos usuários
+ * que ele criar. Nenhuma consulta atravessa instâncias: `lib/prisma.ts` injeta
+ * `workspaceId` automaticamente em toda leitura e escrita.
+ * 
+ * `workspaceId` nas demais tabelas é coluna simples (sem FK declarada): assim o
+ * filtro vale também nas escritas aninhadas, e a exclusão da instância é feita
+ * por `excluirWorkspace` (services/workspaces.ts).
+ */
+export type Workspace = $Result.DefaultSelection<Prisma.$WorkspacePayload>
 /**
  * Model User
  * Usuários do painel. O primeiro admin é criado no primeiro login com as
@@ -544,6 +564,16 @@ export class PrismaClient<
   get inboundWebhookToken(): Prisma.InboundWebhookTokenDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.mcpToken`: Exposes CRUD operations for the **McpToken** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more McpTokens
+    * const mcpTokens = await prisma.mcpToken.findMany()
+    * ```
+    */
+  get mcpToken(): Prisma.McpTokenDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.inboundEvent`: Exposes CRUD operations for the **InboundEvent** model.
     * Example usage:
     * ```ts
@@ -602,6 +632,16 @@ export class PrismaClient<
     * ```
     */
   get backupExecucao(): Prisma.BackupExecucaoDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.workspace`: Exposes CRUD operations for the **Workspace** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Workspaces
+    * const workspaces = await prisma.workspace.findMany()
+    * ```
+    */
+  get workspace(): Prisma.WorkspaceDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.user`: Exposes CRUD operations for the **User** model.
@@ -1118,12 +1158,14 @@ export namespace Prisma {
     AppLog: 'AppLog',
     TimelineEvent: 'TimelineEvent',
     InboundWebhookToken: 'InboundWebhookToken',
+    McpToken: 'McpToken',
     InboundEvent: 'InboundEvent',
     Instance: 'Instance',
     NoCodeFlow: 'NoCodeFlow',
     NoCodeExecution: 'NoCodeExecution',
     BackupConfig: 'BackupConfig',
     BackupExecucao: 'BackupExecucao',
+    Workspace: 'Workspace',
     User: 'User',
     Departamento: 'Departamento',
     Atendente: 'Atendente',
@@ -1148,7 +1190,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "inboundEvent" | "instance" | "noCodeFlow" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "user" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia"
+      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2262,6 +2304,80 @@ export namespace Prisma {
           }
         }
       }
+      McpToken: {
+        payload: Prisma.$McpTokenPayload<ExtArgs>
+        fields: Prisma.McpTokenFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.McpTokenFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$McpTokenPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.McpTokenFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$McpTokenPayload>
+          }
+          findFirst: {
+            args: Prisma.McpTokenFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$McpTokenPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.McpTokenFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$McpTokenPayload>
+          }
+          findMany: {
+            args: Prisma.McpTokenFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$McpTokenPayload>[]
+          }
+          create: {
+            args: Prisma.McpTokenCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$McpTokenPayload>
+          }
+          createMany: {
+            args: Prisma.McpTokenCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.McpTokenCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$McpTokenPayload>[]
+          }
+          delete: {
+            args: Prisma.McpTokenDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$McpTokenPayload>
+          }
+          update: {
+            args: Prisma.McpTokenUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$McpTokenPayload>
+          }
+          deleteMany: {
+            args: Prisma.McpTokenDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.McpTokenUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.McpTokenUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$McpTokenPayload>[]
+          }
+          upsert: {
+            args: Prisma.McpTokenUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$McpTokenPayload>
+          }
+          aggregate: {
+            args: Prisma.McpTokenAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMcpToken>
+          }
+          groupBy: {
+            args: Prisma.McpTokenGroupByArgs<ExtArgs>
+            result: $Utils.Optional<McpTokenGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.McpTokenCountArgs<ExtArgs>
+            result: $Utils.Optional<McpTokenCountAggregateOutputType> | number
+          }
+        }
+      }
       InboundEvent: {
         payload: Prisma.$InboundEventPayload<ExtArgs>
         fields: Prisma.InboundEventFieldRefs
@@ -2703,6 +2819,80 @@ export namespace Prisma {
           count: {
             args: Prisma.BackupExecucaoCountArgs<ExtArgs>
             result: $Utils.Optional<BackupExecucaoCountAggregateOutputType> | number
+          }
+        }
+      }
+      Workspace: {
+        payload: Prisma.$WorkspacePayload<ExtArgs>
+        fields: Prisma.WorkspaceFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.WorkspaceFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspacePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.WorkspaceFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspacePayload>
+          }
+          findFirst: {
+            args: Prisma.WorkspaceFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspacePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.WorkspaceFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspacePayload>
+          }
+          findMany: {
+            args: Prisma.WorkspaceFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspacePayload>[]
+          }
+          create: {
+            args: Prisma.WorkspaceCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspacePayload>
+          }
+          createMany: {
+            args: Prisma.WorkspaceCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.WorkspaceCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspacePayload>[]
+          }
+          delete: {
+            args: Prisma.WorkspaceDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspacePayload>
+          }
+          update: {
+            args: Prisma.WorkspaceUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspacePayload>
+          }
+          deleteMany: {
+            args: Prisma.WorkspaceDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.WorkspaceUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.WorkspaceUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspacePayload>[]
+          }
+          upsert: {
+            args: Prisma.WorkspaceUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspacePayload>
+          }
+          aggregate: {
+            args: Prisma.WorkspaceAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateWorkspace>
+          }
+          groupBy: {
+            args: Prisma.WorkspaceGroupByArgs<ExtArgs>
+            result: $Utils.Optional<WorkspaceGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.WorkspaceCountArgs<ExtArgs>
+            result: $Utils.Optional<WorkspaceCountAggregateOutputType> | number
           }
         }
       }
@@ -3261,12 +3451,14 @@ export namespace Prisma {
     appLog?: AppLogOmit
     timelineEvent?: TimelineEventOmit
     inboundWebhookToken?: InboundWebhookTokenOmit
+    mcpToken?: McpTokenOmit
     inboundEvent?: InboundEventOmit
     instance?: InstanceOmit
     noCodeFlow?: NoCodeFlowOmit
     noCodeExecution?: NoCodeExecutionOmit
     backupConfig?: BackupConfigOmit
     backupExecucao?: BackupExecucaoOmit
+    workspace?: WorkspaceOmit
     user?: UserOmit
     departamento?: DepartamentoOmit
     atendente?: AtendenteOmit
@@ -3631,6 +3823,7 @@ export namespace Prisma {
 
   export type LeadMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     telefone: string | null
     produto: string | null
@@ -3649,6 +3842,7 @@ export namespace Prisma {
 
   export type LeadMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     telefone: string | null
     produto: string | null
@@ -3667,6 +3861,7 @@ export namespace Prisma {
 
   export type LeadCountAggregateOutputType = {
     id: number
+    workspaceId: number
     nome: number
     telefone: number
     produto: number
@@ -3687,6 +3882,7 @@ export namespace Prisma {
 
   export type LeadMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     telefone?: true
     produto?: true
@@ -3705,6 +3901,7 @@ export namespace Prisma {
 
   export type LeadMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     telefone?: true
     produto?: true
@@ -3723,6 +3920,7 @@ export namespace Prisma {
 
   export type LeadCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     telefone?: true
     produto?: true
@@ -3814,6 +4012,7 @@ export namespace Prisma {
 
   export type LeadGroupByOutputType = {
     id: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -3849,6 +4048,7 @@ export namespace Prisma {
 
   export type LeadSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     telefone?: boolean
     produto?: boolean
@@ -3875,6 +4075,7 @@ export namespace Prisma {
 
   export type LeadSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     telefone?: boolean
     produto?: boolean
@@ -3894,6 +4095,7 @@ export namespace Prisma {
 
   export type LeadSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     telefone?: boolean
     produto?: boolean
@@ -3913,6 +4115,7 @@ export namespace Prisma {
 
   export type LeadSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     telefone?: boolean
     produto?: boolean
@@ -3929,7 +4132,7 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type LeadOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "telefone" | "produto" | "marca" | "persona" | "regiao" | "status" | "notas" | "negocio" | "atividade" | "campanhaId" | "entradaCampanhaEm" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["lead"]>
+  export type LeadOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "telefone" | "produto" | "marca" | "persona" | "regiao" | "status" | "notas" | "negocio" | "atividade" | "campanhaId" | "entradaCampanhaEm" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["lead"]>
   export type LeadInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     campanha?: boolean | Lead$campanhaArgs<ExtArgs>
     campanhas?: boolean | Lead$campanhasArgs<ExtArgs>
@@ -3963,6 +4166,10 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       nome: string
       telefone: string
       produto: string
@@ -4408,6 +4615,7 @@ export namespace Prisma {
    */
   interface LeadFieldRefs {
     readonly id: FieldRef<"Lead", 'String'>
+    readonly workspaceId: FieldRef<"Lead", 'String'>
     readonly nome: FieldRef<"Lead", 'String'>
     readonly telefone: FieldRef<"Lead", 'String'>
     readonly produto: FieldRef<"Lead", 'String'>
@@ -6076,6 +6284,7 @@ export namespace Prisma {
 
   export type CampaignMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     descricao: string | null
     status: $Enums.CampaignStatus | null
@@ -6095,6 +6304,7 @@ export namespace Prisma {
 
   export type CampaignMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     descricao: string | null
     status: $Enums.CampaignStatus | null
@@ -6114,6 +6324,7 @@ export namespace Prisma {
 
   export type CampaignCountAggregateOutputType = {
     id: number
+    workspaceId: number
     nome: number
     descricao: number
     status: number
@@ -6145,6 +6356,7 @@ export namespace Prisma {
 
   export type CampaignMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     status?: true
@@ -6164,6 +6376,7 @@ export namespace Prisma {
 
   export type CampaignMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     status?: true
@@ -6183,6 +6396,7 @@ export namespace Prisma {
 
   export type CampaignCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     status?: true
@@ -6289,6 +6503,7 @@ export namespace Prisma {
 
   export type CampaignGroupByOutputType = {
     id: string
+    workspaceId: string
     nome: string
     descricao: string | null
     status: $Enums.CampaignStatus
@@ -6327,6 +6542,7 @@ export namespace Prisma {
 
   export type CampaignSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     status?: boolean
@@ -6351,6 +6567,7 @@ export namespace Prisma {
 
   export type CampaignSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     status?: boolean
@@ -6370,6 +6587,7 @@ export namespace Prisma {
 
   export type CampaignSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     status?: boolean
@@ -6389,6 +6607,7 @@ export namespace Prisma {
 
   export type CampaignSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     status?: boolean
@@ -6406,7 +6625,7 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type CampaignOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "descricao" | "status" | "tipo" | "idImportacao" | "recorrenciaDias" | "dataFinal" | "instanciaNome" | "reiniciadaEm" | "filtroProduto" | "filtroMarca" | "filtroPersona" | "filtroRegiao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["campaign"]>
+  export type CampaignOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "descricao" | "status" | "tipo" | "idImportacao" | "recorrenciaDias" | "dataFinal" | "instanciaNome" | "reiniciadaEm" | "filtroProduto" | "filtroMarca" | "filtroPersona" | "filtroRegiao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["campaign"]>
   export type CampaignInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     mensagens?: boolean | Campaign$mensagensArgs<ExtArgs>
     leads?: boolean | Campaign$leadsArgs<ExtArgs>
@@ -6427,6 +6646,10 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       nome: string
       descricao: string | null
       status: $Enums.CampaignStatus
@@ -6879,6 +7102,7 @@ export namespace Prisma {
    */
   interface CampaignFieldRefs {
     readonly id: FieldRef<"Campaign", 'String'>
+    readonly workspaceId: FieldRef<"Campaign", 'String'>
     readonly nome: FieldRef<"Campaign", 'String'>
     readonly descricao: FieldRef<"Campaign", 'String'>
     readonly status: FieldRef<"Campaign", 'CampaignStatus'>
@@ -10805,6 +11029,7 @@ export namespace Prisma {
 
   export type ProdutoMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     descricao: string | null
     ativo: boolean | null
@@ -10815,6 +11040,7 @@ export namespace Prisma {
 
   export type ProdutoMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     descricao: string | null
     ativo: boolean | null
@@ -10825,6 +11051,7 @@ export namespace Prisma {
 
   export type ProdutoCountAggregateOutputType = {
     id: number
+    workspaceId: number
     nome: number
     descricao: number
     ativo: number
@@ -10837,6 +11064,7 @@ export namespace Prisma {
 
   export type ProdutoMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     ativo?: true
@@ -10847,6 +11075,7 @@ export namespace Prisma {
 
   export type ProdutoMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     ativo?: true
@@ -10857,6 +11086,7 @@ export namespace Prisma {
 
   export type ProdutoCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     ativo?: true
@@ -10940,6 +11170,7 @@ export namespace Prisma {
 
   export type ProdutoGroupByOutputType = {
     id: string
+    workspaceId: string
     nome: string
     descricao: string | null
     ativo: boolean
@@ -10967,6 +11198,7 @@ export namespace Prisma {
 
   export type ProdutoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -10977,6 +11209,7 @@ export namespace Prisma {
 
   export type ProdutoSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -10987,6 +11220,7 @@ export namespace Prisma {
 
   export type ProdutoSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -10997,6 +11231,7 @@ export namespace Prisma {
 
   export type ProdutoSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -11005,13 +11240,17 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type ProdutoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "descricao" | "ativo" | "idImportacao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["produto"]>
+  export type ProdutoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "descricao" | "ativo" | "idImportacao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["produto"]>
 
   export type $ProdutoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Produto"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       nome: string
       descricao: string | null
       ativo: boolean
@@ -11447,6 +11686,7 @@ export namespace Prisma {
    */
   interface ProdutoFieldRefs {
     readonly id: FieldRef<"Produto", 'String'>
+    readonly workspaceId: FieldRef<"Produto", 'String'>
     readonly nome: FieldRef<"Produto", 'String'>
     readonly descricao: FieldRef<"Produto", 'String'>
     readonly ativo: FieldRef<"Produto", 'Boolean'>
@@ -11831,6 +12071,7 @@ export namespace Prisma {
 
   export type MarcaMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     descricao: string | null
     ativo: boolean | null
@@ -11841,6 +12082,7 @@ export namespace Prisma {
 
   export type MarcaMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     descricao: string | null
     ativo: boolean | null
@@ -11851,6 +12093,7 @@ export namespace Prisma {
 
   export type MarcaCountAggregateOutputType = {
     id: number
+    workspaceId: number
     nome: number
     descricao: number
     ativo: number
@@ -11863,6 +12106,7 @@ export namespace Prisma {
 
   export type MarcaMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     ativo?: true
@@ -11873,6 +12117,7 @@ export namespace Prisma {
 
   export type MarcaMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     ativo?: true
@@ -11883,6 +12128,7 @@ export namespace Prisma {
 
   export type MarcaCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     ativo?: true
@@ -11966,6 +12212,7 @@ export namespace Prisma {
 
   export type MarcaGroupByOutputType = {
     id: string
+    workspaceId: string
     nome: string
     descricao: string | null
     ativo: boolean
@@ -11993,6 +12240,7 @@ export namespace Prisma {
 
   export type MarcaSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -12003,6 +12251,7 @@ export namespace Prisma {
 
   export type MarcaSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -12013,6 +12262,7 @@ export namespace Prisma {
 
   export type MarcaSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -12023,6 +12273,7 @@ export namespace Prisma {
 
   export type MarcaSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -12031,13 +12282,17 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type MarcaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "descricao" | "ativo" | "idImportacao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["marca"]>
+  export type MarcaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "descricao" | "ativo" | "idImportacao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["marca"]>
 
   export type $MarcaPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Marca"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       nome: string
       descricao: string | null
       ativo: boolean
@@ -12471,6 +12726,7 @@ export namespace Prisma {
    */
   interface MarcaFieldRefs {
     readonly id: FieldRef<"Marca", 'String'>
+    readonly workspaceId: FieldRef<"Marca", 'String'>
     readonly nome: FieldRef<"Marca", 'String'>
     readonly descricao: FieldRef<"Marca", 'String'>
     readonly ativo: FieldRef<"Marca", 'Boolean'>
@@ -12855,6 +13111,7 @@ export namespace Prisma {
 
   export type PersonaMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     descricao: string | null
     ativo: boolean | null
@@ -12865,6 +13122,7 @@ export namespace Prisma {
 
   export type PersonaMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     descricao: string | null
     ativo: boolean | null
@@ -12875,6 +13133,7 @@ export namespace Prisma {
 
   export type PersonaCountAggregateOutputType = {
     id: number
+    workspaceId: number
     nome: number
     descricao: number
     ativo: number
@@ -12887,6 +13146,7 @@ export namespace Prisma {
 
   export type PersonaMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     ativo?: true
@@ -12897,6 +13157,7 @@ export namespace Prisma {
 
   export type PersonaMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     ativo?: true
@@ -12907,6 +13168,7 @@ export namespace Prisma {
 
   export type PersonaCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     ativo?: true
@@ -12990,6 +13252,7 @@ export namespace Prisma {
 
   export type PersonaGroupByOutputType = {
     id: string
+    workspaceId: string
     nome: string
     descricao: string | null
     ativo: boolean
@@ -13017,6 +13280,7 @@ export namespace Prisma {
 
   export type PersonaSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -13027,6 +13291,7 @@ export namespace Prisma {
 
   export type PersonaSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -13037,6 +13302,7 @@ export namespace Prisma {
 
   export type PersonaSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -13047,6 +13313,7 @@ export namespace Prisma {
 
   export type PersonaSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -13055,13 +13322,17 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type PersonaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "descricao" | "ativo" | "idImportacao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["persona"]>
+  export type PersonaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "descricao" | "ativo" | "idImportacao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["persona"]>
 
   export type $PersonaPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Persona"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       nome: string
       descricao: string | null
       ativo: boolean
@@ -13495,6 +13766,7 @@ export namespace Prisma {
    */
   interface PersonaFieldRefs {
     readonly id: FieldRef<"Persona", 'String'>
+    readonly workspaceId: FieldRef<"Persona", 'String'>
     readonly nome: FieldRef<"Persona", 'String'>
     readonly descricao: FieldRef<"Persona", 'String'>
     readonly ativo: FieldRef<"Persona", 'Boolean'>
@@ -13879,6 +14151,7 @@ export namespace Prisma {
 
   export type RegiaoMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     descricao: string | null
     ativo: boolean | null
@@ -13889,6 +14162,7 @@ export namespace Prisma {
 
   export type RegiaoMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     descricao: string | null
     ativo: boolean | null
@@ -13899,6 +14173,7 @@ export namespace Prisma {
 
   export type RegiaoCountAggregateOutputType = {
     id: number
+    workspaceId: number
     nome: number
     descricao: number
     ativo: number
@@ -13911,6 +14186,7 @@ export namespace Prisma {
 
   export type RegiaoMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     ativo?: true
@@ -13921,6 +14197,7 @@ export namespace Prisma {
 
   export type RegiaoMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     ativo?: true
@@ -13931,6 +14208,7 @@ export namespace Prisma {
 
   export type RegiaoCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     ativo?: true
@@ -14014,6 +14292,7 @@ export namespace Prisma {
 
   export type RegiaoGroupByOutputType = {
     id: string
+    workspaceId: string
     nome: string
     descricao: string | null
     ativo: boolean
@@ -14041,6 +14320,7 @@ export namespace Prisma {
 
   export type RegiaoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -14051,6 +14331,7 @@ export namespace Prisma {
 
   export type RegiaoSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -14061,6 +14342,7 @@ export namespace Prisma {
 
   export type RegiaoSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -14071,6 +14353,7 @@ export namespace Prisma {
 
   export type RegiaoSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -14079,13 +14362,17 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type RegiaoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "descricao" | "ativo" | "idImportacao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["regiao"]>
+  export type RegiaoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "descricao" | "ativo" | "idImportacao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["regiao"]>
 
   export type $RegiaoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Regiao"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       nome: string
       descricao: string | null
       ativo: boolean
@@ -14519,6 +14806,7 @@ export namespace Prisma {
    */
   interface RegiaoFieldRefs {
     readonly id: FieldRef<"Regiao", 'String'>
+    readonly workspaceId: FieldRef<"Regiao", 'String'>
     readonly nome: FieldRef<"Regiao", 'String'>
     readonly descricao: FieldRef<"Regiao", 'String'>
     readonly ativo: FieldRef<"Regiao", 'Boolean'>
@@ -14917,6 +15205,7 @@ export namespace Prisma {
 
   export type SettingsMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     remetente: string | null
     numero: string | null
     assinatura: string | null
@@ -14946,6 +15235,7 @@ export namespace Prisma {
 
   export type SettingsMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     remetente: string | null
     numero: string | null
     assinatura: string | null
@@ -14975,6 +15265,7 @@ export namespace Prisma {
 
   export type SettingsCountAggregateOutputType = {
     id: number
+    workspaceId: number
     remetente: number
     numero: number
     assinatura: number
@@ -15018,6 +15309,7 @@ export namespace Prisma {
 
   export type SettingsMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     remetente?: true
     numero?: true
     assinatura?: true
@@ -15047,6 +15339,7 @@ export namespace Prisma {
 
   export type SettingsMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     remetente?: true
     numero?: true
     assinatura?: true
@@ -15076,6 +15369,7 @@ export namespace Prisma {
 
   export type SettingsCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     remetente?: true
     numero?: true
     assinatura?: true
@@ -15192,6 +15486,7 @@ export namespace Prisma {
 
   export type SettingsGroupByOutputType = {
     id: string
+    workspaceId: string
     remetente: string
     numero: string
     assinatura: string
@@ -15240,6 +15535,7 @@ export namespace Prisma {
 
   export type SettingsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     remetente?: boolean
     numero?: boolean
     assinatura?: boolean
@@ -15269,6 +15565,7 @@ export namespace Prisma {
 
   export type SettingsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     remetente?: boolean
     numero?: boolean
     assinatura?: boolean
@@ -15298,6 +15595,7 @@ export namespace Prisma {
 
   export type SettingsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     remetente?: boolean
     numero?: boolean
     assinatura?: boolean
@@ -15327,6 +15625,7 @@ export namespace Prisma {
 
   export type SettingsSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     remetente?: boolean
     numero?: boolean
     assinatura?: boolean
@@ -15354,13 +15653,17 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type SettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "chatPluginAtivo" | "kanbanPluginAtivo" | "assistentePluginAtivo" | "nocodePluginAtivo" | "crmPluginAtivo" | "temaApp" | "appNome" | "appLogo" | "corPrincipal" | "corSecundaria" | "corTerciaria" | "atualizadoEm", ExtArgs["result"]["settings"]>
+  export type SettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "chatPluginAtivo" | "kanbanPluginAtivo" | "assistentePluginAtivo" | "nocodePluginAtivo" | "crmPluginAtivo" | "temaApp" | "appNome" | "appLogo" | "corPrincipal" | "corSecundaria" | "corTerciaria" | "atualizadoEm", ExtArgs["result"]["settings"]>
 
   export type $SettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Settings"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       remetente: string
       numero: string
       assinatura: string
@@ -15831,6 +16134,7 @@ export namespace Prisma {
    */
   interface SettingsFieldRefs {
     readonly id: FieldRef<"Settings", 'String'>
+    readonly workspaceId: FieldRef<"Settings", 'String'>
     readonly remetente: FieldRef<"Settings", 'String'>
     readonly numero: FieldRef<"Settings", 'String'>
     readonly assinatura: FieldRef<"Settings", 'String'>
@@ -16244,6 +16548,7 @@ export namespace Prisma {
 
   export type WebhookMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     url: string | null
     secret: string | null
@@ -16256,6 +16561,7 @@ export namespace Prisma {
 
   export type WebhookMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     url: string | null
     secret: string | null
@@ -16268,6 +16574,7 @@ export namespace Prisma {
 
   export type WebhookCountAggregateOutputType = {
     id: number
+    workspaceId: number
     nome: number
     url: number
     secret: number
@@ -16291,6 +16598,7 @@ export namespace Prisma {
 
   export type WebhookMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     url?: true
     secret?: true
@@ -16303,6 +16611,7 @@ export namespace Prisma {
 
   export type WebhookMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     url?: true
     secret?: true
@@ -16315,6 +16624,7 @@ export namespace Prisma {
 
   export type WebhookCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     url?: true
     secret?: true
@@ -16415,6 +16725,7 @@ export namespace Prisma {
 
   export type WebhookGroupByOutputType = {
     id: string
+    workspaceId: string
     nome: string
     url: string
     secret: string
@@ -16447,6 +16758,7 @@ export namespace Prisma {
 
   export type WebhookSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     url?: boolean
     secret?: boolean
@@ -16460,6 +16772,7 @@ export namespace Prisma {
 
   export type WebhookSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     url?: boolean
     secret?: boolean
@@ -16473,6 +16786,7 @@ export namespace Prisma {
 
   export type WebhookSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     url?: boolean
     secret?: boolean
@@ -16486,6 +16800,7 @@ export namespace Prisma {
 
   export type WebhookSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     url?: boolean
     secret?: boolean
@@ -16497,13 +16812,17 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type WebhookOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "url" | "secret" | "ativo" | "eventos" | "ultimoEnvioEm" | "ultimoEnvioStatus" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["webhook"]>
+  export type WebhookOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "url" | "secret" | "ativo" | "eventos" | "ultimoEnvioEm" | "ultimoEnvioStatus" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["webhook"]>
 
   export type $WebhookPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Webhook"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       nome: string
       url: string
       secret: string
@@ -16941,6 +17260,7 @@ export namespace Prisma {
    */
   interface WebhookFieldRefs {
     readonly id: FieldRef<"Webhook", 'String'>
+    readonly workspaceId: FieldRef<"Webhook", 'String'>
     readonly nome: FieldRef<"Webhook", 'String'>
     readonly url: FieldRef<"Webhook", 'String'>
     readonly secret: FieldRef<"Webhook", 'String'>
@@ -17328,6 +17648,7 @@ export namespace Prisma {
 
   export type AppLogMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nivel: $Enums.AppLogNivel | null
     origem: string | null
     mensagem: string | null
@@ -17337,6 +17658,7 @@ export namespace Prisma {
 
   export type AppLogMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nivel: $Enums.AppLogNivel | null
     origem: string | null
     mensagem: string | null
@@ -17346,6 +17668,7 @@ export namespace Prisma {
 
   export type AppLogCountAggregateOutputType = {
     id: number
+    workspaceId: number
     nivel: number
     origem: number
     mensagem: number
@@ -17357,6 +17680,7 @@ export namespace Prisma {
 
   export type AppLogMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     nivel?: true
     origem?: true
     mensagem?: true
@@ -17366,6 +17690,7 @@ export namespace Prisma {
 
   export type AppLogMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     nivel?: true
     origem?: true
     mensagem?: true
@@ -17375,6 +17700,7 @@ export namespace Prisma {
 
   export type AppLogCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     nivel?: true
     origem?: true
     mensagem?: true
@@ -17457,6 +17783,7 @@ export namespace Prisma {
 
   export type AppLogGroupByOutputType = {
     id: string
+    workspaceId: string
     nivel: $Enums.AppLogNivel
     origem: string
     mensagem: string
@@ -17483,6 +17810,7 @@ export namespace Prisma {
 
   export type AppLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nivel?: boolean
     origem?: boolean
     mensagem?: boolean
@@ -17492,6 +17820,7 @@ export namespace Prisma {
 
   export type AppLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nivel?: boolean
     origem?: boolean
     mensagem?: boolean
@@ -17501,6 +17830,7 @@ export namespace Prisma {
 
   export type AppLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nivel?: boolean
     origem?: boolean
     mensagem?: boolean
@@ -17510,6 +17840,7 @@ export namespace Prisma {
 
   export type AppLogSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     nivel?: boolean
     origem?: boolean
     mensagem?: boolean
@@ -17517,13 +17848,17 @@ export namespace Prisma {
     data?: boolean
   }
 
-  export type AppLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nivel" | "origem" | "mensagem" | "detalhes" | "data", ExtArgs["result"]["appLog"]>
+  export type AppLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nivel" | "origem" | "mensagem" | "detalhes" | "data", ExtArgs["result"]["appLog"]>
 
   export type $AppLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "AppLog"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       nivel: $Enums.AppLogNivel
       /**
        * Ex: "evolution", "campaigns", "leads", "webhooks"
@@ -17959,6 +18294,7 @@ export namespace Prisma {
    */
   interface AppLogFieldRefs {
     readonly id: FieldRef<"AppLog", 'String'>
+    readonly workspaceId: FieldRef<"AppLog", 'String'>
     readonly nivel: FieldRef<"AppLog", 'AppLogNivel'>
     readonly origem: FieldRef<"AppLog", 'String'>
     readonly mensagem: FieldRef<"AppLog", 'String'>
@@ -19506,6 +19842,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     token: string | null
     ativo: boolean | null
     ultimoUsoEm: Date | null
@@ -19515,6 +19852,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     token: string | null
     ativo: boolean | null
     ultimoUsoEm: Date | null
@@ -19524,6 +19862,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenCountAggregateOutputType = {
     id: number
+    workspaceId: number
     token: number
     ativo: number
     ultimoUsoEm: number
@@ -19535,6 +19874,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     token?: true
     ativo?: true
     ultimoUsoEm?: true
@@ -19544,6 +19884,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     token?: true
     ativo?: true
     ultimoUsoEm?: true
@@ -19553,6 +19894,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     token?: true
     ativo?: true
     ultimoUsoEm?: true
@@ -19635,6 +19977,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenGroupByOutputType = {
     id: string
+    workspaceId: string
     token: string
     ativo: boolean
     ultimoUsoEm: Date | null
@@ -19661,6 +20004,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     token?: boolean
     ativo?: boolean
     ultimoUsoEm?: boolean
@@ -19670,6 +20014,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     token?: boolean
     ativo?: boolean
     ultimoUsoEm?: boolean
@@ -19679,6 +20024,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     token?: boolean
     ativo?: boolean
     ultimoUsoEm?: boolean
@@ -19688,6 +20034,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     token?: boolean
     ativo?: boolean
     ultimoUsoEm?: boolean
@@ -19695,13 +20042,17 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type InboundWebhookTokenOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "token" | "ativo" | "ultimoUsoEm" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["inboundWebhookToken"]>
+  export type InboundWebhookTokenOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "token" | "ativo" | "ultimoUsoEm" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["inboundWebhookToken"]>
 
   export type $InboundWebhookTokenPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "InboundWebhookToken"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       /**
        * Valor gerado: whin_<64 chars hex>
        */
@@ -20134,6 +20485,7 @@ export namespace Prisma {
    */
   interface InboundWebhookTokenFieldRefs {
     readonly id: FieldRef<"InboundWebhookToken", 'String'>
+    readonly workspaceId: FieldRef<"InboundWebhookToken", 'String'>
     readonly token: FieldRef<"InboundWebhookToken", 'String'>
     readonly ativo: FieldRef<"InboundWebhookToken", 'Boolean'>
     readonly ultimoUsoEm: FieldRef<"InboundWebhookToken", 'DateTime'>
@@ -20506,6 +20858,1046 @@ export namespace Prisma {
 
 
   /**
+   * Model McpToken
+   */
+
+  export type AggregateMcpToken = {
+    _count: McpTokenCountAggregateOutputType | null
+    _min: McpTokenMinAggregateOutputType | null
+    _max: McpTokenMaxAggregateOutputType | null
+  }
+
+  export type McpTokenMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    tokenHash: string | null
+    prefixo: string | null
+    ativo: boolean | null
+    ultimoUsoEm: Date | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type McpTokenMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    tokenHash: string | null
+    prefixo: string | null
+    ativo: boolean | null
+    ultimoUsoEm: Date | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type McpTokenCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    tokenHash: number
+    prefixo: number
+    ativo: number
+    ultimoUsoEm: number
+    criadoEm: number
+    atualizadoEm: number
+    _all: number
+  }
+
+
+  export type McpTokenMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    tokenHash?: true
+    prefixo?: true
+    ativo?: true
+    ultimoUsoEm?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type McpTokenMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    tokenHash?: true
+    prefixo?: true
+    ativo?: true
+    ultimoUsoEm?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type McpTokenCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    tokenHash?: true
+    prefixo?: true
+    ativo?: true
+    ultimoUsoEm?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    _all?: true
+  }
+
+  export type McpTokenAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which McpToken to aggregate.
+     */
+    where?: McpTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of McpTokens to fetch.
+     */
+    orderBy?: McpTokenOrderByWithRelationInput | McpTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: McpTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` McpTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` McpTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned McpTokens
+    **/
+    _count?: true | McpTokenCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: McpTokenMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: McpTokenMaxAggregateInputType
+  }
+
+  export type GetMcpTokenAggregateType<T extends McpTokenAggregateArgs> = {
+        [P in keyof T & keyof AggregateMcpToken]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMcpToken[P]>
+      : GetScalarType<T[P], AggregateMcpToken[P]>
+  }
+
+
+
+
+  export type McpTokenGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: McpTokenWhereInput
+    orderBy?: McpTokenOrderByWithAggregationInput | McpTokenOrderByWithAggregationInput[]
+    by: McpTokenScalarFieldEnum[] | McpTokenScalarFieldEnum
+    having?: McpTokenScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: McpTokenCountAggregateInputType | true
+    _min?: McpTokenMinAggregateInputType
+    _max?: McpTokenMaxAggregateInputType
+  }
+
+  export type McpTokenGroupByOutputType = {
+    id: string
+    workspaceId: string
+    tokenHash: string
+    prefixo: string
+    ativo: boolean
+    ultimoUsoEm: Date | null
+    criadoEm: Date
+    atualizadoEm: Date
+    _count: McpTokenCountAggregateOutputType | null
+    _min: McpTokenMinAggregateOutputType | null
+    _max: McpTokenMaxAggregateOutputType | null
+  }
+
+  type GetMcpTokenGroupByPayload<T extends McpTokenGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<McpTokenGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof McpTokenGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], McpTokenGroupByOutputType[P]>
+            : GetScalarType<T[P], McpTokenGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type McpTokenSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    tokenHash?: boolean
+    prefixo?: boolean
+    ativo?: boolean
+    ultimoUsoEm?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }, ExtArgs["result"]["mcpToken"]>
+
+  export type McpTokenSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    tokenHash?: boolean
+    prefixo?: boolean
+    ativo?: boolean
+    ultimoUsoEm?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }, ExtArgs["result"]["mcpToken"]>
+
+  export type McpTokenSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    tokenHash?: boolean
+    prefixo?: boolean
+    ativo?: boolean
+    ultimoUsoEm?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }, ExtArgs["result"]["mcpToken"]>
+
+  export type McpTokenSelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    tokenHash?: boolean
+    prefixo?: boolean
+    ativo?: boolean
+    ultimoUsoEm?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }
+
+  export type McpTokenOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "tokenHash" | "prefixo" | "ativo" | "ultimoUsoEm" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["mcpToken"]>
+
+  export type $McpTokenPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "McpToken"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
+      tokenHash: string
+      /**
+       * Início do token (ex.: `mcp_1a2b3c4d`), só para reconhecê-lo na tela.
+       */
+      prefixo: string
+      ativo: boolean
+      ultimoUsoEm: Date | null
+      criadoEm: Date
+      atualizadoEm: Date
+    }, ExtArgs["result"]["mcpToken"]>
+    composites: {}
+  }
+
+  type McpTokenGetPayload<S extends boolean | null | undefined | McpTokenDefaultArgs> = $Result.GetResult<Prisma.$McpTokenPayload, S>
+
+  type McpTokenCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<McpTokenFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: McpTokenCountAggregateInputType | true
+    }
+
+  export interface McpTokenDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['McpToken'], meta: { name: 'McpToken' } }
+    /**
+     * Find zero or one McpToken that matches the filter.
+     * @param {McpTokenFindUniqueArgs} args - Arguments to find a McpToken
+     * @example
+     * // Get one McpToken
+     * const mcpToken = await prisma.mcpToken.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends McpTokenFindUniqueArgs>(args: SelectSubset<T, McpTokenFindUniqueArgs<ExtArgs>>): Prisma__McpTokenClient<$Result.GetResult<Prisma.$McpTokenPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one McpToken that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {McpTokenFindUniqueOrThrowArgs} args - Arguments to find a McpToken
+     * @example
+     * // Get one McpToken
+     * const mcpToken = await prisma.mcpToken.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends McpTokenFindUniqueOrThrowArgs>(args: SelectSubset<T, McpTokenFindUniqueOrThrowArgs<ExtArgs>>): Prisma__McpTokenClient<$Result.GetResult<Prisma.$McpTokenPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first McpToken that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {McpTokenFindFirstArgs} args - Arguments to find a McpToken
+     * @example
+     * // Get one McpToken
+     * const mcpToken = await prisma.mcpToken.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends McpTokenFindFirstArgs>(args?: SelectSubset<T, McpTokenFindFirstArgs<ExtArgs>>): Prisma__McpTokenClient<$Result.GetResult<Prisma.$McpTokenPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first McpToken that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {McpTokenFindFirstOrThrowArgs} args - Arguments to find a McpToken
+     * @example
+     * // Get one McpToken
+     * const mcpToken = await prisma.mcpToken.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends McpTokenFindFirstOrThrowArgs>(args?: SelectSubset<T, McpTokenFindFirstOrThrowArgs<ExtArgs>>): Prisma__McpTokenClient<$Result.GetResult<Prisma.$McpTokenPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more McpTokens that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {McpTokenFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all McpTokens
+     * const mcpTokens = await prisma.mcpToken.findMany()
+     * 
+     * // Get first 10 McpTokens
+     * const mcpTokens = await prisma.mcpToken.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const mcpTokenWithIdOnly = await prisma.mcpToken.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends McpTokenFindManyArgs>(args?: SelectSubset<T, McpTokenFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$McpTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a McpToken.
+     * @param {McpTokenCreateArgs} args - Arguments to create a McpToken.
+     * @example
+     * // Create one McpToken
+     * const McpToken = await prisma.mcpToken.create({
+     *   data: {
+     *     // ... data to create a McpToken
+     *   }
+     * })
+     * 
+     */
+    create<T extends McpTokenCreateArgs>(args: SelectSubset<T, McpTokenCreateArgs<ExtArgs>>): Prisma__McpTokenClient<$Result.GetResult<Prisma.$McpTokenPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many McpTokens.
+     * @param {McpTokenCreateManyArgs} args - Arguments to create many McpTokens.
+     * @example
+     * // Create many McpTokens
+     * const mcpToken = await prisma.mcpToken.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends McpTokenCreateManyArgs>(args?: SelectSubset<T, McpTokenCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many McpTokens and returns the data saved in the database.
+     * @param {McpTokenCreateManyAndReturnArgs} args - Arguments to create many McpTokens.
+     * @example
+     * // Create many McpTokens
+     * const mcpToken = await prisma.mcpToken.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many McpTokens and only return the `id`
+     * const mcpTokenWithIdOnly = await prisma.mcpToken.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends McpTokenCreateManyAndReturnArgs>(args?: SelectSubset<T, McpTokenCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$McpTokenPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a McpToken.
+     * @param {McpTokenDeleteArgs} args - Arguments to delete one McpToken.
+     * @example
+     * // Delete one McpToken
+     * const McpToken = await prisma.mcpToken.delete({
+     *   where: {
+     *     // ... filter to delete one McpToken
+     *   }
+     * })
+     * 
+     */
+    delete<T extends McpTokenDeleteArgs>(args: SelectSubset<T, McpTokenDeleteArgs<ExtArgs>>): Prisma__McpTokenClient<$Result.GetResult<Prisma.$McpTokenPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one McpToken.
+     * @param {McpTokenUpdateArgs} args - Arguments to update one McpToken.
+     * @example
+     * // Update one McpToken
+     * const mcpToken = await prisma.mcpToken.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends McpTokenUpdateArgs>(args: SelectSubset<T, McpTokenUpdateArgs<ExtArgs>>): Prisma__McpTokenClient<$Result.GetResult<Prisma.$McpTokenPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more McpTokens.
+     * @param {McpTokenDeleteManyArgs} args - Arguments to filter McpTokens to delete.
+     * @example
+     * // Delete a few McpTokens
+     * const { count } = await prisma.mcpToken.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends McpTokenDeleteManyArgs>(args?: SelectSubset<T, McpTokenDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more McpTokens.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {McpTokenUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many McpTokens
+     * const mcpToken = await prisma.mcpToken.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends McpTokenUpdateManyArgs>(args: SelectSubset<T, McpTokenUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more McpTokens and returns the data updated in the database.
+     * @param {McpTokenUpdateManyAndReturnArgs} args - Arguments to update many McpTokens.
+     * @example
+     * // Update many McpTokens
+     * const mcpToken = await prisma.mcpToken.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more McpTokens and only return the `id`
+     * const mcpTokenWithIdOnly = await prisma.mcpToken.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends McpTokenUpdateManyAndReturnArgs>(args: SelectSubset<T, McpTokenUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$McpTokenPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one McpToken.
+     * @param {McpTokenUpsertArgs} args - Arguments to update or create a McpToken.
+     * @example
+     * // Update or create a McpToken
+     * const mcpToken = await prisma.mcpToken.upsert({
+     *   create: {
+     *     // ... data to create a McpToken
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the McpToken we want to update
+     *   }
+     * })
+     */
+    upsert<T extends McpTokenUpsertArgs>(args: SelectSubset<T, McpTokenUpsertArgs<ExtArgs>>): Prisma__McpTokenClient<$Result.GetResult<Prisma.$McpTokenPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of McpTokens.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {McpTokenCountArgs} args - Arguments to filter McpTokens to count.
+     * @example
+     * // Count the number of McpTokens
+     * const count = await prisma.mcpToken.count({
+     *   where: {
+     *     // ... the filter for the McpTokens we want to count
+     *   }
+     * })
+    **/
+    count<T extends McpTokenCountArgs>(
+      args?: Subset<T, McpTokenCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], McpTokenCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a McpToken.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {McpTokenAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends McpTokenAggregateArgs>(args: Subset<T, McpTokenAggregateArgs>): Prisma.PrismaPromise<GetMcpTokenAggregateType<T>>
+
+    /**
+     * Group by McpToken.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {McpTokenGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends McpTokenGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: McpTokenGroupByArgs['orderBy'] }
+        : { orderBy?: McpTokenGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, McpTokenGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMcpTokenGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the McpToken model
+   */
+  readonly fields: McpTokenFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for McpToken.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__McpTokenClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the McpToken model
+   */
+  interface McpTokenFieldRefs {
+    readonly id: FieldRef<"McpToken", 'String'>
+    readonly workspaceId: FieldRef<"McpToken", 'String'>
+    readonly tokenHash: FieldRef<"McpToken", 'String'>
+    readonly prefixo: FieldRef<"McpToken", 'String'>
+    readonly ativo: FieldRef<"McpToken", 'Boolean'>
+    readonly ultimoUsoEm: FieldRef<"McpToken", 'DateTime'>
+    readonly criadoEm: FieldRef<"McpToken", 'DateTime'>
+    readonly atualizadoEm: FieldRef<"McpToken", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * McpToken findUnique
+   */
+  export type McpTokenFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the McpToken
+     */
+    select?: McpTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the McpToken
+     */
+    omit?: McpTokenOmit<ExtArgs> | null
+    /**
+     * Filter, which McpToken to fetch.
+     */
+    where: McpTokenWhereUniqueInput
+  }
+
+  /**
+   * McpToken findUniqueOrThrow
+   */
+  export type McpTokenFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the McpToken
+     */
+    select?: McpTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the McpToken
+     */
+    omit?: McpTokenOmit<ExtArgs> | null
+    /**
+     * Filter, which McpToken to fetch.
+     */
+    where: McpTokenWhereUniqueInput
+  }
+
+  /**
+   * McpToken findFirst
+   */
+  export type McpTokenFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the McpToken
+     */
+    select?: McpTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the McpToken
+     */
+    omit?: McpTokenOmit<ExtArgs> | null
+    /**
+     * Filter, which McpToken to fetch.
+     */
+    where?: McpTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of McpTokens to fetch.
+     */
+    orderBy?: McpTokenOrderByWithRelationInput | McpTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for McpTokens.
+     */
+    cursor?: McpTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` McpTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` McpTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of McpTokens.
+     */
+    distinct?: McpTokenScalarFieldEnum | McpTokenScalarFieldEnum[]
+  }
+
+  /**
+   * McpToken findFirstOrThrow
+   */
+  export type McpTokenFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the McpToken
+     */
+    select?: McpTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the McpToken
+     */
+    omit?: McpTokenOmit<ExtArgs> | null
+    /**
+     * Filter, which McpToken to fetch.
+     */
+    where?: McpTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of McpTokens to fetch.
+     */
+    orderBy?: McpTokenOrderByWithRelationInput | McpTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for McpTokens.
+     */
+    cursor?: McpTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` McpTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` McpTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of McpTokens.
+     */
+    distinct?: McpTokenScalarFieldEnum | McpTokenScalarFieldEnum[]
+  }
+
+  /**
+   * McpToken findMany
+   */
+  export type McpTokenFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the McpToken
+     */
+    select?: McpTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the McpToken
+     */
+    omit?: McpTokenOmit<ExtArgs> | null
+    /**
+     * Filter, which McpTokens to fetch.
+     */
+    where?: McpTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of McpTokens to fetch.
+     */
+    orderBy?: McpTokenOrderByWithRelationInput | McpTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing McpTokens.
+     */
+    cursor?: McpTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` McpTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` McpTokens.
+     */
+    skip?: number
+    distinct?: McpTokenScalarFieldEnum | McpTokenScalarFieldEnum[]
+  }
+
+  /**
+   * McpToken create
+   */
+  export type McpTokenCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the McpToken
+     */
+    select?: McpTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the McpToken
+     */
+    omit?: McpTokenOmit<ExtArgs> | null
+    /**
+     * The data needed to create a McpToken.
+     */
+    data: XOR<McpTokenCreateInput, McpTokenUncheckedCreateInput>
+  }
+
+  /**
+   * McpToken createMany
+   */
+  export type McpTokenCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many McpTokens.
+     */
+    data: McpTokenCreateManyInput | McpTokenCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * McpToken createManyAndReturn
+   */
+  export type McpTokenCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the McpToken
+     */
+    select?: McpTokenSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the McpToken
+     */
+    omit?: McpTokenOmit<ExtArgs> | null
+    /**
+     * The data used to create many McpTokens.
+     */
+    data: McpTokenCreateManyInput | McpTokenCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * McpToken update
+   */
+  export type McpTokenUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the McpToken
+     */
+    select?: McpTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the McpToken
+     */
+    omit?: McpTokenOmit<ExtArgs> | null
+    /**
+     * The data needed to update a McpToken.
+     */
+    data: XOR<McpTokenUpdateInput, McpTokenUncheckedUpdateInput>
+    /**
+     * Choose, which McpToken to update.
+     */
+    where: McpTokenWhereUniqueInput
+  }
+
+  /**
+   * McpToken updateMany
+   */
+  export type McpTokenUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update McpTokens.
+     */
+    data: XOR<McpTokenUpdateManyMutationInput, McpTokenUncheckedUpdateManyInput>
+    /**
+     * Filter which McpTokens to update
+     */
+    where?: McpTokenWhereInput
+    /**
+     * Limit how many McpTokens to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * McpToken updateManyAndReturn
+   */
+  export type McpTokenUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the McpToken
+     */
+    select?: McpTokenSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the McpToken
+     */
+    omit?: McpTokenOmit<ExtArgs> | null
+    /**
+     * The data used to update McpTokens.
+     */
+    data: XOR<McpTokenUpdateManyMutationInput, McpTokenUncheckedUpdateManyInput>
+    /**
+     * Filter which McpTokens to update
+     */
+    where?: McpTokenWhereInput
+    /**
+     * Limit how many McpTokens to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * McpToken upsert
+   */
+  export type McpTokenUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the McpToken
+     */
+    select?: McpTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the McpToken
+     */
+    omit?: McpTokenOmit<ExtArgs> | null
+    /**
+     * The filter to search for the McpToken to update in case it exists.
+     */
+    where: McpTokenWhereUniqueInput
+    /**
+     * In case the McpToken found by the `where` argument doesn't exist, create a new McpToken with this data.
+     */
+    create: XOR<McpTokenCreateInput, McpTokenUncheckedCreateInput>
+    /**
+     * In case the McpToken was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<McpTokenUpdateInput, McpTokenUncheckedUpdateInput>
+  }
+
+  /**
+   * McpToken delete
+   */
+  export type McpTokenDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the McpToken
+     */
+    select?: McpTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the McpToken
+     */
+    omit?: McpTokenOmit<ExtArgs> | null
+    /**
+     * Filter which McpToken to delete.
+     */
+    where: McpTokenWhereUniqueInput
+  }
+
+  /**
+   * McpToken deleteMany
+   */
+  export type McpTokenDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which McpTokens to delete
+     */
+    where?: McpTokenWhereInput
+    /**
+     * Limit how many McpTokens to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * McpToken without action
+   */
+  export type McpTokenDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the McpToken
+     */
+    select?: McpTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the McpToken
+     */
+    omit?: McpTokenOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Model InboundEvent
    */
 
@@ -20517,6 +21909,7 @@ export namespace Prisma {
 
   export type InboundEventMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     evento: string | null
     origem: string | null
     recebidoEm: Date | null
@@ -20524,6 +21917,7 @@ export namespace Prisma {
 
   export type InboundEventMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     evento: string | null
     origem: string | null
     recebidoEm: Date | null
@@ -20531,6 +21925,7 @@ export namespace Prisma {
 
   export type InboundEventCountAggregateOutputType = {
     id: number
+    workspaceId: number
     evento: number
     origem: number
     payload: number
@@ -20541,6 +21936,7 @@ export namespace Prisma {
 
   export type InboundEventMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     evento?: true
     origem?: true
     recebidoEm?: true
@@ -20548,6 +21944,7 @@ export namespace Prisma {
 
   export type InboundEventMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     evento?: true
     origem?: true
     recebidoEm?: true
@@ -20555,6 +21952,7 @@ export namespace Prisma {
 
   export type InboundEventCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     evento?: true
     origem?: true
     payload?: true
@@ -20636,6 +22034,7 @@ export namespace Prisma {
 
   export type InboundEventGroupByOutputType = {
     id: string
+    workspaceId: string
     evento: string
     origem: string | null
     payload: JsonValue
@@ -20661,6 +22060,7 @@ export namespace Prisma {
 
   export type InboundEventSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     evento?: boolean
     origem?: boolean
     payload?: boolean
@@ -20669,6 +22069,7 @@ export namespace Prisma {
 
   export type InboundEventSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     evento?: boolean
     origem?: boolean
     payload?: boolean
@@ -20677,6 +22078,7 @@ export namespace Prisma {
 
   export type InboundEventSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     evento?: boolean
     origem?: boolean
     payload?: boolean
@@ -20685,19 +22087,24 @@ export namespace Prisma {
 
   export type InboundEventSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     evento?: boolean
     origem?: boolean
     payload?: boolean
     recebidoEm?: boolean
   }
 
-  export type InboundEventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "evento" | "origem" | "payload" | "recebidoEm", ExtArgs["result"]["inboundEvent"]>
+  export type InboundEventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "evento" | "origem" | "payload" | "recebidoEm", ExtArgs["result"]["inboundEvent"]>
 
   export type $InboundEventPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "InboundEvent"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       /**
        * Nome do evento enviado pelo sistema externo.
        */
@@ -21135,6 +22542,7 @@ export namespace Prisma {
    */
   interface InboundEventFieldRefs {
     readonly id: FieldRef<"InboundEvent", 'String'>
+    readonly workspaceId: FieldRef<"InboundEvent", 'String'>
     readonly evento: FieldRef<"InboundEvent", 'String'>
     readonly origem: FieldRef<"InboundEvent", 'String'>
     readonly payload: FieldRef<"InboundEvent", 'Json'>
@@ -21517,6 +22925,7 @@ export namespace Prisma {
 
   export type InstanceMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     numero: string | null
     criadoEm: Date | null
@@ -21525,6 +22934,7 @@ export namespace Prisma {
 
   export type InstanceMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     numero: string | null
     criadoEm: Date | null
@@ -21533,6 +22943,7 @@ export namespace Prisma {
 
   export type InstanceCountAggregateOutputType = {
     id: number
+    workspaceId: number
     nome: number
     numero: number
     criadoEm: number
@@ -21543,6 +22954,7 @@ export namespace Prisma {
 
   export type InstanceMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     numero?: true
     criadoEm?: true
@@ -21551,6 +22963,7 @@ export namespace Prisma {
 
   export type InstanceMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     numero?: true
     criadoEm?: true
@@ -21559,6 +22972,7 @@ export namespace Prisma {
 
   export type InstanceCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     numero?: true
     criadoEm?: true
@@ -21640,6 +23054,7 @@ export namespace Prisma {
 
   export type InstanceGroupByOutputType = {
     id: string
+    workspaceId: string
     nome: string
     numero: string | null
     criadoEm: Date
@@ -21665,6 +23080,7 @@ export namespace Prisma {
 
   export type InstanceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     numero?: boolean
     criadoEm?: boolean
@@ -21673,6 +23089,7 @@ export namespace Prisma {
 
   export type InstanceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     numero?: boolean
     criadoEm?: boolean
@@ -21681,6 +23098,7 @@ export namespace Prisma {
 
   export type InstanceSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     numero?: boolean
     criadoEm?: boolean
@@ -21689,19 +23107,24 @@ export namespace Prisma {
 
   export type InstanceSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     numero?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
   }
 
-  export type InstanceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "numero" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["instance"]>
+  export type InstanceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "numero" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["instance"]>
 
   export type $InstancePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Instance"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       nome: string
       numero: string | null
       criadoEm: Date
@@ -22130,6 +23553,7 @@ export namespace Prisma {
    */
   interface InstanceFieldRefs {
     readonly id: FieldRef<"Instance", 'String'>
+    readonly workspaceId: FieldRef<"Instance", 'String'>
     readonly nome: FieldRef<"Instance", 'String'>
     readonly numero: FieldRef<"Instance", 'String'>
     readonly criadoEm: FieldRef<"Instance", 'DateTime'>
@@ -22512,6 +23936,7 @@ export namespace Prisma {
 
   export type NoCodeFlowMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     ativo: boolean | null
     sistema: boolean | null
@@ -22524,6 +23949,7 @@ export namespace Prisma {
 
   export type NoCodeFlowMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     ativo: boolean | null
     sistema: boolean | null
@@ -22536,6 +23962,7 @@ export namespace Prisma {
 
   export type NoCodeFlowCountAggregateOutputType = {
     id: number
+    workspaceId: number
     nome: number
     ativo: number
     sistema: number
@@ -22552,6 +23979,7 @@ export namespace Prisma {
 
   export type NoCodeFlowMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     ativo?: true
     sistema?: true
@@ -22564,6 +23992,7 @@ export namespace Prisma {
 
   export type NoCodeFlowMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     ativo?: true
     sistema?: true
@@ -22576,6 +24005,7 @@ export namespace Prisma {
 
   export type NoCodeFlowCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     ativo?: true
     sistema?: true
@@ -22663,6 +24093,7 @@ export namespace Prisma {
 
   export type NoCodeFlowGroupByOutputType = {
     id: string
+    workspaceId: string
     nome: string
     ativo: boolean
     sistema: boolean
@@ -22694,6 +24125,7 @@ export namespace Prisma {
 
   export type NoCodeFlowSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     ativo?: boolean
     sistema?: boolean
@@ -22710,6 +24142,7 @@ export namespace Prisma {
 
   export type NoCodeFlowSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     ativo?: boolean
     sistema?: boolean
@@ -22724,6 +24157,7 @@ export namespace Prisma {
 
   export type NoCodeFlowSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     ativo?: boolean
     sistema?: boolean
@@ -22738,6 +24172,7 @@ export namespace Prisma {
 
   export type NoCodeFlowSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     ativo?: boolean
     sistema?: boolean
@@ -22750,7 +24185,7 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type NoCodeFlowOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "ativo" | "sistema" | "execWebhookAtivo" | "execWebhookUrl" | "execWebhookSegredo" | "nodes" | "edges" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["noCodeFlow"]>
+  export type NoCodeFlowOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "ativo" | "sistema" | "execWebhookAtivo" | "execWebhookUrl" | "execWebhookSegredo" | "nodes" | "edges" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["noCodeFlow"]>
   export type NoCodeFlowInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     execucoes?: boolean | NoCodeFlow$execucoesArgs<ExtArgs>
     _count?: boolean | NoCodeFlowCountOutputTypeDefaultArgs<ExtArgs>
@@ -22765,6 +24200,10 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       nome: string
       ativo: boolean
       /**
@@ -23216,6 +24655,7 @@ export namespace Prisma {
    */
   interface NoCodeFlowFieldRefs {
     readonly id: FieldRef<"NoCodeFlow", 'String'>
+    readonly workspaceId: FieldRef<"NoCodeFlow", 'String'>
     readonly nome: FieldRef<"NoCodeFlow", 'String'>
     readonly ativo: FieldRef<"NoCodeFlow", 'Boolean'>
     readonly sistema: FieldRef<"NoCodeFlow", 'Boolean'>
@@ -24897,6 +26337,7 @@ export namespace Prisma {
 
   export type BackupConfigMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     url: string | null
     segredo: string | null
     autoAtivo: boolean | null
@@ -24910,6 +26351,7 @@ export namespace Prisma {
 
   export type BackupConfigMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     url: string | null
     segredo: string | null
     autoAtivo: boolean | null
@@ -24923,6 +26365,7 @@ export namespace Prisma {
 
   export type BackupConfigCountAggregateOutputType = {
     id: number
+    workspaceId: number
     url: number
     segredo: number
     secoes: number
@@ -24949,6 +26392,7 @@ export namespace Prisma {
 
   export type BackupConfigMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     url?: true
     segredo?: true
     autoAtivo?: true
@@ -24962,6 +26406,7 @@ export namespace Prisma {
 
   export type BackupConfigMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     url?: true
     segredo?: true
     autoAtivo?: true
@@ -24975,6 +26420,7 @@ export namespace Prisma {
 
   export type BackupConfigCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     url?: true
     segredo?: true
     secoes?: true
@@ -25076,6 +26522,7 @@ export namespace Prisma {
 
   export type BackupConfigGroupByOutputType = {
     id: string
+    workspaceId: string
     url: string
     segredo: string | null
     secoes: string[]
@@ -25109,6 +26556,7 @@ export namespace Prisma {
 
   export type BackupConfigSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     url?: boolean
     segredo?: boolean
     secoes?: boolean
@@ -25123,6 +26571,7 @@ export namespace Prisma {
 
   export type BackupConfigSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     url?: boolean
     segredo?: boolean
     secoes?: boolean
@@ -25137,6 +26586,7 @@ export namespace Prisma {
 
   export type BackupConfigSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     url?: boolean
     segredo?: boolean
     secoes?: boolean
@@ -25151,6 +26601,7 @@ export namespace Prisma {
 
   export type BackupConfigSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     url?: boolean
     segredo?: boolean
     secoes?: boolean
@@ -25163,13 +26614,17 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type BackupConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "url" | "segredo" | "secoes" | "autoAtivo" | "autoModo" | "autoIntervaloHoras" | "autoHorario" | "autoDiaSemana" | "autoProximoEm" | "atualizadoEm", ExtArgs["result"]["backupConfig"]>
+  export type BackupConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "url" | "segredo" | "secoes" | "autoAtivo" | "autoModo" | "autoIntervaloHoras" | "autoHorario" | "autoDiaSemana" | "autoProximoEm" | "atualizadoEm", ExtArgs["result"]["backupConfig"]>
 
   export type $BackupConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "BackupConfig"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       url: string
       /**
        * Segredo opcional: assina cada envio (HMAC-SHA256 no header X-Backup-Signature).
@@ -25623,6 +27078,7 @@ export namespace Prisma {
    */
   interface BackupConfigFieldRefs {
     readonly id: FieldRef<"BackupConfig", 'String'>
+    readonly workspaceId: FieldRef<"BackupConfig", 'String'>
     readonly url: FieldRef<"BackupConfig", 'String'>
     readonly segredo: FieldRef<"BackupConfig", 'String'>
     readonly secoes: FieldRef<"BackupConfig", 'String[]'>
@@ -26027,6 +27483,7 @@ export namespace Prisma {
 
   export type BackupExecucaoMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     origem: string | null
     status: string | null
     partesEnviadas: number | null
@@ -26041,6 +27498,7 @@ export namespace Prisma {
 
   export type BackupExecucaoMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     origem: string | null
     status: string | null
     partesEnviadas: number | null
@@ -26055,6 +27513,7 @@ export namespace Prisma {
 
   export type BackupExecucaoCountAggregateOutputType = {
     id: number
+    workspaceId: number
     origem: number
     status: number
     secoes: number
@@ -26087,6 +27546,7 @@ export namespace Prisma {
 
   export type BackupExecucaoMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     origem?: true
     status?: true
     partesEnviadas?: true
@@ -26101,6 +27561,7 @@ export namespace Prisma {
 
   export type BackupExecucaoMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     origem?: true
     status?: true
     partesEnviadas?: true
@@ -26115,6 +27576,7 @@ export namespace Prisma {
 
   export type BackupExecucaoCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     origem?: true
     status?: true
     secoes?: true
@@ -26218,6 +27680,7 @@ export namespace Prisma {
 
   export type BackupExecucaoGroupByOutputType = {
     id: string
+    workspaceId: string
     origem: string
     status: string
     secoes: string[]
@@ -26253,6 +27716,7 @@ export namespace Prisma {
 
   export type BackupExecucaoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     origem?: boolean
     status?: boolean
     secoes?: boolean
@@ -26269,6 +27733,7 @@ export namespace Prisma {
 
   export type BackupExecucaoSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     origem?: boolean
     status?: boolean
     secoes?: boolean
@@ -26285,6 +27750,7 @@ export namespace Prisma {
 
   export type BackupExecucaoSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     origem?: boolean
     status?: boolean
     secoes?: boolean
@@ -26301,6 +27767,7 @@ export namespace Prisma {
 
   export type BackupExecucaoSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     origem?: boolean
     status?: boolean
     secoes?: boolean
@@ -26315,13 +27782,17 @@ export namespace Prisma {
     concluidoEm?: boolean
   }
 
-  export type BackupExecucaoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "origem" | "status" | "secoes" | "resumo" | "partesEnviadas" | "partesTotal" | "bytes" | "tentativas" | "erro" | "criadoEm" | "ultimaTentativaEm" | "concluidoEm", ExtArgs["result"]["backupExecucao"]>
+  export type BackupExecucaoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "origem" | "status" | "secoes" | "resumo" | "partesEnviadas" | "partesTotal" | "bytes" | "tentativas" | "erro" | "criadoEm" | "ultimaTentativaEm" | "concluidoEm", ExtArgs["result"]["backupExecucao"]>
 
   export type $BackupExecucaoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "BackupExecucao"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       /**
        * "manual" | "automatico"
        */
@@ -26776,6 +28247,7 @@ export namespace Prisma {
    */
   interface BackupExecucaoFieldRefs {
     readonly id: FieldRef<"BackupExecucao", 'String'>
+    readonly workspaceId: FieldRef<"BackupExecucao", 'String'>
     readonly origem: FieldRef<"BackupExecucao", 'String'>
     readonly status: FieldRef<"BackupExecucao", 'String'>
     readonly secoes: FieldRef<"BackupExecucao", 'String[]'>
@@ -27155,6 +28627,1020 @@ export namespace Prisma {
 
 
   /**
+   * Model Workspace
+   */
+
+  export type AggregateWorkspace = {
+    _count: WorkspaceCountAggregateOutputType | null
+    _min: WorkspaceMinAggregateOutputType | null
+    _max: WorkspaceMaxAggregateOutputType | null
+  }
+
+  export type WorkspaceMinAggregateOutputType = {
+    id: string | null
+    nome: string | null
+    principal: boolean | null
+    ativo: boolean | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type WorkspaceMaxAggregateOutputType = {
+    id: string | null
+    nome: string | null
+    principal: boolean | null
+    ativo: boolean | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type WorkspaceCountAggregateOutputType = {
+    id: number
+    nome: number
+    principal: number
+    ativo: number
+    criadoEm: number
+    atualizadoEm: number
+    _all: number
+  }
+
+
+  export type WorkspaceMinAggregateInputType = {
+    id?: true
+    nome?: true
+    principal?: true
+    ativo?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type WorkspaceMaxAggregateInputType = {
+    id?: true
+    nome?: true
+    principal?: true
+    ativo?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type WorkspaceCountAggregateInputType = {
+    id?: true
+    nome?: true
+    principal?: true
+    ativo?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    _all?: true
+  }
+
+  export type WorkspaceAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Workspace to aggregate.
+     */
+    where?: WorkspaceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Workspaces to fetch.
+     */
+    orderBy?: WorkspaceOrderByWithRelationInput | WorkspaceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: WorkspaceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Workspaces from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Workspaces.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Workspaces
+    **/
+    _count?: true | WorkspaceCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: WorkspaceMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: WorkspaceMaxAggregateInputType
+  }
+
+  export type GetWorkspaceAggregateType<T extends WorkspaceAggregateArgs> = {
+        [P in keyof T & keyof AggregateWorkspace]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateWorkspace[P]>
+      : GetScalarType<T[P], AggregateWorkspace[P]>
+  }
+
+
+
+
+  export type WorkspaceGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkspaceWhereInput
+    orderBy?: WorkspaceOrderByWithAggregationInput | WorkspaceOrderByWithAggregationInput[]
+    by: WorkspaceScalarFieldEnum[] | WorkspaceScalarFieldEnum
+    having?: WorkspaceScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: WorkspaceCountAggregateInputType | true
+    _min?: WorkspaceMinAggregateInputType
+    _max?: WorkspaceMaxAggregateInputType
+  }
+
+  export type WorkspaceGroupByOutputType = {
+    id: string
+    nome: string
+    principal: boolean
+    ativo: boolean
+    criadoEm: Date
+    atualizadoEm: Date
+    _count: WorkspaceCountAggregateOutputType | null
+    _min: WorkspaceMinAggregateOutputType | null
+    _max: WorkspaceMaxAggregateOutputType | null
+  }
+
+  type GetWorkspaceGroupByPayload<T extends WorkspaceGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<WorkspaceGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof WorkspaceGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], WorkspaceGroupByOutputType[P]>
+            : GetScalarType<T[P], WorkspaceGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type WorkspaceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    nome?: boolean
+    principal?: boolean
+    ativo?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }, ExtArgs["result"]["workspace"]>
+
+  export type WorkspaceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    nome?: boolean
+    principal?: boolean
+    ativo?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }, ExtArgs["result"]["workspace"]>
+
+  export type WorkspaceSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    nome?: boolean
+    principal?: boolean
+    ativo?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }, ExtArgs["result"]["workspace"]>
+
+  export type WorkspaceSelectScalar = {
+    id?: boolean
+    nome?: boolean
+    principal?: boolean
+    ativo?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }
+
+  export type WorkspaceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "principal" | "ativo" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["workspace"]>
+
+  export type $WorkspacePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Workspace"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      nome: string
+      /**
+       * Instância do Root. Só pode existir uma (índice único parcial na migration).
+       */
+      principal: boolean
+      /**
+       * Instância desativada: ninguém dela entra e os envios automáticos param.
+       */
+      ativo: boolean
+      criadoEm: Date
+      atualizadoEm: Date
+    }, ExtArgs["result"]["workspace"]>
+    composites: {}
+  }
+
+  type WorkspaceGetPayload<S extends boolean | null | undefined | WorkspaceDefaultArgs> = $Result.GetResult<Prisma.$WorkspacePayload, S>
+
+  type WorkspaceCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<WorkspaceFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: WorkspaceCountAggregateInputType | true
+    }
+
+  export interface WorkspaceDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Workspace'], meta: { name: 'Workspace' } }
+    /**
+     * Find zero or one Workspace that matches the filter.
+     * @param {WorkspaceFindUniqueArgs} args - Arguments to find a Workspace
+     * @example
+     * // Get one Workspace
+     * const workspace = await prisma.workspace.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends WorkspaceFindUniqueArgs>(args: SelectSubset<T, WorkspaceFindUniqueArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Workspace that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {WorkspaceFindUniqueOrThrowArgs} args - Arguments to find a Workspace
+     * @example
+     * // Get one Workspace
+     * const workspace = await prisma.workspace.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends WorkspaceFindUniqueOrThrowArgs>(args: SelectSubset<T, WorkspaceFindUniqueOrThrowArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Workspace that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceFindFirstArgs} args - Arguments to find a Workspace
+     * @example
+     * // Get one Workspace
+     * const workspace = await prisma.workspace.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends WorkspaceFindFirstArgs>(args?: SelectSubset<T, WorkspaceFindFirstArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Workspace that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceFindFirstOrThrowArgs} args - Arguments to find a Workspace
+     * @example
+     * // Get one Workspace
+     * const workspace = await prisma.workspace.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends WorkspaceFindFirstOrThrowArgs>(args?: SelectSubset<T, WorkspaceFindFirstOrThrowArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Workspaces that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Workspaces
+     * const workspaces = await prisma.workspace.findMany()
+     * 
+     * // Get first 10 Workspaces
+     * const workspaces = await prisma.workspace.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const workspaceWithIdOnly = await prisma.workspace.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends WorkspaceFindManyArgs>(args?: SelectSubset<T, WorkspaceFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Workspace.
+     * @param {WorkspaceCreateArgs} args - Arguments to create a Workspace.
+     * @example
+     * // Create one Workspace
+     * const Workspace = await prisma.workspace.create({
+     *   data: {
+     *     // ... data to create a Workspace
+     *   }
+     * })
+     * 
+     */
+    create<T extends WorkspaceCreateArgs>(args: SelectSubset<T, WorkspaceCreateArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Workspaces.
+     * @param {WorkspaceCreateManyArgs} args - Arguments to create many Workspaces.
+     * @example
+     * // Create many Workspaces
+     * const workspace = await prisma.workspace.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends WorkspaceCreateManyArgs>(args?: SelectSubset<T, WorkspaceCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Workspaces and returns the data saved in the database.
+     * @param {WorkspaceCreateManyAndReturnArgs} args - Arguments to create many Workspaces.
+     * @example
+     * // Create many Workspaces
+     * const workspace = await prisma.workspace.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Workspaces and only return the `id`
+     * const workspaceWithIdOnly = await prisma.workspace.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends WorkspaceCreateManyAndReturnArgs>(args?: SelectSubset<T, WorkspaceCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Workspace.
+     * @param {WorkspaceDeleteArgs} args - Arguments to delete one Workspace.
+     * @example
+     * // Delete one Workspace
+     * const Workspace = await prisma.workspace.delete({
+     *   where: {
+     *     // ... filter to delete one Workspace
+     *   }
+     * })
+     * 
+     */
+    delete<T extends WorkspaceDeleteArgs>(args: SelectSubset<T, WorkspaceDeleteArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Workspace.
+     * @param {WorkspaceUpdateArgs} args - Arguments to update one Workspace.
+     * @example
+     * // Update one Workspace
+     * const workspace = await prisma.workspace.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends WorkspaceUpdateArgs>(args: SelectSubset<T, WorkspaceUpdateArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Workspaces.
+     * @param {WorkspaceDeleteManyArgs} args - Arguments to filter Workspaces to delete.
+     * @example
+     * // Delete a few Workspaces
+     * const { count } = await prisma.workspace.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends WorkspaceDeleteManyArgs>(args?: SelectSubset<T, WorkspaceDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Workspaces.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Workspaces
+     * const workspace = await prisma.workspace.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends WorkspaceUpdateManyArgs>(args: SelectSubset<T, WorkspaceUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Workspaces and returns the data updated in the database.
+     * @param {WorkspaceUpdateManyAndReturnArgs} args - Arguments to update many Workspaces.
+     * @example
+     * // Update many Workspaces
+     * const workspace = await prisma.workspace.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Workspaces and only return the `id`
+     * const workspaceWithIdOnly = await prisma.workspace.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends WorkspaceUpdateManyAndReturnArgs>(args: SelectSubset<T, WorkspaceUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Workspace.
+     * @param {WorkspaceUpsertArgs} args - Arguments to update or create a Workspace.
+     * @example
+     * // Update or create a Workspace
+     * const workspace = await prisma.workspace.upsert({
+     *   create: {
+     *     // ... data to create a Workspace
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Workspace we want to update
+     *   }
+     * })
+     */
+    upsert<T extends WorkspaceUpsertArgs>(args: SelectSubset<T, WorkspaceUpsertArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Workspaces.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceCountArgs} args - Arguments to filter Workspaces to count.
+     * @example
+     * // Count the number of Workspaces
+     * const count = await prisma.workspace.count({
+     *   where: {
+     *     // ... the filter for the Workspaces we want to count
+     *   }
+     * })
+    **/
+    count<T extends WorkspaceCountArgs>(
+      args?: Subset<T, WorkspaceCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], WorkspaceCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Workspace.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends WorkspaceAggregateArgs>(args: Subset<T, WorkspaceAggregateArgs>): Prisma.PrismaPromise<GetWorkspaceAggregateType<T>>
+
+    /**
+     * Group by Workspace.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends WorkspaceGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: WorkspaceGroupByArgs['orderBy'] }
+        : { orderBy?: WorkspaceGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, WorkspaceGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetWorkspaceGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Workspace model
+   */
+  readonly fields: WorkspaceFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Workspace.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__WorkspaceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Workspace model
+   */
+  interface WorkspaceFieldRefs {
+    readonly id: FieldRef<"Workspace", 'String'>
+    readonly nome: FieldRef<"Workspace", 'String'>
+    readonly principal: FieldRef<"Workspace", 'Boolean'>
+    readonly ativo: FieldRef<"Workspace", 'Boolean'>
+    readonly criadoEm: FieldRef<"Workspace", 'DateTime'>
+    readonly atualizadoEm: FieldRef<"Workspace", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Workspace findUnique
+   */
+  export type WorkspaceFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Workspace
+     */
+    select?: WorkspaceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Workspace
+     */
+    omit?: WorkspaceOmit<ExtArgs> | null
+    /**
+     * Filter, which Workspace to fetch.
+     */
+    where: WorkspaceWhereUniqueInput
+  }
+
+  /**
+   * Workspace findUniqueOrThrow
+   */
+  export type WorkspaceFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Workspace
+     */
+    select?: WorkspaceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Workspace
+     */
+    omit?: WorkspaceOmit<ExtArgs> | null
+    /**
+     * Filter, which Workspace to fetch.
+     */
+    where: WorkspaceWhereUniqueInput
+  }
+
+  /**
+   * Workspace findFirst
+   */
+  export type WorkspaceFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Workspace
+     */
+    select?: WorkspaceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Workspace
+     */
+    omit?: WorkspaceOmit<ExtArgs> | null
+    /**
+     * Filter, which Workspace to fetch.
+     */
+    where?: WorkspaceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Workspaces to fetch.
+     */
+    orderBy?: WorkspaceOrderByWithRelationInput | WorkspaceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Workspaces.
+     */
+    cursor?: WorkspaceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Workspaces from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Workspaces.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Workspaces.
+     */
+    distinct?: WorkspaceScalarFieldEnum | WorkspaceScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace findFirstOrThrow
+   */
+  export type WorkspaceFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Workspace
+     */
+    select?: WorkspaceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Workspace
+     */
+    omit?: WorkspaceOmit<ExtArgs> | null
+    /**
+     * Filter, which Workspace to fetch.
+     */
+    where?: WorkspaceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Workspaces to fetch.
+     */
+    orderBy?: WorkspaceOrderByWithRelationInput | WorkspaceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Workspaces.
+     */
+    cursor?: WorkspaceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Workspaces from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Workspaces.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Workspaces.
+     */
+    distinct?: WorkspaceScalarFieldEnum | WorkspaceScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace findMany
+   */
+  export type WorkspaceFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Workspace
+     */
+    select?: WorkspaceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Workspace
+     */
+    omit?: WorkspaceOmit<ExtArgs> | null
+    /**
+     * Filter, which Workspaces to fetch.
+     */
+    where?: WorkspaceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Workspaces to fetch.
+     */
+    orderBy?: WorkspaceOrderByWithRelationInput | WorkspaceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Workspaces.
+     */
+    cursor?: WorkspaceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Workspaces from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Workspaces.
+     */
+    skip?: number
+    distinct?: WorkspaceScalarFieldEnum | WorkspaceScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace create
+   */
+  export type WorkspaceCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Workspace
+     */
+    select?: WorkspaceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Workspace
+     */
+    omit?: WorkspaceOmit<ExtArgs> | null
+    /**
+     * The data needed to create a Workspace.
+     */
+    data: XOR<WorkspaceCreateInput, WorkspaceUncheckedCreateInput>
+  }
+
+  /**
+   * Workspace createMany
+   */
+  export type WorkspaceCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Workspaces.
+     */
+    data: WorkspaceCreateManyInput | WorkspaceCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Workspace createManyAndReturn
+   */
+  export type WorkspaceCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Workspace
+     */
+    select?: WorkspaceSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Workspace
+     */
+    omit?: WorkspaceOmit<ExtArgs> | null
+    /**
+     * The data used to create many Workspaces.
+     */
+    data: WorkspaceCreateManyInput | WorkspaceCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Workspace update
+   */
+  export type WorkspaceUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Workspace
+     */
+    select?: WorkspaceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Workspace
+     */
+    omit?: WorkspaceOmit<ExtArgs> | null
+    /**
+     * The data needed to update a Workspace.
+     */
+    data: XOR<WorkspaceUpdateInput, WorkspaceUncheckedUpdateInput>
+    /**
+     * Choose, which Workspace to update.
+     */
+    where: WorkspaceWhereUniqueInput
+  }
+
+  /**
+   * Workspace updateMany
+   */
+  export type WorkspaceUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Workspaces.
+     */
+    data: XOR<WorkspaceUpdateManyMutationInput, WorkspaceUncheckedUpdateManyInput>
+    /**
+     * Filter which Workspaces to update
+     */
+    where?: WorkspaceWhereInput
+    /**
+     * Limit how many Workspaces to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Workspace updateManyAndReturn
+   */
+  export type WorkspaceUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Workspace
+     */
+    select?: WorkspaceSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Workspace
+     */
+    omit?: WorkspaceOmit<ExtArgs> | null
+    /**
+     * The data used to update Workspaces.
+     */
+    data: XOR<WorkspaceUpdateManyMutationInput, WorkspaceUncheckedUpdateManyInput>
+    /**
+     * Filter which Workspaces to update
+     */
+    where?: WorkspaceWhereInput
+    /**
+     * Limit how many Workspaces to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Workspace upsert
+   */
+  export type WorkspaceUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Workspace
+     */
+    select?: WorkspaceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Workspace
+     */
+    omit?: WorkspaceOmit<ExtArgs> | null
+    /**
+     * The filter to search for the Workspace to update in case it exists.
+     */
+    where: WorkspaceWhereUniqueInput
+    /**
+     * In case the Workspace found by the `where` argument doesn't exist, create a new Workspace with this data.
+     */
+    create: XOR<WorkspaceCreateInput, WorkspaceUncheckedCreateInput>
+    /**
+     * In case the Workspace was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<WorkspaceUpdateInput, WorkspaceUncheckedUpdateInput>
+  }
+
+  /**
+   * Workspace delete
+   */
+  export type WorkspaceDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Workspace
+     */
+    select?: WorkspaceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Workspace
+     */
+    omit?: WorkspaceOmit<ExtArgs> | null
+    /**
+     * Filter which Workspace to delete.
+     */
+    where: WorkspaceWhereUniqueInput
+  }
+
+  /**
+   * Workspace deleteMany
+   */
+  export type WorkspaceDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Workspaces to delete
+     */
+    where?: WorkspaceWhereInput
+    /**
+     * Limit how many Workspaces to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Workspace without action
+   */
+  export type WorkspaceDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Workspace
+     */
+    select?: WorkspaceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Workspace
+     */
+    omit?: WorkspaceOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Model User
    */
 
@@ -27166,6 +29652,7 @@ export namespace Prisma {
 
   export type UserMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     username: string | null
     nome: string | null
     senhaHash: string | null
@@ -27179,6 +29666,7 @@ export namespace Prisma {
 
   export type UserMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     username: string | null
     nome: string | null
     senhaHash: string | null
@@ -27192,6 +29680,7 @@ export namespace Prisma {
 
   export type UserCountAggregateOutputType = {
     id: number
+    workspaceId: number
     username: number
     nome: number
     senhaHash: number
@@ -27209,6 +29698,7 @@ export namespace Prisma {
 
   export type UserMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     username?: true
     nome?: true
     senhaHash?: true
@@ -27222,6 +29712,7 @@ export namespace Prisma {
 
   export type UserMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     username?: true
     nome?: true
     senhaHash?: true
@@ -27235,6 +29726,7 @@ export namespace Prisma {
 
   export type UserCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     username?: true
     nome?: true
     senhaHash?: true
@@ -27323,6 +29815,7 @@ export namespace Prisma {
 
   export type UserGroupByOutputType = {
     id: string
+    workspaceId: string
     username: string
     nome: string
     senhaHash: string
@@ -27355,6 +29848,7 @@ export namespace Prisma {
 
   export type UserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     username?: boolean
     nome?: boolean
     senhaHash?: boolean
@@ -27371,6 +29865,7 @@ export namespace Prisma {
 
   export type UserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     username?: boolean
     nome?: boolean
     senhaHash?: boolean
@@ -27386,6 +29881,7 @@ export namespace Prisma {
 
   export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     username?: boolean
     nome?: boolean
     senhaHash?: boolean
@@ -27401,6 +29897,7 @@ export namespace Prisma {
 
   export type UserSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     username?: boolean
     nome?: boolean
     senhaHash?: boolean
@@ -27414,7 +29911,7 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "nome" | "senhaHash" | "role" | "secoes" | "poderes" | "ativo" | "temaApp" | "chatIdentificarRemetente" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "username" | "nome" | "senhaHash" | "role" | "secoes" | "poderes" | "ativo" | "temaApp" | "chatIdentificarRemetente" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     atendente?: boolean | User$atendenteArgs<ExtArgs>
   }
@@ -27431,6 +29928,10 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       /**
        * Login (minúsculo, único).
        */
@@ -27892,6 +30393,7 @@ export namespace Prisma {
    */
   interface UserFieldRefs {
     readonly id: FieldRef<"User", 'String'>
+    readonly workspaceId: FieldRef<"User", 'String'>
     readonly username: FieldRef<"User", 'String'>
     readonly nome: FieldRef<"User", 'String'>
     readonly senhaHash: FieldRef<"User", 'String'>
@@ -28340,6 +30842,7 @@ export namespace Prisma {
 
   export type DepartamentoMinAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     descricao: string | null
     ativo: boolean | null
@@ -28349,6 +30852,7 @@ export namespace Prisma {
 
   export type DepartamentoMaxAggregateOutputType = {
     id: string | null
+    workspaceId: string | null
     nome: string | null
     descricao: string | null
     ativo: boolean | null
@@ -28358,6 +30862,7 @@ export namespace Prisma {
 
   export type DepartamentoCountAggregateOutputType = {
     id: number
+    workspaceId: number
     nome: number
     descricao: number
     ativo: number
@@ -28369,6 +30874,7 @@ export namespace Prisma {
 
   export type DepartamentoMinAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     ativo?: true
@@ -28378,6 +30884,7 @@ export namespace Prisma {
 
   export type DepartamentoMaxAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     ativo?: true
@@ -28387,6 +30894,7 @@ export namespace Prisma {
 
   export type DepartamentoCountAggregateInputType = {
     id?: true
+    workspaceId?: true
     nome?: true
     descricao?: true
     ativo?: true
@@ -28469,6 +30977,7 @@ export namespace Prisma {
 
   export type DepartamentoGroupByOutputType = {
     id: string
+    workspaceId: string
     nome: string
     descricao: string | null
     ativo: boolean
@@ -28495,6 +31004,7 @@ export namespace Prisma {
 
   export type DepartamentoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -28507,6 +31017,7 @@ export namespace Prisma {
 
   export type DepartamentoSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -28516,6 +31027,7 @@ export namespace Prisma {
 
   export type DepartamentoSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -28525,6 +31037,7 @@ export namespace Prisma {
 
   export type DepartamentoSelectScalar = {
     id?: boolean
+    workspaceId?: boolean
     nome?: boolean
     descricao?: boolean
     ativo?: boolean
@@ -28532,7 +31045,7 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type DepartamentoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nome" | "descricao" | "ativo" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["departamento"]>
+  export type DepartamentoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "descricao" | "ativo" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["departamento"]>
   export type DepartamentoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     atendentes?: boolean | Departamento$atendentesArgs<ExtArgs>
     atendimentos?: boolean | Departamento$atendimentosArgs<ExtArgs>
@@ -28549,6 +31062,10 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
       nome: string
       descricao: string | null
       ativo: boolean
@@ -28980,6 +31497,7 @@ export namespace Prisma {
    */
   interface DepartamentoFieldRefs {
     readonly id: FieldRef<"Departamento", 'String'>
+    readonly workspaceId: FieldRef<"Departamento", 'String'>
     readonly nome: FieldRef<"Departamento", 'String'>
     readonly descricao: FieldRef<"Departamento", 'String'>
     readonly ativo: FieldRef<"Departamento", 'Boolean'>
@@ -33810,6 +36328,7 @@ export namespace Prisma {
 
   export const LeadScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     nome: 'nome',
     telefone: 'telefone',
     produto: 'produto',
@@ -33842,6 +36361,7 @@ export namespace Prisma {
 
   export const CampaignScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     nome: 'nome',
     descricao: 'descricao',
     status: 'status',
@@ -33906,6 +36426,7 @@ export namespace Prisma {
 
   export const ProdutoScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     nome: 'nome',
     descricao: 'descricao',
     ativo: 'ativo',
@@ -33919,6 +36440,7 @@ export namespace Prisma {
 
   export const MarcaScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     nome: 'nome',
     descricao: 'descricao',
     ativo: 'ativo',
@@ -33932,6 +36454,7 @@ export namespace Prisma {
 
   export const PersonaScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     nome: 'nome',
     descricao: 'descricao',
     ativo: 'ativo',
@@ -33945,6 +36468,7 @@ export namespace Prisma {
 
   export const RegiaoScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     nome: 'nome',
     descricao: 'descricao',
     ativo: 'ativo',
@@ -33958,6 +36482,7 @@ export namespace Prisma {
 
   export const SettingsScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     remetente: 'remetente',
     numero: 'numero',
     assinatura: 'assinatura',
@@ -33990,6 +36515,7 @@ export namespace Prisma {
 
   export const WebhookScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     nome: 'nome',
     url: 'url',
     secret: 'secret',
@@ -34006,6 +36532,7 @@ export namespace Prisma {
 
   export const AppLogScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     nivel: 'nivel',
     origem: 'origem',
     mensagem: 'mensagem',
@@ -34033,6 +36560,7 @@ export namespace Prisma {
 
   export const InboundWebhookTokenScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     token: 'token',
     ativo: 'ativo',
     ultimoUsoEm: 'ultimoUsoEm',
@@ -34043,8 +36571,23 @@ export namespace Prisma {
   export type InboundWebhookTokenScalarFieldEnum = (typeof InboundWebhookTokenScalarFieldEnum)[keyof typeof InboundWebhookTokenScalarFieldEnum]
 
 
+  export const McpTokenScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    tokenHash: 'tokenHash',
+    prefixo: 'prefixo',
+    ativo: 'ativo',
+    ultimoUsoEm: 'ultimoUsoEm',
+    criadoEm: 'criadoEm',
+    atualizadoEm: 'atualizadoEm'
+  };
+
+  export type McpTokenScalarFieldEnum = (typeof McpTokenScalarFieldEnum)[keyof typeof McpTokenScalarFieldEnum]
+
+
   export const InboundEventScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     evento: 'evento',
     origem: 'origem',
     payload: 'payload',
@@ -34056,6 +36599,7 @@ export namespace Prisma {
 
   export const InstanceScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     nome: 'nome',
     numero: 'numero',
     criadoEm: 'criadoEm',
@@ -34067,6 +36611,7 @@ export namespace Prisma {
 
   export const NoCodeFlowScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     nome: 'nome',
     ativo: 'ativo',
     sistema: 'sistema',
@@ -34104,6 +36649,7 @@ export namespace Prisma {
 
   export const BackupConfigScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     url: 'url',
     segredo: 'segredo',
     secoes: 'secoes',
@@ -34121,6 +36667,7 @@ export namespace Prisma {
 
   export const BackupExecucaoScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     origem: 'origem',
     status: 'status',
     secoes: 'secoes',
@@ -34138,8 +36685,21 @@ export namespace Prisma {
   export type BackupExecucaoScalarFieldEnum = (typeof BackupExecucaoScalarFieldEnum)[keyof typeof BackupExecucaoScalarFieldEnum]
 
 
+  export const WorkspaceScalarFieldEnum: {
+    id: 'id',
+    nome: 'nome',
+    principal: 'principal',
+    ativo: 'ativo',
+    criadoEm: 'criadoEm',
+    atualizadoEm: 'atualizadoEm'
+  };
+
+  export type WorkspaceScalarFieldEnum = (typeof WorkspaceScalarFieldEnum)[keyof typeof WorkspaceScalarFieldEnum]
+
+
   export const UserScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     username: 'username',
     nome: 'nome',
     senhaHash: 'senhaHash',
@@ -34158,6 +36718,7 @@ export namespace Prisma {
 
   export const DepartamentoScalarFieldEnum: {
     id: 'id',
+    workspaceId: 'workspaceId',
     nome: 'nome',
     descricao: 'descricao',
     ativo: 'ativo',
@@ -34448,6 +37009,7 @@ export namespace Prisma {
     OR?: LeadWhereInput[]
     NOT?: LeadWhereInput | LeadWhereInput[]
     id?: StringFilter<"Lead"> | string
+    workspaceId?: StringFilter<"Lead"> | string
     nome?: StringFilter<"Lead"> | string
     telefone?: StringFilter<"Lead"> | string
     produto?: StringFilter<"Lead"> | string
@@ -34473,6 +37035,7 @@ export namespace Prisma {
 
   export type LeadOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     telefone?: SortOrder
     produto?: SortOrder
@@ -34501,6 +37064,7 @@ export namespace Prisma {
     AND?: LeadWhereInput | LeadWhereInput[]
     OR?: LeadWhereInput[]
     NOT?: LeadWhereInput | LeadWhereInput[]
+    workspaceId?: StringFilter<"Lead"> | string
     nome?: StringFilter<"Lead"> | string
     telefone?: StringFilter<"Lead"> | string
     produto?: StringFilter<"Lead"> | string
@@ -34526,6 +37090,7 @@ export namespace Prisma {
 
   export type LeadOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     telefone?: SortOrder
     produto?: SortOrder
@@ -34550,6 +37115,7 @@ export namespace Prisma {
     OR?: LeadScalarWhereWithAggregatesInput[]
     NOT?: LeadScalarWhereWithAggregatesInput | LeadScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Lead"> | string
+    workspaceId?: StringWithAggregatesFilter<"Lead"> | string
     nome?: StringWithAggregatesFilter<"Lead"> | string
     telefone?: StringWithAggregatesFilter<"Lead"> | string
     produto?: StringWithAggregatesFilter<"Lead"> | string
@@ -34626,6 +37192,7 @@ export namespace Prisma {
     OR?: CampaignWhereInput[]
     NOT?: CampaignWhereInput | CampaignWhereInput[]
     id?: StringFilter<"Campaign"> | string
+    workspaceId?: StringFilter<"Campaign"> | string
     nome?: StringFilter<"Campaign"> | string
     descricao?: StringNullableFilter<"Campaign"> | string | null
     status?: EnumCampaignStatusFilter<"Campaign"> | $Enums.CampaignStatus
@@ -34649,6 +37216,7 @@ export namespace Prisma {
 
   export type CampaignOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrderInput | SortOrder
     status?: SortOrder
@@ -34676,6 +37244,7 @@ export namespace Prisma {
     AND?: CampaignWhereInput | CampaignWhereInput[]
     OR?: CampaignWhereInput[]
     NOT?: CampaignWhereInput | CampaignWhereInput[]
+    workspaceId?: StringFilter<"Campaign"> | string
     nome?: StringFilter<"Campaign"> | string
     descricao?: StringNullableFilter<"Campaign"> | string | null
     status?: EnumCampaignStatusFilter<"Campaign"> | $Enums.CampaignStatus
@@ -34698,6 +37267,7 @@ export namespace Prisma {
 
   export type CampaignOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrderInput | SortOrder
     status?: SortOrder
@@ -34725,6 +37295,7 @@ export namespace Prisma {
     OR?: CampaignScalarWhereWithAggregatesInput[]
     NOT?: CampaignScalarWhereWithAggregatesInput | CampaignScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Campaign"> | string
+    workspaceId?: StringWithAggregatesFilter<"Campaign"> | string
     nome?: StringWithAggregatesFilter<"Campaign"> | string
     descricao?: StringNullableWithAggregatesFilter<"Campaign"> | string | null
     status?: EnumCampaignStatusWithAggregatesFilter<"Campaign"> | $Enums.CampaignStatus
@@ -34968,6 +37539,7 @@ export namespace Prisma {
     OR?: ProdutoWhereInput[]
     NOT?: ProdutoWhereInput | ProdutoWhereInput[]
     id?: StringFilter<"Produto"> | string
+    workspaceId?: StringFilter<"Produto"> | string
     nome?: StringFilter<"Produto"> | string
     descricao?: StringNullableFilter<"Produto"> | string | null
     ativo?: BoolFilter<"Produto"> | boolean
@@ -34978,6 +37550,7 @@ export namespace Prisma {
 
   export type ProdutoOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrderInput | SortOrder
     ativo?: SortOrder
@@ -34988,19 +37561,23 @@ export namespace Prisma {
 
   export type ProdutoWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    nome?: string
-    idImportacao?: string
+    workspaceId_nome?: ProdutoWorkspaceIdNomeCompoundUniqueInput
+    workspaceId_idImportacao?: ProdutoWorkspaceIdIdImportacaoCompoundUniqueInput
     AND?: ProdutoWhereInput | ProdutoWhereInput[]
     OR?: ProdutoWhereInput[]
     NOT?: ProdutoWhereInput | ProdutoWhereInput[]
+    workspaceId?: StringFilter<"Produto"> | string
+    nome?: StringFilter<"Produto"> | string
     descricao?: StringNullableFilter<"Produto"> | string | null
     ativo?: BoolFilter<"Produto"> | boolean
+    idImportacao?: StringNullableFilter<"Produto"> | string | null
     criadoEm?: DateTimeFilter<"Produto"> | Date | string
     atualizadoEm?: DateTimeFilter<"Produto"> | Date | string
-  }, "id" | "nome" | "idImportacao">
+  }, "id" | "workspaceId_nome" | "workspaceId_idImportacao">
 
   export type ProdutoOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrderInput | SortOrder
     ativo?: SortOrder
@@ -35017,6 +37594,7 @@ export namespace Prisma {
     OR?: ProdutoScalarWhereWithAggregatesInput[]
     NOT?: ProdutoScalarWhereWithAggregatesInput | ProdutoScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Produto"> | string
+    workspaceId?: StringWithAggregatesFilter<"Produto"> | string
     nome?: StringWithAggregatesFilter<"Produto"> | string
     descricao?: StringNullableWithAggregatesFilter<"Produto"> | string | null
     ativo?: BoolWithAggregatesFilter<"Produto"> | boolean
@@ -35030,6 +37608,7 @@ export namespace Prisma {
     OR?: MarcaWhereInput[]
     NOT?: MarcaWhereInput | MarcaWhereInput[]
     id?: StringFilter<"Marca"> | string
+    workspaceId?: StringFilter<"Marca"> | string
     nome?: StringFilter<"Marca"> | string
     descricao?: StringNullableFilter<"Marca"> | string | null
     ativo?: BoolFilter<"Marca"> | boolean
@@ -35040,6 +37619,7 @@ export namespace Prisma {
 
   export type MarcaOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrderInput | SortOrder
     ativo?: SortOrder
@@ -35050,19 +37630,23 @@ export namespace Prisma {
 
   export type MarcaWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    nome?: string
-    idImportacao?: string
+    workspaceId_nome?: MarcaWorkspaceIdNomeCompoundUniqueInput
+    workspaceId_idImportacao?: MarcaWorkspaceIdIdImportacaoCompoundUniqueInput
     AND?: MarcaWhereInput | MarcaWhereInput[]
     OR?: MarcaWhereInput[]
     NOT?: MarcaWhereInput | MarcaWhereInput[]
+    workspaceId?: StringFilter<"Marca"> | string
+    nome?: StringFilter<"Marca"> | string
     descricao?: StringNullableFilter<"Marca"> | string | null
     ativo?: BoolFilter<"Marca"> | boolean
+    idImportacao?: StringNullableFilter<"Marca"> | string | null
     criadoEm?: DateTimeFilter<"Marca"> | Date | string
     atualizadoEm?: DateTimeFilter<"Marca"> | Date | string
-  }, "id" | "nome" | "idImportacao">
+  }, "id" | "workspaceId_nome" | "workspaceId_idImportacao">
 
   export type MarcaOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrderInput | SortOrder
     ativo?: SortOrder
@@ -35079,6 +37663,7 @@ export namespace Prisma {
     OR?: MarcaScalarWhereWithAggregatesInput[]
     NOT?: MarcaScalarWhereWithAggregatesInput | MarcaScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Marca"> | string
+    workspaceId?: StringWithAggregatesFilter<"Marca"> | string
     nome?: StringWithAggregatesFilter<"Marca"> | string
     descricao?: StringNullableWithAggregatesFilter<"Marca"> | string | null
     ativo?: BoolWithAggregatesFilter<"Marca"> | boolean
@@ -35092,6 +37677,7 @@ export namespace Prisma {
     OR?: PersonaWhereInput[]
     NOT?: PersonaWhereInput | PersonaWhereInput[]
     id?: StringFilter<"Persona"> | string
+    workspaceId?: StringFilter<"Persona"> | string
     nome?: StringFilter<"Persona"> | string
     descricao?: StringNullableFilter<"Persona"> | string | null
     ativo?: BoolFilter<"Persona"> | boolean
@@ -35102,6 +37688,7 @@ export namespace Prisma {
 
   export type PersonaOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrderInput | SortOrder
     ativo?: SortOrder
@@ -35112,19 +37699,23 @@ export namespace Prisma {
 
   export type PersonaWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    nome?: string
-    idImportacao?: string
+    workspaceId_nome?: PersonaWorkspaceIdNomeCompoundUniqueInput
+    workspaceId_idImportacao?: PersonaWorkspaceIdIdImportacaoCompoundUniqueInput
     AND?: PersonaWhereInput | PersonaWhereInput[]
     OR?: PersonaWhereInput[]
     NOT?: PersonaWhereInput | PersonaWhereInput[]
+    workspaceId?: StringFilter<"Persona"> | string
+    nome?: StringFilter<"Persona"> | string
     descricao?: StringNullableFilter<"Persona"> | string | null
     ativo?: BoolFilter<"Persona"> | boolean
+    idImportacao?: StringNullableFilter<"Persona"> | string | null
     criadoEm?: DateTimeFilter<"Persona"> | Date | string
     atualizadoEm?: DateTimeFilter<"Persona"> | Date | string
-  }, "id" | "nome" | "idImportacao">
+  }, "id" | "workspaceId_nome" | "workspaceId_idImportacao">
 
   export type PersonaOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrderInput | SortOrder
     ativo?: SortOrder
@@ -35141,6 +37732,7 @@ export namespace Prisma {
     OR?: PersonaScalarWhereWithAggregatesInput[]
     NOT?: PersonaScalarWhereWithAggregatesInput | PersonaScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Persona"> | string
+    workspaceId?: StringWithAggregatesFilter<"Persona"> | string
     nome?: StringWithAggregatesFilter<"Persona"> | string
     descricao?: StringNullableWithAggregatesFilter<"Persona"> | string | null
     ativo?: BoolWithAggregatesFilter<"Persona"> | boolean
@@ -35154,6 +37746,7 @@ export namespace Prisma {
     OR?: RegiaoWhereInput[]
     NOT?: RegiaoWhereInput | RegiaoWhereInput[]
     id?: StringFilter<"Regiao"> | string
+    workspaceId?: StringFilter<"Regiao"> | string
     nome?: StringFilter<"Regiao"> | string
     descricao?: StringNullableFilter<"Regiao"> | string | null
     ativo?: BoolFilter<"Regiao"> | boolean
@@ -35164,6 +37757,7 @@ export namespace Prisma {
 
   export type RegiaoOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrderInput | SortOrder
     ativo?: SortOrder
@@ -35174,19 +37768,23 @@ export namespace Prisma {
 
   export type RegiaoWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    nome?: string
-    idImportacao?: string
+    workspaceId_nome?: RegiaoWorkspaceIdNomeCompoundUniqueInput
+    workspaceId_idImportacao?: RegiaoWorkspaceIdIdImportacaoCompoundUniqueInput
     AND?: RegiaoWhereInput | RegiaoWhereInput[]
     OR?: RegiaoWhereInput[]
     NOT?: RegiaoWhereInput | RegiaoWhereInput[]
+    workspaceId?: StringFilter<"Regiao"> | string
+    nome?: StringFilter<"Regiao"> | string
     descricao?: StringNullableFilter<"Regiao"> | string | null
     ativo?: BoolFilter<"Regiao"> | boolean
+    idImportacao?: StringNullableFilter<"Regiao"> | string | null
     criadoEm?: DateTimeFilter<"Regiao"> | Date | string
     atualizadoEm?: DateTimeFilter<"Regiao"> | Date | string
-  }, "id" | "nome" | "idImportacao">
+  }, "id" | "workspaceId_nome" | "workspaceId_idImportacao">
 
   export type RegiaoOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrderInput | SortOrder
     ativo?: SortOrder
@@ -35203,6 +37801,7 @@ export namespace Prisma {
     OR?: RegiaoScalarWhereWithAggregatesInput[]
     NOT?: RegiaoScalarWhereWithAggregatesInput | RegiaoScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Regiao"> | string
+    workspaceId?: StringWithAggregatesFilter<"Regiao"> | string
     nome?: StringWithAggregatesFilter<"Regiao"> | string
     descricao?: StringNullableWithAggregatesFilter<"Regiao"> | string | null
     ativo?: BoolWithAggregatesFilter<"Regiao"> | boolean
@@ -35216,6 +37815,7 @@ export namespace Prisma {
     OR?: SettingsWhereInput[]
     NOT?: SettingsWhereInput | SettingsWhereInput[]
     id?: StringFilter<"Settings"> | string
+    workspaceId?: StringFilter<"Settings"> | string
     remetente?: StringFilter<"Settings"> | string
     numero?: StringFilter<"Settings"> | string
     assinatura?: StringFilter<"Settings"> | string
@@ -35245,6 +37845,7 @@ export namespace Prisma {
 
   export type SettingsOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     remetente?: SortOrder
     numero?: SortOrder
     assinatura?: SortOrder
@@ -35274,6 +37875,7 @@ export namespace Prisma {
 
   export type SettingsWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    workspaceId?: string
     AND?: SettingsWhereInput | SettingsWhereInput[]
     OR?: SettingsWhereInput[]
     NOT?: SettingsWhereInput | SettingsWhereInput[]
@@ -35302,10 +37904,11 @@ export namespace Prisma {
     corSecundaria?: StringFilter<"Settings"> | string
     corTerciaria?: StringFilter<"Settings"> | string
     atualizadoEm?: DateTimeFilter<"Settings"> | Date | string
-  }, "id">
+  }, "id" | "workspaceId">
 
   export type SettingsOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     remetente?: SortOrder
     numero?: SortOrder
     assinatura?: SortOrder
@@ -35343,6 +37946,7 @@ export namespace Prisma {
     OR?: SettingsScalarWhereWithAggregatesInput[]
     NOT?: SettingsScalarWhereWithAggregatesInput | SettingsScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Settings"> | string
+    workspaceId?: StringWithAggregatesFilter<"Settings"> | string
     remetente?: StringWithAggregatesFilter<"Settings"> | string
     numero?: StringWithAggregatesFilter<"Settings"> | string
     assinatura?: StringWithAggregatesFilter<"Settings"> | string
@@ -35375,6 +37979,7 @@ export namespace Prisma {
     OR?: WebhookWhereInput[]
     NOT?: WebhookWhereInput | WebhookWhereInput[]
     id?: StringFilter<"Webhook"> | string
+    workspaceId?: StringFilter<"Webhook"> | string
     nome?: StringFilter<"Webhook"> | string
     url?: StringFilter<"Webhook"> | string
     secret?: StringFilter<"Webhook"> | string
@@ -35388,6 +37993,7 @@ export namespace Prisma {
 
   export type WebhookOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     url?: SortOrder
     secret?: SortOrder
@@ -35404,6 +38010,7 @@ export namespace Prisma {
     AND?: WebhookWhereInput | WebhookWhereInput[]
     OR?: WebhookWhereInput[]
     NOT?: WebhookWhereInput | WebhookWhereInput[]
+    workspaceId?: StringFilter<"Webhook"> | string
     nome?: StringFilter<"Webhook"> | string
     url?: StringFilter<"Webhook"> | string
     secret?: StringFilter<"Webhook"> | string
@@ -35417,6 +38024,7 @@ export namespace Prisma {
 
   export type WebhookOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     url?: SortOrder
     secret?: SortOrder
@@ -35438,6 +38046,7 @@ export namespace Prisma {
     OR?: WebhookScalarWhereWithAggregatesInput[]
     NOT?: WebhookScalarWhereWithAggregatesInput | WebhookScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Webhook"> | string
+    workspaceId?: StringWithAggregatesFilter<"Webhook"> | string
     nome?: StringWithAggregatesFilter<"Webhook"> | string
     url?: StringWithAggregatesFilter<"Webhook"> | string
     secret?: StringWithAggregatesFilter<"Webhook"> | string
@@ -35454,6 +38063,7 @@ export namespace Prisma {
     OR?: AppLogWhereInput[]
     NOT?: AppLogWhereInput | AppLogWhereInput[]
     id?: StringFilter<"AppLog"> | string
+    workspaceId?: StringFilter<"AppLog"> | string
     nivel?: EnumAppLogNivelFilter<"AppLog"> | $Enums.AppLogNivel
     origem?: StringFilter<"AppLog"> | string
     mensagem?: StringFilter<"AppLog"> | string
@@ -35463,6 +38073,7 @@ export namespace Prisma {
 
   export type AppLogOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nivel?: SortOrder
     origem?: SortOrder
     mensagem?: SortOrder
@@ -35475,6 +38086,7 @@ export namespace Prisma {
     AND?: AppLogWhereInput | AppLogWhereInput[]
     OR?: AppLogWhereInput[]
     NOT?: AppLogWhereInput | AppLogWhereInput[]
+    workspaceId?: StringFilter<"AppLog"> | string
     nivel?: EnumAppLogNivelFilter<"AppLog"> | $Enums.AppLogNivel
     origem?: StringFilter<"AppLog"> | string
     mensagem?: StringFilter<"AppLog"> | string
@@ -35484,6 +38096,7 @@ export namespace Prisma {
 
   export type AppLogOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nivel?: SortOrder
     origem?: SortOrder
     mensagem?: SortOrder
@@ -35499,6 +38112,7 @@ export namespace Prisma {
     OR?: AppLogScalarWhereWithAggregatesInput[]
     NOT?: AppLogScalarWhereWithAggregatesInput | AppLogScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"AppLog"> | string
+    workspaceId?: StringWithAggregatesFilter<"AppLog"> | string
     nivel?: EnumAppLogNivelWithAggregatesFilter<"AppLog"> | $Enums.AppLogNivel
     origem?: StringWithAggregatesFilter<"AppLog"> | string
     mensagem?: StringWithAggregatesFilter<"AppLog"> | string
@@ -35592,6 +38206,7 @@ export namespace Prisma {
     OR?: InboundWebhookTokenWhereInput[]
     NOT?: InboundWebhookTokenWhereInput | InboundWebhookTokenWhereInput[]
     id?: StringFilter<"InboundWebhookToken"> | string
+    workspaceId?: StringFilter<"InboundWebhookToken"> | string
     token?: StringFilter<"InboundWebhookToken"> | string
     ativo?: BoolFilter<"InboundWebhookToken"> | boolean
     ultimoUsoEm?: DateTimeNullableFilter<"InboundWebhookToken"> | Date | string | null
@@ -35601,6 +38216,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     token?: SortOrder
     ativo?: SortOrder
     ultimoUsoEm?: SortOrderInput | SortOrder
@@ -35610,6 +38226,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    workspaceId?: string
     AND?: InboundWebhookTokenWhereInput | InboundWebhookTokenWhereInput[]
     OR?: InboundWebhookTokenWhereInput[]
     NOT?: InboundWebhookTokenWhereInput | InboundWebhookTokenWhereInput[]
@@ -35618,10 +38235,11 @@ export namespace Prisma {
     ultimoUsoEm?: DateTimeNullableFilter<"InboundWebhookToken"> | Date | string | null
     criadoEm?: DateTimeFilter<"InboundWebhookToken"> | Date | string
     atualizadoEm?: DateTimeFilter<"InboundWebhookToken"> | Date | string
-  }, "id">
+  }, "id" | "workspaceId">
 
   export type InboundWebhookTokenOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     token?: SortOrder
     ativo?: SortOrder
     ultimoUsoEm?: SortOrderInput | SortOrder
@@ -35637,6 +38255,7 @@ export namespace Prisma {
     OR?: InboundWebhookTokenScalarWhereWithAggregatesInput[]
     NOT?: InboundWebhookTokenScalarWhereWithAggregatesInput | InboundWebhookTokenScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"InboundWebhookToken"> | string
+    workspaceId?: StringWithAggregatesFilter<"InboundWebhookToken"> | string
     token?: StringWithAggregatesFilter<"InboundWebhookToken"> | string
     ativo?: BoolWithAggregatesFilter<"InboundWebhookToken"> | boolean
     ultimoUsoEm?: DateTimeNullableWithAggregatesFilter<"InboundWebhookToken"> | Date | string | null
@@ -35644,11 +38263,79 @@ export namespace Prisma {
     atualizadoEm?: DateTimeWithAggregatesFilter<"InboundWebhookToken"> | Date | string
   }
 
+  export type McpTokenWhereInput = {
+    AND?: McpTokenWhereInput | McpTokenWhereInput[]
+    OR?: McpTokenWhereInput[]
+    NOT?: McpTokenWhereInput | McpTokenWhereInput[]
+    id?: StringFilter<"McpToken"> | string
+    workspaceId?: StringFilter<"McpToken"> | string
+    tokenHash?: StringFilter<"McpToken"> | string
+    prefixo?: StringFilter<"McpToken"> | string
+    ativo?: BoolFilter<"McpToken"> | boolean
+    ultimoUsoEm?: DateTimeNullableFilter<"McpToken"> | Date | string | null
+    criadoEm?: DateTimeFilter<"McpToken"> | Date | string
+    atualizadoEm?: DateTimeFilter<"McpToken"> | Date | string
+  }
+
+  export type McpTokenOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    tokenHash?: SortOrder
+    prefixo?: SortOrder
+    ativo?: SortOrder
+    ultimoUsoEm?: SortOrderInput | SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type McpTokenWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    workspaceId?: string
+    tokenHash?: string
+    AND?: McpTokenWhereInput | McpTokenWhereInput[]
+    OR?: McpTokenWhereInput[]
+    NOT?: McpTokenWhereInput | McpTokenWhereInput[]
+    prefixo?: StringFilter<"McpToken"> | string
+    ativo?: BoolFilter<"McpToken"> | boolean
+    ultimoUsoEm?: DateTimeNullableFilter<"McpToken"> | Date | string | null
+    criadoEm?: DateTimeFilter<"McpToken"> | Date | string
+    atualizadoEm?: DateTimeFilter<"McpToken"> | Date | string
+  }, "id" | "workspaceId" | "tokenHash">
+
+  export type McpTokenOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    tokenHash?: SortOrder
+    prefixo?: SortOrder
+    ativo?: SortOrder
+    ultimoUsoEm?: SortOrderInput | SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    _count?: McpTokenCountOrderByAggregateInput
+    _max?: McpTokenMaxOrderByAggregateInput
+    _min?: McpTokenMinOrderByAggregateInput
+  }
+
+  export type McpTokenScalarWhereWithAggregatesInput = {
+    AND?: McpTokenScalarWhereWithAggregatesInput | McpTokenScalarWhereWithAggregatesInput[]
+    OR?: McpTokenScalarWhereWithAggregatesInput[]
+    NOT?: McpTokenScalarWhereWithAggregatesInput | McpTokenScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"McpToken"> | string
+    workspaceId?: StringWithAggregatesFilter<"McpToken"> | string
+    tokenHash?: StringWithAggregatesFilter<"McpToken"> | string
+    prefixo?: StringWithAggregatesFilter<"McpToken"> | string
+    ativo?: BoolWithAggregatesFilter<"McpToken"> | boolean
+    ultimoUsoEm?: DateTimeNullableWithAggregatesFilter<"McpToken"> | Date | string | null
+    criadoEm?: DateTimeWithAggregatesFilter<"McpToken"> | Date | string
+    atualizadoEm?: DateTimeWithAggregatesFilter<"McpToken"> | Date | string
+  }
+
   export type InboundEventWhereInput = {
     AND?: InboundEventWhereInput | InboundEventWhereInput[]
     OR?: InboundEventWhereInput[]
     NOT?: InboundEventWhereInput | InboundEventWhereInput[]
     id?: StringFilter<"InboundEvent"> | string
+    workspaceId?: StringFilter<"InboundEvent"> | string
     evento?: StringFilter<"InboundEvent"> | string
     origem?: StringNullableFilter<"InboundEvent"> | string | null
     payload?: JsonFilter<"InboundEvent">
@@ -35657,6 +38344,7 @@ export namespace Prisma {
 
   export type InboundEventOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     evento?: SortOrder
     origem?: SortOrderInput | SortOrder
     payload?: SortOrder
@@ -35668,6 +38356,7 @@ export namespace Prisma {
     AND?: InboundEventWhereInput | InboundEventWhereInput[]
     OR?: InboundEventWhereInput[]
     NOT?: InboundEventWhereInput | InboundEventWhereInput[]
+    workspaceId?: StringFilter<"InboundEvent"> | string
     evento?: StringFilter<"InboundEvent"> | string
     origem?: StringNullableFilter<"InboundEvent"> | string | null
     payload?: JsonFilter<"InboundEvent">
@@ -35676,6 +38365,7 @@ export namespace Prisma {
 
   export type InboundEventOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     evento?: SortOrder
     origem?: SortOrderInput | SortOrder
     payload?: SortOrder
@@ -35690,6 +38380,7 @@ export namespace Prisma {
     OR?: InboundEventScalarWhereWithAggregatesInput[]
     NOT?: InboundEventScalarWhereWithAggregatesInput | InboundEventScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"InboundEvent"> | string
+    workspaceId?: StringWithAggregatesFilter<"InboundEvent"> | string
     evento?: StringWithAggregatesFilter<"InboundEvent"> | string
     origem?: StringNullableWithAggregatesFilter<"InboundEvent"> | string | null
     payload?: JsonWithAggregatesFilter<"InboundEvent">
@@ -35701,6 +38392,7 @@ export namespace Prisma {
     OR?: InstanceWhereInput[]
     NOT?: InstanceWhereInput | InstanceWhereInput[]
     id?: StringFilter<"Instance"> | string
+    workspaceId?: StringFilter<"Instance"> | string
     nome?: StringFilter<"Instance"> | string
     numero?: StringNullableFilter<"Instance"> | string | null
     criadoEm?: DateTimeFilter<"Instance"> | Date | string
@@ -35709,6 +38401,7 @@ export namespace Prisma {
 
   export type InstanceOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     numero?: SortOrderInput | SortOrder
     criadoEm?: SortOrder
@@ -35721,6 +38414,7 @@ export namespace Prisma {
     AND?: InstanceWhereInput | InstanceWhereInput[]
     OR?: InstanceWhereInput[]
     NOT?: InstanceWhereInput | InstanceWhereInput[]
+    workspaceId?: StringFilter<"Instance"> | string
     numero?: StringNullableFilter<"Instance"> | string | null
     criadoEm?: DateTimeFilter<"Instance"> | Date | string
     atualizadoEm?: DateTimeFilter<"Instance"> | Date | string
@@ -35728,6 +38422,7 @@ export namespace Prisma {
 
   export type InstanceOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     numero?: SortOrderInput | SortOrder
     criadoEm?: SortOrder
@@ -35742,6 +38437,7 @@ export namespace Prisma {
     OR?: InstanceScalarWhereWithAggregatesInput[]
     NOT?: InstanceScalarWhereWithAggregatesInput | InstanceScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Instance"> | string
+    workspaceId?: StringWithAggregatesFilter<"Instance"> | string
     nome?: StringWithAggregatesFilter<"Instance"> | string
     numero?: StringNullableWithAggregatesFilter<"Instance"> | string | null
     criadoEm?: DateTimeWithAggregatesFilter<"Instance"> | Date | string
@@ -35753,6 +38449,7 @@ export namespace Prisma {
     OR?: NoCodeFlowWhereInput[]
     NOT?: NoCodeFlowWhereInput | NoCodeFlowWhereInput[]
     id?: StringFilter<"NoCodeFlow"> | string
+    workspaceId?: StringFilter<"NoCodeFlow"> | string
     nome?: StringFilter<"NoCodeFlow"> | string
     ativo?: BoolFilter<"NoCodeFlow"> | boolean
     sistema?: BoolFilter<"NoCodeFlow"> | boolean
@@ -35768,6 +38465,7 @@ export namespace Prisma {
 
   export type NoCodeFlowOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     ativo?: SortOrder
     sistema?: SortOrder
@@ -35786,6 +38484,7 @@ export namespace Prisma {
     AND?: NoCodeFlowWhereInput | NoCodeFlowWhereInput[]
     OR?: NoCodeFlowWhereInput[]
     NOT?: NoCodeFlowWhereInput | NoCodeFlowWhereInput[]
+    workspaceId?: StringFilter<"NoCodeFlow"> | string
     nome?: StringFilter<"NoCodeFlow"> | string
     ativo?: BoolFilter<"NoCodeFlow"> | boolean
     sistema?: BoolFilter<"NoCodeFlow"> | boolean
@@ -35801,6 +38500,7 @@ export namespace Prisma {
 
   export type NoCodeFlowOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     ativo?: SortOrder
     sistema?: SortOrder
@@ -35821,6 +38521,7 @@ export namespace Prisma {
     OR?: NoCodeFlowScalarWhereWithAggregatesInput[]
     NOT?: NoCodeFlowScalarWhereWithAggregatesInput | NoCodeFlowScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"NoCodeFlow"> | string
+    workspaceId?: StringWithAggregatesFilter<"NoCodeFlow"> | string
     nome?: StringWithAggregatesFilter<"NoCodeFlow"> | string
     ativo?: BoolWithAggregatesFilter<"NoCodeFlow"> | boolean
     sistema?: BoolWithAggregatesFilter<"NoCodeFlow"> | boolean
@@ -35940,6 +38641,7 @@ export namespace Prisma {
     OR?: BackupConfigWhereInput[]
     NOT?: BackupConfigWhereInput | BackupConfigWhereInput[]
     id?: StringFilter<"BackupConfig"> | string
+    workspaceId?: StringFilter<"BackupConfig"> | string
     url?: StringFilter<"BackupConfig"> | string
     segredo?: StringNullableFilter<"BackupConfig"> | string | null
     secoes?: StringNullableListFilter<"BackupConfig">
@@ -35954,6 +38656,7 @@ export namespace Prisma {
 
   export type BackupConfigOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     url?: SortOrder
     segredo?: SortOrderInput | SortOrder
     secoes?: SortOrder
@@ -35968,6 +38671,7 @@ export namespace Prisma {
 
   export type BackupConfigWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    workspaceId?: string
     AND?: BackupConfigWhereInput | BackupConfigWhereInput[]
     OR?: BackupConfigWhereInput[]
     NOT?: BackupConfigWhereInput | BackupConfigWhereInput[]
@@ -35981,10 +38685,11 @@ export namespace Prisma {
     autoDiaSemana?: IntFilter<"BackupConfig"> | number
     autoProximoEm?: DateTimeNullableFilter<"BackupConfig"> | Date | string | null
     atualizadoEm?: DateTimeFilter<"BackupConfig"> | Date | string
-  }, "id">
+  }, "id" | "workspaceId">
 
   export type BackupConfigOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     url?: SortOrder
     segredo?: SortOrderInput | SortOrder
     secoes?: SortOrder
@@ -36007,6 +38712,7 @@ export namespace Prisma {
     OR?: BackupConfigScalarWhereWithAggregatesInput[]
     NOT?: BackupConfigScalarWhereWithAggregatesInput | BackupConfigScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"BackupConfig"> | string
+    workspaceId?: StringWithAggregatesFilter<"BackupConfig"> | string
     url?: StringWithAggregatesFilter<"BackupConfig"> | string
     segredo?: StringNullableWithAggregatesFilter<"BackupConfig"> | string | null
     secoes?: StringNullableListFilter<"BackupConfig">
@@ -36024,6 +38730,7 @@ export namespace Prisma {
     OR?: BackupExecucaoWhereInput[]
     NOT?: BackupExecucaoWhereInput | BackupExecucaoWhereInput[]
     id?: StringFilter<"BackupExecucao"> | string
+    workspaceId?: StringFilter<"BackupExecucao"> | string
     origem?: StringFilter<"BackupExecucao"> | string
     status?: StringFilter<"BackupExecucao"> | string
     secoes?: StringNullableListFilter<"BackupExecucao">
@@ -36040,6 +38747,7 @@ export namespace Prisma {
 
   export type BackupExecucaoOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     origem?: SortOrder
     status?: SortOrder
     secoes?: SortOrder
@@ -36059,6 +38767,7 @@ export namespace Prisma {
     AND?: BackupExecucaoWhereInput | BackupExecucaoWhereInput[]
     OR?: BackupExecucaoWhereInput[]
     NOT?: BackupExecucaoWhereInput | BackupExecucaoWhereInput[]
+    workspaceId?: StringFilter<"BackupExecucao"> | string
     origem?: StringFilter<"BackupExecucao"> | string
     status?: StringFilter<"BackupExecucao"> | string
     secoes?: StringNullableListFilter<"BackupExecucao">
@@ -36075,6 +38784,7 @@ export namespace Prisma {
 
   export type BackupExecucaoOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     origem?: SortOrder
     status?: SortOrder
     secoes?: SortOrder
@@ -36099,6 +38809,7 @@ export namespace Prisma {
     OR?: BackupExecucaoScalarWhereWithAggregatesInput[]
     NOT?: BackupExecucaoScalarWhereWithAggregatesInput | BackupExecucaoScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"BackupExecucao"> | string
+    workspaceId?: StringWithAggregatesFilter<"BackupExecucao"> | string
     origem?: StringWithAggregatesFilter<"BackupExecucao"> | string
     status?: StringWithAggregatesFilter<"BackupExecucao"> | string
     secoes?: StringNullableListFilter<"BackupExecucao">
@@ -36113,11 +38824,69 @@ export namespace Prisma {
     concluidoEm?: DateTimeNullableWithAggregatesFilter<"BackupExecucao"> | Date | string | null
   }
 
+  export type WorkspaceWhereInput = {
+    AND?: WorkspaceWhereInput | WorkspaceWhereInput[]
+    OR?: WorkspaceWhereInput[]
+    NOT?: WorkspaceWhereInput | WorkspaceWhereInput[]
+    id?: StringFilter<"Workspace"> | string
+    nome?: StringFilter<"Workspace"> | string
+    principal?: BoolFilter<"Workspace"> | boolean
+    ativo?: BoolFilter<"Workspace"> | boolean
+    criadoEm?: DateTimeFilter<"Workspace"> | Date | string
+    atualizadoEm?: DateTimeFilter<"Workspace"> | Date | string
+  }
+
+  export type WorkspaceOrderByWithRelationInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    principal?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type WorkspaceWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: WorkspaceWhereInput | WorkspaceWhereInput[]
+    OR?: WorkspaceWhereInput[]
+    NOT?: WorkspaceWhereInput | WorkspaceWhereInput[]
+    nome?: StringFilter<"Workspace"> | string
+    principal?: BoolFilter<"Workspace"> | boolean
+    ativo?: BoolFilter<"Workspace"> | boolean
+    criadoEm?: DateTimeFilter<"Workspace"> | Date | string
+    atualizadoEm?: DateTimeFilter<"Workspace"> | Date | string
+  }, "id">
+
+  export type WorkspaceOrderByWithAggregationInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    principal?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    _count?: WorkspaceCountOrderByAggregateInput
+    _max?: WorkspaceMaxOrderByAggregateInput
+    _min?: WorkspaceMinOrderByAggregateInput
+  }
+
+  export type WorkspaceScalarWhereWithAggregatesInput = {
+    AND?: WorkspaceScalarWhereWithAggregatesInput | WorkspaceScalarWhereWithAggregatesInput[]
+    OR?: WorkspaceScalarWhereWithAggregatesInput[]
+    NOT?: WorkspaceScalarWhereWithAggregatesInput | WorkspaceScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Workspace"> | string
+    nome?: StringWithAggregatesFilter<"Workspace"> | string
+    principal?: BoolWithAggregatesFilter<"Workspace"> | boolean
+    ativo?: BoolWithAggregatesFilter<"Workspace"> | boolean
+    criadoEm?: DateTimeWithAggregatesFilter<"Workspace"> | Date | string
+    atualizadoEm?: DateTimeWithAggregatesFilter<"Workspace"> | Date | string
+  }
+
   export type UserWhereInput = {
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
     id?: StringFilter<"User"> | string
+    workspaceId?: StringFilter<"User"> | string
     username?: StringFilter<"User"> | string
     nome?: StringFilter<"User"> | string
     senhaHash?: StringFilter<"User"> | string
@@ -36134,6 +38903,7 @@ export namespace Prisma {
 
   export type UserOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     username?: SortOrder
     nome?: SortOrder
     senhaHash?: SortOrder
@@ -36154,6 +38924,7 @@ export namespace Prisma {
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
+    workspaceId?: StringFilter<"User"> | string
     nome?: StringFilter<"User"> | string
     senhaHash?: StringFilter<"User"> | string
     role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
@@ -36169,6 +38940,7 @@ export namespace Prisma {
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     username?: SortOrder
     nome?: SortOrder
     senhaHash?: SortOrder
@@ -36190,6 +38962,7 @@ export namespace Prisma {
     OR?: UserScalarWhereWithAggregatesInput[]
     NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"User"> | string
+    workspaceId?: StringWithAggregatesFilter<"User"> | string
     username?: StringWithAggregatesFilter<"User"> | string
     nome?: StringWithAggregatesFilter<"User"> | string
     senhaHash?: StringWithAggregatesFilter<"User"> | string
@@ -36208,6 +38981,7 @@ export namespace Prisma {
     OR?: DepartamentoWhereInput[]
     NOT?: DepartamentoWhereInput | DepartamentoWhereInput[]
     id?: StringFilter<"Departamento"> | string
+    workspaceId?: StringFilter<"Departamento"> | string
     nome?: StringFilter<"Departamento"> | string
     descricao?: StringNullableFilter<"Departamento"> | string | null
     ativo?: BoolFilter<"Departamento"> | boolean
@@ -36219,6 +38993,7 @@ export namespace Prisma {
 
   export type DepartamentoOrderByWithRelationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrderInput | SortOrder
     ativo?: SortOrder
@@ -36230,20 +39005,23 @@ export namespace Prisma {
 
   export type DepartamentoWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    nome?: string
+    workspaceId_nome?: DepartamentoWorkspaceIdNomeCompoundUniqueInput
     AND?: DepartamentoWhereInput | DepartamentoWhereInput[]
     OR?: DepartamentoWhereInput[]
     NOT?: DepartamentoWhereInput | DepartamentoWhereInput[]
+    workspaceId?: StringFilter<"Departamento"> | string
+    nome?: StringFilter<"Departamento"> | string
     descricao?: StringNullableFilter<"Departamento"> | string | null
     ativo?: BoolFilter<"Departamento"> | boolean
     criadoEm?: DateTimeFilter<"Departamento"> | Date | string
     atualizadoEm?: DateTimeFilter<"Departamento"> | Date | string
     atendentes?: AtendenteDepartamentoListRelationFilter
     atendimentos?: LeadAtendimentoListRelationFilter
-  }, "id" | "nome">
+  }, "id" | "workspaceId_nome">
 
   export type DepartamentoOrderByWithAggregationInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrderInput | SortOrder
     ativo?: SortOrder
@@ -36259,6 +39037,7 @@ export namespace Prisma {
     OR?: DepartamentoScalarWhereWithAggregatesInput[]
     NOT?: DepartamentoScalarWhereWithAggregatesInput | DepartamentoScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Departamento"> | string
+    workspaceId?: StringWithAggregatesFilter<"Departamento"> | string
     nome?: StringWithAggregatesFilter<"Departamento"> | string
     descricao?: StringNullableWithAggregatesFilter<"Departamento"> | string | null
     ativo?: BoolWithAggregatesFilter<"Departamento"> | boolean
@@ -36504,6 +39283,7 @@ export namespace Prisma {
 
   export type LeadCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -36528,6 +39308,7 @@ export namespace Prisma {
 
   export type LeadUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -36552,6 +39333,7 @@ export namespace Prisma {
 
   export type LeadUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -36576,6 +39358,7 @@ export namespace Prisma {
 
   export type LeadUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -36600,6 +39383,7 @@ export namespace Prisma {
 
   export type LeadCreateManyInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -36618,6 +39402,7 @@ export namespace Prisma {
 
   export type LeadUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -36635,6 +39420,7 @@ export namespace Prisma {
 
   export type LeadUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -36708,6 +39494,7 @@ export namespace Prisma {
 
   export type CampaignCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     status?: $Enums.CampaignStatus
@@ -36731,6 +39518,7 @@ export namespace Prisma {
 
   export type CampaignUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     status?: $Enums.CampaignStatus
@@ -36754,6 +39542,7 @@ export namespace Prisma {
 
   export type CampaignUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
@@ -36776,6 +39565,7 @@ export namespace Prisma {
 
   export type CampaignUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
@@ -36799,6 +39589,7 @@ export namespace Prisma {
 
   export type CampaignCreateManyInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     status?: $Enums.CampaignStatus
@@ -36818,6 +39609,7 @@ export namespace Prisma {
 
   export type CampaignUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
@@ -36836,6 +39628,7 @@ export namespace Prisma {
 
   export type CampaignUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
@@ -37086,6 +39879,7 @@ export namespace Prisma {
 
   export type ProdutoCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -37096,6 +39890,7 @@ export namespace Prisma {
 
   export type ProdutoUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -37106,6 +39901,7 @@ export namespace Prisma {
 
   export type ProdutoUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -37116,6 +39912,7 @@ export namespace Prisma {
 
   export type ProdutoUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -37126,6 +39923,7 @@ export namespace Prisma {
 
   export type ProdutoCreateManyInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -37136,6 +39934,7 @@ export namespace Prisma {
 
   export type ProdutoUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -37146,6 +39945,7 @@ export namespace Prisma {
 
   export type ProdutoUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -37156,6 +39956,7 @@ export namespace Prisma {
 
   export type MarcaCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -37166,6 +39967,7 @@ export namespace Prisma {
 
   export type MarcaUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -37176,6 +39978,7 @@ export namespace Prisma {
 
   export type MarcaUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -37186,6 +39989,7 @@ export namespace Prisma {
 
   export type MarcaUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -37196,6 +40000,7 @@ export namespace Prisma {
 
   export type MarcaCreateManyInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -37206,6 +40011,7 @@ export namespace Prisma {
 
   export type MarcaUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -37216,6 +40022,7 @@ export namespace Prisma {
 
   export type MarcaUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -37226,6 +40033,7 @@ export namespace Prisma {
 
   export type PersonaCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -37236,6 +40044,7 @@ export namespace Prisma {
 
   export type PersonaUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -37246,6 +40055,7 @@ export namespace Prisma {
 
   export type PersonaUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -37256,6 +40066,7 @@ export namespace Prisma {
 
   export type PersonaUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -37266,6 +40077,7 @@ export namespace Prisma {
 
   export type PersonaCreateManyInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -37276,6 +40088,7 @@ export namespace Prisma {
 
   export type PersonaUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -37286,6 +40099,7 @@ export namespace Prisma {
 
   export type PersonaUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -37296,6 +40110,7 @@ export namespace Prisma {
 
   export type RegiaoCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -37306,6 +40121,7 @@ export namespace Prisma {
 
   export type RegiaoUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -37316,6 +40132,7 @@ export namespace Prisma {
 
   export type RegiaoUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -37326,6 +40143,7 @@ export namespace Prisma {
 
   export type RegiaoUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -37336,6 +40154,7 @@ export namespace Prisma {
 
   export type RegiaoCreateManyInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -37346,6 +40165,7 @@ export namespace Prisma {
 
   export type RegiaoUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -37356,6 +40176,7 @@ export namespace Prisma {
 
   export type RegiaoUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -37366,6 +40187,7 @@ export namespace Prisma {
 
   export type SettingsCreateInput = {
     id?: string
+    workspaceId: string
     remetente?: string
     numero?: string
     assinatura?: string
@@ -37395,6 +40217,7 @@ export namespace Prisma {
 
   export type SettingsUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     remetente?: string
     numero?: string
     assinatura?: string
@@ -37424,6 +40247,7 @@ export namespace Prisma {
 
   export type SettingsUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     remetente?: StringFieldUpdateOperationsInput | string
     numero?: StringFieldUpdateOperationsInput | string
     assinatura?: StringFieldUpdateOperationsInput | string
@@ -37453,6 +40277,7 @@ export namespace Prisma {
 
   export type SettingsUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     remetente?: StringFieldUpdateOperationsInput | string
     numero?: StringFieldUpdateOperationsInput | string
     assinatura?: StringFieldUpdateOperationsInput | string
@@ -37482,6 +40307,7 @@ export namespace Prisma {
 
   export type SettingsCreateManyInput = {
     id?: string
+    workspaceId: string
     remetente?: string
     numero?: string
     assinatura?: string
@@ -37511,6 +40337,7 @@ export namespace Prisma {
 
   export type SettingsUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     remetente?: StringFieldUpdateOperationsInput | string
     numero?: StringFieldUpdateOperationsInput | string
     assinatura?: StringFieldUpdateOperationsInput | string
@@ -37540,6 +40367,7 @@ export namespace Prisma {
 
   export type SettingsUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     remetente?: StringFieldUpdateOperationsInput | string
     numero?: StringFieldUpdateOperationsInput | string
     assinatura?: StringFieldUpdateOperationsInput | string
@@ -37569,6 +40397,7 @@ export namespace Prisma {
 
   export type WebhookCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     url: string
     secret?: string
@@ -37582,6 +40411,7 @@ export namespace Prisma {
 
   export type WebhookUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     url: string
     secret?: string
@@ -37595,6 +40425,7 @@ export namespace Prisma {
 
   export type WebhookUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     url?: StringFieldUpdateOperationsInput | string
     secret?: StringFieldUpdateOperationsInput | string
@@ -37608,6 +40439,7 @@ export namespace Prisma {
 
   export type WebhookUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     url?: StringFieldUpdateOperationsInput | string
     secret?: StringFieldUpdateOperationsInput | string
@@ -37621,6 +40453,7 @@ export namespace Prisma {
 
   export type WebhookCreateManyInput = {
     id?: string
+    workspaceId: string
     nome: string
     url: string
     secret?: string
@@ -37634,6 +40467,7 @@ export namespace Prisma {
 
   export type WebhookUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     url?: StringFieldUpdateOperationsInput | string
     secret?: StringFieldUpdateOperationsInput | string
@@ -37647,6 +40481,7 @@ export namespace Prisma {
 
   export type WebhookUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     url?: StringFieldUpdateOperationsInput | string
     secret?: StringFieldUpdateOperationsInput | string
@@ -37660,6 +40495,7 @@ export namespace Prisma {
 
   export type AppLogCreateInput = {
     id?: string
+    workspaceId: string
     nivel?: $Enums.AppLogNivel
     origem: string
     mensagem: string
@@ -37669,6 +40505,7 @@ export namespace Prisma {
 
   export type AppLogUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     nivel?: $Enums.AppLogNivel
     origem: string
     mensagem: string
@@ -37678,6 +40515,7 @@ export namespace Prisma {
 
   export type AppLogUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nivel?: EnumAppLogNivelFieldUpdateOperationsInput | $Enums.AppLogNivel
     origem?: StringFieldUpdateOperationsInput | string
     mensagem?: StringFieldUpdateOperationsInput | string
@@ -37687,6 +40525,7 @@ export namespace Prisma {
 
   export type AppLogUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nivel?: EnumAppLogNivelFieldUpdateOperationsInput | $Enums.AppLogNivel
     origem?: StringFieldUpdateOperationsInput | string
     mensagem?: StringFieldUpdateOperationsInput | string
@@ -37696,6 +40535,7 @@ export namespace Prisma {
 
   export type AppLogCreateManyInput = {
     id?: string
+    workspaceId: string
     nivel?: $Enums.AppLogNivel
     origem: string
     mensagem: string
@@ -37705,6 +40545,7 @@ export namespace Prisma {
 
   export type AppLogUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nivel?: EnumAppLogNivelFieldUpdateOperationsInput | $Enums.AppLogNivel
     origem?: StringFieldUpdateOperationsInput | string
     mensagem?: StringFieldUpdateOperationsInput | string
@@ -37714,6 +40555,7 @@ export namespace Prisma {
 
   export type AppLogUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nivel?: EnumAppLogNivelFieldUpdateOperationsInput | $Enums.AppLogNivel
     origem?: StringFieldUpdateOperationsInput | string
     mensagem?: StringFieldUpdateOperationsInput | string
@@ -37804,6 +40646,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenCreateInput = {
     id?: string
+    workspaceId: string
     token: string
     ativo?: boolean
     ultimoUsoEm?: Date | string | null
@@ -37813,6 +40656,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     token: string
     ativo?: boolean
     ultimoUsoEm?: Date | string | null
@@ -37822,6 +40666,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
     ultimoUsoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -37831,6 +40676,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
     ultimoUsoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -37840,6 +40686,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenCreateManyInput = {
     id?: string
+    workspaceId: string
     token: string
     ativo?: boolean
     ultimoUsoEm?: Date | string | null
@@ -37849,6 +40696,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
     ultimoUsoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -37858,7 +40706,85 @@ export namespace Prisma {
 
   export type InboundWebhookTokenUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ultimoUsoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type McpTokenCreateInput = {
+    id?: string
+    workspaceId: string
+    tokenHash: string
+    prefixo: string
+    ativo?: boolean
+    ultimoUsoEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type McpTokenUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    tokenHash: string
+    prefixo: string
+    ativo?: boolean
+    ultimoUsoEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type McpTokenUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    tokenHash?: StringFieldUpdateOperationsInput | string
+    prefixo?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ultimoUsoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type McpTokenUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    tokenHash?: StringFieldUpdateOperationsInput | string
+    prefixo?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ultimoUsoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type McpTokenCreateManyInput = {
+    id?: string
+    workspaceId: string
+    tokenHash: string
+    prefixo: string
+    ativo?: boolean
+    ultimoUsoEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type McpTokenUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    tokenHash?: StringFieldUpdateOperationsInput | string
+    prefixo?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ultimoUsoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type McpTokenUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    tokenHash?: StringFieldUpdateOperationsInput | string
+    prefixo?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
     ultimoUsoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37867,6 +40793,7 @@ export namespace Prisma {
 
   export type InboundEventCreateInput = {
     id?: string
+    workspaceId: string
     evento: string
     origem?: string | null
     payload: JsonNullValueInput | InputJsonValue
@@ -37875,6 +40802,7 @@ export namespace Prisma {
 
   export type InboundEventUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     evento: string
     origem?: string | null
     payload: JsonNullValueInput | InputJsonValue
@@ -37883,6 +40811,7 @@ export namespace Prisma {
 
   export type InboundEventUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     evento?: StringFieldUpdateOperationsInput | string
     origem?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: JsonNullValueInput | InputJsonValue
@@ -37891,6 +40820,7 @@ export namespace Prisma {
 
   export type InboundEventUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     evento?: StringFieldUpdateOperationsInput | string
     origem?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: JsonNullValueInput | InputJsonValue
@@ -37899,6 +40829,7 @@ export namespace Prisma {
 
   export type InboundEventCreateManyInput = {
     id?: string
+    workspaceId: string
     evento: string
     origem?: string | null
     payload: JsonNullValueInput | InputJsonValue
@@ -37907,6 +40838,7 @@ export namespace Prisma {
 
   export type InboundEventUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     evento?: StringFieldUpdateOperationsInput | string
     origem?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: JsonNullValueInput | InputJsonValue
@@ -37915,6 +40847,7 @@ export namespace Prisma {
 
   export type InboundEventUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     evento?: StringFieldUpdateOperationsInput | string
     origem?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: JsonNullValueInput | InputJsonValue
@@ -37923,6 +40856,7 @@ export namespace Prisma {
 
   export type InstanceCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     numero?: string | null
     criadoEm?: Date | string
@@ -37931,6 +40865,7 @@ export namespace Prisma {
 
   export type InstanceUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     numero?: string | null
     criadoEm?: Date | string
@@ -37939,6 +40874,7 @@ export namespace Prisma {
 
   export type InstanceUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     numero?: NullableStringFieldUpdateOperationsInput | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37947,6 +40883,7 @@ export namespace Prisma {
 
   export type InstanceUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     numero?: NullableStringFieldUpdateOperationsInput | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37955,6 +40892,7 @@ export namespace Prisma {
 
   export type InstanceCreateManyInput = {
     id?: string
+    workspaceId: string
     nome: string
     numero?: string | null
     criadoEm?: Date | string
@@ -37963,6 +40901,7 @@ export namespace Prisma {
 
   export type InstanceUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     numero?: NullableStringFieldUpdateOperationsInput | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37971,6 +40910,7 @@ export namespace Prisma {
 
   export type InstanceUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     numero?: NullableStringFieldUpdateOperationsInput | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37979,6 +40919,7 @@ export namespace Prisma {
 
   export type NoCodeFlowCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     ativo?: boolean
     sistema?: boolean
@@ -37994,6 +40935,7 @@ export namespace Prisma {
 
   export type NoCodeFlowUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     ativo?: boolean
     sistema?: boolean
@@ -38009,6 +40951,7 @@ export namespace Prisma {
 
   export type NoCodeFlowUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
     sistema?: BoolFieldUpdateOperationsInput | boolean
@@ -38024,6 +40967,7 @@ export namespace Prisma {
 
   export type NoCodeFlowUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
     sistema?: BoolFieldUpdateOperationsInput | boolean
@@ -38039,6 +40983,7 @@ export namespace Prisma {
 
   export type NoCodeFlowCreateManyInput = {
     id?: string
+    workspaceId: string
     nome: string
     ativo?: boolean
     sistema?: boolean
@@ -38053,6 +40998,7 @@ export namespace Prisma {
 
   export type NoCodeFlowUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
     sistema?: BoolFieldUpdateOperationsInput | boolean
@@ -38067,6 +41013,7 @@ export namespace Prisma {
 
   export type NoCodeFlowUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
     sistema?: BoolFieldUpdateOperationsInput | boolean
@@ -38199,6 +41146,7 @@ export namespace Prisma {
 
   export type BackupConfigCreateInput = {
     id?: string
+    workspaceId: string
     url?: string
     segredo?: string | null
     secoes?: BackupConfigCreatesecoesInput | string[]
@@ -38213,6 +41161,7 @@ export namespace Prisma {
 
   export type BackupConfigUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     url?: string
     segredo?: string | null
     secoes?: BackupConfigCreatesecoesInput | string[]
@@ -38227,6 +41176,7 @@ export namespace Prisma {
 
   export type BackupConfigUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     url?: StringFieldUpdateOperationsInput | string
     segredo?: NullableStringFieldUpdateOperationsInput | string | null
     secoes?: BackupConfigUpdatesecoesInput | string[]
@@ -38241,6 +41191,7 @@ export namespace Prisma {
 
   export type BackupConfigUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     url?: StringFieldUpdateOperationsInput | string
     segredo?: NullableStringFieldUpdateOperationsInput | string | null
     secoes?: BackupConfigUpdatesecoesInput | string[]
@@ -38255,6 +41206,7 @@ export namespace Prisma {
 
   export type BackupConfigCreateManyInput = {
     id?: string
+    workspaceId: string
     url?: string
     segredo?: string | null
     secoes?: BackupConfigCreatesecoesInput | string[]
@@ -38269,6 +41221,7 @@ export namespace Prisma {
 
   export type BackupConfigUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     url?: StringFieldUpdateOperationsInput | string
     segredo?: NullableStringFieldUpdateOperationsInput | string | null
     secoes?: BackupConfigUpdatesecoesInput | string[]
@@ -38283,6 +41236,7 @@ export namespace Prisma {
 
   export type BackupConfigUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     url?: StringFieldUpdateOperationsInput | string
     segredo?: NullableStringFieldUpdateOperationsInput | string | null
     secoes?: BackupConfigUpdatesecoesInput | string[]
@@ -38297,6 +41251,7 @@ export namespace Prisma {
 
   export type BackupExecucaoCreateInput = {
     id?: string
+    workspaceId: string
     origem: string
     status: string
     secoes?: BackupExecucaoCreatesecoesInput | string[]
@@ -38313,6 +41268,7 @@ export namespace Prisma {
 
   export type BackupExecucaoUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     origem: string
     status: string
     secoes?: BackupExecucaoCreatesecoesInput | string[]
@@ -38329,6 +41285,7 @@ export namespace Prisma {
 
   export type BackupExecucaoUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     origem?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     secoes?: BackupExecucaoUpdatesecoesInput | string[]
@@ -38345,6 +41302,7 @@ export namespace Prisma {
 
   export type BackupExecucaoUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     origem?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     secoes?: BackupExecucaoUpdatesecoesInput | string[]
@@ -38361,6 +41319,7 @@ export namespace Prisma {
 
   export type BackupExecucaoCreateManyInput = {
     id?: string
+    workspaceId: string
     origem: string
     status: string
     secoes?: BackupExecucaoCreatesecoesInput | string[]
@@ -38377,6 +41336,7 @@ export namespace Prisma {
 
   export type BackupExecucaoUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     origem?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     secoes?: BackupExecucaoUpdatesecoesInput | string[]
@@ -38393,6 +41353,7 @@ export namespace Prisma {
 
   export type BackupExecucaoUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     origem?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     secoes?: BackupExecucaoUpdatesecoesInput | string[]
@@ -38407,8 +41368,72 @@ export namespace Prisma {
     concluidoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type WorkspaceCreateInput = {
+    id?: string
+    nome: string
+    principal?: boolean
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type WorkspaceUncheckedCreateInput = {
+    id?: string
+    nome: string
+    principal?: boolean
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type WorkspaceUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    principal?: BoolFieldUpdateOperationsInput | boolean
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    principal?: BoolFieldUpdateOperationsInput | boolean
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceCreateManyInput = {
+    id?: string
+    nome: string
+    principal?: boolean
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type WorkspaceUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    principal?: BoolFieldUpdateOperationsInput | boolean
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    principal?: BoolFieldUpdateOperationsInput | boolean
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
+    workspaceId: string
     username: string
     nome: string
     senhaHash: string
@@ -38425,6 +41450,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     username: string
     nome: string
     senhaHash: string
@@ -38441,6 +41467,7 @@ export namespace Prisma {
 
   export type UserUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     senhaHash?: StringFieldUpdateOperationsInput | string
@@ -38457,6 +41484,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     senhaHash?: StringFieldUpdateOperationsInput | string
@@ -38473,6 +41501,7 @@ export namespace Prisma {
 
   export type UserCreateManyInput = {
     id?: string
+    workspaceId: string
     username: string
     nome: string
     senhaHash: string
@@ -38488,6 +41517,7 @@ export namespace Prisma {
 
   export type UserUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     senhaHash?: StringFieldUpdateOperationsInput | string
@@ -38503,6 +41533,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     senhaHash?: StringFieldUpdateOperationsInput | string
@@ -38518,6 +41549,7 @@ export namespace Prisma {
 
   export type DepartamentoCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -38529,6 +41561,7 @@ export namespace Prisma {
 
   export type DepartamentoUncheckedCreateInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -38540,6 +41573,7 @@ export namespace Prisma {
 
   export type DepartamentoUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -38551,6 +41585,7 @@ export namespace Prisma {
 
   export type DepartamentoUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -38562,6 +41597,7 @@ export namespace Prisma {
 
   export type DepartamentoCreateManyInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -38571,6 +41607,7 @@ export namespace Prisma {
 
   export type DepartamentoUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -38580,6 +41617,7 @@ export namespace Prisma {
 
   export type DepartamentoUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -38939,6 +41977,7 @@ export namespace Prisma {
 
   export type LeadCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     telefone?: SortOrder
     produto?: SortOrder
@@ -38957,6 +41996,7 @@ export namespace Prisma {
 
   export type LeadMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     telefone?: SortOrder
     produto?: SortOrder
@@ -38975,6 +42015,7 @@ export namespace Prisma {
 
   export type LeadMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     telefone?: SortOrder
     produto?: SortOrder
@@ -39141,6 +42182,7 @@ export namespace Prisma {
 
   export type CampaignCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     status?: SortOrder
@@ -39165,6 +42207,7 @@ export namespace Prisma {
 
   export type CampaignMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     status?: SortOrder
@@ -39184,6 +42227,7 @@ export namespace Prisma {
 
   export type CampaignMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     status?: SortOrder
@@ -39389,8 +42433,19 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
+  export type ProdutoWorkspaceIdNomeCompoundUniqueInput = {
+    workspaceId: string
+    nome: string
+  }
+
+  export type ProdutoWorkspaceIdIdImportacaoCompoundUniqueInput = {
+    workspaceId: string
+    idImportacao: string
+  }
+
   export type ProdutoCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     ativo?: SortOrder
@@ -39401,6 +42456,7 @@ export namespace Prisma {
 
   export type ProdutoMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     ativo?: SortOrder
@@ -39411,6 +42467,7 @@ export namespace Prisma {
 
   export type ProdutoMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     ativo?: SortOrder
@@ -39427,8 +42484,19 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
+  export type MarcaWorkspaceIdNomeCompoundUniqueInput = {
+    workspaceId: string
+    nome: string
+  }
+
+  export type MarcaWorkspaceIdIdImportacaoCompoundUniqueInput = {
+    workspaceId: string
+    idImportacao: string
+  }
+
   export type MarcaCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     ativo?: SortOrder
@@ -39439,6 +42507,7 @@ export namespace Prisma {
 
   export type MarcaMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     ativo?: SortOrder
@@ -39449,6 +42518,7 @@ export namespace Prisma {
 
   export type MarcaMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     ativo?: SortOrder
@@ -39457,8 +42527,19 @@ export namespace Prisma {
     atualizadoEm?: SortOrder
   }
 
+  export type PersonaWorkspaceIdNomeCompoundUniqueInput = {
+    workspaceId: string
+    nome: string
+  }
+
+  export type PersonaWorkspaceIdIdImportacaoCompoundUniqueInput = {
+    workspaceId: string
+    idImportacao: string
+  }
+
   export type PersonaCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     ativo?: SortOrder
@@ -39469,6 +42550,7 @@ export namespace Prisma {
 
   export type PersonaMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     ativo?: SortOrder
@@ -39479,6 +42561,7 @@ export namespace Prisma {
 
   export type PersonaMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     ativo?: SortOrder
@@ -39487,8 +42570,19 @@ export namespace Prisma {
     atualizadoEm?: SortOrder
   }
 
+  export type RegiaoWorkspaceIdNomeCompoundUniqueInput = {
+    workspaceId: string
+    nome: string
+  }
+
+  export type RegiaoWorkspaceIdIdImportacaoCompoundUniqueInput = {
+    workspaceId: string
+    idImportacao: string
+  }
+
   export type RegiaoCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     ativo?: SortOrder
@@ -39499,6 +42593,7 @@ export namespace Prisma {
 
   export type RegiaoMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     ativo?: SortOrder
@@ -39509,6 +42604,7 @@ export namespace Prisma {
 
   export type RegiaoMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     ativo?: SortOrder
@@ -39519,6 +42615,7 @@ export namespace Prisma {
 
   export type SettingsCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     remetente?: SortOrder
     numero?: SortOrder
     assinatura?: SortOrder
@@ -39554,6 +42651,7 @@ export namespace Prisma {
 
   export type SettingsMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     remetente?: SortOrder
     numero?: SortOrder
     assinatura?: SortOrder
@@ -39583,6 +42681,7 @@ export namespace Prisma {
 
   export type SettingsMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     remetente?: SortOrder
     numero?: SortOrder
     assinatura?: SortOrder
@@ -39637,6 +42736,7 @@ export namespace Prisma {
 
   export type WebhookCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     url?: SortOrder
     secret?: SortOrder
@@ -39654,6 +42754,7 @@ export namespace Prisma {
 
   export type WebhookMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     url?: SortOrder
     secret?: SortOrder
@@ -39666,6 +42767,7 @@ export namespace Prisma {
 
   export type WebhookMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     url?: SortOrder
     secret?: SortOrder
@@ -39705,6 +42807,7 @@ export namespace Prisma {
 
   export type AppLogCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nivel?: SortOrder
     origem?: SortOrder
     mensagem?: SortOrder
@@ -39714,6 +42817,7 @@ export namespace Prisma {
 
   export type AppLogMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nivel?: SortOrder
     origem?: SortOrder
     mensagem?: SortOrder
@@ -39723,6 +42827,7 @@ export namespace Prisma {
 
   export type AppLogMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nivel?: SortOrder
     origem?: SortOrder
     mensagem?: SortOrder
@@ -39800,6 +42905,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     token?: SortOrder
     ativo?: SortOrder
     ultimoUsoEm?: SortOrder
@@ -39809,6 +42915,7 @@ export namespace Prisma {
 
   export type InboundWebhookTokenMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     token?: SortOrder
     ativo?: SortOrder
     ultimoUsoEm?: SortOrder
@@ -39818,7 +42925,41 @@ export namespace Prisma {
 
   export type InboundWebhookTokenMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     token?: SortOrder
+    ativo?: SortOrder
+    ultimoUsoEm?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type McpTokenCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    tokenHash?: SortOrder
+    prefixo?: SortOrder
+    ativo?: SortOrder
+    ultimoUsoEm?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type McpTokenMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    tokenHash?: SortOrder
+    prefixo?: SortOrder
+    ativo?: SortOrder
+    ultimoUsoEm?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type McpTokenMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    tokenHash?: SortOrder
+    prefixo?: SortOrder
     ativo?: SortOrder
     ultimoUsoEm?: SortOrder
     criadoEm?: SortOrder
@@ -39850,6 +42991,7 @@ export namespace Prisma {
 
   export type InboundEventCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     evento?: SortOrder
     origem?: SortOrder
     payload?: SortOrder
@@ -39858,6 +43000,7 @@ export namespace Prisma {
 
   export type InboundEventMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     evento?: SortOrder
     origem?: SortOrder
     recebidoEm?: SortOrder
@@ -39865,6 +43008,7 @@ export namespace Prisma {
 
   export type InboundEventMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     evento?: SortOrder
     origem?: SortOrder
     recebidoEm?: SortOrder
@@ -39898,6 +43042,7 @@ export namespace Prisma {
 
   export type InstanceCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     numero?: SortOrder
     criadoEm?: SortOrder
@@ -39906,6 +43051,7 @@ export namespace Prisma {
 
   export type InstanceMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     numero?: SortOrder
     criadoEm?: SortOrder
@@ -39914,6 +43060,7 @@ export namespace Prisma {
 
   export type InstanceMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     numero?: SortOrder
     criadoEm?: SortOrder
@@ -39932,6 +43079,7 @@ export namespace Prisma {
 
   export type NoCodeFlowCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     ativo?: SortOrder
     sistema?: SortOrder
@@ -39946,6 +43094,7 @@ export namespace Prisma {
 
   export type NoCodeFlowMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     ativo?: SortOrder
     sistema?: SortOrder
@@ -39958,6 +43107,7 @@ export namespace Prisma {
 
   export type NoCodeFlowMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     ativo?: SortOrder
     sistema?: SortOrder
@@ -40081,6 +43231,7 @@ export namespace Prisma {
 
   export type BackupConfigCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     url?: SortOrder
     segredo?: SortOrder
     secoes?: SortOrder
@@ -40100,6 +43251,7 @@ export namespace Prisma {
 
   export type BackupConfigMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     url?: SortOrder
     segredo?: SortOrder
     autoAtivo?: SortOrder
@@ -40113,6 +43265,7 @@ export namespace Prisma {
 
   export type BackupConfigMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     url?: SortOrder
     segredo?: SortOrder
     autoAtivo?: SortOrder
@@ -40131,6 +43284,7 @@ export namespace Prisma {
 
   export type BackupExecucaoCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     origem?: SortOrder
     status?: SortOrder
     secoes?: SortOrder
@@ -40154,6 +43308,7 @@ export namespace Prisma {
 
   export type BackupExecucaoMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     origem?: SortOrder
     status?: SortOrder
     partesEnviadas?: SortOrder
@@ -40168,6 +43323,7 @@ export namespace Prisma {
 
   export type BackupExecucaoMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     origem?: SortOrder
     status?: SortOrder
     partesEnviadas?: SortOrder
@@ -40187,6 +43343,33 @@ export namespace Prisma {
     tentativas?: SortOrder
   }
 
+  export type WorkspaceCountOrderByAggregateInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    principal?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type WorkspaceMaxOrderByAggregateInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    principal?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type WorkspaceMinOrderByAggregateInput = {
+    id?: SortOrder
+    nome?: SortOrder
+    principal?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
   export type EnumUserRoleFilter<$PrismaModel = never> = {
     equals?: $Enums.UserRole | EnumUserRoleFieldRefInput<$PrismaModel>
     in?: $Enums.UserRole[] | ListEnumUserRoleFieldRefInput<$PrismaModel>
@@ -40201,6 +43384,7 @@ export namespace Prisma {
 
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     username?: SortOrder
     nome?: SortOrder
     senhaHash?: SortOrder
@@ -40216,6 +43400,7 @@ export namespace Prisma {
 
   export type UserMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     username?: SortOrder
     nome?: SortOrder
     senhaHash?: SortOrder
@@ -40229,6 +43414,7 @@ export namespace Prisma {
 
   export type UserMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     username?: SortOrder
     nome?: SortOrder
     senhaHash?: SortOrder
@@ -40270,8 +43456,14 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type DepartamentoWorkspaceIdNomeCompoundUniqueInput = {
+    workspaceId: string
+    nome: string
+  }
+
   export type DepartamentoCountOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     ativo?: SortOrder
@@ -40281,6 +43473,7 @@ export namespace Prisma {
 
   export type DepartamentoMaxOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     ativo?: SortOrder
@@ -40290,6 +43483,7 @@ export namespace Prisma {
 
   export type DepartamentoMinOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     nome?: SortOrder
     descricao?: SortOrder
     ativo?: SortOrder
@@ -41837,6 +45031,7 @@ export namespace Prisma {
 
   export type CampaignCreateWithoutLeadsInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     status?: $Enums.CampaignStatus
@@ -41859,6 +45054,7 @@ export namespace Prisma {
 
   export type CampaignUncheckedCreateWithoutLeadsInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     status?: $Enums.CampaignStatus
@@ -42068,6 +45264,7 @@ export namespace Prisma {
 
   export type CampaignUpdateWithoutLeadsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
@@ -42089,6 +45286,7 @@ export namespace Prisma {
 
   export type CampaignUncheckedUpdateWithoutLeadsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
@@ -42286,6 +45484,7 @@ export namespace Prisma {
 
   export type LeadCreateWithoutNotasInternasInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -42309,6 +45508,7 @@ export namespace Prisma {
 
   export type LeadUncheckedCreateWithoutNotasInternasInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -42348,6 +45548,7 @@ export namespace Prisma {
 
   export type LeadUpdateWithoutNotasInternasInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -42371,6 +45572,7 @@ export namespace Prisma {
 
   export type LeadUncheckedUpdateWithoutNotasInternasInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -42420,6 +45622,7 @@ export namespace Prisma {
 
   export type LeadCreateWithoutCampanhaInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -42443,6 +45646,7 @@ export namespace Prisma {
 
   export type LeadUncheckedCreateWithoutCampanhaInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -42584,6 +45788,7 @@ export namespace Prisma {
     OR?: LeadScalarWhereInput[]
     NOT?: LeadScalarWhereInput | LeadScalarWhereInput[]
     id?: StringFilter<"Lead"> | string
+    workspaceId?: StringFilter<"Lead"> | string
     nome?: StringFilter<"Lead"> | string
     telefone?: StringFilter<"Lead"> | string
     produto?: StringFilter<"Lead"> | string
@@ -42634,6 +45839,7 @@ export namespace Prisma {
 
   export type LeadCreateWithoutCampanhasInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -42657,6 +45863,7 @@ export namespace Prisma {
 
   export type LeadUncheckedCreateWithoutCampanhasInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -42685,6 +45892,7 @@ export namespace Prisma {
 
   export type CampaignCreateWithoutLeadCampaignsInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     status?: $Enums.CampaignStatus
@@ -42707,6 +45915,7 @@ export namespace Prisma {
 
   export type CampaignUncheckedCreateWithoutLeadCampaignsInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     status?: $Enums.CampaignStatus
@@ -42745,6 +45954,7 @@ export namespace Prisma {
 
   export type LeadUpdateWithoutCampanhasInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -42768,6 +45978,7 @@ export namespace Prisma {
 
   export type LeadUncheckedUpdateWithoutCampanhasInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -42802,6 +46013,7 @@ export namespace Prisma {
 
   export type CampaignUpdateWithoutLeadCampaignsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
@@ -42823,6 +46035,7 @@ export namespace Prisma {
 
   export type CampaignUncheckedUpdateWithoutLeadCampaignsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
@@ -42845,6 +46058,7 @@ export namespace Prisma {
 
   export type CampaignCreateWithoutMensagensInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     status?: $Enums.CampaignStatus
@@ -42867,6 +46081,7 @@ export namespace Prisma {
 
   export type CampaignUncheckedCreateWithoutMensagensInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     status?: $Enums.CampaignStatus
@@ -42937,6 +46152,7 @@ export namespace Prisma {
 
   export type CampaignUpdateWithoutMensagensInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
@@ -42958,6 +46174,7 @@ export namespace Prisma {
 
   export type CampaignUncheckedUpdateWithoutMensagensInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
@@ -42996,6 +46213,7 @@ export namespace Prisma {
 
   export type LeadCreateWithoutMensagensAgendadasInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -43019,6 +46237,7 @@ export namespace Prisma {
 
   export type LeadUncheckedCreateWithoutMensagensAgendadasInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -43058,6 +46277,7 @@ export namespace Prisma {
 
   export type LeadUpdateWithoutMensagensAgendadasInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -43081,6 +46301,7 @@ export namespace Prisma {
 
   export type LeadUncheckedUpdateWithoutMensagensAgendadasInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -43104,6 +46325,7 @@ export namespace Prisma {
 
   export type LeadCreateWithoutEventosInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -43127,6 +46349,7 @@ export namespace Prisma {
 
   export type LeadUncheckedCreateWithoutEventosInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -43155,6 +46378,7 @@ export namespace Prisma {
 
   export type CampaignCreateWithoutEventosInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     status?: $Enums.CampaignStatus
@@ -43177,6 +46401,7 @@ export namespace Prisma {
 
   export type CampaignUncheckedCreateWithoutEventosInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     status?: $Enums.CampaignStatus
@@ -43236,6 +46461,7 @@ export namespace Prisma {
 
   export type LeadUpdateWithoutEventosInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -43259,6 +46485,7 @@ export namespace Prisma {
 
   export type LeadUncheckedUpdateWithoutEventosInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -43293,6 +46520,7 @@ export namespace Prisma {
 
   export type CampaignUpdateWithoutEventosInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
@@ -43314,6 +46542,7 @@ export namespace Prisma {
 
   export type CampaignUncheckedUpdateWithoutEventosInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
@@ -43441,6 +46670,7 @@ export namespace Prisma {
 
   export type NoCodeFlowCreateWithoutExecucoesInput = {
     id?: string
+    workspaceId: string
     nome: string
     ativo?: boolean
     sistema?: boolean
@@ -43455,6 +46685,7 @@ export namespace Prisma {
 
   export type NoCodeFlowUncheckedCreateWithoutExecucoesInput = {
     id?: string
+    workspaceId: string
     nome: string
     ativo?: boolean
     sistema?: boolean
@@ -43485,6 +46716,7 @@ export namespace Prisma {
 
   export type NoCodeFlowUpdateWithoutExecucoesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
     sistema?: BoolFieldUpdateOperationsInput | boolean
@@ -43499,6 +46731,7 @@ export namespace Prisma {
 
   export type NoCodeFlowUncheckedUpdateWithoutExecucoesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
     sistema?: BoolFieldUpdateOperationsInput | boolean
@@ -43655,6 +46888,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutAtendenteInput = {
     id?: string
+    workspaceId: string
     username: string
     nome: string
     senhaHash: string
@@ -43670,6 +46904,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutAtendenteInput = {
     id?: string
+    workspaceId: string
     username: string
     nome: string
     senhaHash: string
@@ -43741,6 +46976,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutAtendenteInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     senhaHash?: StringFieldUpdateOperationsInput | string
@@ -43756,6 +46992,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutAtendenteInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     senhaHash?: StringFieldUpdateOperationsInput | string
@@ -43826,6 +47063,7 @@ export namespace Prisma {
 
   export type DepartamentoCreateWithoutAtendentesInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -43836,6 +47074,7 @@ export namespace Prisma {
 
   export type DepartamentoUncheckedCreateWithoutAtendentesInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -43891,6 +47130,7 @@ export namespace Prisma {
 
   export type DepartamentoUpdateWithoutAtendentesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -43901,6 +47141,7 @@ export namespace Prisma {
 
   export type DepartamentoUncheckedUpdateWithoutAtendentesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -43911,6 +47152,7 @@ export namespace Prisma {
 
   export type LeadCreateWithoutAtendimentoInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -43934,6 +47176,7 @@ export namespace Prisma {
 
   export type LeadUncheckedCreateWithoutAtendimentoInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -43962,6 +47205,7 @@ export namespace Prisma {
 
   export type DepartamentoCreateWithoutAtendimentosInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -43972,6 +47216,7 @@ export namespace Prisma {
 
   export type DepartamentoUncheckedCreateWithoutAtendimentosInput = {
     id?: string
+    workspaceId: string
     nome: string
     descricao?: string | null
     ativo?: boolean
@@ -44021,6 +47266,7 @@ export namespace Prisma {
 
   export type LeadUpdateWithoutAtendimentoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -44044,6 +47290,7 @@ export namespace Prisma {
 
   export type LeadUncheckedUpdateWithoutAtendimentoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -44078,6 +47325,7 @@ export namespace Prisma {
 
   export type DepartamentoUpdateWithoutAtendimentosInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -44088,6 +47336,7 @@ export namespace Prisma {
 
   export type DepartamentoUncheckedUpdateWithoutAtendimentosInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     ativo?: BoolFieldUpdateOperationsInput | boolean
@@ -44127,6 +47376,7 @@ export namespace Prisma {
 
   export type LeadCreateWithoutTransferenciasInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -44150,6 +47400,7 @@ export namespace Prisma {
 
   export type LeadUncheckedCreateWithoutTransferenciasInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -44189,6 +47440,7 @@ export namespace Prisma {
 
   export type LeadUpdateWithoutTransferenciasInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -44212,6 +47464,7 @@ export namespace Prisma {
 
   export type LeadUncheckedUpdateWithoutTransferenciasInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -44450,6 +47703,7 @@ export namespace Prisma {
 
   export type LeadCreateManyCampanhaInput = {
     id?: string
+    workspaceId: string
     nome: string
     telefone: string
     produto: string
@@ -44511,6 +47765,7 @@ export namespace Prisma {
 
   export type LeadUpdateWithoutCampanhaInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -44534,6 +47789,7 @@ export namespace Prisma {
 
   export type LeadUncheckedUpdateWithoutCampanhaInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string
@@ -44557,6 +47813,7 @@ export namespace Prisma {
 
   export type LeadUncheckedUpdateManyWithoutCampanhaInput = {
     id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
     telefone?: StringFieldUpdateOperationsInput | string
     produto?: StringFieldUpdateOperationsInput | string

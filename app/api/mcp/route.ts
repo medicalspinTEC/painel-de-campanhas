@@ -1,24 +1,27 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js"
 
 import { createAppMcpServer } from "@/lib/mcp/server"
+import { runInWorkspace } from "@/lib/workspace-context"
+import { workspaceDoTokenMcp } from "@/services/mcp-token"
 
 /**
  * Endpoint MCP (Model Context Protocol) do painel.
  *
  * Permite conectar um cliente MCP — Claude.ai (Connectors), Claude Desktop,
- * Claude Code, etc. — diretamente a esta aplicação, dando a ele acesso às
- * tools declaradas em `lib/mcp/server.ts` (leads, campanhas, produtos,
- * indicadores e eventos).
+ * Claude Code, etc. — a UMA instância do painel, dando a ele as tools de
+ * `lib/mcp/server.ts` (leads, campanhas, produtos, indicadores e eventos).
  *
- * Autenticação: por decisão explícita, esta rota está PÚBLICA (ver
- * `proxy.ts`) — contas comuns do claude.ai (fora do Claude Code) ainda não
- * suportam enviar um header fixo de autenticação para conectores
- * personalizados, e exigir o `API_TOKEN` aqui impediria a conexão. Isso quer
- * dizer que qualquer pessoa com esta URL consegue ler e alterar leads e
- * campanhas — é uma troca deliberada de simplicidade por segurança, válida
- * enquanto o claude.ai não suportar headers customizados (ou enquanto você
- * não quiser trocar para OAuth). Para voltar a exigir o `API_TOKEN` nesta
- * rota, defina `MCP_EXIGIR_TOKEN=true` no `.env` (não é preciso editar código).
+ * Autenticação: cada instância gera o próprio token do MCP em Integrações
+ * (`services/mcp-token.ts`). O MCP vem desligado: sem token válido a rota recusa
+ * a chamada (401), e as ferramentas rodam SOMENTE na instância dona do token —
+ * nunca nas demais. Quem não gerar o token não expõe nada.
+ *
+ * O token pode ir em qualquer um destes lugares:
+ *  - `Authorization: Bearer mcp_…`  (preferido)
+ *  - `x-mcp-token: mcp_…`
+ *  - `?token=mcp_…` na URL (para conectores do claude.ai, que só pedem a URL;
+ *    trate a URL como senha, pois URLs podem aparecer em logs)
+ * O `API_TOKEN` e a sessão do navegador NÃO dão acesso ao MCP.
  *
  * Modo stateless: cada requisição cria um servidor e um transporte novos, sem
  * `sessionIdGenerator` — não há sessão MCP persistida em memória entre
@@ -27,7 +30,33 @@ import { createAppMcpServer } from "@/lib/mcp/server"
  * chamada, como o próprio protocolo Streamable HTTP prevê.
  */
 
+function extrairToken(request: Request): string | null {
+  const auth = request.headers.get("authorization")
+  if (auth && /^Bearer\s+/i.test(auth)) return auth.replace(/^Bearer\s+/i, "").trim() || null
+  const dedicado = request.headers.get("x-mcp-token")?.trim()
+  if (dedicado) return dedicado
+  return new URL(request.url).searchParams.get("token")?.trim() || null
+}
+
+function naoAutorizado(mensagem: string) {
+  return Response.json(
+    { jsonrpc: "2.0", error: { code: -32001, message: mensagem }, id: null },
+    { status: 401, headers: { "www-authenticate": 'Bearer realm="mcp"', "cache-control": "no-store" } },
+  )
+}
+
 export async function POST(request: Request) {
+  const token = extrairToken(request)
+  if (!token) return naoAutorizado("Token do MCP ausente. Gere um em Integrações e envie em Authorization: Bearer.")
+
+  const workspaceId = await workspaceDoTokenMcp(token)
+  if (!workspaceId) return naoAutorizado("Token do MCP inválido, desativado ou removido.")
+
+  // Tudo abaixo roda dentro da instância dona do token.
+  return runInWorkspace(workspaceId, () => processarMcp(request))
+}
+
+async function processarMcp(request: Request) {
   const server = createAppMcpServer()
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,

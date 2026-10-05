@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto"
-import { prisma } from "@/lib/prisma"
+import { prisma, prismaGlobal } from "@/lib/prisma"
+import { runInWorkspace, workspaceAtualId } from "@/lib/workspace-context"
 import { recordAppLog } from "@/services/app-logs"
 import { processarRespostaLead } from "@/services/lead-response"
 
@@ -30,8 +31,8 @@ export async function gerarToken(): Promise<string> {
   const novoToken = `whin_${randomBytes(32).toString("hex")}`
 
   await db.inboundWebhookToken.upsert({
-    where: { id: "default" },
-    create: { id: "default", token: novoToken, ativo: true },
+    where: { workspaceId: await workspaceAtualId() },
+    create: { token: novoToken, ativo: true },
     update: { token: novoToken, ativo: true },
   })
 
@@ -40,7 +41,7 @@ export async function gerarToken(): Promise<string> {
 
 export async function getToken(): Promise<InboundToken | null> {
   try {
-    const row = await db.inboundWebhookToken.findUnique({ where: { id: "default" } })
+    const row = await db.inboundWebhookToken.findUnique({ where: { workspaceId: await workspaceAtualId() } })
     if (!row) return null
 
     const totalEventos = await db.inboundEvent.count()
@@ -58,7 +59,7 @@ export async function getToken(): Promise<InboundToken | null> {
 }
 
 export async function toggleToken(ativo: boolean): Promise<void> {
-  await db.inboundWebhookToken.update({ where: { id: "default" }, data: { ativo } })
+  await db.inboundWebhookToken.update({ where: { workspaceId: await workspaceAtualId() }, data: { ativo } })
 }
 
 /**
@@ -71,9 +72,17 @@ export async function receberEvento(
   payload: unknown,
   origem: string | null,
 ): Promise<boolean> {
-  const row = await db.inboundWebhookToken.findUnique({ where: { id: "default" } })
-  if (!row || !row.ativo || row.token !== token) return false
+  // Endpoint público: o token é o que diz de QUAL instância é o evento. A busca é global
+  // de propósito; daqui em diante tudo roda dentro da instância dona do token.
+  const row = await prismaGlobal.inboundWebhookToken.findFirst({ where: { token } })
+  if (!row || !row.ativo) return false
+  const workspace = await prismaGlobal.workspace.findUnique({ where: { id: row.workspaceId }, select: { ativo: true } })
+  if (!workspace?.ativo) return false
 
+  return runInWorkspace(row.workspaceId, () => registrarEvento(evento, payload, origem))
+}
+
+async function registrarEvento(evento: string, payload: unknown, origem: string | null): Promise<boolean> {
   await db.$transaction([
     db.inboundEvent.create({
       data: {
@@ -83,7 +92,7 @@ export async function receberEvento(
       },
     }),
     db.inboundWebhookToken.update({
-      where: { id: "default" },
+      where: { workspaceId: await workspaceAtualId() },
       data: { ultimoUsoEm: new Date() },
     }),
   ])

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { workspaceAtualId } from "@/lib/workspace-context"
 import { listAtendimentosPorLead, type ChatAtendimento } from "@/services/crm"
 import { getCrmPluginAtivo } from "@/services/settings"
 
@@ -116,6 +117,7 @@ async function ultimasMensagensPorLead(): Promise<Map<string, ChatMessage>> {
       FROM "TimelineEvent" e
       LEFT JOIN "Campaign" c ON c."id" = e."campanhaId"
       WHERE e."tipo"::text IN ('mensagem_enviada', 'resposta')
+        AND EXISTS (SELECT 1 FROM "Lead" lw WHERE lw."id" = e."leadId" AND lw."workspaceId" = ${await workspaceAtualId()})
       ORDER BY e."leadId", e."data" DESC
     `
   } catch {

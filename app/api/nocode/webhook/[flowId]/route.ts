@@ -1,6 +1,7 @@
 import { after, NextResponse } from "next/server"
 
-import { prepararWebhook, processarEventoWebhook } from "@/services/nocode"
+import { runInWorkspace } from "@/lib/workspace-context"
+import { prepararWebhook, processarEventoWebhook, workspaceDoFluxo } from "@/services/nocode"
 
 /**
  * Entrada de eventos da Evolution API para um fluxo do plugin No Code.
@@ -23,11 +24,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ flo
     return NextResponse.json({ ok: false, erro: "Corpo inválido: esperado JSON." }, { status: 400 })
   }
 
-  const preparo = await prepararWebhook(flowId, token)
+  // Rota pública: o fluxo define a instância; tudo abaixo roda dentro dela.
+  const workspaceId = await workspaceDoFluxo(flowId)
+  if (!workspaceId) return NextResponse.json({ ok: false, erro: "Fluxo não encontrado." }, { status: 404 })
+
+  const preparo = await runInWorkspace(workspaceId, () => prepararWebhook(flowId, token))
   if (!preparo.ok) {
     return NextResponse.json({ ok: preparo.status === 202, erro: preparo.erro }, { status: preparo.status })
   }
 
-  after(() => processarEventoWebhook(preparo.fluxo, payload))
+  after(() => runInWorkspace(workspaceId, () => processarEventoWebhook(preparo.fluxo, payload)))
   return NextResponse.json({ ok: true })
 }

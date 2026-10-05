@@ -186,7 +186,9 @@ export function UsuariosManager({ usuarios, ator }: { usuarios: Usuario[]; ator:
             <AlertDialogTitle>Excluir usuário?</AlertDialogTitle>
             <AlertDialogDescription>
               {excluindo
-                ? `"${excluindo.nome}" perderá o acesso ao painel imediatamente. Esta ação não pode ser desfeita.`
+                ? excluindo.role === "admin"
+                  ? `"${excluindo.nome}" é administrador: excluir apaga também a instância dele — todos os dados, configurações e usuários dessa instância. Esta ação não pode ser desfeita.`
+                  : `"${excluindo.nome}" perderá o acesso ao painel imediatamente. Esta ação não pode ser desfeita.`
                 : null}
             </AlertDialogDescription>
           </AlertDialogHeader>

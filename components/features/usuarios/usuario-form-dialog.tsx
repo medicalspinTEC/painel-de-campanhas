@@ -52,7 +52,10 @@ export function UsuarioFormDialog({
   const editando = Boolean(usuario)
   const editandoASiMesmo = usuario?.id === ator.id
   const ehRoot = ator.role === "root"
-  const niveisOferecidos = niveisGerenciaveis(ator)
+  // Administrador tem instância própria (dados separados): ao editar, não se troca entre Administrador e os demais níveis.
+  const niveisOferecidos = niveisGerenciaveis(ator).filter(
+    (nivel) => !usuario || (usuario.role === "admin" ? nivel === "admin" : nivel !== "admin"),
+  )
   // O que este ator pode fazer neste formulário (o servidor confere tudo de novo).
   const podeEditarDados = !editando || temPoder(ator, "usuarios_editar")
   const podeDefinirSecoes = !editandoASiMesmo && (ehRoot || temPoder(ator, "usuarios_secoes"))
@@ -167,6 +170,12 @@ export function UsuarioFormDialog({
               />
               {editandoASiMesmo ? (
                 <FieldDescription>Você está editando o próprio usuário: nível, status e acesso não podem ser alterados por aqui.</FieldDescription>
+              ) : null}
+              {!editando && role === "admin" ? (
+                <FieldDescription>
+                  Cria uma instância privada para este administrador: dados, configurações e usuários próprios, sem acesso para
+                  você ou para outros administradores.
+                </FieldDescription>
               ) : null}
             </Field>
 

@@ -1,6 +1,7 @@
 import { createHmac } from "node:crypto"
 
 import { prisma } from "@/lib/prisma"
+import { paraCadaWorkspace } from "@/lib/workspace-context"
 import { recordAppLog } from "@/services/app-logs"
 
 /**
@@ -373,9 +374,19 @@ export async function manutencaoNoCode(): Promise<ResultadoManutencaoNoCode> {
   manutencaoEmAndamento = true
   try {
     ultimaPoda = Date.now()
-    const podadas = await podarExecucoesExpiradas()
-    const { enviadas, falhas } = await entregarPendentes()
-    return { podadas, enviadas, falhas }
+    // Cada instância tem os próprios fluxos, execuções e webhook de execuções.
+    const parciais = await paraCadaWorkspace(
+      async () => {
+        const podadas = await podarExecucoesExpiradas()
+        const { enviadas, falhas } = await entregarPendentes()
+        return { podadas, enviadas, falhas }
+      },
+      (id, erro) => console.error(`[v0] falha na manutenção do No Code da instância ${id}:`, erro),
+    )
+    return parciais.reduce(
+      (total, p) => ({ podadas: total.podadas + p.podadas, enviadas: total.enviadas + p.enviadas, falhas: total.falhas + p.falhas }),
+      { podadas: 0, enviadas: 0, falhas: 0 },
+    )
   } finally {
     manutencaoEmAndamento = false
   }

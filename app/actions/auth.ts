@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 
 import { createSessionToken, SESSION_COOKIE, sessionCookieOptions } from "@/lib/auth"
 import { getConfiguredCredentials } from "@/lib/auth-env"
-import { prisma } from "@/lib/prisma"
+import { prismaGlobal } from "@/lib/prisma"
 import { TEMA_COOKIE } from "@/lib/temas"
 import { autenticar } from "@/services/users"
 
@@ -22,7 +22,7 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
   }
 
   // Sem nenhum usuário cadastrado e sem credenciais no .env não há como criar o 1º admin.
-  const semUsuarios = (await prisma.user.count()) === 0
+  const semUsuarios = (await prismaGlobal.user.count()) === 0
   if (semUsuarios && !getConfiguredCredentials()) {
     return {
       error:

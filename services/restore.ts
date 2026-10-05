@@ -384,6 +384,8 @@ function converterLinha(
   const dados: Record<string, unknown> = {}
   for (const campo of modelo.campos.values()) {
     if (modelo.secretas.has(campo.nome)) continue
+    // A instância não vem do arquivo: o filtro de `prisma` grava a de quem está restaurando.
+    if (campo.nome === "workspaceId") continue
     const valor = linha[campo.nome]
 
     if (valor === undefined || valor === null) {
@@ -440,6 +442,9 @@ async function prepararUsuarios(ctx: Contexto, modelo: ModeloRestauravel, itens:
     if (!idNoBanco) {
       item.dados.senhaHash = senhaIndisponivel()
       item.senhaProvisoria = true
+      // Usuário recriado a partir de arquivo nasce sempre como padrão: root e admin só são criados
+      // em Usuários (admin tem instância própria; promover alguém por um arquivo seria uma brecha).
+      item.dados.role = "padrao"
     }
   }
 }

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { paraCadaWorkspace, tentarWorkspaceId } from "@/lib/workspace-context"
 import { renderTemplate } from "@/lib/format"
 import {
   ajustarJanela,
@@ -208,7 +209,10 @@ async function enviarMensagem(
   }
 }
 
-export async function processDueMessages(agora: Date = new Date()): Promise<EngineResult> {
+export async function processDueMessages(
+  agora: Date = new Date(),
+  opcoes: { todasInstancias?: boolean } = {},
+): Promise<EngineResult> {
   // Já existe uma varredura em andamento neste processo: não inicia outra em
   // paralelo (isso duplicaria os envios). Apenas registra que uma nova varredura
   // é necessária; a execução atual fará um único rerun ao terminar.
@@ -220,7 +224,7 @@ export async function processDueMessages(agora: Date = new Date()): Promise<Engi
   engineLock.emAndamento = true
   try {
     // Primeira varredura usa o `agora` recebido (permite testes determinísticos).
-    let resultado = await executarVarredura(agora)
+    let resultado = await varrerInstancias(agora, opcoes)
 
     // Consome os pedidos de rerun acumulados durante a varredura anterior. O
     // flag é zerado ANTES de rodar, então apenas chamadas NOVAS (feitas durante
@@ -228,13 +232,36 @@ export async function processDueMessages(agora: Date = new Date()): Promise<Engi
     // mudanças e sempre roda com o horário atual.
     while (engineLock.rerunSolicitado) {
       engineLock.rerunSolicitado = false
-      resultado = await executarVarredura(new Date())
+      resultado = await varrerInstancias(new Date(), opcoes)
     }
 
     return resultado
   } finally {
     engineLock.emAndamento = false
   }
+}
+
+/**
+ * Sem instância definida (timer interno, `/api/cron`), varre TODAS as instâncias ativas, uma de
+ * cada vez, cada uma com as próprias configurações, campanhas e limites. Chamada de dentro de uma
+ * requisição (ativar campanha, importar leads), varre só a instância de quem pediu.
+ */
+async function varrerInstancias(agora: Date, opcoes: { todasInstancias?: boolean }): Promise<EngineResult> {
+  if (!opcoes.todasInstancias && (await tentarWorkspaceId())) return executarVarredura(agora)
+
+  const parciais = await paraCadaWorkspace(
+    () => executarVarredura(agora),
+    (id, erro) => console.error(`[v0] falha na varredura da instância ${id}:`, erro),
+  )
+  return parciais.reduce<EngineResult>(
+    (total, p) => ({
+      processados: total.processados + p.processados,
+      enviados: total.enviados + p.enviados,
+      reiniciados: total.reiniciados + p.reiniciados,
+      encerrados: total.encerrados + p.encerrados,
+    }),
+    { processados: 0, enviados: 0, reiniciados: 0, encerrados: 0 },
+  )
 }
 
 async function executarVarredura(agora: Date): Promise<EngineResult> {

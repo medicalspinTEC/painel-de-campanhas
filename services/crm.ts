@@ -188,9 +188,9 @@ export async function createAtendente(input: AtendenteInput, ator: Ator): Promis
 
   // Usuário novo: reaproveita as validações e o hash de senha de `services/users.ts`.
   // Usuário padrão nasce com a seção Chat liberada, já que é lá que ele atende.
-  const role: UserRole = input.role === "admin" ? "admin" : "padrao"
-  // Quem pode criar um admin por aqui é só o Root (a hierarquia é checada em `createUser`);
-  // o admin criado nasce só com a seção Chat e sem poderes — o Root ajusta em Usuários.
+  // Aqui só nasce usuário padrão: um admin tem instância própria (dados separados) e é criado
+  // pelo Root em Usuários, então não faria sentido virar atendente desta instância.
+  const role: UserRole = "padrao"
   const usuario = await createUser(
     {
       username: input.username,
@@ -229,7 +229,8 @@ export async function updateAtendente(id: string, input: AtendenteInput, ator: A
   if (!atual) throw new CrmError("Atendente não encontrado.")
 
   // Root nunca é rebaixado por aqui (o formulário só oferece admin/padrão).
-  const role: UserRole = atual.user.role === "root" ? "root" : input.role === "admin" ? "admin" : "padrao"
+  // Root e admin mantêm o nível (admin tem instância própria; trocar de nível não é permitido).
+  const role: UserRole = atual.user.role === "root" || atual.user.role === "admin" ? atual.user.role : "padrao"
   const secoesAtuais = normalizarSecoes(atual.user.secoes)
   // Rebaixado de admin para padrão sem nenhuma seção? Libera o Chat para ele continuar atendendo.
   const secoes: SecaoKey[] = role === "padrao" && atual.user.role === "admin" && secoesAtuais.length === 0 ? ["chat"] : secoesAtuais

@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto"
 
-import { prisma } from "@/lib/prisma"
+import { prisma, prismaGlobal } from "@/lib/prisma"
 import {
   modeloFluxoResposta,
   NODE_CATALOG,
@@ -573,6 +573,17 @@ function normalizarEvento(evento: unknown): string {
 export type PreparoWebhook =
   | { ok: true; fluxo: FlowRow }
   | { ok: false; status: 401 | 404 | 202; erro: string }
+
+/**
+ * Instância dona de um fluxo. A rota do webhook é pública (a Evolution não tem sessão): o id do
+ * fluxo diz de qual instância é o evento. Instância suspensa = como se o fluxo não existisse.
+ */
+export async function workspaceDoFluxo(flowId: string): Promise<string | null> {
+  const fluxo = await prismaGlobal.noCodeFlow.findUnique({ where: { id: flowId }, select: { workspaceId: true } })
+  if (!fluxo) return null
+  const ws = await prismaGlobal.workspace.findUnique({ where: { id: fluxo.workspaceId }, select: { ativo: true } })
+  return ws?.ativo ? fluxo.workspaceId : null
+}
 
 /** Valida fluxo + token antes de aceitar o evento (a execução em si roda depois da resposta). */
 export async function prepararWebhook(flowId: string, token: string | null): Promise<PreparoWebhook> {

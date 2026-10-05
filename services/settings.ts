@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { workspaceAtualId } from "@/lib/workspace-context"
 import { emitWebhookEvent } from "@/services/webhooks"
 
 export type Settings = {
@@ -17,9 +18,6 @@ export type Settings = {
   notificarFalhas: boolean
 }
 
-/** Id fixo da linha única de configurações. */
-const ID = "default"
-
 export const SETTINGS_PADRAO: Settings = {
   remetente: "Engine Follow-up",
   numero: "",
@@ -37,7 +35,7 @@ export const SETTINGS_PADRAO: Settings = {
 }
 
 export async function getSettings(): Promise<Settings> {
-  const row = await prisma.settings.findUnique({ where: { id: ID } })
+  const row = await prisma.settings.findUnique({ where: { workspaceId: await workspaceAtualId() } })
   // Antes do primeiro salvamento não existe linha; devolvemos os padrões.
   if (!row) return SETTINGS_PADRAO
   return {
@@ -59,7 +57,7 @@ export async function getSettings(): Promise<Settings> {
 
 export async function getChatPluginAtivo(): Promise<boolean> {
   const row = await prisma.settings.findUnique({
-    where: { id: ID },
+    where: { workspaceId: await workspaceAtualId() },
     select: { chatPluginAtivo: true },
   })
   return row?.chatPluginAtivo ?? false
@@ -67,15 +65,15 @@ export async function getChatPluginAtivo(): Promise<boolean> {
 
 export async function setChatPluginAtivo(ativo: boolean): Promise<void> {
   await prisma.settings.upsert({
-    where: { id: ID },
-    create: { id: ID, chatPluginAtivo: ativo },
+    where: { workspaceId: await workspaceAtualId() },
+    create: { chatPluginAtivo: ativo },
     update: { chatPluginAtivo: ativo },
   })
 }
 
 export async function getKanbanPluginAtivo(): Promise<boolean> {
   const row = await prisma.settings.findUnique({
-    where: { id: ID },
+    where: { workspaceId: await workspaceAtualId() },
     select: { kanbanPluginAtivo: true },
   })
   return row?.kanbanPluginAtivo ?? false
@@ -83,8 +81,8 @@ export async function getKanbanPluginAtivo(): Promise<boolean> {
 
 export async function setKanbanPluginAtivo(ativo: boolean): Promise<void> {
   await prisma.settings.upsert({
-    where: { id: ID },
-    create: { id: ID, kanbanPluginAtivo: ativo },
+    where: { workspaceId: await workspaceAtualId() },
+    create: { kanbanPluginAtivo: ativo },
     update: { kanbanPluginAtivo: ativo },
   })
 }
@@ -92,7 +90,7 @@ export async function setKanbanPluginAtivo(ativo: boolean): Promise<void> {
 export async function getAssistentePluginAtivo(): Promise<boolean> {
   try {
     const row = await prisma.settings.findUnique({
-      where: { id: ID },
+      where: { workspaceId: await workspaceAtualId() },
       select: { assistentePluginAtivo: true },
     })
     return row?.assistentePluginAtivo ?? false
@@ -104,8 +102,8 @@ export async function getAssistentePluginAtivo(): Promise<boolean> {
 
 export async function setAssistentePluginAtivo(ativo: boolean): Promise<void> {
   await prisma.settings.upsert({
-    where: { id: ID },
-    create: { id: ID, assistentePluginAtivo: ativo },
+    where: { workspaceId: await workspaceAtualId() },
+    create: { assistentePluginAtivo: ativo },
     update: { assistentePluginAtivo: ativo },
   })
 }
@@ -113,8 +111,8 @@ export async function setAssistentePluginAtivo(ativo: boolean): Promise<void> {
 export async function saveSettings(input: Settings): Promise<Settings> {
   // O tema é preferência PESSOAL de cada usuário (User.temaApp) — não é gravado aqui.
   const row = await prisma.settings.upsert({
-    where: { id: ID },
-    create: { id: ID, ...input },
+    where: { workspaceId: await workspaceAtualId() },
+    create: { ...input },
     update: input,
   })
 
@@ -153,7 +151,7 @@ function colunaAusente(error: unknown): boolean {
 export async function getAppMarca(): Promise<AppMarca> {
   try {
     const row = await prisma.settings.findUnique({
-      where: { id: ID },
+      where: { workspaceId: await workspaceAtualId() },
       select: { appNome: true, appLogo: true },
     })
     return { nome: row?.appNome?.trim() || MARCA_PADRAO.nome, logo: row?.appLogo ?? null }
@@ -165,8 +163,8 @@ export async function getAppMarca(): Promise<AppMarca> {
 
 export async function saveAppMarca(marca: AppMarca): Promise<void> {
   await prisma.settings.upsert({
-    where: { id: ID },
-    create: { id: ID, appNome: marca.nome, appLogo: marca.logo },
+    where: { workspaceId: await workspaceAtualId() },
+    create: { appNome: marca.nome, appLogo: marca.logo },
     update: { appNome: marca.nome, appLogo: marca.logo },
   })
 }
@@ -174,7 +172,7 @@ export async function saveAppMarca(marca: AppMarca): Promise<void> {
 export async function getNocodePluginAtivo(): Promise<boolean> {
   try {
     const row = await prisma.settings.findUnique({
-      where: { id: ID },
+      where: { workspaceId: await workspaceAtualId() },
       select: { nocodePluginAtivo: true },
     })
     return row?.nocodePluginAtivo ?? false
@@ -186,8 +184,8 @@ export async function getNocodePluginAtivo(): Promise<boolean> {
 
 export async function setNocodePluginAtivo(ativo: boolean): Promise<void> {
   await prisma.settings.upsert({
-    where: { id: ID },
-    create: { id: ID, nocodePluginAtivo: ativo },
+    where: { workspaceId: await workspaceAtualId() },
+    create: { nocodePluginAtivo: ativo },
     update: { nocodePluginAtivo: ativo },
   })
 }
@@ -195,7 +193,7 @@ export async function setNocodePluginAtivo(ativo: boolean): Promise<void> {
 export async function getCrmPluginAtivo(): Promise<boolean> {
   try {
     const row = await prisma.settings.findUnique({
-      where: { id: ID },
+      where: { workspaceId: await workspaceAtualId() },
       select: { crmPluginAtivo: true },
     })
     return row?.crmPluginAtivo ?? false
@@ -208,8 +206,8 @@ export async function getCrmPluginAtivo(): Promise<boolean> {
 
 export async function setCrmPluginAtivo(ativo: boolean): Promise<void> {
   await prisma.settings.upsert({
-    where: { id: ID },
-    create: { id: ID, crmPluginAtivo: ativo },
+    where: { workspaceId: await workspaceAtualId() },
+    create: { crmPluginAtivo: ativo },
     update: { crmPluginAtivo: ativo },
   })
 }

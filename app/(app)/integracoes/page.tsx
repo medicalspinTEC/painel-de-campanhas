@@ -1,4 +1,5 @@
 import { InboundWebhookManager } from "@/components/features/integrations/inbound-webhook-manager"
+import { McpManager } from "@/components/features/integrations/mcp-manager"
 import { PluginsManager } from "@/components/features/integrations/plugins-manager"
 import { WebhooksManager } from "@/components/features/integrations/webhooks-manager"
 import { PageHeader } from "@/components/shared/page-header"
@@ -12,6 +13,7 @@ import {
   getNocodePluginAtivo,
 } from "@/services/settings"
 import { getToken, listEventos } from "@/services/inbound-webhook"
+import { getMcpStatus } from "@/services/mcp-token"
 import { listWebhooks } from "@/services/webhooks"
 import { Plug, Puzzle } from "lucide-react"
 import { requireSecao } from "@/lib/session"
@@ -44,10 +46,11 @@ x-ingest-token: <INGEST_TOKEN>
 
 export default async function IntegracoesPage() {
   await requireSecao("integracoes")
-  const [webhooks, tokenInicial, eventosIniciais, chatAtivo, kanbanAtivo, assistenteAtivo, nocodeAtivo, crmAtivo] = await Promise.all([
+  const [webhooks, tokenInicial, eventosIniciais, mcpStatus, chatAtivo, kanbanAtivo, assistenteAtivo, nocodeAtivo, crmAtivo] = await Promise.all([
     listWebhooks(),
     getToken(),
     listEventos(50),
+    getMcpStatus(),
     getChatPluginAtivo(),
     getKanbanPluginAtivo(),
     getAssistentePluginAtivo(),
@@ -77,7 +80,9 @@ export default async function IntegracoesPage() {
         <TabsContent value="integracoes" className="flex flex-col gap-6">
           <WebhooksManager webhooks={webhooks} />
 
-          <InboundWebhookManager tokenInicial={tokenInicial} eventosIniciais={eventosIniciais} />
+       {/*<InboundWebhookManager tokenInicial={tokenInicial} eventosIniciais={eventosIniciais} />*/}
+
+          <McpManager statusInicial={mcpStatus} />
 
           <Card>
             <CardHeader>

@@ -11,14 +11,10 @@ import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth"
 const API_TOKEN = process.env.API_TOKEN ?? ""
 
 /**
- * Mesma regra acima (referência literal à env neste módulo).
- * `/api/mcp` é PÚBLICA por padrão, para o claude.ai conectar só pelo link.
- * Defina `MCP_EXIGIR_TOKEN=true` no `.env` para voltar a exigir o API_TOKEN
- * (ou sessão) nessa rota.
+ * `/api/mcp` não usa sessão nem `API_TOKEN`: cada instância tem o próprio token do MCP
+ * (gerado em Integrações) e a própria rota o confere (`app/api/mcp/route.ts`). Por isso ela
+ * passa por aqui sem sessão, mas sem token válido responde 401.
  */
-const MCP_EXIGIR_TOKEN = process.env.MCP_EXIGIR_TOKEN === "true"
-const ROTA_MCP = "/api/mcp"
-
 function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false
   let diff = 0
@@ -43,12 +39,9 @@ function timingSafeEqual(a: string, b: string): boolean {
  */
 
 // Rotas acessíveis sem sessão.
-const ROTAS_PUBLICAS = ["/login", "/api/webhook/entrada", "/api/cron", "/api/nocode/webhook"]
+const ROTAS_PUBLICAS = ["/login", "/api/webhook/entrada", "/api/cron", "/api/nocode/webhook", "/api/mcp"]
 
 function isPublica(pathname: string): boolean {
-  if (pathname === ROTA_MCP || pathname.startsWith(`${ROTA_MCP}/`)) {
-    return !MCP_EXIGIR_TOKEN
-  }
   return ROTAS_PUBLICAS.some((rota) => pathname === rota || pathname.startsWith(`${rota}/`))
 }
 

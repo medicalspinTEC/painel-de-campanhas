@@ -25,7 +25,8 @@ async function handle(request: Request) {
   }
 
   try {
-    const resultado = await processDueMessages()
+    // O cron é do sistema todo: percorre todas as instâncias ativas.
+    const resultado = await processDueMessages(new Date(), { todasInstancias: true })
     // Poda as execuções com mais de 24h e reenvia ao webhook as que falharam (não derruba a engine se falhar).
     const nocode = await manutencaoNoCode().catch((error) => {
       console.error("[v0] manutenção do No Code falhou:", error)

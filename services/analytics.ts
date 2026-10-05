@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { workspaceAtualId } from "@/lib/workspace-context"
 import type { Kpis } from "@/types"
 
 const DAY = 86400000
@@ -116,6 +117,7 @@ export async function getSerieDiaria(dias = 30): Promise<SeriePonto[]> {
     FROM "TimelineEvent"
     WHERE "data" >= ${inicio}
       AND "tipo" IN ('mensagem_enviada', 'resposta')
+      AND EXISTS (SELECT 1 FROM "Lead" lw WHERE lw."id" = "TimelineEvent"."leadId" AND lw."workspaceId" = ${await workspaceAtualId()})
     GROUP BY 1, 2
   `
 
@@ -192,6 +194,7 @@ export async function getPerformancePorCampanha(periodo?: PeriodoFiltro): Promis
         AND e."campanhaId" IS NOT NULL
         AND l."entradaCampanhaEm" IS NOT NULL
         AND e."data" >= l."entradaCampanhaEm"
+        AND l."workspaceId" = ${await workspaceAtualId()}
         AND (${de}::timestamp IS NULL OR e."data" >= ${de}::timestamp)
         AND (${ate}::timestamp IS NULL OR e."data" <= ${ate}::timestamp)
       GROUP BY 1
@@ -285,6 +288,7 @@ export async function getPerformancePorMensagem(periodo?: PeriodoFiltro): Promis
         LIMIT 1
       ) enviada ON true
       WHERE r."tipo"::text = 'resposta'
+        AND EXISTS (SELECT 1 FROM "Lead" lw WHERE lw."id" = r."leadId" AND lw."workspaceId" = ${await workspaceAtualId()})
         AND (${de}::timestamp IS NULL OR r."data" >= ${de}::timestamp)
         AND (${ate}::timestamp IS NULL OR r."data" <= ${ate}::timestamp)
       GROUP BY 1
@@ -378,6 +382,7 @@ export async function getDistribuicaoPorDiaSemana(periodo?: PeriodoFiltro): Prom
     SELECT EXTRACT(DOW FROM "data")::int AS dow, "tipo"::text AS tipo, COUNT(*) AS total
     FROM "TimelineEvent"
     WHERE "tipo" IN ('mensagem_enviada', 'resposta')
+      AND EXISTS (SELECT 1 FROM "Lead" lw WHERE lw."id" = "TimelineEvent"."leadId" AND lw."workspaceId" = ${await workspaceAtualId()})
       AND (${de}::timestamp IS NULL OR "data" >= ${de}::timestamp)
       AND (${ate}::timestamp IS NULL OR "data" <= ${ate}::timestamp)
     GROUP BY 1, 2
@@ -415,6 +420,7 @@ export async function getDistribuicaoPorHorario(periodo?: PeriodoFiltro): Promis
     SELECT EXTRACT(HOUR FROM "data")::int AS hora, "tipo"::text AS tipo, COUNT(*) AS total
     FROM "TimelineEvent"
     WHERE "tipo" IN ('mensagem_enviada', 'resposta')
+      AND EXISTS (SELECT 1 FROM "Lead" lw WHERE lw."id" = "TimelineEvent"."leadId" AND lw."workspaceId" = ${await workspaceAtualId()})
       AND (${de}::timestamp IS NULL OR "data" >= ${de}::timestamp)
       AND (${ate}::timestamp IS NULL OR "data" <= ${ate}::timestamp)
     GROUP BY 1, 2

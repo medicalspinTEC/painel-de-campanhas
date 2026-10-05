@@ -104,7 +104,8 @@ export function carregarModelos(): ReadonlyMap<string, ModeloRestauravel> {
           ehEnum,
           lista: f.isList,
           obrigatorio: f.isRequired,
-          temPadrao: f.hasDefaultValue || Boolean(f.isUpdatedAt),
+          // `workspaceId` é sempre preenchido pelo app (instância de quem restaura), nunca pelo arquivo.
+          temPadrao: f.hasDefaultValue || Boolean(f.isUpdatedAt) || f.name === "workspaceId",
           autoincrement: ehAutoincrement(f.default),
           valoresEnum: ehEnum ? (enums.get(f.type) ?? new Set<string>()) : null,
         })
@@ -135,7 +136,11 @@ export function carregarModelos(): ReadonlyMap<string, ModeloRestauravel> {
         campos,
         fks,
         secretas,
-        atualizaveis: [...campos.keys()].filter((c) => !pk.includes(c) && !secretas.has(c)),
+        // Nunca se muda, por restauração: a instância dona do registro e o nível de um usuário
+        // (senão um arquivo montado à mão promoveria alguém a root/admin).
+        atualizaveis: [...campos.keys()].filter(
+          (c) => !pk.includes(c) && !secretas.has(c) && c !== "workspaceId" && !(nome === "User" && c === "role"),
+        ),
       })
     }
   }

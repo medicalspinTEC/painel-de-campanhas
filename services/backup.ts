@@ -7,6 +7,7 @@ import { Readable } from "node:stream"
 import { finished } from "node:stream/promises"
 
 import { prisma } from "@/lib/prisma"
+import { capturarWorkspace, paraCadaWorkspace, workspaceAtualId } from "@/lib/workspace-context"
 import { proximaExecucao, type AgendaBackup } from "@/lib/backup/agenda"
 import { COLUNAS_SECRETAS, normalizarSecoes, SECOES_BACKUP, SECOES_POR_CHAVE } from "@/lib/backup/secoes"
 import { recordAppLog } from "@/services/app-logs"
@@ -31,7 +32,6 @@ import { recordAppLog } from "@/services/app-logs"
  *   segredo de assinatura do webhook de execuções são removidos.
  */
 
-const ID_CONFIG = "default"
 const TIMEOUT_ENVIO_MS = 10 * 60 * 1000
 const TENTATIVAS_POR_ENVIO = 3
 const ESPERA_ENVIO_MS = [1_000, 4_000]
@@ -128,8 +128,9 @@ const LEITORES: Record<string, Leitor> = {
   AppLog: porId(prisma.appLog, { tamanho: 2000 }),
 }
 
-function limpar(linhas: Array<Record<string, unknown>>, omitir?: string[]) {
-  if (!omitir?.length) return linhas
+function limpar(linhas: Array<Record<string, unknown>>, omitirColunas?: string[]) {
+  // `workspaceId` nunca sai: o backup é portátil e a instância de destino é quem define o dono.
+  const omitir = [...(omitirColunas ?? []), "workspaceId"]
   return linhas.map((linha) => {
     const copia = { ...linha }
     for (const campo of omitir) delete copia[campo]
@@ -182,11 +183,11 @@ function paraConfig(row: LinhaConfig | null): ConfigBackup {
 }
 
 export async function getConfigBackup(): Promise<ConfigBackup> {
-  return paraConfig(await prisma.backupConfig.findUnique({ where: { id: ID_CONFIG } }))
+  return paraConfig(await prisma.backupConfig.findUnique({ where: { workspaceId: await workspaceAtualId() } }))
 }
 
 export async function segredoSalvoBackup(): Promise<string | null> {
-  const row = await prisma.backupConfig.findUnique({ where: { id: ID_CONFIG }, select: { segredo: true } })
+  const row = await prisma.backupConfig.findUnique({ where: { workspaceId: await workspaceAtualId() }, select: { segredo: true } })
   return row?.segredo ?? null
 }
 
@@ -205,7 +206,7 @@ export async function salvarConfigBackup(input: {
     diaSemana: input.auto.diaSemana,
   }
 
-  const atual = await prisma.backupConfig.findUnique({ where: { id: ID_CONFIG } })
+  const atual = await prisma.backupConfig.findUnique({ where: { workspaceId: await workspaceAtualId() } })
   // Recalcula a próxima execução quando o automático liga ou a agenda muda; senão mantém a já marcada.
   const agendaMudou =
     !atual ||
@@ -231,8 +232,8 @@ export async function salvarConfigBackup(input: {
     autoProximoEm,
   }
   const row = await prisma.backupConfig.upsert({
-    where: { id: ID_CONFIG },
-    create: { id: ID_CONFIG, ...dados },
+    where: { workspaceId: await workspaceAtualId() },
+    create: { ...dados },
     update: dados,
   })
   return paraConfig(row)
@@ -580,7 +581,7 @@ async function executarBackup(id: string): Promise<boolean> {
     tentativas = run.tentativas
     origem = run.origem
 
-    const config = await prisma.backupConfig.findUnique({ where: { id: ID_CONFIG } })
+    const config = await prisma.backupConfig.findUnique({ where: { workspaceId: await workspaceAtualId() } })
     if (!config?.url) return await registrarFalha(id, "Nenhum webhook de backup configurado.", tentativas, origem)
     const destino: Destino = { url: config.url, segredo: config.segredo }
 
@@ -649,7 +650,8 @@ async function dispararBackup(origem: "manual" | "automatico", secoes: string[])
     data: { origem, status: "enviando", secoes, tentativas: 1, ultimaTentativaEm: new Date() },
     select: { id: true },
   })
-  void executarBackup(run.id)
+  const naInstancia = await capturarWorkspace()
+  void naInstancia(() => executarBackup(run.id))
   await podarHistorico().catch(() => undefined)
   return run.id
 }
@@ -661,7 +663,7 @@ export async function iniciarBackupManual(secoesEscolhidas: unknown): Promise<Re
   const secoes = normalizarSecoes(secoesEscolhidas)
   if (!secoes.length) return { ok: false, erro: "Selecione ao menos uma seção para o backup." }
 
-  const config = await prisma.backupConfig.findUnique({ where: { id: ID_CONFIG }, select: { url: true } })
+  const config = await prisma.backupConfig.findUnique({ where: { workspaceId: await workspaceAtualId() }, select: { url: true } })
   if (!config?.url) return { ok: false, erro: "Salve a URL do webhook de backup antes de fazer o backup." }
 
   const emAndamento = await prisma.backupExecucao.findFirst({
@@ -677,7 +679,8 @@ export async function iniciarBackupManual(secoesEscolhidas: unknown): Promise<Re
 export async function retentarBackup(id: string): Promise<{ ok: boolean; erro?: string }> {
   const reservado = await reservarRetentativa(id)
   if (!reservado) return { ok: false, erro: "Este backup não está em um estado que permita tentar de novo." }
-  void executarBackup(id)
+  const naInstancia = await capturarWorkspace()
+  void naInstancia(() => executarBackup(id))
   return { ok: true }
 }
 
@@ -762,8 +765,15 @@ export async function criarDownloadBackup(secoesEscolhidas: unknown): Promise<Re
     }
   }
 
+  // O stream é lido depois que o handler já respondeu: fixa a instância para as consultas dele.
+  const naInstancia = await capturarWorkspace()
   const stream = new ReadableStream<Uint8Array>({
-    async pull(controlador) {
+    pull: (controlador) => naInstancia(() => puxar(controlador)),
+    cancel: () => naInstancia(() => cancelar()),
+  })
+
+  async function puxar(controlador: ReadableStreamDefaultController<Uint8Array>) {
+    {
       try {
         const { value, done } = await iterador.next()
         if (done) {
@@ -778,12 +788,13 @@ export async function criarDownloadBackup(secoesEscolhidas: unknown): Promise<Re
         await finalizar("falha", error instanceof Error ? error.message : String(error))
         controlador.error(error)
       }
-    },
-    async cancel() {
-      await iterador.return(undefined).catch(() => undefined)
-      await finalizar("falha", "Download cancelado antes de terminar.")
-    },
-  })
+    }
+  }
+
+  async function cancelar() {
+    await iterador.return(undefined).catch(() => undefined)
+    await finalizar("falha", "Download cancelado antes de terminar.")
+  }
 
   const nome = nomeArquivoBackup(run.criadoEm)
   return { ok: true, stream, nome }
@@ -805,11 +816,32 @@ export interface ResultadoManutencaoBackup {
   ignorado?: boolean
 }
 
-/** Dispara o backup automático na hora marcada e repete os automáticos que falharam. */
+/**
+ * Dispara o backup automático na hora marcada e repete os automáticos que falharam,
+ * instância por instância (cada uma com o próprio webhook, agenda e histórico).
+ */
 export async function manutencaoBackup(): Promise<ResultadoManutencaoBackup> {
   if (manutencaoEmAndamento) return { iniciado: false, retentados: 0, ignorado: true }
   manutencaoEmAndamento = true
   try {
+    const parciais = await paraCadaWorkspace(
+      () => manutencaoBackupDaInstancia(),
+      (id, erro) => console.error(`[v0] falha na rotina de backup da instância ${id}:`, erro),
+    )
+    return {
+      iniciado: parciais.some((p) => p.iniciado),
+      retentados: parciais.reduce((total, p) => total + p.retentados, 0),
+    }
+  } finally {
+    manutencaoEmAndamento = false
+  }
+}
+
+/** Roda dentro de `runInWorkspace` (ver `paraCadaWorkspace`). */
+async function manutencaoBackupDaInstancia(): Promise<ResultadoManutencaoBackup> {
+  const workspaceId = await workspaceAtualId()
+  const naInstancia = await capturarWorkspace()
+  {
     const agora = new Date()
 
     // Backups que ficaram "enviando" sem sinal de vida (processo caiu) viram falha para poderem ser repetidos.
@@ -819,7 +851,7 @@ export async function manutencaoBackup(): Promise<ResultadoManutencaoBackup> {
     })
 
     let iniciado = false
-    const config = await prisma.backupConfig.findUnique({ where: { id: ID_CONFIG } })
+    const config = await prisma.backupConfig.findUnique({ where: { workspaceId } })
     if (config?.autoAtivo && config.url) {
       const agenda: AgendaBackup = {
         modo: config.autoModo as AgendaBackup["modo"],
@@ -830,13 +862,13 @@ export async function manutencaoBackup(): Promise<ResultadoManutencaoBackup> {
       if (!config.autoProximoEm) {
         // Automático ligado sem próxima execução marcada (ex.: edição direta no banco): marca agora.
         await prisma.backupConfig.updateMany({
-          where: { id: ID_CONFIG, autoProximoEm: null },
+          where: { workspaceId, autoProximoEm: null },
           data: { autoProximoEm: proximaExecucao(agenda, agora) },
         })
       } else if (config.autoProximoEm.getTime() <= agora.getTime()) {
         // Reserva a execução: só quem conseguir mover `autoProximoEm` roda (vale entre várias instâncias).
         const reserva = await prisma.backupConfig.updateMany({
-          where: { id: ID_CONFIG, autoAtivo: true, autoProximoEm: config.autoProximoEm },
+          where: { workspaceId, autoAtivo: true, autoProximoEm: config.autoProximoEm },
           data: { autoProximoEm: proximaExecucao(agenda, agora) },
         })
         if (reserva.count === 1) {
@@ -874,14 +906,12 @@ export async function manutencaoBackup(): Promise<ResultadoManutencaoBackup> {
         .slice(0, RETENTATIVAS_POR_VARREDURA)
       for (const f of devidos) {
         if (await reservarRetentativa(f.id)) {
-          void executarBackup(f.id)
+          void naInstancia(() => executarBackup(f.id))
           retentados += 1
         }
       }
     }
 
     return { iniciado, retentados }
-  } finally {
-    manutencaoEmAndamento = false
   }
 }

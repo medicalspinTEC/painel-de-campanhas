@@ -79,9 +79,12 @@ enum AppLogNivel {
 }
 
 model Lead {
-  id       String @id @default(cuid())
-  nome     String
-  telefone String
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
+  nome        String
+  telefone    String
 
   // Dimensões de segmentação. Ficam como texto para que novos produtos ou
   // marcas não exijam uma migration de enum.
@@ -123,6 +126,7 @@ model Lead {
   @@index([campanhaId])
   @@index([status])
   @@index([criadoEm])
+  @@index([workspaceId])
 }
 
 model ChatInternalNote {
@@ -137,10 +141,13 @@ model ChatInternalNote {
 }
 
 model Campaign {
-  id        String         @id @default(cuid())
-  nome      String
-  descricao String?
-  status    CampaignStatus @default(rascunho)
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
+  nome        String
+  descricao   String?
+  status      CampaignStatus @default(rascunho)
 
   /// Define se a campanha usa uma sequência única para todos (`padrao`) ou
   /// uma mensagem individual por lead (`individual`). Escolhido na criação.
@@ -180,6 +187,7 @@ model Campaign {
 
   @@index([status])
   @@index([criadoEm])
+  @@index([workspaceId])
 }
 
 model LeadCampaign {
@@ -254,75 +262,97 @@ model ScheduledMessage {
 /// Produtos inativos deixam de aparecer como opção em novos leads, mas não
 /// afetam leads que já usam aquele nome.
 model Produto {
-  id        String  @id @default(cuid())
-  nome      String  @unique
-  descricao String?
-  ativo     Boolean @default(true)
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
+  nome        String
+  descricao   String?
+  ativo       Boolean @default(true)
 
   /// Identificador opcional para importação por planilha. Quando preenchido, o
   /// arquivo pode trazer este ID na coluna "produto" em vez do nome exato,
   /// evitando cadastrar uma segmentação nova e sem uso. É único quando definido.
-  idImportacao String? @unique
+  idImportacao String?
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
+  @@unique([workspaceId, nome])
+  @@unique([workspaceId, idImportacao])
   @@index([ativo, nome])
 }
 
 /// Catálogo de marcas gerenciado na página de Segmentação. Mesma lógica de
 /// Produto: o nome é a chave de negócio e os leads guardam a marca como texto.
 model Marca {
-  id        String  @id @default(cuid())
-  nome      String  @unique
-  descricao String?
-  ativo     Boolean @default(true)
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
+  nome        String
+  descricao   String?
+  ativo       Boolean @default(true)
 
   /// Identificador opcional para importação por planilha (ver Produto).
-  idImportacao String? @unique
+  idImportacao String?
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
+  @@unique([workspaceId, nome])
+  @@unique([workspaceId, idImportacao])
   @@index([ativo, nome])
 }
 
 /// Catálogo de personas gerenciado na página de Segmentação.
 model Persona {
-  id        String  @id @default(cuid())
-  nome      String  @unique
-  descricao String?
-  ativo     Boolean @default(true)
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
+  nome        String
+  descricao   String?
+  ativo       Boolean @default(true)
 
   /// Identificador opcional para importação por planilha (ver Produto).
-  idImportacao String? @unique
+  idImportacao String?
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
+  @@unique([workspaceId, nome])
+  @@unique([workspaceId, idImportacao])
   @@index([ativo, nome])
 }
 
 /// Catálogo de regiões gerenciado na página de Segmentação.
 model Regiao {
-  id        String  @id @default(cuid())
-  nome      String  @unique
-  descricao String?
-  ativo     Boolean @default(true)
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
+  nome        String
+  descricao   String?
+  ativo       Boolean @default(true)
 
   /// Identificador opcional para importação por planilha (ver Produto).
-  idImportacao String? @unique
+  idImportacao String?
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
+  @@unique([workspaceId, nome])
+  @@unique([workspaceId, idImportacao])
   @@index([ativo, nome])
 }
 
-/// Preferências da engine. Tabela de linha única: `id` é fixo em "default"
-/// para que um upsert simples sirva tanto para criar quanto para atualizar.
+/// Preferências da engine. Uma linha por instância (`workspaceId` é único).
 model Settings {
-  id String @id @default("default")
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String @unique
 
   remetente  String @default("Engine Follow-up")
   numero     String @default("")
@@ -365,11 +395,14 @@ model Settings {
 /// Webhooks de saída configurados na página de Integrações.
 /// O limite de 5 registros é aplicado na camada de serviço.
 model Webhook {
-  id     String  @id @default(cuid())
-  nome   String
-  url    String
-  secret String  @default("")
-  ativo  Boolean @default(true)
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
+  nome        String
+  url         String
+  secret      String  @default("")
+  ativo       Boolean @default(true)
 
   /// Chaves dos eventos assinados (ver lib/webhook-events.ts).
   /// Guardadas como lista de texto para que novos eventos não exijam migration.
@@ -382,21 +415,26 @@ model Webhook {
   atualizadoEm DateTime @updatedAt
 
   @@index([criadoEm])
+  @@index([workspaceId])
 }
 
 /// Erros e avisos de sistema — Evolution API, banco de dados, actions etc.
 /// Separado de TimelineEvent porque não pertence ao contexto de um lead.
 model AppLog {
-  id       String      @id @default(cuid())
-  nivel    AppLogNivel @default(erro)
-  origem   String /// Ex: "evolution", "campaigns", "leads", "webhooks"
-  mensagem String
-  detalhes String? /// Stack trace, resposta HTTP, etc.
-  data     DateTime    @default(now())
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
+  nivel       AppLogNivel @default(erro)
+  origem      String /// Ex: "evolution", "campaigns", "leads", "webhooks"
+  mensagem    String
+  detalhes    String? /// Stack trace, resposta HTTP, etc.
+  data        DateTime    @default(now())
 
   @@index([data])
   @@index([nivel, data])
   @@index([origem, data])
+  @@index([workspaceId])
 }
 
 model TimelineEvent {
@@ -424,12 +462,35 @@ model TimelineEvent {
   @@index([mensagemId])
 }
 
-/// Token de autenticação para o webhook de entrada (linha única: id="default").
+/// Token de autenticação para o webhook de entrada (uma linha por instância).
 /// Permite que sistemas externos enviem eventos para este painel via POST.
 model InboundWebhookToken {
-  id    String  @id @default("default")
-  token String /// Valor gerado: whin_<64 chars hex>
-  ativo Boolean @default(true)
+  id String @id @default("default")
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String  @unique
+  token       String /// Valor gerado: whin_<64 chars hex>
+  ativo       Boolean @default(true)
+
+  ultimoUsoEm  DateTime?
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+}
+
+/// Token de acesso ao MCP (`/api/mcp`) de uma instância. O MCP vem DESLIGADO: só
+/// existe depois que alguém da instância gera o token em Integrações, e o token
+/// define em qual instância as ferramentas rodam (nunca em todas). Guardamos só o
+/// hash SHA-256 (o token aparece uma única vez, ao gerar) e um prefixo para identificá-lo.
+model McpToken {
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String @unique
+
+  tokenHash String  @unique
+  /// Início do token (ex.: `mcp_1a2b3c4d`), só para reconhecê-lo na tela.
+  prefixo   String
+  ativo     Boolean @default(true)
 
   ultimoUsoEm  DateTime?
   criadoEm     DateTime  @default(now())
@@ -439,14 +500,18 @@ model InboundWebhookToken {
 /// Eventos recebidos pelo webhook de entrada (/api/webhook/entrada).
 /// Armazenados para auditoria e visibilidade na UI.
 model InboundEvent {
-  id         String   @id @default(cuid())
-  evento     String /// Nome do evento enviado pelo sistema externo.
-  origem     String? /// IP/host de origem capturado do header x-forwarded-for.
-  payload    Json /// Corpo completo recebido (dados livres).
-  recebidoEm DateTime @default(now())
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
+  evento      String /// Nome do evento enviado pelo sistema externo.
+  origem      String? /// IP/host de origem capturado do header x-forwarded-for.
+  payload     Json /// Corpo completo recebido (dados livres).
+  recebidoEm  DateTime @default(now())
 
   @@index([recebidoEm])
   @@index([evento, recebidoEm])
+  @@index([workspaceId])
 }
 
 /// Instâncias de WhatsApp criadas por este painel.
@@ -454,19 +519,26 @@ model InboundEvent {
 /// apenas o `nome` (chave de negócio, igual ao instanceName na Evolution) das
 /// que foram criadas por aqui, para que a listagem mostre somente essas.
 model Instance {
-  id     String  @id @default(cuid())
-  nome   String  @unique
-  numero String?
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
+  nome        String  @unique
+  numero      String?
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
   @@index([criadoEm])
+  @@index([workspaceId])
 }
 
 /// Fluxos do plugin "No Code" (editor visual de automações do próprio app).
 model NoCodeFlow {
-  id                 String  @id @default(cuid())
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId        String
   nome               String
   ativo              Boolean @default(false)
   /// Fluxo do sistema (o "Fluxo de resposta" do app): nasce ativo e não pode ser
@@ -488,6 +560,7 @@ model NoCodeFlow {
   execucoes NoCodeExecution[]
 
   @@index([atualizadoEm])
+  @@index([workspaceId])
 }
 
 /// Histórico de execuções dos fluxos (uma por evento recebido ou teste manual).
@@ -518,11 +591,14 @@ model NoCodeExecution {
   @@index([webhookStatus, iniciadoEm])
 }
 
-/// Configuração do backup para webhook externo (linha única: id="default").
-/// O backup (manual ou automático) envia os dados das seções escolhidas, em
-/// partes, para `url`. Ver `services/backup.ts`.
+/// Configuração do backup para webhook externo (uma linha por instância).
+/// O backup (manual ou automático) envia o arquivo JSON completo das seções
+/// escolhidas, num único POST binário, para `url`. Ver `services/backup.ts`.
 model BackupConfig {
-  id String @id @default("default")
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String @unique
 
   url     String  @default("")
   /// Segredo opcional: assina cada envio (HMAC-SHA256 no header X-Backup-Signature).
@@ -548,15 +624,18 @@ model BackupConfig {
 
 /// Histórico de backups enviados (manuais e automáticos), com o estado da entrega.
 model BackupExecucao {
-  id     String   @id @default(cuid())
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
   /// "manual" | "automatico"
-  origem String
+  origem      String
   /// "enviando" | "enviado" | "falha"
-  status String
+  status      String
   /// Seções incluídas neste backup.
-  secoes String[]
+  secoes      String[]
   /// Linhas e partes enviadas por tabela: { Lead: { linhas, partes } }.
-  resumo Json?
+  resumo      Json?
 
   partesEnviadas Int     @default(0)
   /// Estimativa feita antes do envio (os dados podem mudar durante ele).
@@ -572,17 +651,42 @@ model BackupExecucao {
 
   @@index([criadoEm])
   @@index([status, ultimaTentativaEm])
+  @@index([workspaceId])
+}
+
+/// Instância do painel: um espaço de dados isolado. Cada admin tem a sua (criada
+/// quando o Root cadastra o admin) e os usuários padrão que ele criar entram
+/// nela. A instância principal (`principal = true`) é a do Root e dos usuários
+/// que ele criar. Nenhuma consulta atravessa instâncias: `lib/prisma.ts` injeta
+/// `workspaceId` automaticamente em toda leitura e escrita.
+///
+/// `workspaceId` nas demais tabelas é coluna simples (sem FK declarada): assim o
+/// filtro vale também nas escritas aninhadas, e a exclusão da instância é feita
+/// por `excluirWorkspace` (services/workspaces.ts).
+model Workspace {
+  id        String  @id @default(cuid())
+  nome      String
+  /// Instância do Root. Só pode existir uma (índice único parcial na migration).
+  principal Boolean @default(false)
+  /// Instância desativada: ninguém dela entra e os envios automáticos param.
+  ativo     Boolean @default(true)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
 }
 
 /// Usuários do painel. O primeiro admin é criado no primeiro login com as
 /// credenciais de `AUTH_USERNAME`/`AUTH_PASSWORD` (ver `services/users.ts`).
 model User {
-  id        String @id @default(cuid())
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
   /// Login (minúsculo, único).
-  username  String @unique
-  nome      String
+  username    String @unique
+  nome        String
   /// Hash scrypt no formato `scrypt$<salt>$<hash>` (ver `lib/password.ts`).
-  senhaHash String
+  senhaHash   String
 
   role    UserRole @default(padrao)
   /// Chaves das seções liberadas (ver `lib/permissoes.ts`). Ignorado para root,
@@ -609,6 +713,7 @@ model User {
   atualizadoEm DateTime @updatedAt
 
   @@index([role])
+  @@index([workspaceId])
 }
 
 // ---------------------------------------------------------------------------
@@ -619,10 +724,13 @@ model User {
 /// (deixa de receber transferências) ou excluído (as conversas dele ficam sem
 /// departamento).
 model Departamento {
-  id        String  @id @default(cuid())
-  nome      String  @unique
-  descricao String?
-  ativo     Boolean @default(true)
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
+  nome        String
+  descricao   String?
+  ativo       Boolean @default(true)
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -630,6 +738,7 @@ model Departamento {
   atendentes   AtendenteDepartamento[]
   atendimentos LeadAtendimento[]
 
+  @@unique([workspaceId, nome])
   @@index([ativo, nome])
 }
 

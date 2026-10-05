@@ -2,6 +2,7 @@ import { createHmac, randomBytes } from "node:crypto"
 import { after } from "next/server"
 
 import { prisma } from "@/lib/prisma"
+import { capturarWorkspace, tentarWorkspaceId, workspacePrincipalId } from "@/lib/workspace-context"
 import { WEBHOOK_LIMITE } from "@/lib/webhook-events"
 
 export interface Webhook {
@@ -153,7 +154,15 @@ export async function emitWebhookEvent(evento: string, dados: unknown): Promise<
    * A entrega roda depois da resposta: o usuário não deve esperar o tempo de rede
    * de até cinco destinos externos para ver o lead salvo na tela.
    */
-  agendarEntrega(async () => {
+  // A entrega continua depois da resposta (ou fora de qualquer requisição): guarda de qual instância
+  // é o evento, para ler só os webhooks dela. Sem instância identificável não há a quem notificar.
+  let naInstancia: Awaited<ReturnType<typeof capturarWorkspace>>
+  try {
+    naInstancia = await capturarWorkspace()
+  } catch {
+    return
+  }
+  agendarEntrega(() => naInstancia(async () => {
     let destinos: Array<{ id: string; url: string; secret: string }> = []
     try {
       destinos = await prisma.webhook.findMany({
@@ -175,11 +184,15 @@ export async function emitWebhookEvent(evento: string, dados: unknown): Promise<
         console.error(`[v0] Falha ao entregar ${evento} em ${destinos[indice].url}:`, entrega.reason)
       }
     })
-  })
+  }))
 }
 
 export async function emitDisparoWebhook(payload: Record<string, unknown>): Promise<void> {
   if (!DISPAROS_WEBHOOK_URL) return
+  // A URL é única do servidor (env), então é a do dono do sistema: só a instância principal envia.
+  // Se as demais enviassem, as mensagens de cada admin chegariam a esse destino.
+  const atual = await tentarWorkspaceId()
+  if (!atual || atual !== (await workspacePrincipalId())) return
 
   agendarEntrega(async () => {
     try {
