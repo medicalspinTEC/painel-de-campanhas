@@ -150,8 +150,7 @@ export function AppSidebar({
       visivel(item.url) &&
       (item.url !== "/chat" || chatAtivo) &&
       (item.url !== "/kanban" || kanbanAtivo) &&
-      (item.url !== "/assistente" || assistenteAtivo) &&
-      (item.url !== "/nocode" || nocodeAtivo),
+      (item.url !== "/assistente" || assistenteAtivo),
   )
   // O CRM (departamentos e atendentes) aparece para o Root e para admins com o poder "Gerenciar o CRM".
   const itensGestaoComCrm =
@@ -160,7 +159,7 @@ export function AppSidebar({
       : itensGestao
   const itensOperacao = navOperacao.filter((item) => visivel(item.url))
   const itensSistema = [
-    ...navSistema.filter((item) => visivel(item.url )),
+    ...navSistema.filter((item) => visivel(item.url) && (item.url !== "/nocode" || nocodeAtivo)),
     ...(usuario && podeGerenciarUsuarios(usuario) ? [{ title: "Usuários", url: "/usuarios", icon: UserCog }] : []),
   ]
 
