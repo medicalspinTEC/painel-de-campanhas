@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { workspaceAtualId } from "@/lib/workspace-context"
 
 export interface Produto {
   id: string
@@ -93,12 +94,12 @@ export async function mapProdutosPorIdImportacao(): Promise<Map<string, string>>
 }
 
 export async function createProduto(input: ProdutoInput): Promise<Produto> {
-  const existente = await prisma.produto.findUnique({ where: { nome: input.nome }, select: { id: true } })
+  const existente = await prisma.produto.findFirst({ where: { nome: input.nome }, select: { id: true } })
   if (existente) throw new ProdutoDuplicadoError()
 
   const idImportacao = input.idImportacao?.trim() || null
   if (idImportacao) {
-    const colisaoId = await prisma.produto.findUnique({ where: { idImportacao }, select: { id: true } })
+    const colisaoId = await prisma.produto.findFirst({ where: { idImportacao }, select: { id: true } })
     if (colisaoId) throw new ProdutoIdImportacaoDuplicadoError()
   }
 
@@ -153,13 +154,14 @@ export async function deleteProduto(id: string): Promise<void> {
  * Garante que exista um produto ativo com este nome, cadastrando-o quando ainda
  * não existir. Usado pelo cadastro automático de segmentação quando um lead
  * chega com um produto que não está no catálogo. É idempotente: `nome` é
- * @unique no schema, então o upsert não duplica nem gera erro se já existir.
+ * único por instância (`workspaceId` + `nome`), então o upsert não duplica nem gera erro se já existir.
  */
 export async function garantirProduto(nome: string): Promise<void> {
   const limpo = nome.trim()
   if (!limpo) return
+  const workspaceId = await workspaceAtualId()
   await prisma.produto.upsert({
-    where: { nome: limpo },
+    where: { workspaceId_nome: { workspaceId, nome: limpo } },
     create: { nome: limpo, ativo: true },
     update: {},
   })

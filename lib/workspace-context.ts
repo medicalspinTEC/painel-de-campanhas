@@ -40,16 +40,39 @@ export function runInWorkspace<T>(workspaceId: string, fn: () => T): T {
 
 const TTL_MS = 5_000
 const MAX_ENTRADAS = 500
-const cacheSessao = new Map<string, { workspaceId: string | null; ate: number }>()
-let cachePrincipal: { id: string | null; ate: number } | null = null
+
+type EntradaSessao = { workspaceId: string | null; ate: number }
+
+/*
+ * Os caches ficam em `globalThis` (e não em variáveis do módulo): o Turbopack
+ * pode avaliar este módulo várias vezes, e cada cópia teria o seu cache vazio,
+ * multiplicando as consultas ao banco. `emVoo` agrupa as resoluções
+ * simultâneas do mesmo token: uma página dispara dezenas de queries em paralelo
+ * e, sem isso, todas consultavam o usuário ao mesmo tempo (cache ainda vazio).
+ */
+const estado = ((globalThis as unknown as { __workspaceCtx?: {
+  cacheSessao: Map<string, EntradaSessao>
+  emVoo: Map<string, Promise<string | null>>
+  cachePrincipal: { id: string | null; ate: number } | null
+  principalEmVoo: Promise<string | null> | null
+} }).__workspaceCtx ??= { cacheSessao: new Map(), emVoo: new Map(), cachePrincipal: null, principalEmVoo: null })
+const { cacheSessao, emVoo } = estado
 
 /** Id da instância principal (a do Root). */
 export async function workspacePrincipalId(): Promise<string | null> {
   const agora = Date.now()
-  if (cachePrincipal && cachePrincipal.ate > agora) return cachePrincipal.id
-  const row = await prismaGlobal.workspace.findFirst({ where: { principal: true, ativo: true }, select: { id: true } })
-  cachePrincipal = { id: row?.id ?? null, ate: agora + 30_000 }
-  return cachePrincipal.id
+  if (estado.cachePrincipal && estado.cachePrincipal.ate > agora) return estado.cachePrincipal.id
+  if (estado.principalEmVoo) return estado.principalEmVoo
+  estado.principalEmVoo = (async () => {
+    try {
+      const row = await prismaGlobal.workspace.findFirst({ where: { principal: true, ativo: true }, select: { id: true } })
+      estado.cachePrincipal = { id: row?.id ?? null, ate: Date.now() + 30_000 }
+      return estado.cachePrincipal.id
+    } finally {
+      estado.principalEmVoo = null
+    }
+  })()
+  return estado.principalEmVoo
 }
 
 /** Instância de um usuário ativo, ou `null` se o usuário ou a instância estiverem inativos. */
@@ -77,11 +100,23 @@ async function workspaceDaRequisicao(): Promise<string | null> {
   const guardado = cacheSessao.get(token)
   if (guardado && guardado.ate > agora) return guardado.workspaceId
 
-  const userId = await verifySessionToken(token)
-  const workspaceId = userId ? await workspaceDoUsuario(userId) : null
-  if (cacheSessao.size >= MAX_ENTRADAS) cacheSessao.clear()
-  cacheSessao.set(token, { workspaceId, ate: agora + TTL_MS })
-  return workspaceId
+  // Já há uma resolução desse token em andamento: reaproveita em vez de abrir outra consulta.
+  const pendente = emVoo.get(token)
+  if (pendente) return pendente
+
+  const resolucao = (async () => {
+    try {
+      const userId = await verifySessionToken(token)
+      const workspaceId = userId ? await workspaceDoUsuario(userId) : null
+      if (cacheSessao.size >= MAX_ENTRADAS) cacheSessao.clear()
+      cacheSessao.set(token, { workspaceId, ate: Date.now() + TTL_MS })
+      return workspaceId
+    } finally {
+      emVoo.delete(token)
+    }
+  })()
+  emVoo.set(token, resolucao)
+  return resolucao
 }
 
 /** Instância da operação atual, ou `null` quando não há como saber. */

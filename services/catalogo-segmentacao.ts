@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { workspaceAtualId } from "@/lib/workspace-context"
 
 /**
  * Fábrica de serviços para os catálogos de segmentação (produtos, marcas,
@@ -123,12 +124,12 @@ export function criarServicoCatalogo(
   }
 
   async function criar(input: ItemCatalogoInput): Promise<ItemCatalogo> {
-    const existente = await delegate().findUnique({ where: { nome: input.nome }, select: { id: true } })
+    const existente = await delegate().findFirst({ where: { nome: input.nome }, select: { id: true } })
     if (existente) throw new ItemCatalogoDuplicadoError(rotulo)
 
     const idImportacao = input.idImportacao?.trim() || null
     if (idImportacao) {
-      const colisaoId = await delegate().findUnique({ where: { idImportacao }, select: { id: true } })
+      const colisaoId = await delegate().findFirst({ where: { idImportacao }, select: { id: true } })
       if (colisaoId) throw new ItemCatalogoIdImportacaoDuplicadoError(rotulo)
     }
 
@@ -182,10 +183,11 @@ export function criarServicoCatalogo(
   async function garantir(nome: string): Promise<void> {
     const limpo = nome.trim()
     if (!limpo) return
-    // `nome` é @unique no schema, então o upsert é idempotente: cria quando o
-    // valor ainda não existe e não faz nada quando já está cadastrado.
+    // `(workspaceId, nome)` é único no schema, então o upsert é idempotente: cria
+    // quando o valor ainda não existe na instância e não faz nada quando já está cadastrado.
+    const workspaceId = await workspaceAtualId()
     await delegate().upsert({
-      where: { nome: limpo },
+      where: { workspaceId_nome: { workspaceId, nome: limpo } },
       create: { nome: limpo, ativo: true },
       update: {},
     })

@@ -49,14 +49,19 @@ function createPrismaClient() {
 export function getPrismaClient(): PrismaClient {
   const url = process.env.DATABASE_URL
   const cache = globalThis.__prisma
-  // Valida o formato: um hot reload pode ter deixado um cache de versão
-  // anterior deste módulo, com outra estrutura, em `globalThis`.
-  const cacheValido = cache?.cliente instanceof PrismaClient
 
-  if (cacheValido && cache.url === url) return cache.cliente
+  // Validação por "forma" (duck typing), NÃO por `instanceof`. No Next com
+  // Turbopack o mesmo módulo pode ser avaliado mais de uma vez (camadas RSC/SSR,
+  // rotas, instrumentation, hot reload), e cada avaliação gera uma classe
+  // `PrismaClient` diferente: `instanceof` falhava, um cliente novo (com pool
+  // próprio) era criado a cada troca e o antigo ficava vazado com suas conexões
+  // abertas, até estourar o limite do Postgres ("too many clients").
+  const cacheValido = typeof cache?.cliente?.$disconnect === "function"
 
-  // Encerra o pool anterior sem bloquear: a URL mudou e ele não serve mais.
-  if (cacheValido) void cache.cliente.$disconnect().catch(() => {})
+  if (cacheValido && cache!.url === url) return cache!.cliente
+
+  // Encerra SEMPRE o pool anterior (URL mudou ou formato antigo) sem bloquear.
+  if (cacheValido) void cache!.cliente.$disconnect().catch(() => {})
 
   const cliente = createPrismaClient()
   globalThis.__prisma = { cliente, url }
