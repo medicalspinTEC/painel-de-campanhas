@@ -176,7 +176,7 @@ export function AppSidebar({
           </div>
           <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
             <span className="truncate text-sm font-semibold leading-tight">{appNome}</span>
-            <span className="truncate text-xs text-muted-foreground leading-tight">Follow-up WhatsApp v1.9.0</span>
+            <span className="truncate text-xs text-muted-foreground leading-tight">Follow-up WhatsApp v1.12.4</span>
           </div>
         </div>
       </SidebarHeader>
