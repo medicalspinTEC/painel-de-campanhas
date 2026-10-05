@@ -10,7 +10,7 @@ import { runInWorkspace } from "@/lib/workspace-context"
  * automático de `prisma` garante que só as linhas dela sejam apagadas. As
  * tabelas filhas saem junto, por cascata (leads, campanhas, fluxos, usuários).
  */
-export async function excluirWorkspace(workspaceId: string): Promise<void> {
+export async function excluirWorkspace(workspaceId: string, preservarUserId?: string): Promise<void> {
   const ws = await prismaGlobal.workspace.findUnique({ where: { id: workspaceId }, select: { principal: true } })
   if (!ws) return
   if (ws.principal) throw new Error("A instância principal não pode ser excluída.")
@@ -33,7 +33,7 @@ export async function excluirWorkspace(workspaceId: string): Promise<void> {
     await prisma.backupExecucao.deleteMany({})
     await prisma.backupConfig.deleteMany({})
     await prisma.settings.deleteMany({})
-    await prisma.user.deleteMany({})
+    await prisma.user.deleteMany(preservarUserId ? { where: { id: { not: preservarUserId } } } : {})
   })
-  await prismaGlobal.workspace.delete({ where: { id: workspaceId } })
+  await prismaGlobal.workspace.deleteMany({ where: { id: workspaceId, principal: false } })
 }

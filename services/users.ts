@@ -309,8 +309,17 @@ export async function updateUser(
     },
   })
   // Desativar um admin suspende a instância inteira (ele e os usuários dele); reativar libera de volta.
-  if (role === "admin" && !aSiMesmo) {
-    await prismaGlobal.workspace.update({ where: { id: row.workspaceId }, data: { ativo, nome } })
+  // Nunca mexe na instância principal nem na do próprio ator (suspenderia todo mundo, inclusive quem agiu).
+  // `upsert` recria a instância se o registro estiver órfão (antes, o `update` estourava P2025).
+  if (role === "admin" && !aSiMesmo && row.workspaceId !== ator.workspaceId) {
+    const ws = await prismaGlobal.workspace.findUnique({ where: { id: row.workspaceId }, select: { principal: true } })
+    if (!ws?.principal) {
+      await prismaGlobal.workspace.upsert({
+        where: { id: row.workspaceId },
+        update: { ativo, nome },
+        create: { id: row.workspaceId, nome, ativo },
+      })
+    }
   }
   return toUsuario(row)
 }
@@ -327,11 +336,12 @@ export async function deleteUser(id: string, ator: Ator, contexto: ContextoGesta
     throw new UserError("Deve existir ao menos um Root ativo.")
   }
   // Excluir um admin apaga a instância dele: todos os dados e todos os usuários dessa instância.
-  if (alvo.role === "admin") {
-    await excluirWorkspace(alvo.workspaceId)
-    return
+  // Só se a instância for dele de verdade: nunca a do próprio ator nem a principal.
+  if (alvo.role === "admin" && alvo.workspaceId !== ator.workspaceId) {
+    await excluirWorkspace(alvo.workspaceId, ator.id)
   }
-  await prismaGlobal.user.delete({ where: { id } })
+  // Remove exatamente o usuário escolhido (idempotente: já pode ter saído junto com a instância).
+  await prismaGlobal.user.deleteMany({ where: { id, NOT: { id: ator.id } } })
 }
 
 /** Preferência pessoal: altera só o tema do próprio usuário. */
