@@ -20,7 +20,16 @@ import { prismaGlobal } from "@/lib/prisma-base"
 
 type Contexto = { workspaceId: string }
 
-const armazenamento = new AsyncLocalStorage<Contexto>()
+/*
+ * O AsyncLocalStorage TAMBÉM precisa ficar em `globalThis`. O cliente Prisma escopado é
+ * singleton global (`__prismaEscopado`) e fica preso à cópia deste módulo que o criou
+ * (bundle das rotas/páginas). O timer de `instrumentation.ts` roda num bundle separado, com
+ * a sua própria cópia deste arquivo: se cada cópia tivesse o seu AsyncLocalStorage,
+ * `runInWorkspace` (cópia do timer) gravaria num storage e o Prisma (outra cópia) leria
+ * outro, vazio — daí o SemWorkspaceError nas rotinas em segundo plano.
+ */
+const armazenamento = ((globalThis as unknown as { __workspaceAls?: AsyncLocalStorage<Contexto> }).__workspaceAls ??=
+  new AsyncLocalStorage<Contexto>())
 
 export class SemWorkspaceError extends Error {
   constructor(message = "Não foi possível identificar a instância desta operação.") {
