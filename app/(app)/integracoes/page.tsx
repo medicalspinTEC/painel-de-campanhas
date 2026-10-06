@@ -78,7 +78,7 @@ export default async function IntegracoesPage() {
         </TabsList>
 
         <TabsContent value="integracoes" className="flex flex-col gap-6">
-          <WebhooksManager webhooks={webhooks} />
+          <WebhooksManager webhooks={webhooks} crmAtivo={crmAtivo} />
 
        {/*<InboundWebhookManager tokenInicial={tokenInicial} eventosIniciais={eventosIniciais} />*/}
 

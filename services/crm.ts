@@ -3,7 +3,7 @@ import { normalizarSecoes, podeAcessar, podeGerenciarNivel, type SecaoKey, type 
 import { avaliarAtendimento, type ContextoAtendimento } from "@/lib/crm-permissoes"
 import { createUser, deleteUser, updateUser, type Ator } from "@/services/users"
 import { pausarBot, reativarBot } from "@/services/bot-estado"
-import { getCrmPluginAtivo } from "@/services/settings"
+import { exigirPlugin, getCrmPluginAtivo } from "@/services/settings"
 import { emitWebhookEvent } from "@/services/webhooks"
 
 /**
@@ -121,12 +121,14 @@ async function garantirNomeDepartamentoLivre(nome: string, ignorarId?: string) {
 }
 
 export async function createDepartamento(input: DepartamentoInput): Promise<void> {
+  await exigirPlugin("crm")
   const dados = validarDepartamento(input)
   await garantirNomeDepartamentoLivre(dados.nome)
   await prisma.departamento.create({ data: dados })
 }
 
 export async function updateDepartamento(id: string, input: DepartamentoInput): Promise<void> {
+  await exigirPlugin("crm")
   const dados = validarDepartamento(input)
   const atual = await prisma.departamento.findUnique({ where: { id }, select: { id: true } })
   if (!atual) throw new CrmError("Departamento não encontrado.")
@@ -135,6 +137,7 @@ export async function updateDepartamento(id: string, input: DepartamentoInput): 
 }
 
 export async function setDepartamentoAtivo(id: string, ativo: boolean): Promise<void> {
+  await exigirPlugin("crm")
   const atual = await prisma.departamento.findUnique({ where: { id }, select: { id: true } })
   if (!atual) throw new CrmError("Departamento não encontrado.")
   await prisma.departamento.update({ where: { id }, data: { ativo } })
@@ -142,6 +145,7 @@ export async function setDepartamentoAtivo(id: string, ativo: boolean): Promise<
 
 /** Exclui o departamento. As conversas dele ficam sem departamento e os vínculos com atendentes somem. */
 export async function deleteDepartamento(id: string): Promise<{ conversas: number }> {
+  await exigirPlugin("crm")
   const atual = await prisma.departamento.findUnique({ where: { id }, select: { id: true } })
   if (!atual) throw new CrmError("Departamento não encontrado.")
   const conversas = await prisma.leadAtendimento.count({ where: { departamentoId: id } })
@@ -177,6 +181,7 @@ async function validarDepartamentoIds(valor: unknown): Promise<string[]> {
 }
 
 export async function createAtendente(input: AtendenteInput, ator: Ator): Promise<void> {
+  await exigirPlugin("crm")
   const departamentoIds = await validarDepartamentoIds(input.departamentoIds)
   const userIdExistente = limparTexto(input.userId)
 
@@ -238,6 +243,7 @@ export async function createAtendente(input: AtendenteInput, ator: Ator): Promis
 }
 
 export async function updateAtendente(id: string, input: AtendenteInput, ator: Ator): Promise<void> {
+  await exigirPlugin("crm")
   const departamentoIds = await validarDepartamentoIds(input.departamentoIds)
   const atual = await prisma.atendente.findUnique({
     where: { id },
@@ -277,6 +283,7 @@ export async function updateAtendente(id: string, input: AtendenteInput, ator: A
 }
 
 export async function setAtendenteAtivo(id: string, ativo: boolean): Promise<void> {
+  await exigirPlugin("crm")
   const atual = await prisma.atendente.findUnique({ where: { id }, select: { id: true } })
   if (!atual) throw new CrmError("Atendente não encontrado.")
   await prisma.atendente.update({ where: { id }, data: { ativo } })
@@ -288,6 +295,7 @@ export async function setAtendenteAtivo(id: string, ativo: boolean): Promise<voi
  * regras de Usuários (não excluir a si mesmo nem o último admin ativo).
  */
 export async function deleteAtendente(id: string, ator: Ator, excluirUsuario: boolean): Promise<void> {
+  await exigirPlugin("crm")
   const atual = await prisma.atendente.findUnique({ where: { id }, select: { id: true, userId: true } })
   if (!atual) throw new CrmError("Atendente não encontrado.")
 
@@ -488,6 +496,7 @@ export async function assumirConversa(
   leadId: string,
   executor: { id: string; nome: string; role: UserRole },
 ): Promise<{ para: string }> {
+  await exigirPlugin("crm")
   const [lead, atual, ctx] = await Promise.all([
     prisma.lead.findUnique({ where: { id: leadId }, select: { id: true, nome: true } }),
     prisma.leadAtendimento.findUnique({
@@ -601,6 +610,7 @@ export async function transferirConversa(
   input: TransferenciaInput,
   executor: { id: string; nome: string; role: UserRole },
 ): Promise<{ para: string }> {
+  await exigirPlugin("crm")
   const departamentoId = limparTexto(input.departamentoId) || null
   const atendenteId = limparTexto(input.atendenteId) || null
   const motivo = limparTexto(input.motivo) || null
@@ -724,6 +734,8 @@ export async function transferirConversa(
  */
 export async function pausarBotComNota(leadId: string, motivo: string): Promise<void> {
   try {
+    // Pausar bot é função do CRM: com o plugin desativado não há bot nem nota a registrar.
+    if (!(await getCrmPluginAtivo())) return
     const jaTinhaBot = Boolean(await prisma.botConversa.findUnique({ where: { leadId }, select: { leadId: true } }))
     const mudou = await pausarBot(leadId, motivo)
     if (mudou && jaTinhaBot) {
@@ -743,6 +755,7 @@ export async function alternarBotConversa(
   ativo: boolean,
   executor: { id: string; nome: string; role: UserRole },
 ): Promise<void> {
+  await exigirPlugin("crm")
   const [lead, atual, ctx] = await Promise.all([
     prisma.lead.findUnique({ where: { id: leadId }, select: { id: true } }),
     prisma.leadAtendimento.findUnique({
@@ -788,6 +801,7 @@ export async function transferirConversaPorBot(
   nomeDepartamento: string,
   opcoes: { pausarBot?: boolean; nomeBot?: string } = {},
 ): Promise<{ departamento: string }> {
+  await exigirPlugin("crm")
   const nome = limparTexto(nomeDepartamento)
   if (!nome) throw new CrmError("Informe o departamento da transferência.")
   const nomeBot = opcoes.nomeBot ? `bot “${opcoes.nomeBot}”` : "bot"
@@ -871,6 +885,7 @@ export async function transferirParaAtendentePorBot(
   leadId: string,
   opcoes: { modo: "balanceado" | "especifico"; atendenteId?: string; departamento?: string; nomeBot?: string },
 ): Promise<{ ok: true; atendente: { id: string; nome: string }; departamento: string | null } | { ok: false; motivo: string }> {
+  await exigirPlugin("crm")
   const nomeBot = opcoes.nomeBot ? `bot “${opcoes.nomeBot}”` : "bot"
   const nomeDepartamento = limparTexto(opcoes.departamento)
 

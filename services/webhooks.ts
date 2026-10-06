@@ -3,7 +3,7 @@ import { after } from "next/server"
 
 import { prisma } from "@/lib/prisma"
 import { capturarWorkspace, tentarWorkspaceId, workspacePrincipalId } from "@/lib/workspace-context"
-import { WEBHOOK_LIMITE } from "@/lib/webhook-events"
+import { PLUGIN_DO_EVENTO, WEBHOOK_LIMITE } from "@/lib/webhook-events"
 
 export interface Webhook {
   id: string
@@ -163,6 +163,14 @@ export async function emitWebhookEvent(evento: string, dados: unknown): Promise<
     return
   }
   agendarEntrega(() => naInstancia(async () => {
+    // Evento de plugin desativado não é entregue (mesmo que o webhook ainda o tenha assinado).
+    const pluginDoEvento = PLUGIN_DO_EVENTO[evento]
+    if (pluginDoEvento) {
+      // Import tardio: services/settings também importa este módulo.
+      const { isPluginAtivo } = await import("@/services/settings")
+      if (!(await isPluginAtivo(pluginDoEvento).catch(() => false))) return
+    }
+
     let destinos: Array<{ id: string; url: string; secret: string }> = []
     try {
       destinos = await prisma.webhook.findMany({

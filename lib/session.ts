@@ -1,12 +1,14 @@
 import { cache } from "react"
 import { cookies, headers } from "next/headers"
-import { redirect } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { NextResponse } from "next/server"
 
 import { requestHasValidApiToken } from "@/lib/api-auth"
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth"
 import { podeAcessar, podeGerenciarUsuarios, temPoder, type PoderKey, type SecaoKey } from "@/lib/permissoes"
+import { mensagemPluginDesativado, SECAO_PLUGIN } from "@/lib/plugins"
 import { prismaGlobal } from "@/lib/prisma"
+import { getPluginsAtivos } from "@/services/settings"
 import { toUsuario, type Usuario } from "@/services/users"
 
 /**
@@ -34,6 +36,23 @@ export class ForbiddenError extends Error {
   }
 }
 
+/**
+ * Seções ligadas a um plugin (Chat, Kanban, Assistente, No Code) só existem com ele ativo.
+ * Plugin desativado = a seção some de verdade: a página dá 404, a action é recusada e a API
+ * responde 403 — não basta esconder o item do menu. Seções sem plugin ficam sempre disponíveis.
+ */
+async function secaoDisponivel(secao: SecaoKey): Promise<boolean> {
+  const plugin = SECAO_PLUGIN[secao]
+  if (!plugin) return true
+  return (await getPluginsAtivos())[plugin]
+}
+
+/** Mensagem para quando o usuário tem acesso à seção, mas o plugin dela está desativado. */
+function mensagemSecaoIndisponivel(secoes: SecaoKey[]): string {
+  const plugin = secoes.map((s) => SECAO_PLUGIN[s]).find((p) => p !== undefined)
+  return plugin ? mensagemPluginDesativado(plugin) : "Você não tem permissão para realizar esta ação."
+}
+
 // ---------------------------------------------------------------------------
 // Páginas (Server Components): redirecionam em vez de lançar erro.
 // ---------------------------------------------------------------------------
@@ -48,6 +67,8 @@ export async function requireUser(): Promise<Usuario> {
 export async function requireSecao(secao: SecaoKey): Promise<Usuario> {
   const user = await requireUser()
   if (!podeAcessar(user, secao)) redirect("/sem-acesso")
+  // Plugin desativado: a página deixa de existir (404), mesmo para quem tem a seção liberada.
+  if (!(await secaoDisponivel(secao))) notFound()
   return user
 }
 
@@ -73,8 +94,13 @@ export async function requirePoder(poder: PoderKey): Promise<Usuario> {
 export async function assertSecao(...secoes: SecaoKey[]): Promise<Usuario> {
   const user = await getCurrentUser()
   if (!user) throw new ForbiddenError("Sessão expirada. Faça login novamente.")
-  if (secoes.some((s) => podeAcessar(user, s))) return user
-  throw new ForbiddenError()
+  const permitidas = secoes.filter((s) => podeAcessar(user, s))
+  if (permitidas.length === 0) throw new ForbiddenError()
+  // Vale a primeira seção permitida cujo plugin (se houver) está ativo.
+  for (const secao of permitidas) {
+    if (await secaoDisponivel(secao)) return user
+  }
+  throw new ForbiddenError(mensagemSecaoIndisponivel(permitidas))
 }
 
 export async function assertUsuario(): Promise<Usuario> {
@@ -112,6 +138,12 @@ export async function guardApi(...secoes: SecaoKey[]): Promise<NextResponse | nu
 
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ ok: false, erro: "Não autorizado." }, { status: 401 })
-  if (secoes.some((s) => podeAcessar(user, s))) return null
-  return NextResponse.json({ ok: false, erro: "Sem permissão para acessar este recurso." }, { status: 403 })
+  const permitidas = secoes.filter((s) => podeAcessar(user, s))
+  if (permitidas.length === 0) {
+    return NextResponse.json({ ok: false, erro: "Sem permissão para acessar este recurso." }, { status: 403 })
+  }
+  for (const secao of permitidas) {
+    if (await secaoDisponivel(secao)) return null
+  }
+  return NextResponse.json({ ok: false, erro: mensagemSecaoIndisponivel(permitidas) }, { status: 403 })
 }

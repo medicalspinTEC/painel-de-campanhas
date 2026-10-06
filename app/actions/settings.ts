@@ -75,7 +75,7 @@ export async function setChatPluginAtivoAction(ativo: boolean): Promise<Settings
   revalidatePath("/integracoes")
   revalidatePath("/chat")
   revalidatePath("/", "layout")
-  return { ok: true, message: ativo ? "Plugin Chat ativado." : "Plugin Chat desativado.", ativo }
+  return { ok: true, message: ativo ? "Plugin Chat ativado." : "Plugin Chat desativado. A caixa de entrada, as notas internas e a exportação de conversas foram desligadas.", ativo }
 }
 
 export async function setKanbanPluginAtivoAction(ativo: boolean): Promise<SettingsActionResult & { ativo?: boolean }> {
@@ -92,7 +92,7 @@ export async function setKanbanPluginAtivoAction(ativo: boolean): Promise<Settin
   revalidatePath("/integracoes")
   revalidatePath("/kanban")
   revalidatePath("/", "layout")
-  return { ok: true, message: ativo ? "Plugin Kanban ativado." : "Plugin Kanban desativado.", ativo }
+  return { ok: true, message: ativo ? "Plugin Kanban ativado." : "Plugin Kanban desativado. O quadro e a movimentação de leads por ele foram desligados.", ativo }
 }
 
 export async function setAssistentePluginAtivoAction(ativo: boolean): Promise<SettingsActionResult & { ativo?: boolean }> {
@@ -109,7 +109,7 @@ export async function setAssistentePluginAtivoAction(ativo: boolean): Promise<Se
   revalidatePath("/integracoes")
   revalidatePath("/assistente")
   revalidatePath("/", "layout")
-  return { ok: true, message: ativo ? "Plugin Assistente ativado." : "Plugin Assistente desativado.", ativo }
+  return { ok: true, message: ativo ? "Plugin Assistente ativado." : "Plugin Assistente desativado. O atalho e as consultas do assistente foram desligados.", ativo }
 }
 
 export async function setNocodePluginAtivoAction(ativo: boolean): Promise<SettingsActionResult & { ativo?: boolean }> {
@@ -128,7 +128,7 @@ export async function setNocodePluginAtivoAction(ativo: boolean): Promise<Settin
   revalidatePath("/integracoes")
   revalidatePath("/nocode")
   revalidatePath("/", "layout")
-  return { ok: true, message: ativo ? "Plugin No Code ativado." : "Plugin No Code desativado.", ativo }
+  return { ok: true, message: ativo ? "Plugin No Code ativado." : "Plugin No Code desativado. Fluxos, bots e o webhook de execuções pararam de rodar.", ativo }
 }
 
 export async function setCrmPluginAtivoAction(ativo: boolean): Promise<SettingsActionResult & { ativo?: boolean }> {
@@ -146,7 +146,7 @@ export async function setCrmPluginAtivoAction(ativo: boolean): Promise<SettingsA
   revalidatePath("/crm")
   revalidatePath("/chat")
   revalidatePath("/", "layout")
-  return { ok: true, message: ativo ? "Plugin CRM ativado." : "Plugin CRM desativado.", ativo }
+  return { ok: true, message: ativo ? "Plugin CRM ativado." : "Plugin CRM desativado. Departamentos, atendentes, bots, transferências e eventos do CRM foram desligados.", ativo }
 }
 
 const LIMITE_NOME_MARCA = 40

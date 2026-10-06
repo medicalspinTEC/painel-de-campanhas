@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useTransition } from "react"
+import { useEffect, useMemo, useState, useTransition } from "react"
 import { toast } from "sonner"
 
 import { createWebhookAction, updateWebhookAction } from "@/app/actions/webhooks"
@@ -18,16 +18,20 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
+import { eventosDisponiveis } from "@/lib/webhook-events"
 import type { Webhook } from "@/services/webhooks"
 
 export function WebhookFormDialog({
   open,
   onOpenChange,
   webhook,
+  crmAtivo,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   webhook?: Webhook | null
+  /** Eventos do CRM só aparecem com o plugin ativo. */
+  crmAtivo: boolean
 }) {
   const editando = Boolean(webhook)
   const [pending, startTransition] = useTransition()
@@ -36,6 +40,7 @@ export function WebhookFormDialog({
   const [url, setUrl] = useState("")
   const [eventos, setEventos] = useState<string[]>([])
   const [ativo, setAtivo] = useState(true)
+  const catalogo = useMemo(() => eventosDisponiveis({ crm: crmAtivo }), [crmAtivo])
 
   /*
    * O diálogo é montado uma única vez e reaproveitado para criar e editar, então
@@ -45,9 +50,11 @@ export function WebhookFormDialog({
     if (!open) return
     setNome(webhook?.nome ?? "")
     setUrl(webhook?.url ?? "")
-    setEventos(webhook?.eventos ?? [])
+    // Eventos de plugin desativado saem da assinatura ao salvar.
+    const permitidos = new Set(catalogo.map((evento) => evento.key))
+    setEventos((webhook?.eventos ?? []).filter((chave) => permitidos.has(chave)))
     setAtivo(webhook?.ativo ?? true)
-  }, [open, webhook])
+  }, [open, webhook, catalogo])
 
   function salvar() {
     startTransition(async () => {
@@ -109,7 +116,7 @@ export function WebhookFormDialog({
 
           <Field>
             <FieldLabel>Eventos assinados</FieldLabel>
-            <EventSelector selecionados={eventos} onChange={setEventos} />
+            <EventSelector eventos={catalogo} selecionados={eventos} onChange={setEventos} />
           </Field>
         </div>
 

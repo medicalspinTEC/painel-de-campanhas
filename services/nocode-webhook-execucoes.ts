@@ -3,6 +3,7 @@ import { createHmac } from "node:crypto"
 import { prisma } from "@/lib/prisma"
 import { paraCadaWorkspace } from "@/lib/workspace-context"
 import { recordAppLog } from "@/services/app-logs"
+import { isPluginAtivo } from "@/services/settings"
 
 /**
  * Webhook de execuções do plugin No Code: cada execução (entrada, passos,
@@ -377,6 +378,8 @@ export async function manutencaoNoCode(): Promise<ResultadoManutencaoNoCode> {
     // Cada instância tem os próprios fluxos, execuções e webhook de execuções.
     const parciais = await paraCadaWorkspace(
       async () => {
+        // Instância sem o plugin No Code: não há o que podar nem entregar ao webhook de execuções.
+        if (!(await isPluginAtivo("nocode"))) return { podadas: 0, enviadas: 0, falhas: 0 }
         const podadas = await podarExecucoesExpiradas()
         const { enviadas, falhas } = await entregarPendentes()
         return { podadas, enviadas, falhas }

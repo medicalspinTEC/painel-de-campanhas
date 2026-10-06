@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 
+import { PluginDesativadoError } from "@/lib/plugins"
 import { assertPoder, assertSecao, ForbiddenError } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
 import { ativarBotDoCrm, criarBotDoCrm, excluirBotDoCrm } from "@/services/bots"
@@ -28,7 +29,12 @@ import { UserError } from "@/services/users"
 export type CrmActionResult = { ok: boolean; message: string }
 
 function falha(error: unknown, contexto: string): CrmActionResult {
-  if (error instanceof CrmError || error instanceof UserError || error instanceof ForbiddenError) {
+  if (
+    error instanceof CrmError ||
+    error instanceof UserError ||
+    error instanceof ForbiddenError ||
+    error instanceof PluginDesativadoError
+  ) {
     return { ok: false, message: error.message }
   }
   void recordAppLog({ origem: "crm", mensagem: contexto, detalhes: error })

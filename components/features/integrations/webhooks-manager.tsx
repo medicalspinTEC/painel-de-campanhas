@@ -7,7 +7,7 @@ import { toast } from "sonner"
 import { deleteWebhookAction, testWebhookAction } from "@/app/actions/webhooks"
 import { WebhookFormDialog } from "@/components/features/integrations/webhook-form-dialog"
 import { formatDateTime } from "@/lib/format"
-import { WEBHOOK_EVENTS, WEBHOOK_EVENT_LABEL, WEBHOOK_LIMITE } from "@/lib/webhook-events"
+import { eventosDisponiveis, WEBHOOK_EVENT_LABEL, WEBHOOK_LIMITE } from "@/lib/webhook-events"
 import type { Webhook } from "@/services/webhooks"
 import {
   AlertDialog,
@@ -26,7 +26,7 @@ import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTi
 import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
 
-export function WebhooksManager({ webhooks }: { webhooks: Webhook[] }) {
+export function WebhooksManager({ webhooks, crmAtivo }: { webhooks: Webhook[]; crmAtivo: boolean }) {
   const [dialogAberto, setDialogAberto] = useState(false)
   const [emEdicao, setEmEdicao] = useState<Webhook | null>(null)
   const [excluindo, setExcluindo] = useState<Webhook | null>(null)
@@ -101,6 +101,7 @@ export function WebhooksManager({ webhooks }: { webhooks: Webhook[] }) {
                 <li key={webhook.id}>
                   <WebhookItem
                     webhook={webhook}
+                    crmAtivo={crmAtivo}
                     onEditar={() => abrirEdicao(webhook)}
                     onExcluir={() => setExcluindo(webhook)}
                   />
@@ -111,7 +112,7 @@ export function WebhooksManager({ webhooks }: { webhooks: Webhook[] }) {
         </CardContent>
       </Card>
 
-      <WebhookFormDialog open={dialogAberto} onOpenChange={setDialogAberto} webhook={emEdicao} />
+      <WebhookFormDialog open={dialogAberto} onOpenChange={setDialogAberto} webhook={emEdicao} crmAtivo={crmAtivo} />
 
       <AlertDialog open={Boolean(excluindo)} onOpenChange={(aberto) => !aberto && setExcluindo(null)}>
         <AlertDialogContent>
@@ -138,20 +139,25 @@ export function WebhooksManager({ webhooks }: { webhooks: Webhook[] }) {
 
 function WebhookItem({
   webhook,
+  crmAtivo,
   onEditar,
   onExcluir,
 }: {
   webhook: Webhook
+  crmAtivo: boolean
   onEditar: () => void
   onExcluir: () => void
 }) {
   const [testando, startTeste] = useTransition()
   const [secretVisivel, setSecretVisivel] = useState(false)
 
-  const todosEventos = webhook.eventos.length === WEBHOOK_EVENTS.length
+  // Eventos de plugin desativado não contam: não são entregues nem aparecem na seleção.
+  const disponiveis = new Set(eventosDisponiveis({ crm: crmAtivo }).map((evento) => evento.key))
+  const eventosAtivos = webhook.eventos.filter((chave) => disponiveis.has(chave))
+  const todosEventos = eventosAtivos.length === disponiveis.size
   // Só as primeiras chaves ficam visíveis; o resto vira um contador.
-  const visiveis = webhook.eventos.slice(0, 4)
-  const ocultos = webhook.eventos.length - visiveis.length
+  const visiveis = eventosAtivos.slice(0, 4)
+  const ocultos = eventosAtivos.length - visiveis.length
 
   function testar() {
     startTeste(async () => {
@@ -203,7 +209,7 @@ function WebhookItem({
 
       <div className="flex flex-wrap items-center gap-1.5">
         {todosEventos ? (
-          <Badge variant="secondary">Todos os eventos ({webhook.eventos.length})</Badge>
+          <Badge variant="secondary">Todos os eventos ({eventosAtivos.length})</Badge>
         ) : (
           <>
             {visiveis.map((evento) => (

@@ -6,6 +6,8 @@
  * evento novo é uma alteração em um só lugar.
  */
 
+import type { PluginKey, PluginsAtivos } from "@/lib/plugins"
+
 export type WebhookEventGroup = "Leads" | "Campanhas" | "Mensagens" | "Sistema"
 
 export interface WebhookEventDef {
@@ -14,6 +16,8 @@ export interface WebhookEventDef {
   label: string
   descricao: string
   grupo: WebhookEventGroup
+  /** Evento que só existe com o plugin ativo: desativado, não aparece na seleção nem é entregue. */
+  plugin?: PluginKey
 }
 
 export const WEBHOOK_EVENTS: WebhookEventDef[] = [
@@ -44,6 +48,7 @@ export const WEBHOOK_EVENTS: WebhookEventDef[] = [
     label: "Conversa transferida",
     descricao: "Uma conversa do chat foi transferida para outro departamento ou atendente (plugin CRM).",
     grupo: "Leads",
+    plugin: "crm",
   },
 
   // Campanhas
@@ -141,6 +146,16 @@ export const WEBHOOK_EVENTS: WebhookEventDef[] = [
 export const WEBHOOK_EVENT_GROUPS: WebhookEventGroup[] = ["Leads", "Campanhas", "Mensagens", "Sistema"]
 
 export const WEBHOOK_EVENT_KEYS = WEBHOOK_EVENTS.map((evento) => evento.key)
+
+/** Plugin de que cada evento depende (só os que dependem de algum). */
+export const PLUGIN_DO_EVENTO: Record<string, PluginKey> = Object.fromEntries(
+  WEBHOOK_EVENTS.flatMap((evento) => (evento.plugin ? [[evento.key, evento.plugin] as const] : [])),
+)
+
+/** Eventos que podem ser assinados/entregues com os plugins no estado informado. */
+export function eventosDisponiveis(plugins: Partial<PluginsAtivos>): WebhookEventDef[] {
+  return WEBHOOK_EVENTS.filter((evento) => !evento.plugin || plugins[evento.plugin] === true)
+}
 
 export const WEBHOOK_EVENT_LABEL: Record<string, string> = Object.fromEntries(
   WEBHOOK_EVENTS.map((evento) => [evento.key, evento.label]),

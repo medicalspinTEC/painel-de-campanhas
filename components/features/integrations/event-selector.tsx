@@ -1,28 +1,31 @@
 "use client"
 
-import { WEBHOOK_EVENTS, WEBHOOK_EVENT_GROUPS } from "@/lib/webhook-events"
+import { WEBHOOK_EVENT_GROUPS, type WebhookEventDef } from "@/lib/webhook-events"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 
 /**
- * Seleção dos eventos assinados por um webhook. Expõe todos os eventos do app,
- * agrupados por domínio, com atalho para marcar tudo de uma vez ou por grupo.
+ * Seleção dos eventos assinados por um webhook. Expõe os eventos disponíveis do app (os de
+ * plugins desativados ficam de fora), agrupados por domínio, com atalho para marcar tudo de uma
+ * vez ou por grupo.
  */
 export function EventSelector({
+  eventos: catalogo,
   selecionados,
   onChange,
 }: {
+  eventos: WebhookEventDef[]
   selecionados: string[]
   onChange: (eventos: string[]) => void
 }) {
-  const total = WEBHOOK_EVENTS.length
+  const total = catalogo.length
   const todosMarcados = selecionados.length === total
   // Estado intermediário do checkbox mestre quando há seleção parcial.
   const algunsMarcados = selecionados.length > 0 && !todosMarcados
 
   function alternarTodos(marcar: boolean) {
-    onChange(marcar ? WEBHOOK_EVENTS.map((evento) => evento.key) : [])
+    onChange(marcar ? catalogo.map((evento) => evento.key) : [])
   }
 
   function alternarEvento(key: string, marcar: boolean) {
@@ -48,7 +51,7 @@ export function EventSelector({
 
       <div className="flex max-h-72 flex-col gap-4 overflow-y-auto rounded-lg border p-3">
         {WEBHOOK_EVENT_GROUPS.map((grupo, indice) => {
-          const eventosDoGrupo = WEBHOOK_EVENTS.filter((evento) => evento.grupo === grupo)
+          const eventosDoGrupo = catalogo.filter((evento) => evento.grupo === grupo)
           const chavesDoGrupo = eventosDoGrupo.map((evento) => evento.key)
           const grupoCompleto = chavesDoGrupo.every((key) => selecionados.includes(key))
 

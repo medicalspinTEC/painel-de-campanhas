@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { workspaceAtualId } from "@/lib/workspace-context"
+import { PLUGINS_TODOS_DESATIVADOS, PluginDesativadoError, type PluginKey, type PluginsAtivos } from "@/lib/plugins"
 import { emitWebhookEvent } from "@/services/webhooks"
 
 export type Settings = {
@@ -52,6 +53,51 @@ export async function getSettings(): Promise<Settings> {
     respeitarJanela: row.respeitarJanela,
     pausarNoFimDeSemana: row.pausarNoFimDeSemana,
     notificarFalhas: row.notificarFalhas,
+  }
+}
+
+/**
+ * Estado de TODOS os plugins da instância atual, numa só consulta. É a fonte usada pelas
+ * checagens centrais (`lib/session.ts`, rotas públicas, rotinas em segundo plano).
+ * Coluna ausente (migration pendente) conta como plugin desativado.
+ */
+export async function getPluginsAtivos(): Promise<PluginsAtivos> {
+  try {
+    const row = await prisma.settings.findUnique({
+      where: { workspaceId: await workspaceAtualId() },
+      select: {
+        chatPluginAtivo: true,
+        kanbanPluginAtivo: true,
+        assistentePluginAtivo: true,
+        nocodePluginAtivo: true,
+        crmPluginAtivo: true,
+      },
+    })
+    if (!row) return { ...PLUGINS_TODOS_DESATIVADOS }
+    return {
+      chat: row.chatPluginAtivo ?? false,
+      kanban: row.kanbanPluginAtivo ?? false,
+      assistente: row.assistentePluginAtivo ?? false,
+      nocode: row.nocodePluginAtivo ?? false,
+      crm: row.crmPluginAtivo ?? false,
+    }
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "P2022") {
+      return { ...PLUGINS_TODOS_DESATIVADOS }
+    }
+    throw error
+  }
+}
+
+export async function isPluginAtivo(plugin: PluginKey): Promise<boolean> {
+  return (await getPluginsAtivos())[plugin]
+}
+
+/** Para serviços e ações: interrompe a operação quando o plugin está desativado. */
+export async function exigirPlugin(...plugins: PluginKey[]): Promise<void> {
+  const ativos = await getPluginsAtivos()
+  for (const plugin of plugins) {
+    if (!ativos[plugin]) throw new PluginDesativadoError(plugin)
   }
 }
 

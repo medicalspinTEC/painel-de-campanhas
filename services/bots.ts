@@ -6,7 +6,7 @@ import { CrmError } from "@/services/crm"
 import { extrairMensagem, localizarLeadPorTelefone, telefoneDoRemoteJid } from "@/services/lead-response"
 import { createBot, desativarBotsConcorrentes, executarFluxo, gravarExecucao, type ContextoBot } from "@/services/nocode"
 import { cadastrarLeadPorMensagem } from "@/services/leads"
-import { getChatPluginAtivo, getCrmPluginAtivo } from "@/services/settings"
+import { exigirPlugin, getChatPluginAtivo, getPluginsAtivos } from "@/services/settings"
 
 /**
  * Bots de departamento: fluxos No Code do tipo "bot" que respondem às mensagens que os leads
@@ -85,6 +85,12 @@ function mensagemDeLead(payload: unknown) {
   return { msg, telefone }
 }
 
+/** Bots exigem CRM (departamentos/atendentes) e No Code (onde o fluxo roda) ativos. */
+async function botsDisponiveis(): Promise<boolean> {
+  const { crm, nocode } = await getPluginsAtivos()
+  return crm && nocode
+}
+
 /** O lead está em alguma campanha agora (campanha principal ou vínculo em `LeadCampaign`)? */
 async function leadEstaEmCampanha(leadId: string): Promise<boolean> {
   const lead = await prisma.lead.findUnique({
@@ -103,6 +109,8 @@ async function leadEstaEmCampanha(leadId: string): Promise<boolean> {
  */
 export async function pausarBotSeLeadEmCampanha(payload: unknown): Promise<void> {
   try {
+    // Sem os plugins dos bots não há bot para pausar (nem estado de conversa para gravar).
+    if (!(await botsDisponiveis())) return
     const recebida = mensagemDeLead(payload)
     if (!recebida) return
     const lead = await localizarLeadPorTelefone(recebida.telefone)
@@ -120,8 +128,8 @@ export async function processarMensagemParaBots(payload: unknown): Promise<void>
     const recebida = mensagemDeLead(payload)
     if (!recebida) return
     const { msg, telefone } = recebida
-    // Os bots ficam no CRM: com o plugin desligado nenhum bot responde.
-    if (!(await getCrmPluginAtivo())) return
+    // Os bots são fluxos do No Code geridos no CRM: sem um dos dois plugins nenhum bot responde.
+    if (!(await botsDisponiveis())) return
     const lead = await localizarOuCadastrarLead(telefone, msg.remoteJid, msg.pushName)
     if (!lead) return
 
@@ -367,6 +375,7 @@ async function registrarMensagemDoLead(lead: { id: string; nome: string }, texto
 
 /** Cria um bot (de entrada, se `departamentoId` for nulo, ou de um departamento). Nasce desativado. */
 export async function criarBotDoCrm(input: { nome: string; departamentoId: string | null }): Promise<{ id: string }> {
+  await exigirPlugin("crm", "nocode")
   const nome = String(input.nome ?? "").trim()
   if (nome.length < 2 || nome.length > 80) throw new CrmError("Informe o nome do bot (de 2 a 80 caracteres).")
   if (input.departamentoId) {
@@ -391,6 +400,8 @@ export async function ativarBotDoCrm(id: string, ativo: boolean): Promise<{ desa
     await prisma.noCodeFlow.update({ where: { id }, data: { ativo: false } })
     return { desativados: 0 }
   }
+  // Ligar um bot exige os dois plugins; desligar (acima) sempre é permitido.
+  await exigirPlugin("crm", "nocode")
   if (!bot.botEntrada && !bot.departamentoId) {
     throw new CrmError("O departamento deste bot foi excluído. Crie um novo bot em um departamento existente.")
   }

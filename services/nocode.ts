@@ -25,6 +25,8 @@ import {
 import { configurarWebhookEvolution, sendWhatsAppText } from "@/services/evolution"
 import { processarRespostaLead, telefonesBatem } from "@/services/lead-response"
 import { transferirConversaPorBot, transferirParaAtendentePorBot } from "@/services/crm"
+import { mensagemPluginDesativado } from "@/lib/plugins"
+import { exigirPlugin, getPluginsAtivos } from "@/services/settings"
 
 // ---------------------------------------------------------------------------
 // Tipos e acesso aos dados
@@ -558,6 +560,8 @@ async function executarBloco(no: FlowNode, ctx: Contexto, simulacao: boolean): P
       const departamento = renderizar(texto("departamento"), ctx).trim()
       if (modo === "especifico" && !atendenteId) throw new Error("Escolha o atendente da transferência.")
       if (simulacao) return { saida: "main", status: "simulado", resumo: { modo, atendenteId: atendenteId || null, departamento: departamento || null } }
+      // Os blocos de transferência são do CRM: com o plugin desativado eles não executam.
+      await exigirPlugin("crm")
       const bot = botDe(ctx)
       if (!bot) throw new Error("A transferência só funciona dentro de um bot (numa conversa com um lead).")
       const resultado = await transferirParaAtendentePorBot(bot.leadId, { modo, atendenteId, departamento, nomeBot: bot.flowNome })
@@ -574,6 +578,7 @@ async function executarBloco(no: FlowNode, ctx: Contexto, simulacao: boolean): P
       if (!departamento) throw new Error("Informe o departamento da transferência.")
       const pausarBot = cfg.pausarBot === true
       if (simulacao) return { saida: "main", status: "simulado", resumo: { departamento, pausarBot } }
+      await exigirPlugin("crm")
       const bot = botDe(ctx)
       if (!bot) throw new Error("A transferência só funciona dentro de um bot (numa conversa com um lead).")
       const resultado = await transferirConversaPorBot(bot.leadId, departamento, { pausarBot, nomeBot: bot.flowNome })
@@ -718,7 +723,9 @@ export async function gravarExecucao(
     select: { sistema: true, execWebhookAtivo: true, execWebhookUrl: true },
   })
   // Só execuções reais vão para o webhook; testes feitos na tela ficam só no app.
-  const enviarAoWebhook = origem === "webhook" && Boolean(config?.execWebhookAtivo && config.execWebhookUrl)
+  // O webhook de execuções é do plugin No Code: desativado, nada é entregue.
+  const nocodeAtivo = (await getPluginsAtivos()).nocode
+  const enviarAoWebhook = origem === "webhook" && nocodeAtivo && Boolean(config?.execWebhookAtivo && config.execWebhookUrl)
 
   const gravada = await prisma.noCodeExecution.create({
     data: {
@@ -805,6 +812,11 @@ export async function prepararWebhook(flowId: string, token: string | null): Pro
   }
   // 202: aceito mas sem processar, para a Evolution não ficar reenviando.
   if (!fluxo.ativo && !fluxo.sistema) return { ok: false, status: 202, erro: "Fluxo desativado." }
+  // Sem o plugin No Code, nenhum fluxo do usuário roda. Só o fluxo de resposta do sistema segue
+  // (ele registra as respostas dos leads, função central do app) — e só com o modelo padrão.
+  if (!fluxo.sistema && !(await getPluginsAtivos()).nocode) {
+    return { ok: false, status: 202, erro: mensagemPluginDesativado("nocode") }
+  }
   const erroGrafo = validarGrafo(fluxo.nodes, fluxo.edges, true)
   if (erroGrafo) return { ok: false, status: 202, erro: erroGrafo }
   return { ok: true, fluxo }
@@ -818,7 +830,11 @@ export async function processarEventoWebhook(fluxo: FlowRow, payload: unknown): 
     const recebido = normalizarEvento(lerCaminho(payload, "event"))
     if (aceito && recebido && aceito !== recebido) return
 
-    await executarEGravar(fluxo.id, fluxo, payload, "webhook")
+    // No Code desativado: o fluxo de resposta roda só o modelo padrão do sistema; blocos que o
+    // usuário acrescentou no editor (enviar mensagem, condições próprias…) ficam parados.
+    const nocodeAtivo = (await getPluginsAtivos()).nocode
+    const grafo = nocodeAtivo ? fluxo : { ...fluxo, ...modeloFluxoResposta() }
+    await executarEGravar(fluxo.id, grafo, payload, "webhook")
   } catch (error) {
     await recordAppLog({
       nivel: "erro",
