@@ -10,6 +10,7 @@ import {
   opcoesDoMenu,
   NODE_CATALOG,
   OPERADORES_SEM_VALOR,
+  PLUGINS_VERIFICAVEIS,
   validarGrafo,
   type FlowEdge,
   type FlowKind,
@@ -25,7 +26,7 @@ import {
 import { configurarWebhookEvolution, sendWhatsAppText } from "@/services/evolution"
 import { processarRespostaLead, telefonesBatem } from "@/services/lead-response"
 import { transferirConversaPorBot, transferirParaAtendentePorBot } from "@/services/crm"
-import { mensagemPluginDesativado } from "@/lib/plugins"
+import { mensagemPluginDesativado, type PluginKey } from "@/lib/plugins"
 import { exigirPlugin, getPluginsAtivos } from "@/services/settings"
 
 // ---------------------------------------------------------------------------
@@ -466,6 +467,13 @@ async function executarBloco(no: FlowNode, ctx: Contexto, simulacao: boolean): P
       const esperado = OPERADORES_SEM_VALOR.includes(operador) ? "" : renderizar(texto("valor"), ctx)
       const resultado = avaliarCondicao(valorCampo, operador, esperado)
       return { saida: resultado ? "true" : "false", resumo: { valor: valorCampo ?? null, resultado } }
+    }
+
+    case "plugin_ativo": {
+      const plugin = String(cfg.plugin ?? "") as PluginKey
+      if (!PLUGINS_VERIFICAVEIS.includes(plugin)) throw new Error("Escolha o plugin a verificar.")
+      const ativo = (await getPluginsAtivos())[plugin]
+      return { saida: ativo ? "true" : "false", vars: { plugin: { nome: plugin, ativo } }, resumo: { plugin, ativo } }
     }
 
     case "buscar_lead": {

@@ -6,6 +6,8 @@
  * configurado por campos. Valores de texto aceitam variáveis `{{caminho}}`.
  */
 
+import { PLUGIN_NOME, type PluginKey } from "@/lib/plugins"
+
 export type NodeType =
   | "webhook"
   | "extrair_telefone"
@@ -20,18 +22,23 @@ export type NodeType =
   | "menu"
   | "transferir_departamento"
   | "transferir_atendente"
+  // Lógica: segue por "Verdadeiro" ou "Falso" conforme o plugin escolhido esteja ativo.
+  | "plugin_ativo"
 
 /** "automacao": disparada pelo webhook da Evolution. "bot": responde conversas do chat. */
 export type FlowKind = "automacao" | "bot"
 
-/** Blocos que só fazem sentido num bot (precisam de um lead em conversa). */
-export const BLOCOS_SO_BOT: NodeType[] = ["mensagem_recebida", "menu", "transferir_departamento", "transferir_atendente"]
-/** Blocos de automação que dependem do evento bruto da Evolution e por isso não existem no bot. */
-export const BLOCOS_SO_AUTOMACAO: NodeType[] = ["webhook", "extrair_telefone", "buscar_lead", "registrar_resposta"]
-
-export function blocoPermitido(type: NodeType, kind: FlowKind): boolean {
-  return kind === "bot" ? !BLOCOS_SO_AUTOMACAO.includes(type) : !BLOCOS_SO_BOT.includes(type)
+/**
+ * Todos os blocos estão disponíveis em qualquer fluxo (automação ou bot). Os que precisam de
+ * contexto que o fluxo não tem (ex.: Menu e Transferir só têm lead em conversa dentro de um bot)
+ * avisam com erro claro ao executar; use "Plugin ativo" e "Condição" para desviar o caminho.
+ */
+export function blocoPermitido(_type: NodeType, _kind: FlowKind): boolean {
+  return true
 }
+
+/** Plugins que o bloco "Plugin ativo" pode verificar. */
+export const PLUGINS_VERIFICAVEIS: PluginKey[] = ["chat", "kanban", "assistente", "nocode", "crm"]
 
 /** Gatilho de cada tipo de fluxo. */
 export function gatilhoDoTipo(kind: FlowKind): NodeType {
@@ -89,6 +96,7 @@ export interface NodeDef {
     | "ListOrdered"
     | "Building2"
     | "UserCheck"
+    | "Puzzle"
   /** Classes de cor do ícone (Tailwind). */
   cor: string
   temEntrada: boolean
@@ -189,6 +197,29 @@ export const NODE_CATALOG: Record<NodeType, NodeDef> = {
       { key: "valor", label: "Valor", kind: "text", placeholder: "Comparar com…", help: "Aceita variáveis {{...}}." },
     ],
     padrao: { campo: "", operador: "igual", valor: "" },
+  },
+  plugin_ativo: {
+    type: "plugin_ativo",
+    label: "Plugin ativo",
+    descricao: "Verifica se um plugin está ativo e segue por “Verdadeiro” (ativo) ou “Falso” (desativado).",
+    categoria: "Lógica",
+    icone: "Puzzle",
+    cor: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+    temEntrada: true,
+    saidas: [
+      { id: "true", label: "Ativo" },
+      { id: "false", label: "Desativado" },
+    ],
+    campos: [
+      {
+        key: "plugin",
+        label: "Plugin",
+        kind: "select",
+        options: PLUGINS_VERIFICAVEIS.map((p) => ({ value: p, label: PLUGIN_NOME[p] })),
+        help: "O bloco consulta o estado do plugin no momento da execução.",
+      },
+    ],
+    padrao: { plugin: "crm" },
   },
   buscar_lead: {
     type: "buscar_lead",
@@ -506,11 +537,6 @@ export function validarGrafo(
     if (!NODE_CATALOG[no.type]) return `Bloco desconhecido: ${String(no.type)}.`
     if (ids.has(no.id)) return "Há blocos com o mesmo identificador."
     ids.add(no.id)
-    if (!blocoPermitido(no.type, kind)) {
-      return kind === "bot"
-        ? `O bloco “${NODE_CATALOG[no.type].label}” não pode ser usado em bots.`
-        : `O bloco “${NODE_CATALOG[no.type].label}” só pode ser usado em bots.`
-    }
   }
   const gatilho = gatilhoDoTipo(kind)
   const rotulo = NODE_CATALOG[gatilho].label
@@ -523,16 +549,17 @@ export function validarGrafo(
     const destino = nodes.find((n) => n.id === aresta.target)
     if (destino && !NODE_CATALOG[destino.type].temEntrada) return "O gatilho não pode receber conexões."
   }
-  if (kind === "bot") {
-    for (const no of nodes) {
-      if (no.type !== "menu") continue
-      if (opcoesDoMenu(no.config ?? {}).length < 2) return `O menu “${no.name}” precisa de pelo menos 2 opções.`
-      if (!String(no.config?.texto ?? "").trim()) return `O menu “${no.name}” precisa de uma mensagem.`
+  for (const no of nodes) {
+    if (no.type !== "menu") continue
+    if (opcoesDoMenu(no.config ?? {}).length < 2) return `O menu “${no.name}” precisa de pelo menos 2 opções.`
+    if (!String(no.config?.texto ?? "").trim()) return `O menu “${no.name}” precisa de uma mensagem.`
+  }
+  for (const no of nodes) {
+    if (no.type === "transferir_atendente" && no.config?.modo === "especifico" && !String(no.config?.atendenteId ?? "").trim()) {
+      return `Escolha o atendente do bloco “${no.name}”.`
     }
-    for (const no of nodes) {
-      if (no.type === "transferir_atendente" && no.config?.modo === "especifico" && !String(no.config?.atendenteId ?? "").trim()) {
-        return `Escolha o atendente do bloco “${no.name}”.`
-      }
+    if (no.type === "plugin_ativo" && !PLUGINS_VERIFICAVEIS.includes(no.config?.plugin as PluginKey)) {
+      return `Escolha o plugin do bloco “${no.name}”.`
     }
   }
   return null
