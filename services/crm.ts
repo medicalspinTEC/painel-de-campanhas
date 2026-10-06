@@ -605,7 +605,7 @@ export async function transferirConversa(
   const atendenteId = limparTexto(input.atendenteId) || null
   const motivo = limparTexto(input.motivo) || null
 
-  if (!departamentoId && !atendenteId) throw new CrmError("Selecione um departamento ou um atendente.")
+  // Sem departamento e sem atendente é válido: remove o vínculo e a conversa volta a ser livre.
   if (motivo && motivo.length > LIMITE_MOTIVO) throw new CrmError(`O motivo pode ter no máximo ${LIMITE_MOTIVO} caracteres.`)
 
   const [lead, atual, departamento, atendente] = await Promise.all([
@@ -666,7 +666,11 @@ export async function transferirConversa(
   }
 
   if ((atual?.departamentoId ?? null) === departamentoId && (atual?.atendenteId ?? null) === atendenteId) {
-    throw new CrmError("A conversa já está com esse departamento e atendente.")
+    throw new CrmError(
+      !departamentoId && !atendenteId
+        ? "A conversa já está sem departamento e sem atendente."
+        : "A conversa já está com esse departamento e atendente.",
+    )
   }
 
   const de = rotuloResponsavel(atual?.departamento?.nome, atual?.atendente?.user.nome)

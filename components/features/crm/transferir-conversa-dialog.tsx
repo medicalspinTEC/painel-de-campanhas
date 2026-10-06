@@ -44,12 +44,14 @@ export function TransferirConversaDialog({
   const [atendenteId, setAtendenteId] = useState(NENHUM)
   const [motivo, setMotivo] = useState("")
 
-  // Reaproveitado entre conversas: começa em branco a cada abertura.
+  // Reaproveitado entre conversas: a cada abertura começa no responsável atual, para que
+  // escolher "Sem departamento" / "Sem atendente" seja uma ação explícita de remover o vínculo.
   useEffect(() => {
     if (!open) return
-    setDepartamentoId(NENHUM)
-    setAtendenteId(NENHUM)
+    setDepartamentoId(atual?.departamentoId ?? NENHUM)
+    setAtendenteId(atual?.atendenteId ?? NENHUM)
     setMotivo("")
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, leadId])
 
   // Com departamento escolhido, só aparecem os atendentes dele; sem departamento, todos os ativos.
@@ -70,7 +72,9 @@ export function TransferirConversaDialog({
     }
   }
 
-  const semDestino = departamentoId === NENHUM && atendenteId === NENHUM
+  const semMudanca =
+    (atual?.departamentoId ?? NENHUM) === departamentoId && (atual?.atendenteId ?? NENHUM) === atendenteId
+  const removendoVinculo = departamentoId === NENHUM && atendenteId === NENHUM
 
   function transferir() {
     startTransition(async () => {
@@ -116,6 +120,9 @@ export function TransferirConversaDialog({
                 ...opcoes.departamentos.map((departamento) => ({ value: departamento.id, label: departamento.nome })),
               ]}
             />
+            {removendoVinculo && !semMudanca ? (
+              <FieldDescription>A conversa ficará sem departamento e sem atendente, livre para todos.</FieldDescription>
+            ) : null}
             {opcoes.departamentos.length === 0 ? (
               <FieldDescription>Nenhum departamento ativo. Crie ou ative um em CRM.</FieldDescription>
             ) : null}
@@ -161,9 +168,9 @@ export function TransferirConversaDialog({
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button type="button" onClick={transferir} disabled={pending || semDestino}>
+          <Button type="button" onClick={transferir} disabled={pending || semMudanca}>
             {pending ? <Spinner /> : <ArrowRightLeft className="size-4" />}
-            Transferir
+            {removendoVinculo ? "Remover vínculo" : "Transferir"}
           </Button>
         </DialogFooter>
       </DialogContent>

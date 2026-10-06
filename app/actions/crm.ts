@@ -172,7 +172,11 @@ export async function transferirConversaAction(leadId: string, input: Transferen
 
     const { para } = await transferirConversa(id, input, { id: usuario.id, nome: usuario.nome, role: usuario.role })
     revalidatePath("/chat")
-    return { ok: true, message: `Conversa transferida para ${para}.` }
+    const semVinculo = !input.departamentoId && !input.atendenteId
+    return {
+      ok: true,
+      message: semVinculo ? "Vínculo removido: a conversa está sem departamento e sem atendente." : `Conversa transferida para ${para}.`,
+    }
   } catch (error) {
     return falha(error, "Não foi possível transferir a conversa.")
   }
