@@ -13,6 +13,8 @@ import { getChatPluginAtivo, getCrmPluginAtivo } from "@/services/settings"
  * mandam no WhatsApp.
  *
  * Quem responde, para uma mensagem de um lead:
+ *   0. Lead em campanha → ninguém: o bot é só para conversas SEM campanha. Quando o lead de uma
+ *      campanha responde, o bot é pausado nessa conversa (`pausarBotSeLeadEmCampanha`).
  *   1. Bot pausado na conversa (um humano assumiu) → ninguém: o bot só volta quando alguém o
  *      reativa nessa conversa (`reativarBot`).
  *   2. Menu esperando a resposta do lead → o MESMO bot retoma dali e segue a opção escolhida.
@@ -60,22 +62,63 @@ function filas(): Map<string, Promise<void>> {
   return (globalThis.__botFilas ??= new Map())
 }
 
+/**
+ * Mensagem nova de um lead (ou de um contato) que interessa aos bots; `null` para todo o resto
+ * (leitura, status, conexão, mensagens nossas, grupos…).
+ */
+function mensagemDeLead(payload: unknown) {
+  // Só mensagens novas contam (a Evolution também avisa de leitura, status, conexão…).
+  const evento = String((payload as { event?: unknown } | null)?.event ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[_-]/g, ".")
+  if (evento && evento !== "messages.upsert") return null
+
+  const msg = extrairMensagem(payload)
+  // Mensagem enviada por nós (inclusive as do próprio bot) volta pelo webhook com fromMe = true.
+  if (msg.fromMe) return null
+  // Grupos e status do WhatsApp não são conversa com um lead.
+  if (msg.remoteJid.endsWith("@g.us") || msg.remoteJid.startsWith("status@")) return null
+  const telefone = telefoneDoRemoteJid(msg.remoteJid)
+  if (!telefone) return null
+  return { msg, telefone }
+}
+
+/** O lead está em alguma campanha agora (campanha principal ou vínculo em `LeadCampaign`)? */
+async function leadEstaEmCampanha(leadId: string): Promise<boolean> {
+  const lead = await prisma.lead.findUnique({
+    where: { id: leadId },
+    select: { campanhaId: true, _count: { select: { campanhas: true } } },
+  })
+  return Boolean(lead && (lead.campanhaId || lead._count.campanhas > 0))
+}
+
+/**
+ * Bot é só para conversas SEM campanha. Chame ANTES de o fluxo de resposta rodar: ele tira o lead
+ * de todas as campanhas ao registrar a resposta, e depois disso já não dá para saber que a
+ * conversa veio de uma campanha. Se o lead está em campanha, o bot é pausado nessa conversa —
+ * vale para esta mensagem e para as seguintes — até alguém reativá-lo no chat.
+ * Nunca lança: erro aqui é só registrado no log e não derruba o recebimento da mensagem.
+ */
+export async function pausarBotSeLeadEmCampanha(payload: unknown): Promise<void> {
+  try {
+    const recebida = mensagemDeLead(payload)
+    if (!recebida) return
+    const lead = await localizarLeadPorTelefone(recebida.telefone)
+    if (!lead) return
+    if (await leadEstaEmCampanha(lead.id)) {
+      await pausarBot(lead.id, "O lead respondeu a uma campanha; o bot só atende conversas sem campanha.")
+    }
+  } catch (error) {
+    await recordAppLog({ nivel: "erro", origem: "bots", mensagem: "Falha ao verificar campanha do lead antes do bot.", detalhes: error })
+  }
+}
+
 export async function processarMensagemParaBots(payload: unknown): Promise<void> {
   try {
-    // Só mensagens novas contam (a Evolution também avisa de leitura, status, conexão…).
-    const evento = String((payload as { event?: unknown } | null)?.event ?? "")
-      .trim()
-      .toLowerCase()
-      .replace(/[_-]/g, ".")
-    if (evento && evento !== "messages.upsert") return
-
-    const msg = extrairMensagem(payload)
-    // Mensagem enviada por nós (inclusive as do próprio bot) volta pelo webhook com fromMe = true.
-    if (msg.fromMe) return
-    // Grupos e status do WhatsApp não são conversa com um lead.
-    if (msg.remoteJid.endsWith("@g.us") || msg.remoteJid.startsWith("status@")) return
-    const telefone = telefoneDoRemoteJid(msg.remoteJid)
-    if (!telefone) return
+    const recebida = mensagemDeLead(payload)
+    if (!recebida) return
+    const { msg, telefone } = recebida
     // Os bots ficam no CRM: com o plugin desligado nenhum bot responde.
     if (!(await getCrmPluginAtivo())) return
     const lead = await localizarOuCadastrarLead(telefone, msg.remoteJid, msg.pushName)
@@ -174,6 +217,9 @@ async function atenderConversa({ lead, telefone, texto, payload }: Conversa): Pr
       select: { departamentoId: true, atendenteId: true, departamento: { select: { id: true, nome: true } } },
     }),
   ])
+
+  // 0. Lead em campanha: bot é só para conversas sem campanha.
+  if (await leadEstaEmCampanha(lead.id)) return
 
   // 1. Bot pausado nesta conversa: só uma pessoa o reativa.
   if (estado && !estado.botAtivo) return

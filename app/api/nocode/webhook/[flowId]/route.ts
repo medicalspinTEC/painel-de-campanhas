@@ -1,7 +1,7 @@
 import { after, NextResponse } from "next/server"
 
 import { runInWorkspace } from "@/lib/workspace-context"
-import { processarMensagemParaBots } from "@/services/bots"
+import { pausarBotSeLeadEmCampanha, processarMensagemParaBots } from "@/services/bots"
 import { prepararWebhook, processarEventoWebhook, workspaceDoFluxo } from "@/services/nocode"
 
 /**
@@ -36,9 +36,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ flo
 
   after(() =>
     runInWorkspace(workspaceId, async () => {
+      // Bot é só para conversas sem campanha. Isso tem de ser decidido ANTES do fluxo: ao registrar
+      // a resposta ele tira o lead de todas as campanhas, e depois não há mais como saber.
+      if (preparo.fluxo.sistema) await pausarBotSeLeadEmCampanha(payload)
       await processarEventoWebhook(preparo.fluxo, payload)
       // O fluxo de resposta do sistema recebe toda mensagem dos leads: depois de registrá-la,
-      // os bots de departamento respondem (se houver bot ativo e nenhum humano na conversa).
+      // os bots de departamento respondem (se houver bot ativo, nenhum humano na conversa e o
+      // lead não estava em campanha).
       if (preparo.fluxo.sistema) await processarMensagemParaBots(payload)
     }),
   )
