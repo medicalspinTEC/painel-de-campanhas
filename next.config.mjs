@@ -3,10 +3,10 @@ const nextConfig = {
   output: 'standalone',
 
   experimental: {
-    // Mensagens de voz do chat sobem por Server Action (o padrão do Next é 1 MB).
-    // O limite real de cada áudio é aplicado em lib/audio-storage.ts (8 MB).
+    // Mensagens de voz, imagens e arquivos do chat sobem por Server Action (o padrão do Next é 1 MB).
+    // Os limites reais são aplicados em lib/audio-storage.ts (8 MB) e lib/arquivo-storage.ts (16 MB).
     serverActions: {
-      bodySizeLimit: '10mb',
+      bodySizeLimit: '20mb',
     },
   },
 

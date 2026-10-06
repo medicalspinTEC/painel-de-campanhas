@@ -1,3 +1,4 @@
+import { arquivoExiste, lerLinhaDeArquivo, type ArquivoMeta } from "@/lib/arquivo-storage"
 import { audioExiste } from "@/lib/audio-storage"
 import { listBotsPorLead, type BotConversaInfo } from "@/services/bot-estado"
 import { prisma } from "@/lib/prisma"
@@ -22,6 +23,11 @@ export interface ChatMessage {
    * período de retenção. `disponivel: false` = o arquivo já foi apagado.
    */
   audio?: { id: string; disponivel: boolean } | null
+  /**
+   * Só em imagens/arquivos recebidos: ficam numa pasta temporária do servidor, sem prévia, e são
+   * apagados assim que alguém baixa. `disponivel: false` = já baixado (ou expirado) e removido.
+   */
+  arquivo?: (ArquivoMeta & { disponivel: boolean; legenda: string | null }) | null
 }
 
 export interface ChatConversation {
@@ -69,6 +75,14 @@ function extrairAudio(detalhes: string | null): ChatMessage["audio"] {
   return id ? { id, disponivel: audioExiste(id) } : null
 }
 
+function extrairArquivo(detalhes: string | null, texto: string): ChatMessage["arquivo"] {
+  const meta = lerLinhaDeArquivo(detalhes)
+  if (!meta) return null
+  const icone = meta.tipo === "imagem" ? "🖼️" : meta.tipo === "video" ? "🎬" : "📎"
+  const marcador = `${icone} ${meta.nome}`
+  return { ...meta, disponivel: arquivoExiste(meta.id), legenda: texto && texto !== marcador ? texto : null }
+}
+
 function mapearMensagem(evento: {
   id: string
   tipo: string
@@ -76,13 +90,15 @@ function mapearMensagem(evento: {
   data: Date | string
   campanha: { nome: string } | null
 }): ChatMessage {
+  const texto = extrairTexto(evento.detalhes, evento.tipo)
   return {
     id: evento.id,
     lado: evento.tipo === "resposta" ? "lead" : "equipe",
-    texto: extrairTexto(evento.detalhes, evento.tipo),
+    texto,
     data: new Date(evento.data).toISOString(),
     campanhaNome: evento.campanha?.nome ?? null,
     audio: extrairAudio(evento.detalhes),
+    arquivo: extrairArquivo(evento.detalhes, texto),
   }
 }
 

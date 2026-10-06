@@ -2,12 +2,13 @@
 
 import { revalidatePath } from "next/cache"
 
+import { ARQUIVO_TAMANHO_MAXIMO } from "@/lib/arquivo-storage"
 import { AUDIO_TAMANHO_MAXIMO, extensaoDoMime } from "@/lib/audio-storage"
 import { assertSecao } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
 import { addChatInternalNote, getChatInbox, getChatMessages, getChatsForExport } from "@/services/chat"
 import { filtrarLeadsParaEnvio, pausarBotComNota } from "@/services/crm"
-import { sendLeadAudio } from "@/services/leads"
+import { sendLeadAudio, sendLeadFile } from "@/services/leads"
 import { getCrmPluginAtivo } from "@/services/settings"
 
 export async function refreshChatInboxAction(conversaId?: string | null, semMensagens = false) {
@@ -88,5 +89,49 @@ export async function sendChatAudioAction(leadId: string, formData: FormData) {
   } catch (error) {
     await recordAppLog({ origem: "chat", mensagem: `Falha ao enviar mensagem de voz para o lead id=${leadId}.`, detalhes: error })
     return { ok: false, message: "Não foi possível enviar a mensagem de voz. Verifique a conexão com o banco." }
+  }
+}
+
+/**
+ * Envia uma imagem ou um arquivo escolhido no computador/celular. Nada fica guardado no app
+ * (ver `sendLeadFile`). Recebe um FormData com `arquivo` e, opcionalmente, `legenda` e `instancia`.
+ */
+export async function sendChatFileAction(leadId: string, formData: FormData) {
+  const usuario = await assertSecao("chat")
+
+  const arquivo = formData.get("arquivo")
+  if (!(arquivo instanceof File) || arquivo.size === 0) {
+    return { ok: false, message: "Nenhum arquivo foi recebido. Escolha o arquivo novamente." }
+  }
+  if (arquivo.size > ARQUIVO_TAMANHO_MAXIMO) {
+    return { ok: false, message: `O arquivo é muito grande (máximo de ${Math.round(ARQUIVO_TAMANHO_MAXIMO / 1024 / 1024)} MB).` }
+  }
+  const legendaBruta = formData.get("legenda")
+  const legenda = typeof legendaBruta === "string" ? legendaBruta.trim().slice(0, 1024) : ""
+  const instanciaBruta = formData.get("instancia")
+  const instanciaNome = typeof instanciaBruta === "string" && instanciaBruta.trim() ? instanciaBruta.trim() : null
+
+  try {
+    // Plugin CRM: só quem é responsável (ou atende o departamento) responde ao lead.
+    const { bloqueados } = await filtrarLeadsParaEnvio([leadId], usuario)
+    if (bloqueados.length > 0) return { ok: false, message: bloqueados[0].motivo }
+
+    const resultado = await sendLeadFile(
+      leadId,
+      { dados: Buffer.from(await arquivo.arrayBuffer()), nome: arquivo.name, mime: arquivo.type },
+      legenda || null,
+      instanciaNome,
+    )
+    if (resultado.ok) {
+      revalidatePath(`/leads/${leadId}`)
+      // Um humano respondeu o lead: o bot sai da conversa até alguém reativá-lo.
+      if (await getCrmPluginAtivo().catch(() => false)) {
+        await pausarBotComNota(leadId, `Mensagem enviada por ${usuario.nome}.`)
+      }
+    }
+    return resultado
+  } catch (error) {
+    await recordAppLog({ origem: "chat", mensagem: `Falha ao enviar arquivo para o lead id=${leadId}.`, detalhes: error })
+    return { ok: false, message: "Não foi possível enviar o arquivo. Verifique a conexão com o banco." }
   }
 }

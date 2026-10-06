@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react"
 import { toast } from "sonner"
-import { ArrowLeft, ArrowRightLeft, Bot, Building2, CheckCheck, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Mic, Search, Send, Smile, StickyNote, Trash2, UserCheck, UserRound, X } from "lucide-react"
+import { ArrowLeft, ArrowRightLeft, Bot, Building2, CheckCheck, Download, FileText, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Mic, Paperclip, Search, Send, Smile, StickyNote, Trash2, UserCheck, UserRound, X } from "lucide-react"
 
 import { alternarBotConversaAction, assumirConversaAction } from "@/app/actions/crm"
-import { createChatInternalNoteAction, loadChatMessagesAction, refreshChatInboxAction, sendChatAudioAction } from "@/app/actions/chat"
+import { createChatInternalNoteAction, loadChatMessagesAction, refreshChatInboxAction, sendChatAudioAction, sendChatFileAction } from "@/app/actions/chat"
 import { sendLeadMessageAction, setLeadStatusAction } from "@/app/actions/leads"
 import { saveChatIdentificarAction } from "@/app/actions/users"
 import { LinkButton } from "@/components/shared/link-button"
@@ -45,6 +45,8 @@ const LARGURA_LISTA_MIN = 260
 const LARGURA_CONVERSA_MIN = 360
 /** Mensagem de voz: o envio é automático ao chegar nesse tempo (o servidor aceita até 8 MB). */
 const DURACAO_MAXIMA_AUDIO_S = 300
+/** Imagem/arquivo: o servidor aceita até 16 MB (lib/arquivo-storage.ts). */
+const LIMITE_ARQUIVO_BYTES = 16 * 1024 * 1024
 const TIPOS_DE_AUDIO = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"]
 const EMOJIS = [
   "😀", "😃", "😄", "😁", "😅", "😂", "🙂", "😉",
@@ -52,6 +54,12 @@ const EMOJIS = [
   "👏", "👍", "👎", "🤝", "💬", "❤️", "💚", "✨",
   "🎉", "🔥", "✅", "📅", "👋", "💪", "🌷", "☀️",
 ]
+
+function tamanhoLegivel(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+}
 
 function duracaoAudio(segundos: number) {
   const minutos = Math.floor(segundos / 60)
@@ -134,6 +142,9 @@ export function ChatInbox({
   const [seletorEmojiAberto, setSeletorEmojiAberto] = useState(false)
   const [instancia, setInstancia] = useState(instancias[0]?.nome ?? "")
   const [enviando, setEnviando] = useState(false)
+  // Arquivos recebidos que acabaram de ser baixados (o servidor apaga o arquivo ao terminar o download).
+  const [baixados, setBaixados] = useState<Set<string>>(() => new Set())
+  const inputArquivoRef = useRef<HTMLInputElement | null>(null)
   const [gravando, setGravando] = useState(false)
   const [segundosGravados, setSegundosGravados] = useState(0)
   const gravadorRef = useRef<MediaRecorder | null>(null)
@@ -399,6 +410,45 @@ export function ChatInbox({
       aplicarSnapshot(snapshot, idSelecionadoRef.current === leadId)
     } catch {
       toast.message("Mensagem enviada. O histórico será atualizado em instantes.")
+    }
+  }
+
+  async function enviarArquivo(arquivo: File) {
+    const leadId = conversaAtiva?.id
+    if (!leadId || enviando) return
+    if (envioBloqueado) {
+      toast.error(permissoes?.motivo ?? "Você não pode enviar mensagens nesta conversa.")
+      return
+    }
+    if (arquivo.size > LIMITE_ARQUIVO_BYTES) {
+      toast.error(`O arquivo é muito grande (máximo de ${LIMITE_ARQUIVO_BYTES / 1024 / 1024} MB).`)
+      return
+    }
+
+    setEnviando(true)
+    const dados = new FormData()
+    dados.append("arquivo", arquivo)
+    dados.append("legenda", texto.trim())
+    dados.append("instancia", instancia)
+    const resultado = await sendChatFileAction(leadId, dados).catch(() => ({
+      ok: false,
+      message: "Não foi possível enviar o arquivo. Verifique a conexão e tente de novo.",
+    }))
+    setEnviando(false)
+
+    if (!resultado.ok) {
+      toast.error(resultado.message)
+      return
+    }
+
+    setTexto("")
+    toast.success(resultado.message)
+    pertoDoFimRef.current = true
+    try {
+      const snapshot = await refreshChatInboxAction(leadId)
+      aplicarSnapshot(snapshot, idSelecionadoRef.current === leadId)
+    } catch {
+      toast.message("Enviado. O histórico será atualizado em instantes.")
     }
   }
 
@@ -966,6 +1016,32 @@ export function ChatInbox({
                                 ) : (
                                   <span className="flex items-center gap-1.5 text-sm italic text-muted-foreground"><Mic className="size-4 shrink-0" />Áudio expirado e removido do servidor</span>
                                 )
+                              ) : mensagem.arquivo ? (
+                                <span className="flex flex-col gap-1.5">
+                                  <span className="flex items-center gap-2.5">
+                                    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-black/5 dark:bg-white/10"><FileText className="size-5" /></span>
+                                    <span className="min-w-0">
+                                      <span className="block max-w-56 truncate text-sm font-medium">{mensagem.arquivo.nome}</span>
+                                      <span className="block text-xs text-muted-foreground">{tamanhoLegivel(mensagem.arquivo.tamanho)}</span>
+                                    </span>
+                                  </span>
+                                  {mensagem.arquivo.disponivel && !baixados.has(mensagem.arquivo.id) ? (
+                                    <a
+                                      href={`/api/chat/arquivo/${mensagem.arquivo.id}`}
+                                      download={mensagem.arquivo.nome}
+                                      className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:opacity-90"
+                                      onClick={() => {
+                                        const arquivoId = mensagem.arquivo!.id
+                                        setTimeout(() => setBaixados((atual) => new Set(atual).add(arquivoId)), 1500)
+                                      }}
+                                    >
+                                      <Download className="size-3.5" />Baixar
+                                    </a>
+                                  ) : (
+                                    <span className="text-xs italic text-muted-foreground">Baixado e removido do servidor</span>
+                                  )}
+                                  {mensagem.arquivo.legenda ? <span className="whitespace-pre-wrap wrap-break-word">{mensagem.arquivo.legenda}</span> : null}
+                                </span>
                               ) : (
                                 <span className="whitespace-pre-wrap wrap-break-word">{mensagem.texto || "(mensagem sem texto)"}</span>
                               )}
@@ -1113,6 +1189,33 @@ export function ChatInbox({
                           </Button>
                         </div>
                       ) : (
+                        <>
+                        {modoComposicao === "mensagem" ? (
+                          <>
+                            <input
+                              ref={inputArquivoRef}
+                              type="file"
+                              className="hidden"
+                              onChange={(event) => {
+                                const arquivo = event.target.files?.[0]
+                                event.target.value = ""
+                                if (arquivo) void enviarArquivo(arquivo)
+                              }}
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="size-14 shrink-0 rounded-full"
+                              onClick={() => inputArquivoRef.current?.click()}
+                              disabled={enviando || instancias.length === 0}
+                              aria-label="Enviar imagem ou arquivo"
+                              title="Enviar imagem ou arquivo (o texto digitado vai como legenda)"
+                            >
+                              <Paperclip className="size-6" />
+                            </Button>
+                          </>
+                        ) : null}
                         <Textarea
                           value={texto}
                           onChange={(event) => setTexto(event.target.value)}
@@ -1123,6 +1226,7 @@ export function ChatInbox({
                           aria-label={modoComposicao === "nota" ? "Nota interna" : modoComposicao === "resposta" ? "Resposta do lead" : "Mensagem para o lead"}
                           disabled={enviando}
                         />
+                        </>
                       )}
                       {gravando ? (
                         <Button size="icon" className="size-14 shrink-0 rounded-full" onClick={() => pararGravacao(true)} aria-label="Enviar mensagem de voz" title="Enviar mensagem de voz">

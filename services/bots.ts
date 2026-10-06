@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { recordAppLog } from "@/services/app-logs"
 import { pausarBot } from "@/services/bot-estado"
 import { CrmError } from "@/services/crm"
+import { detalhesDaRespostaEmArquivo, guardarArquivoRecebido } from "@/services/arquivo-recebido"
 import { detalhesDaRespostaEmAudio, guardarAudioRecebido } from "@/services/audio-recebido"
 import { extrairMensagem, localizarLeadPorTelefone, telefoneDoRemoteJid } from "@/services/lead-response"
 import { createBot, desativarBotsConcorrentes, executarFluxo, gravarExecucao, type ContextoBot } from "@/services/nocode"
@@ -356,7 +357,9 @@ async function registrarMensagemDoLead(lead: { id: string; nome: string }, texto
   const recebida = extrairMensagem(payload)
   const detalhes = recebida.audio
     ? detalhesDaRespostaEmAudio(await guardarAudioRecebido(recebida))
-    : `Resposta: "${texto || "(mensagem sem texto)"}"`
+    : recebida.arquivo
+      ? detalhesDaRespostaEmArquivo(recebida, await guardarArquivoRecebido(recebida))
+      : `Resposta: "${texto || "(mensagem sem texto)"}"`
   const recente = await prisma.timelineEvent.findFirst({
     where: { leadId: lead.id, tipo: "resposta", detalhes, data: { gte: new Date(Date.now() - 60_000) } },
     select: { id: true },

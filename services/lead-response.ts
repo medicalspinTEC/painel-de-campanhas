@@ -1,5 +1,10 @@
 import { prisma } from "@/lib/prisma"
 import { recordAppLog } from "@/services/app-logs"
+import {
+  detalhesDaRespostaEmArquivo,
+  guardarArquivoRecebido,
+  textoDaRespostaEmArquivo,
+} from "@/services/arquivo-recebido"
 import { detalhesDaRespostaEmAudio, guardarAudioRecebido, textoDaRespostaEmAudio } from "@/services/audio-recebido"
 import { emitWebhookEvent } from "@/services/webhooks"
 
@@ -75,6 +80,15 @@ export interface MensagemRecebida {
   instancia: string | null
   /** Preenchido quando a mensagem é uma mensagem de voz / áudio. */
   audio: { mimetype: string | null; segundos: number | null; base64: string | null } | null
+  /** Preenchido quando a mensagem é uma imagem, um vídeo ou um arquivo (documento). */
+  arquivo: {
+    tipo: "imagem" | "documento" | "video"
+    mimetype: string | null
+    nome: string | null
+    legenda: string | null
+    tamanho: number | null
+    base64: string | null
+  } | null
   /** `data.key` e `data.message` como vieram, para baixar a mídia na Evolution. */
   bruto: { key: unknown; message: unknown }
 }
@@ -121,6 +135,25 @@ export function extrairMensagem(payload: unknown): MensagemRecebida {
   )
   const segundos = Number(audioMsg?.seconds)
 
+  // Imagem, vídeo ou documento (com ou sem legenda).
+  const documento = conteudo?.documentMessage ?? conteudo?.documentWithCaptionMessage?.message?.documentMessage
+  const tipoPorMensagem: Record<string, "imagem" | "documento" | "video"> = {
+    imageMessage: "imagem",
+    videoMessage: "video",
+    documentMessage: "documento",
+    documentWithCaptionMessage: "documento",
+  }
+  const midia: { tipo: "imagem" | "documento" | "video"; m: any } | null = conteudo?.imageMessage
+    ? { tipo: "imagem", m: conteudo.imageMessage }
+    : documento
+      ? { tipo: "documento", m: documento }
+      : conteudo?.videoMessage
+        ? { tipo: "video", m: conteudo.videoMessage }
+        : tipoPorMensagem[String(data?.messageType ?? "")]
+          ? { tipo: tipoPorMensagem[String(data.messageType)], m: {} }
+          : null
+  const tamanhoArquivo = Number(midia?.m?.fileLength)
+
   const instancia = p?.body?.instance ?? p?.instance ?? data?.instance
   const mimetype = audioMsg?.mimetype ?? message?.mimetype
 
@@ -135,6 +168,16 @@ export function extrairMensagem(payload: unknown): MensagemRecebida {
       ? {
           mimetype: typeof mimetype === "string" && mimetype ? mimetype : null,
           segundos: Number.isFinite(segundos) && segundos > 0 ? segundos : null,
+          base64: base64Inline ?? null,
+        }
+      : null,
+    arquivo: midia
+      ? {
+          tipo: midia.tipo,
+          mimetype: typeof midia.m?.mimetype === "string" && midia.m.mimetype ? midia.m.mimetype : null,
+          nome: typeof (midia.m?.fileName ?? midia.m?.title) === "string" ? String(midia.m.fileName ?? midia.m.title) : null,
+          legenda: typeof midia.m?.caption === "string" && midia.m.caption.trim() ? midia.m.caption : null,
+          tamanho: Number.isFinite(tamanhoArquivo) && tamanhoArquivo > 0 ? tamanhoArquivo : null,
           base64: base64Inline ?? null,
         }
       : null,
@@ -250,8 +293,18 @@ export async function processarRespostaLead(payload: unknown): Promise<RespostaL
   // Mensagem de voz: baixa o arquivo na Evolution e guarda na pasta de áudios do servidor; a
   // timeline guarda só o id (`Audio: <id>`), que o chat usa para tocar. Sem áudio, é texto normal.
   const audioId = msg.audio ? await guardarAudioRecebido(msg) : null
-  const textoResposta = msg.audio ? textoDaRespostaEmAudio(audioId) : msg.texto.trim() || "(mensagem sem texto)"
-  const detalhesResposta = msg.audio ? detalhesDaRespostaEmAudio(audioId) : `Resposta: "${textoResposta}"`
+  // Imagem/arquivo: fica numa pasta temporária só até alguém baixar (sem prévia); ver `arquivo-recebido`.
+  const arquivoGuardado = !msg.audio && msg.arquivo ? await guardarArquivoRecebido(msg) : null
+  const textoResposta = msg.audio
+    ? textoDaRespostaEmAudio(audioId)
+    : arquivoGuardado
+      ? textoDaRespostaEmArquivo(msg, arquivoGuardado)
+      : msg.texto.trim() || "(mensagem sem texto)"
+  const detalhesResposta = msg.audio
+    ? detalhesDaRespostaEmAudio(audioId)
+    : arquivoGuardado
+      ? detalhesDaRespostaEmArquivo(msg, arquivoGuardado)
+      : `Resposta: "${textoResposta}"`
   const agora = new Date()
 
   // 5. Registra a resposta na timeline (aparece no feed de eventos com o texto,

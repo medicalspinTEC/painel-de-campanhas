@@ -621,6 +621,92 @@ export async function sendWhatsAppAudio(input: {
 }
 
 /**
+ * Envia uma imagem ou um arquivo (documento) via Evolution API (`POST /message/sendMedia/{instancia}`).
+ * O conteúdo vai em base64 e NÃO é guardado em lugar nenhum: quem chama decide o que registrar.
+ */
+export async function sendWhatsAppMedia(input: {
+  telefone: string
+  /** Conteúdo já em base64, sem o prefixo `data:`. */
+  base64: string
+  mimetype: string
+  fileName: string
+  /** `image` aparece como foto no WhatsApp; `document` chega como arquivo para baixar. */
+  mediatype: "image" | "document"
+  caption?: string | null
+  instanciaNome?: string | null
+}): Promise<EvolutionSendResult> {
+  const { apiUrl, apiKey } = getEvolutionCredentials()
+  if (!apiKey) return { ok: false, erro: "EVOLUTION_API_KEY não configurada no ambiente." }
+
+  const resolvida = await resolveRegisteredInstanceName(input.instanciaNome)
+  if ("error" in resolvida) return { ok: false, erro: resolvida.error }
+  const instanceName = resolvida.name
+
+  const telefone = normalizePhoneForEvolution(input.telefone)
+  if (!telefone) return { ok: false, erro: "Número de telefone inválido para envio." }
+
+  try {
+    const response = await fetch(`${apiUrl}/message/sendMedia/${encodeURIComponent(instanceName)}`, {
+      method: "POST",
+      headers: { "content-type": "application/json", apikey: apiKey },
+      body: JSON.stringify({
+        number: telefone,
+        mediatype: input.mediatype,
+        mimetype: input.mimetype,
+        caption: input.caption?.trim() || undefined,
+        media: input.base64,
+        fileName: input.fileName,
+      }),
+      signal: AbortSignal.timeout(60_000),
+    })
+
+    if (!response.ok) {
+      const detalhe = await response.text()
+      let mensagemApi = detalhe
+      try {
+        const payload = JSON.parse(detalhe) as { response?: { message?: unknown }; message?: unknown }
+        const mensagens = payload.response?.message ?? payload.message
+        if (Array.isArray(mensagens)) {
+          mensagemApi = mensagens.filter((item): item is string => typeof item === "string").join("; ") || detalhe
+        } else if (typeof mensagens === "string") {
+          mensagemApi = mensagens
+        }
+      } catch {
+        // Respostas não JSON continuam disponíveis no log e na mensagem abaixo.
+      }
+
+      const mensagem = /connection closed/i.test(mensagemApi)
+        ? `A conexão WhatsApp da instância "${instanceName}" foi encerrada pela Evolution. Reconecte a instância em Instâncias e tente novamente.`
+        : mensagemApi || `Evolution respondeu com status ${response.status}`
+      await recordAppLog({
+        nivel: "erro",
+        origem: "evolution",
+        mensagem: `Evolution retornou HTTP ${response.status} ao enviar ${input.mediatype === "image" ? "imagem" : "arquivo"}.`,
+        detalhes: detalhe || mensagem,
+        contexto: {
+          etapa: "Envio de imagem/arquivo",
+          instanciaNome: instanceName,
+          telefone,
+          statusHttp: String(response.status),
+        },
+      })
+      return { ok: false, erro: mensagem }
+    }
+
+    return { ok: true }
+  } catch (error) {
+    const mensagem = error instanceof Error ? error.message : String(error)
+    await recordAppLog({
+      nivel: "erro",
+      origem: "evolution",
+      mensagem: "Exceção ao chamar a Evolution API para enviar imagem/arquivo.",
+      detalhes: error,
+    })
+    return { ok: false, erro: mensagem }
+  }
+}
+
+/**
  * Envia um texto livre via WhatsApp (Evolution API), sem qualquer lógica de
  * campanha, dedupe ou timeline — apenas a chamada HTTP. Usado pelo envio
  * manual/individual de mensagem a um lead (ver `services/leads.ts`), que
@@ -1118,27 +1204,27 @@ export async function configurarWebhookEvolution(
 }
 
 /**
- * Baixa o áudio de uma mensagem recebida (`POST /chat/getBase64FromMediaMessage/{instancia}`).
+ * Baixa a mídia (áudio, imagem, documento…) de uma mensagem recebida (`POST /chat/getBase64FromMediaMessage/{instancia}`).
  *
  * O webhook do app não pede o base64 junto do evento (`base64: false`, para não inflar todo
- * payload de texto), então o arquivo da mensagem de voz é buscado aqui, sob demanda.
+ * payload de texto), então o arquivo da mensagem é buscado aqui, sob demanda.
  * Tenta primeiro só pelo id da mensagem (a Evolution a busca no próprio banco) e, se ela não
  * a achar, reenvia a mensagem inteira que veio no webhook. Repete algumas vezes porque o
  * webhook pode chegar antes de a Evolution terminar de gravar a mensagem.
  */
-export async function baixarAudioDaEvolution(input: {
+export async function baixarMidiaDaEvolution(input: {
   /** Instância que recebeu a mensagem (vem no webhook). Sem ela, usa a mais recente do app. */
   instancia?: string | null
   /** `data.key` do webhook. */
   key: unknown
   /** `data.message` do webhook. */
   message: unknown
-}): Promise<{ ok: true; dados: Buffer; mimetype: string | null } | { ok: false; erro: string }> {
+}): Promise<{ ok: true; dados: Buffer; mimetype: string | null; nome: string | null } | { ok: false; erro: string }> {
   const { apiUrl, apiKey } = getEvolutionCredentials()
   if (!apiKey) return { ok: false, erro: "EVOLUTION_API_KEY não configurada no ambiente." }
 
   const instancia = input.instancia?.trim() || (await listarInstanciasDoApp())[0]
-  if (!instancia) return { ok: false, erro: "Nenhuma instância para baixar o áudio." }
+  if (!instancia) return { ok: false, erro: "Nenhuma instância para baixar a mídia." }
 
   const idDaMensagem = (input.key as { id?: unknown } | null)?.id
   const corpos: Array<Record<string, unknown>> = []
@@ -1147,7 +1233,7 @@ export async function baixarAudioDaEvolution(input: {
   }
   corpos.push({ message: { key: input.key, message: input.message }, convertToMp4: false })
 
-  let ultimoErro = "Evolution não devolveu o áudio."
+  let ultimoErro = "Evolution não devolveu a mídia."
   for (let rodada = 0; rodada < 3; rodada += 1) {
     if (rodada > 0) await new Promise((resolve) => setTimeout(resolve, 2000))
     for (const corpo of corpos) {
@@ -1164,7 +1250,7 @@ export async function baixarAudioDaEvolution(input: {
           ultimoErro = `Evolution respondeu ${response.status}${texto ? `: ${texto.slice(0, 200)}` : ""}`
           continue
         }
-        let json: { base64?: unknown; mimetype?: unknown } | null = null
+        let json: { base64?: unknown; mimetype?: unknown; fileName?: unknown } | null = null
         try {
           json = JSON.parse(texto)
         } catch {
@@ -1172,15 +1258,20 @@ export async function baixarAudioDaEvolution(input: {
         }
         const base64 = typeof json?.base64 === "string" ? json.base64.replace(/^data:[^;]*;base64,/, "") : ""
         if (!base64) {
-          ultimoErro = "A Evolution respondeu sem o conteúdo (base64) do áudio."
+          ultimoErro = "A Evolution respondeu sem o conteúdo (base64) da mídia."
           continue
         }
         const dados = Buffer.from(base64, "base64")
         if (dados.length === 0) {
-          ultimoErro = "A Evolution devolveu um áudio vazio."
+          ultimoErro = "A Evolution devolveu um arquivo vazio."
           continue
         }
-        return { ok: true, dados, mimetype: typeof json?.mimetype === "string" ? json.mimetype : null }
+        return {
+          ok: true,
+          dados,
+          mimetype: typeof json?.mimetype === "string" ? json.mimetype : null,
+          nome: typeof json?.fileName === "string" ? json.fileName : null,
+        }
       } catch (error) {
         ultimoErro = error instanceof Error ? error.message : String(error)
       }
@@ -1190,7 +1281,7 @@ export async function baixarAudioDaEvolution(input: {
   await recordAppLog({
     nivel: "aviso",
     origem: "evolution",
-    mensagem: `Não foi possível baixar o áudio recebido na instância "${instancia}".`,
+    mensagem: `Não foi possível baixar a mídia recebida na instância "${instancia}".`,
     detalhes: ultimoErro,
   })
   return { ok: false, erro: ultimoErro }

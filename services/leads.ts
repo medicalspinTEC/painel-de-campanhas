@@ -6,7 +6,8 @@ import { validarTelefoneBR, apenasDigitos } from "@/lib/telefone"
 import { recordAppLog } from "@/services/app-logs"
 import { emitWebhookEvent } from "@/services/webhooks"
 import { removerAudio, salvarAudio } from "@/lib/audio-storage"
-import { sendWhatsAppAudio, sendWhatsAppText } from "@/services/evolution"
+import { mimeLimpo, nomeSeguro } from "@/lib/arquivo-storage"
+import { sendWhatsAppAudio, sendWhatsAppMedia, sendWhatsAppText } from "@/services/evolution"
 import { garantirProduto } from "@/services/produtos"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
 import type { Lead, LeadStatus, TimelineEvent } from "@/types"
@@ -1846,6 +1847,78 @@ export async function sendLeadAudio(
   })
 
   return { ok: true, message: "Mensagem de voz enviada." }
+}
+
+/**
+ * Envia uma imagem ou um arquivo avulso para um lead.
+ *
+ * Nada é guardado no app: o conteúdo segue direto para a Evolution e a timeline registra só o
+ * nome do arquivo (e a legenda, se houver). Imagens (jpeg/png/webp/gif) chegam como foto no
+ * WhatsApp; qualquer outro tipo chega como arquivo para baixar.
+ */
+export async function sendLeadFile(
+  leadId: string,
+  arquivo: { dados: Buffer; nome: string; mime: string },
+  legenda?: string | null,
+  instanciaNome?: string | null,
+): Promise<SendLeadMessageResult> {
+  const lead = await prisma.lead.findUnique({
+    where: { id: leadId },
+    select: { id: true, nome: true, telefone: true },
+  })
+  if (!lead) return { ok: false, message: "Lead não encontrado." }
+
+  const mime = mimeLimpo(arquivo.mime)
+  const ehImagem = /^image\/(jpeg|png|webp|gif)$/.test(mime)
+  const tipo = ehImagem ? "imagem" : "documento"
+  const nome = nomeSeguro(arquivo.nome, ehImagem ? "imagem" : "arquivo")
+  const texto = legenda?.trim() || null
+
+  const envio = await sendWhatsAppMedia({
+    telefone: lead.telefone,
+    base64: arquivo.dados.toString("base64"),
+    mimetype: mime,
+    fileName: nome,
+    mediatype: ehImagem ? "image" : "document",
+    caption: texto,
+    instanciaNome,
+  })
+
+  if (!envio.ok) {
+    await prisma.timelineEvent.create({
+      data: {
+        leadId: lead.id,
+        campanhaId: null,
+        mensagemId: null,
+        tipo: "falha",
+        descricao: `Falha ao enviar ${ehImagem ? "imagem" : "arquivo"}.`,
+        detalhes: envio.erro ?? null,
+        sucesso: false,
+      },
+    })
+    return { ok: false, message: envio.erro ?? `Não foi possível enviar ${ehImagem ? "a imagem" : "o arquivo"}.` }
+  }
+
+  const marcador = `${tipo === "imagem" ? "🖼️" : "📎"} ${nome}`
+  const textoNoChat = texto ? `${marcador}\n${texto}` : marcador
+  await prisma.timelineEvent.create({
+    data: {
+      leadId: lead.id,
+      campanhaId: null,
+      mensagemId: null,
+      tipo: "mensagem_enviada",
+      descricao: `${ehImagem ? "Imagem" : "Arquivo"} enviado manualmente.`,
+      detalhes: `Mensagem: "${textoNoChat}"`,
+      sucesso: true,
+    },
+  })
+
+  await emitWebhookEvent("mensagem.manual", {
+    lead: { id: lead.id, nome: lead.nome, telefone: lead.telefone },
+    mensagem: textoNoChat,
+  })
+
+  return { ok: true, message: ehImagem ? "Imagem enviada." : "Arquivo enviado." }
 }
 
 export interface SendLeadsMessageResult {

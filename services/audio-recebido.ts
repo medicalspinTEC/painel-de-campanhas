@@ -1,6 +1,6 @@
 import { AUDIO_TAMANHO_MAXIMO, extensaoDoMime, salvarAudio } from "@/lib/audio-storage"
 import { recordAppLog } from "@/services/app-logs"
-import { baixarAudioDaEvolution } from "@/services/evolution"
+import { baixarMidiaDaEvolution } from "@/services/evolution"
 import type { MensagemRecebida } from "@/services/lead-response"
 
 /**
@@ -52,7 +52,7 @@ async function baixarEGuardar(msg: MensagemRecebida): Promise<string | null> {
   }
 
   if (!dados) {
-    const baixado = await baixarAudioDaEvolution({
+    const baixado = await baixarMidiaDaEvolution({
       instancia: msg.instancia,
       key: msg.bruto.key,
       message: msg.bruto.message,

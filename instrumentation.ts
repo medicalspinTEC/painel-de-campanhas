@@ -87,6 +87,10 @@ export async function register() {
     try {
       const { limparAudiosExpirados } = await import("@/lib/audio-storage")
       const resultado = await limparAudiosExpirados()
+      // Imagens/arquivos recebidos que ninguém baixou (os baixados já se apagam sozinhos).
+      const { limparArquivosExpirados } = await import("@/lib/arquivo-storage")
+      const arquivos = await limparArquivosExpirados()
+      if (arquivos.removidos) console.log("[v0] limpeza de arquivos recebidos:", arquivos)
       ultimoErroAudios = ""
       if (resultado.removidos) console.log("[v0] limpeza de áudios do chat:", resultado)
     } catch (error) {
