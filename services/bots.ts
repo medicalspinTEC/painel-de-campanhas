@@ -5,7 +5,8 @@ import { pausarBot } from "@/services/bot-estado"
 import { CrmError } from "@/services/crm"
 import { extrairMensagem, localizarLeadPorTelefone, telefoneDoRemoteJid } from "@/services/lead-response"
 import { createBot, desativarBotsConcorrentes, executarFluxo, gravarExecucao, type ContextoBot } from "@/services/nocode"
-import { getCrmPluginAtivo } from "@/services/settings"
+import { cadastrarLeadPorMensagem } from "@/services/leads"
+import { getChatPluginAtivo, getCrmPluginAtivo } from "@/services/settings"
 
 /**
  * Bots de departamento: fluxos No Code do tipo "bot" que respondem às mensagens que os leads
@@ -77,7 +78,7 @@ export async function processarMensagemParaBots(payload: unknown): Promise<void>
     if (!telefone) return
     // Os bots ficam no CRM: com o plugin desligado nenhum bot responde.
     if (!(await getCrmPluginAtivo())) return
-    const lead = await localizarLeadPorTelefone(telefone)
+    const lead = await localizarOuCadastrarLead(telefone, msg.remoteJid, msg.pushName)
     if (!lead) return
 
     const conversa: Conversa = { lead, telefone, texto: msg.texto.trim(), payload }
@@ -91,6 +92,38 @@ export async function processarMensagemParaBots(payload: unknown): Promise<void>
     }
   } catch (error) {
     await recordAppLog({ nivel: "erro", origem: "bots", mensagem: "Falha ao processar mensagem para os bots.", detalhes: error })
+  }
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __botCadastros: Map<string, Promise<unknown>> | undefined
+}
+
+/**
+ * Acha o lead do telefone. Com os plugins Chat e CRM ativos, quem escreve sem estar cadastrado é
+ * cadastrado na hora (para o bot poder responder e a conversa aparecer no chat). Sem os dois
+ * plugins, só leads já cadastrados são atendidos. Mensagens seguidas de um mesmo número novo
+ * esperam uma à outra, para não criar o lead duas vezes.
+ */
+async function localizarOuCadastrarLead(telefone: string, remoteJid: string, nomePerfil: string | null) {
+  const existente = await localizarLeadPorTelefone(telefone)
+  if (existente) return existente
+  // Só números reais de WhatsApp: ids "@lid" e afins não são telefones.
+  if (!remoteJid.endsWith("@s.whatsapp.net")) return null
+  if (!(await getChatPluginAtivo())) return null
+
+  const chave = telefone.replace(/\D/g, "").slice(-8)
+  const cadastros = (globalThis.__botCadastros ??= new Map())
+  const anterior = cadastros.get(chave) ?? Promise.resolve()
+  const atual = anterior
+    .catch(() => undefined)
+    .then(async () => (await localizarLeadPorTelefone(telefone)) ?? (await cadastrarLeadPorMensagem({ telefone, nomePerfil })))
+  cadastros.set(chave, atual)
+  try {
+    return (await atual) as Awaited<ReturnType<typeof localizarLeadPorTelefone>>
+  } finally {
+    if (cadastros.get(chave) === atual) cadastros.delete(chave)
   }
 }
 

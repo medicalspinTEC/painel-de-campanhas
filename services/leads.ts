@@ -360,6 +360,47 @@ export type LeadInput = Pick<Lead, "nome" | "telefone" | "status"> & {
   campanhasIds?: string[]
 }
 
+/**
+ * Cadastra o lead de alguém que escreveu no WhatsApp sem estar cadastrado (plugins Chat + CRM
+ * ativos: o bot precisa de um lead para responder). Devolve `null` se o telefone não for válido.
+ *
+ * Diferente de `createLead`, NÃO vincula o contato a campanhas: quem chegou por conta própria não
+ * deve receber a mensagem inicial de uma campanha só porque os filtros dela são "qualquer".
+ * O nome vem do perfil do WhatsApp; se já existir um lead com ele, acrescenta o fim do telefone.
+ */
+export async function cadastrarLeadPorMensagem(input: {
+  telefone: string
+  nomePerfil?: string | null
+}): Promise<{ id: string; nome: string; telefone: string; status: string } | null> {
+  const resultado = validarTelefoneBR(input.telefone)
+  if (!resultado.ok) return null
+  const telefone = resultado.normalizado
+
+  const base = (input.nomePerfil ?? "").replace(/\s+/g, " ").trim().slice(0, 80) || `Contato ${telefone}`
+  const candidatos = [base, `${base} (${telefone.slice(-4)})`, `${base} (${telefone})`]
+  let nome: string | null = null
+  for (const candidato of candidatos) {
+    const existe = await prisma.lead.findFirst({
+      where: { nome: { equals: candidato, mode: "insensitive" } },
+      select: { id: true },
+    })
+    if (!existe) {
+      nome = candidato
+      break
+    }
+  }
+  if (!nome) return null
+
+  const lead = await prisma.lead.create({
+    data: { nome, telefone, produto: "", marca: "", persona: "", regiao: "", status: "novo" },
+  })
+  await prisma.chatInternalNote.create({
+    data: { leadId: lead.id, texto: "Lead cadastrado automaticamente a partir de uma mensagem recebida no WhatsApp." },
+  })
+  await emitWebhookEvent("lead.criado", { lead: toLead(lead) })
+  return { id: lead.id, nome: lead.nome, telefone: lead.telefone, status: lead.status }
+}
+
 /** Normaliza a nota recebida: vazio vira `null`. */
 function normalizarNotas(notas: string | null | undefined): string | null {
   if (notas == null) return null
