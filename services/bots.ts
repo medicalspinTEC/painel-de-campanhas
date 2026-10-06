@@ -14,7 +14,8 @@ import { getChatPluginAtivo, getCrmPluginAtivo } from "@/services/settings"
  *
  * Quem responde, para uma mensagem de um lead:
  *   0. Lead em campanha → ninguém: o bot é só para conversas SEM campanha. Quando o lead de uma
- *      campanha responde, o bot é pausado nessa conversa (`pausarBotSeLeadEmCampanha`).
+ *      campanha responde, o bot é pausado nessa conversa (`pausarBotSeLeadEmCampanha`); daí vale
+ *      a regra 1.
  *   1. Bot pausado na conversa (um humano assumiu) → ninguém: o bot só volta quando alguém o
  *      reativa nessa conversa (`reativarBot`).
  *   2. Menu esperando a resposta do lead → o MESMO bot retoma dali e segue a opção escolhida.
@@ -218,10 +219,9 @@ async function atenderConversa({ lead, telefone, texto, payload }: Conversa): Pr
     }),
   ])
 
-  // 0. Lead em campanha: bot é só para conversas sem campanha.
-  if (await leadEstaEmCampanha(lead.id)) return
-
-  // 1. Bot pausado nesta conversa: só uma pessoa o reativa.
+  // 1. Bot pausado nesta conversa: só uma pessoa o reativa. (O caso "lead de campanha" já chega
+  // aqui como pausa, feita por `pausarBotSeLeadEmCampanha` antes do fluxo de resposta; quem reativa
+  // o bot decide, e essa decisão não é desfeita aqui.)
   if (estado && !estado.botAtivo) return
   // Conversa que já tinha atendente antes de o bot existir nela: tratada como assumida.
   if (!estado && atendimento?.atendenteId) {
