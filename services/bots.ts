@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { recordAppLog } from "@/services/app-logs"
 import { pausarBot } from "@/services/bot-estado"
 import { CrmError } from "@/services/crm"
+import { detalhesDaRespostaEmAudio, guardarAudioRecebido } from "@/services/audio-recebido"
 import { extrairMensagem, localizarLeadPorTelefone, telefoneDoRemoteJid } from "@/services/lead-response"
 import { createBot, desativarBotsConcorrentes, executarFluxo, gravarExecucao, type ContextoBot } from "@/services/nocode"
 import { cadastrarLeadPorMensagem } from "@/services/leads"
@@ -316,7 +317,7 @@ async function atenderConversa({ lead, telefone, texto, payload }: Conversa): Pr
     }
   }
 
-  await registrarMensagemDoLead(lead, texto)
+  await registrarMensagemDoLead(lead, texto, payload)
 
   const resultado = await executarFluxo({ nodes: bot.nodes, edges: bot.edges }, payload, false, {
     kind: "bot",
@@ -349,8 +350,13 @@ async function guardarEstado(leadId: string, flowId: string, aguardandoNoId: str
  * registrou (e não duplicamos); para os demais ela ficaria sem registro, e a conversa com o bot
  * mostraria só as respostas do bot.
  */
-async function registrarMensagemDoLead(lead: { id: string; nome: string }, texto: string): Promise<void> {
-  const detalhes = `Resposta: "${texto || "(mensagem sem texto)"}"`
+async function registrarMensagemDoLead(lead: { id: string; nome: string }, texto: string, payload: unknown): Promise<void> {
+  // Mensagem de voz: o áudio é guardado na pasta de áudios (o mesmo id que o fluxo de resposta já
+  // gerou para esta mensagem, se ele rodou) e a timeline aponta para ele.
+  const recebida = extrairMensagem(payload)
+  const detalhes = recebida.audio
+    ? detalhesDaRespostaEmAudio(await guardarAudioRecebido(recebida))
+    : `Resposta: "${texto || "(mensagem sem texto)"}"`
   const recente = await prisma.timelineEvent.findFirst({
     where: { leadId: lead.id, tipo: "resposta", detalhes, data: { gte: new Date(Date.now() - 60_000) } },
     select: { id: true },

@@ -1116,3 +1116,82 @@ export async function configurarWebhookEvolution(
   })
   return { ok: false, erro: ultimoErro }
 }
+
+/**
+ * Baixa o áudio de uma mensagem recebida (`POST /chat/getBase64FromMediaMessage/{instancia}`).
+ *
+ * O webhook do app não pede o base64 junto do evento (`base64: false`, para não inflar todo
+ * payload de texto), então o arquivo da mensagem de voz é buscado aqui, sob demanda.
+ * Tenta primeiro só pelo id da mensagem (a Evolution a busca no próprio banco) e, se ela não
+ * a achar, reenvia a mensagem inteira que veio no webhook. Repete algumas vezes porque o
+ * webhook pode chegar antes de a Evolution terminar de gravar a mensagem.
+ */
+export async function baixarAudioDaEvolution(input: {
+  /** Instância que recebeu a mensagem (vem no webhook). Sem ela, usa a mais recente do app. */
+  instancia?: string | null
+  /** `data.key` do webhook. */
+  key: unknown
+  /** `data.message` do webhook. */
+  message: unknown
+}): Promise<{ ok: true; dados: Buffer; mimetype: string | null } | { ok: false; erro: string }> {
+  const { apiUrl, apiKey } = getEvolutionCredentials()
+  if (!apiKey) return { ok: false, erro: "EVOLUTION_API_KEY não configurada no ambiente." }
+
+  const instancia = input.instancia?.trim() || (await listarInstanciasDoApp())[0]
+  if (!instancia) return { ok: false, erro: "Nenhuma instância para baixar o áudio." }
+
+  const idDaMensagem = (input.key as { id?: unknown } | null)?.id
+  const corpos: Array<Record<string, unknown>> = []
+  if (typeof idDaMensagem === "string" && idDaMensagem) {
+    corpos.push({ message: { key: { id: idDaMensagem } }, convertToMp4: false })
+  }
+  corpos.push({ message: { key: input.key, message: input.message }, convertToMp4: false })
+
+  let ultimoErro = "Evolution não devolveu o áudio."
+  for (let rodada = 0; rodada < 3; rodada += 1) {
+    if (rodada > 0) await new Promise((resolve) => setTimeout(resolve, 2000))
+    for (const corpo of corpos) {
+      try {
+        const response = await fetch(`${apiUrl}/chat/getBase64FromMediaMessage/${encodeURIComponent(instancia)}`, {
+          method: "POST",
+          headers: { "content-type": "application/json", apikey: apiKey },
+          body: JSON.stringify(corpo),
+          cache: "no-store",
+          signal: AbortSignal.timeout(30_000),
+        })
+        const texto = await response.text().catch(() => "")
+        if (!response.ok) {
+          ultimoErro = `Evolution respondeu ${response.status}${texto ? `: ${texto.slice(0, 200)}` : ""}`
+          continue
+        }
+        let json: { base64?: unknown; mimetype?: unknown } | null = null
+        try {
+          json = JSON.parse(texto)
+        } catch {
+          // resposta não JSON: cai no erro abaixo
+        }
+        const base64 = typeof json?.base64 === "string" ? json.base64.replace(/^data:[^;]*;base64,/, "") : ""
+        if (!base64) {
+          ultimoErro = "A Evolution respondeu sem o conteúdo (base64) do áudio."
+          continue
+        }
+        const dados = Buffer.from(base64, "base64")
+        if (dados.length === 0) {
+          ultimoErro = "A Evolution devolveu um áudio vazio."
+          continue
+        }
+        return { ok: true, dados, mimetype: typeof json?.mimetype === "string" ? json.mimetype : null }
+      } catch (error) {
+        ultimoErro = error instanceof Error ? error.message : String(error)
+      }
+    }
+  }
+
+  await recordAppLog({
+    nivel: "aviso",
+    origem: "evolution",
+    mensagem: `Não foi possível baixar o áudio recebido na instância "${instancia}".`,
+    detalhes: ultimoErro,
+  })
+  return { ok: false, erro: ultimoErro }
+}

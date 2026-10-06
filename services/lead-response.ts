@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { recordAppLog } from "@/services/app-logs"
+import { detalhesDaRespostaEmAudio, guardarAudioRecebido, textoDaRespostaEmAudio } from "@/services/audio-recebido"
 import { emitWebhookEvent } from "@/services/webhooks"
 
 /**
@@ -68,6 +69,30 @@ export interface MensagemRecebida {
   remoteJid: string
   texto: string
   pushName: string | null
+  /** Id da mensagem no WhatsApp (`data.key.id`). */
+  messageId: string | null
+  /** Instância da Evolution que recebeu a mensagem (campo `instance` do webhook). */
+  instancia: string | null
+  /** Preenchido quando a mensagem é uma mensagem de voz / áudio. */
+  audio: { mimetype: string | null; segundos: number | null; base64: string | null } | null
+  /** `data.key` e `data.message` como vieram, para baixar a mídia na Evolution. */
+  bruto: { key: unknown; message: unknown }
+}
+
+/** Mensagens "embrulhadas" (temporárias, visualização única…) guardam o conteúdo um nível abaixo. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function desembrulhar(message: any): any {
+  let atual = message ?? {}
+  for (let i = 0; i < 3; i += 1) {
+    const interna =
+      atual?.ephemeralMessage?.message ??
+      atual?.viewOnceMessage?.message ??
+      atual?.viewOnceMessageV2?.message ??
+      atual?.deviceSentMessage?.message
+    if (!interna) break
+    atual = interna
+  }
+  return atual
 }
 
 /**
@@ -87,11 +112,33 @@ export function extrairMensagem(payload: unknown): MensagemRecebida {
     (typeof message?.extendedTextMessage?.text === "string" && message.extendedTextMessage.text) ||
     ""
 
+  // Mensagem de voz: o WhatsApp manda `audioMessage` (nota de voz tem `ptt: true`).
+  const conteudo = desembrulhar(message)
+  const audioMsg = conteudo?.audioMessage
+  const ehAudio = Boolean(audioMsg) || data?.messageType === "audioMessage"
+  const base64Inline = [message?.base64, data?.base64, audioMsg?.base64].find(
+    (valor): valor is string => typeof valor === "string" && valor.length > 0,
+  )
+  const segundos = Number(audioMsg?.seconds)
+
+  const instancia = p?.body?.instance ?? p?.instance ?? data?.instance
+  const mimetype = audioMsg?.mimetype ?? message?.mimetype
+
   return {
     fromMe: key?.fromMe === true,
     remoteJid: String(key?.remoteJid ?? key?.remoteJidAlt ?? ""),
     texto: String(texto),
     pushName: data?.pushName != null ? String(data.pushName) : null,
+    messageId: typeof key?.id === "string" && key.id ? key.id : null,
+    instancia: typeof instancia === "string" && instancia.trim() ? instancia.trim() : null,
+    audio: ehAudio
+      ? {
+          mimetype: typeof mimetype === "string" && mimetype ? mimetype : null,
+          segundos: Number.isFinite(segundos) && segundos > 0 ? segundos : null,
+          base64: base64Inline ?? null,
+        }
+      : null,
+    bruto: { key: data?.key ?? null, message: data?.message ?? null },
   }
 }
 
@@ -200,7 +247,11 @@ export async function processarRespostaLead(payload: unknown): Promise<RespostaL
   })
   const mensagemRespondidaId = ultimaMensagemEnviada?.mensagemId ?? null
 
-  const textoResposta = msg.texto.trim() || "(mensagem sem texto)"
+  // Mensagem de voz: baixa o arquivo na Evolution e guarda na pasta de áudios do servidor; a
+  // timeline guarda só o id (`Audio: <id>`), que o chat usa para tocar. Sem áudio, é texto normal.
+  const audioId = msg.audio ? await guardarAudioRecebido(msg) : null
+  const textoResposta = msg.audio ? textoDaRespostaEmAudio(audioId) : msg.texto.trim() || "(mensagem sem texto)"
+  const detalhesResposta = msg.audio ? detalhesDaRespostaEmAudio(audioId) : `Resposta: "${textoResposta}"`
   const agora = new Date()
 
   // 5. Registra a resposta na timeline (aparece no feed de eventos com o texto,
@@ -213,7 +264,7 @@ export async function processarRespostaLead(payload: unknown): Promise<RespostaL
       mensagemId: mensagemRespondidaId,
       tipo: "resposta",
       descricao: `${lead.nome} respondeu no WhatsApp.`,
-      detalhes: `Resposta: "${textoResposta}"`,
+      detalhes: detalhesResposta,
       data: agora,
       sucesso: true,
     },
