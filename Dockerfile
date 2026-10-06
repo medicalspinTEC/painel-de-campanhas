@@ -68,6 +68,12 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Pasta das mensagens de voz do chat (fora do banco). No Coolify, monte aqui o Persistent
+# Storage para os áudios sobreviverem a novos deploys; o app apaga sozinho os mais velhos
+# que AUDIO_RETENTION_DAYS (padrão 30). O chown deixa a pasta gravável pelo usuário nextjs.
+ENV AUDIO_STORAGE_DIR=/app/data/audios
+RUN mkdir -p /app/data/audios && chown -R nextjs:nodejs /app/data
+
 USER nextjs
 
 EXPOSE 3000

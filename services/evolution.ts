@@ -543,6 +543,84 @@ async function shouldSendMessage(leadId: string, campanhaId: string, mensagemId:
 }
 
 /**
+ * Envia uma mensagem de voz (nota de voz do WhatsApp) via Evolution API.
+ *
+ * O áudio vai em base64 e `encoding: true` pede para a Evolution converter para
+ * ogg/opus — é isso que faz o WhatsApp mostrar como mensagem de voz (com a onda de
+ * áudio) mesmo quando o navegador gravou em webm ou mp4. Não grava nada no banco nem
+ * no disco: quem chama decide o que guardar.
+ */
+export async function sendWhatsAppAudio(input: {
+  telefone: string
+  /** Conteúdo do áudio já em base64, sem o prefixo `data:`. */
+  audioBase64: string
+  /** Nome opcional para validar cadastro; o envio sempre usa a mais recente do app. */
+  instanciaNome?: string | null
+}): Promise<EvolutionSendResult> {
+  const { apiUrl, apiKey } = getEvolutionCredentials()
+  if (!apiKey) return { ok: false, erro: "EVOLUTION_API_KEY não configurada no ambiente." }
+
+  const resolvida = await resolveRegisteredInstanceName(input.instanciaNome)
+  if ("error" in resolvida) return { ok: false, erro: resolvida.error }
+  const instanceName = resolvida.name
+
+  const telefone = normalizePhoneForEvolution(input.telefone)
+  if (!telefone) return { ok: false, erro: "Número de telefone inválido para envio." }
+
+  try {
+    const response = await fetch(`${apiUrl}/message/sendWhatsAppAudio/${encodeURIComponent(instanceName)}`, {
+      method: "POST",
+      headers: { "content-type": "application/json", apikey: apiKey },
+      body: JSON.stringify({ number: telefone, audio: input.audioBase64, encoding: true }),
+    })
+
+    if (!response.ok) {
+      const detalhe = await response.text()
+      let mensagemApi = detalhe
+      try {
+        const payload = JSON.parse(detalhe) as { response?: { message?: unknown }; message?: unknown }
+        const mensagens = payload.response?.message ?? payload.message
+        if (Array.isArray(mensagens)) {
+          mensagemApi = mensagens.filter((item): item is string => typeof item === "string").join("; ") || detalhe
+        } else if (typeof mensagens === "string") {
+          mensagemApi = mensagens
+        }
+      } catch {
+        // Respostas não JSON continuam disponíveis no log e na mensagem abaixo.
+      }
+
+      const mensagem = /connection closed/i.test(mensagemApi)
+        ? `A conexão WhatsApp da instância "${instanceName}" foi encerrada pela Evolution. Reconecte a instância em Instâncias e tente novamente.`
+        : mensagemApi || `Evolution respondeu com status ${response.status}`
+      await recordAppLog({
+        nivel: "erro",
+        origem: "evolution",
+        mensagem: `Evolution retornou HTTP ${response.status} ao enviar mensagem de voz.`,
+        detalhes: detalhe || mensagem,
+        contexto: {
+          etapa: "Envio de mensagem de voz",
+          instanciaNome: instanceName,
+          telefone,
+          statusHttp: String(response.status),
+        },
+      })
+      return { ok: false, erro: mensagem }
+    }
+
+    return { ok: true }
+  } catch (error) {
+    const mensagem = error instanceof Error ? error.message : String(error)
+    await recordAppLog({
+      nivel: "erro",
+      origem: "evolution",
+      mensagem: "Exceção ao chamar a Evolution API para enviar mensagem de voz.",
+      detalhes: error,
+    })
+    return { ok: false, erro: mensagem }
+  }
+}
+
+/**
  * Envia um texto livre via WhatsApp (Evolution API), sem qualquer lógica de
  * campanha, dedupe ou timeline — apenas a chamada HTTP. Usado pelo envio
  * manual/individual de mensagem a um lead (ver `services/leads.ts`), que

@@ -1,3 +1,4 @@
+import { audioExiste } from "@/lib/audio-storage"
 import { listBotsPorLead, type BotConversaInfo } from "@/services/bot-estado"
 import { prisma } from "@/lib/prisma"
 import { workspaceAtualId } from "@/lib/workspace-context"
@@ -16,6 +17,11 @@ export interface ChatMessage {
   campanhaNome: string | null
   /** Só em notas internas: quem escreveu (nulo em notas automáticas do sistema). */
   autor?: string | null
+  /**
+   * Só em mensagens de voz: o áudio fica numa pasta do servidor (nunca no banco) e some após o
+   * período de retenção. `disponivel: false` = o arquivo já foi apagado.
+   */
+  audio?: { id: string; disponivel: boolean } | null
 }
 
 export interface ChatConversation {
@@ -57,6 +63,12 @@ function extrairTexto(detalhes: string | null, tipo: string): string {
   return entreAspas?.[1] ?? conteudo.replace(/^"|"$/g, "")
 }
 
+/** Mensagens de voz guardam o id do arquivo numa linha `Audio: <id>` dos detalhes do evento. */
+function extrairAudio(detalhes: string | null): ChatMessage["audio"] {
+  const id = detalhes?.match(/(?:^|\n)Audio:\s*([0-9a-f-]{36}\.[a-z0-9]{3,4})\s*$/)?.[1]
+  return id ? { id, disponivel: audioExiste(id) } : null
+}
+
 function mapearMensagem(evento: {
   id: string
   tipo: string
@@ -70,6 +82,7 @@ function mapearMensagem(evento: {
     texto: extrairTexto(evento.detalhes, evento.tipo),
     data: new Date(evento.data).toISOString(),
     campanhaNome: evento.campanha?.nome ?? null,
+    audio: extrairAudio(evento.detalhes),
   }
 }
 

@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react"
 import { toast } from "sonner"
-import { ArrowLeft, ArrowRightLeft, Bot, Building2, CheckCheck, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Search, Send, Smile, StickyNote, UserCheck, UserRound, X } from "lucide-react"
+import { ArrowLeft, ArrowRightLeft, Bot, Building2, CheckCheck, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Mic, Search, Send, Smile, StickyNote, Trash2, UserCheck, UserRound, X } from "lucide-react"
 
 import { alternarBotConversaAction, assumirConversaAction } from "@/app/actions/crm"
-import { createChatInternalNoteAction, loadChatMessagesAction, refreshChatInboxAction } from "@/app/actions/chat"
+import { createChatInternalNoteAction, loadChatMessagesAction, refreshChatInboxAction, sendChatAudioAction } from "@/app/actions/chat"
 import { sendLeadMessageAction, setLeadStatusAction } from "@/app/actions/leads"
 import { saveChatIdentificarAction } from "@/app/actions/users"
 import { LinkButton } from "@/components/shared/link-button"
@@ -43,12 +43,25 @@ const PREFIXO_FILTRO_DEPARTAMENTO = "dep:"
 const LARGURA_LISTA_PADRAO = 360
 const LARGURA_LISTA_MIN = 260
 const LARGURA_CONVERSA_MIN = 360
+/** Mensagem de voz: o envio é automático ao chegar nesse tempo (o servidor aceita até 8 MB). */
+const DURACAO_MAXIMA_AUDIO_S = 300
+const TIPOS_DE_AUDIO = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"]
 const EMOJIS = [
   "😀", "😃", "😄", "😁", "😅", "😂", "🙂", "😉",
   "😊", "😍", "🥰", "😘", "😎", "🤔", "🙌", "🙏",
   "👏", "👍", "👎", "🤝", "💬", "❤️", "💚", "✨",
   "🎉", "🔥", "✅", "📅", "👋", "💪", "🌷", "☀️",
 ]
+
+function duracaoAudio(segundos: number) {
+  const minutos = Math.floor(segundos / 60)
+  return `${minutos}:${String(segundos % 60).padStart(2, "0")}`
+}
+
+function tipoDeAudioSuportado() {
+  if (typeof MediaRecorder === "undefined") return ""
+  return TIPOS_DE_AUDIO.find((tipo) => MediaRecorder.isTypeSupported(tipo)) ?? ""
+}
 
 function iniciais(nome: string) {
   return nome.trim().split(/\s+/).slice(0, 2).map((parte) => parte[0]?.toUpperCase() ?? "").join("") || "L"
@@ -121,6 +134,14 @@ export function ChatInbox({
   const [seletorEmojiAberto, setSeletorEmojiAberto] = useState(false)
   const [instancia, setInstancia] = useState(instancias[0]?.nome ?? "")
   const [enviando, setEnviando] = useState(false)
+  const [gravando, setGravando] = useState(false)
+  const [segundosGravados, setSegundosGravados] = useState(0)
+  const gravadorRef = useRef<MediaRecorder | null>(null)
+  const pedacosAudioRef = useRef<Blob[]>([])
+  const streamAudioRef = useRef<MediaStream | null>(null)
+  const timerAudioRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const descartarAudioRef = useRef(false)
+  const destinoAudioRef = useRef<{ leadId: string; instancia: string } | null>(null)
   const [vistas, setVistas] = useState<Record<string, string>>({})
   const [vistasCarregadas, setVistasCarregadas] = useState(false)
   const conversaAtiva = conversas.find((conversa) => conversa.id === conversaSelecionadaId) ?? null
@@ -380,6 +401,116 @@ export function ChatInbox({
       toast.message("Mensagem enviada. O histórico será atualizado em instantes.")
     }
   }
+
+  function liberarMicrofone() {
+    if (timerAudioRef.current) clearInterval(timerAudioRef.current)
+    timerAudioRef.current = null
+    streamAudioRef.current?.getTracks().forEach((faixa) => faixa.stop())
+    streamAudioRef.current = null
+    gravadorRef.current = null
+    setGravando(false)
+    setSegundosGravados(0)
+  }
+
+  /** Para a gravação: com `enviar` o áudio segue para o lead, sem ele é descartado. */
+  function pararGravacao(enviar: boolean) {
+    descartarAudioRef.current = !enviar
+    const gravador = gravadorRef.current
+    if (gravador && gravador.state !== "inactive") gravador.stop()
+    else liberarMicrofone()
+  }
+
+  async function iniciarGravacao() {
+    const leadId = conversaAtiva?.id
+    if (!leadId || gravando || enviando) return
+    if (envioBloqueado) {
+      toast.error(permissoes?.motivo ?? "Você não pode enviar mensagens nesta conversa.")
+      return
+    }
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      toast.error("Este navegador não permite gravar áudio. Use um navegador atualizado e acesse o painel por HTTPS.")
+      return
+    }
+
+    let stream: MediaStream
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    } catch (erro) {
+      const negado = erro instanceof DOMException && (erro.name === "NotAllowedError" || erro.name === "SecurityError")
+      toast.error(negado ? "Permita o uso do microfone no navegador para gravar a mensagem de voz." : "Não foi possível acessar o microfone.")
+      return
+    }
+
+    const tipo = tipoDeAudioSuportado()
+    const gravador = new MediaRecorder(stream, tipo ? { mimeType: tipo } : undefined)
+    pedacosAudioRef.current = []
+    descartarAudioRef.current = false
+    destinoAudioRef.current = { leadId, instancia }
+    gravador.ondataavailable = (evento) => {
+      if (evento.data.size > 0) pedacosAudioRef.current.push(evento.data)
+    }
+    gravador.onstop = () => void finalizarGravacao(gravador.mimeType || tipo)
+    streamAudioRef.current = stream
+    gravadorRef.current = gravador
+    gravador.start()
+
+    const inicio = Date.now()
+    setSegundosGravados(0)
+    setGravando(true)
+    timerAudioRef.current = setInterval(() => {
+      const segundos = Math.floor((Date.now() - inicio) / 1000)
+      setSegundosGravados(segundos)
+      if (segundos >= DURACAO_MAXIMA_AUDIO_S) pararGravacao(true)
+    }, 500)
+  }
+
+  async function finalizarGravacao(mime: string) {
+    const descartar = descartarAudioRef.current
+    const destino = destinoAudioRef.current
+    const pedacos = pedacosAudioRef.current
+    pedacosAudioRef.current = []
+    destinoAudioRef.current = null
+    liberarMicrofone()
+    if (descartar || !destino || pedacos.length === 0) return
+
+    const audio = new Blob(pedacos, { type: mime || pedacos[0].type })
+    if (audio.size < 1000) {
+      toast.error("O áudio ficou muito curto. Grave um pouco mais e tente de novo.")
+      return
+    }
+
+    setEnviando(true)
+    const dados = new FormData()
+    dados.append("audio", new File([audio], "voz", { type: audio.type }))
+    dados.append("instancia", destino.instancia)
+    const resultado = await sendChatAudioAction(destino.leadId, dados).catch(() => ({
+      ok: false,
+      message: "Não foi possível enviar a mensagem de voz. Verifique a conexão e tente de novo.",
+    }))
+    setEnviando(false)
+
+    if (!resultado.ok) {
+      toast.error(resultado.message)
+      return
+    }
+
+    toast.success(resultado.message)
+    pertoDoFimRef.current = true
+    try {
+      const snapshot = await refreshChatInboxAction(destino.leadId)
+      aplicarSnapshot(snapshot, idSelecionadoRef.current === destino.leadId)
+    } catch {
+      toast.message("Mensagem de voz enviada. O histórico será atualizado em instantes.")
+    }
+  }
+
+  // Trocar de conversa (ou sair da tela) descarta uma gravação em andamento e solta o microfone.
+  useEffect(() => {
+    return () => {
+      if (gravadorRef.current) pararGravacao(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversaSelecionadaId])
 
   async function assumirConversaAtual() {
     const leadId = conversaAtiva?.id
@@ -829,7 +960,15 @@ export function ChatInbox({
                               {mensagem.campanhaNome ? (
                                 <span className="mb-0.5 block max-w-56 truncate text-xs font-semibold text-primary">{mensagem.campanhaNome}</span>
                               ) : null}
-                              <span className="whitespace-pre-wrap wrap-break-word">{mensagem.texto || "(mensagem sem texto)"}</span>
+                              {mensagem.audio ? (
+                                mensagem.audio.disponivel ? (
+                                  <audio controls preload="none" src={`/api/chat/audio/${mensagem.audio.id}`} className="h-10 w-64 max-w-full" aria-label="Mensagem de voz" />
+                                ) : (
+                                  <span className="flex items-center gap-1.5 text-sm italic text-muted-foreground"><Mic className="size-4 shrink-0" />Áudio expirado e removido do servidor</span>
+                                )
+                              ) : (
+                                <span className="whitespace-pre-wrap wrap-break-word">{mensagem.texto || "(mensagem sem texto)"}</span>
+                              )}
                               <span className="relative top-1 float-right ml-3 mt-1 flex items-center gap-1 text-[11px] leading-none text-(--wa-meta)" suppressHydrationWarning>
                                 {horario(mensagem.data)}
                                 {enviada ? <CheckCheck className="size-3.5" /> : interna ? <StickyNote className="size-3" /> : <MessageCircle className="size-3" />}
@@ -964,30 +1103,58 @@ export function ChatInbox({
                       ) : <span className="ml-auto text-[11px] text-muted-foreground">Crie uma instância em Instâncias para enviar</span>}
                     </div>
                     <div className="flex items-end gap-2">
-                      <Textarea
-                        value={texto}
-                        onChange={(event) => setTexto(event.target.value)}
-                        onKeyDown={tratarTecla}
-                        maxLength={limiteTexto}
-                        placeholder={modoComposicao === "nota" ? "Escreva uma nota interna..." : modoComposicao === "resposta" ? "Registre o que o lead respondeu..." : `Escreva uma mensagem para ${conversaAtiva.nome}...`}
-                        className="max-h-48 min-h-14 resize-none rounded-2xl border-input bg-muted/50 px-5 py-4 text-base leading-snug md:text-base dark:bg-muted/40"
-                        aria-label={modoComposicao === "nota" ? "Nota interna" : modoComposicao === "resposta" ? "Resposta do lead" : "Mensagem para o lead"}
-                        disabled={enviando}
-                      />
-                      <Button
-                        size="icon"
-                        className="size-14 shrink-0 rounded-full"
-                        onClick={() => void enviarMensagem()}
-                        disabled={enviando || !texto.trim() || (modoComposicao === "mensagem" && instancias.length === 0)}
-                        aria-label={modoComposicao === "nota" ? "Salvar nota interna" : modoComposicao === "resposta" ? "Registrar resposta" : "Enviar mensagem"}
-                        title={modoComposicao === "nota" ? "Salvar nota interna" : modoComposicao === "resposta" ? "Registrar resposta" : "Enviar mensagem"}
-                      >
-                        {modoComposicao === "nota" ? <StickyNote className="size-5" /> : modoComposicao === "resposta" ? <CheckCheck className="size-5" /> : <Send className="size-6" />}
-                      </Button>
+                      {gravando ? (
+                        <div className="flex min-h-14 flex-1 items-center gap-3 rounded-2xl border border-input bg-muted/50 px-5 dark:bg-muted/40" role="status" aria-live="polite">
+                          <span className="size-2.5 shrink-0 animate-pulse rounded-full bg-red-500" aria-hidden="true" />
+                          <span className="text-base font-medium tabular-nums">{duracaoAudio(segundosGravados)}</span>
+                          <span className="min-w-0 truncate text-xs text-muted-foreground">Gravando mensagem de voz...</span>
+                          <Button type="button" variant="ghost" size="icon" className="ml-auto shrink-0 rounded-full" aria-label="Descartar gravação" title="Descartar gravação" onClick={() => pararGravacao(false)}>
+                            <Trash2 className="size-5" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <Textarea
+                          value={texto}
+                          onChange={(event) => setTexto(event.target.value)}
+                          onKeyDown={tratarTecla}
+                          maxLength={limiteTexto}
+                          placeholder={modoComposicao === "nota" ? "Escreva uma nota interna..." : modoComposicao === "resposta" ? "Registre o que o lead respondeu..." : `Escreva uma mensagem para ${conversaAtiva.nome}...`}
+                          className="max-h-48 min-h-14 resize-none rounded-2xl border-input bg-muted/50 px-5 py-4 text-base leading-snug md:text-base dark:bg-muted/40"
+                          aria-label={modoComposicao === "nota" ? "Nota interna" : modoComposicao === "resposta" ? "Resposta do lead" : "Mensagem para o lead"}
+                          disabled={enviando}
+                        />
+                      )}
+                      {gravando ? (
+                        <Button size="icon" className="size-14 shrink-0 rounded-full" onClick={() => pararGravacao(true)} aria-label="Enviar mensagem de voz" title="Enviar mensagem de voz">
+                          <Send className="size-6" />
+                        </Button>
+                      ) : modoComposicao === "mensagem" && !texto.trim() ? (
+                        <Button
+                          size="icon"
+                          className="size-14 shrink-0 rounded-full"
+                          onClick={() => void iniciarGravacao()}
+                          disabled={enviando || instancias.length === 0}
+                          aria-label="Gravar mensagem de voz"
+                          title="Gravar mensagem de voz"
+                        >
+                          <Mic className="size-6" />
+                        </Button>
+                      ) : (
+                        <Button
+                          size="icon"
+                          className="size-14 shrink-0 rounded-full"
+                          onClick={() => void enviarMensagem()}
+                          disabled={enviando || !texto.trim() || (modoComposicao === "mensagem" && instancias.length === 0)}
+                          aria-label={modoComposicao === "nota" ? "Salvar nota interna" : modoComposicao === "resposta" ? "Registrar resposta" : "Enviar mensagem"}
+                          title={modoComposicao === "nota" ? "Salvar nota interna" : modoComposicao === "resposta" ? "Registrar resposta" : "Enviar mensagem"}
+                        >
+                          {modoComposicao === "nota" ? <StickyNote className="size-5" /> : modoComposicao === "resposta" ? <CheckCheck className="size-5" /> : <Send className="size-6" />}
+                        </Button>
+                      )}
                     </div>
                     <div className="mt-2 flex justify-between gap-3 px-2 text-[11px] text-muted-foreground">
-                      <span>{modoComposicao === "mensagem" && identificarRemetente && nomeUsuario ? `Enviando como ${nomeUsuario} · ` : ""}Enter para {modoComposicao === "nota" ? "salvar nota" : modoComposicao === "resposta" ? "registrar resposta" : "enviar"} · Shift+Enter para nova linha</span>
-                      <span className="shrink-0 tabular-nums">{texto.length}/{limiteTexto}</span>
+                      <span>{modoComposicao === "mensagem" && identificarRemetente && nomeUsuario ? `Enviando como ${nomeUsuario} · ` : ""}{gravando ? "Toque em enviar para mandar o áudio ou na lixeira para descartar" : <>Enter para {modoComposicao === "nota" ? "salvar nota" : modoComposicao === "resposta" ? "registrar resposta" : "enviar"} · Shift+Enter para nova linha</>}</span>
+                      {gravando ? null : <span className="shrink-0 tabular-nums">{texto.length}/{limiteTexto}</span>}
                     </div>
                   </div>
               </div>

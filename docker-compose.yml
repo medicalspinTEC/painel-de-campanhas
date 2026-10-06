@@ -44,6 +44,11 @@ services:
       INGEST_TOKEN: ${INGEST_TOKEN:-}
       # Endereço público do app (ex.: https://painel.seudominio.com). Usado para o webhook automático da Evolution.
       APP_PUBLIC_URL: ${APP_PUBLIC_URL:-}
+      # Mensagens de voz do chat: ficam nesta pasta (não no banco) e são apagadas após N dias.
+      AUDIO_STORAGE_DIR: ${AUDIO_STORAGE_DIR:-/app/data/audios}
+      AUDIO_RETENTION_DAYS: ${AUDIO_RETENTION_DAYS:-30}
+    volumes:
+      - audio_data:/app/data/audios
     ports:
       - "3000:3000"
     depends_on:
@@ -54,3 +59,4 @@ services:
 
 volumes:
   db_data:
+  audio_data:

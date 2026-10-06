@@ -80,5 +80,23 @@ export async function register() {
   setTimeout(tickBackup, 30_000)
   setInterval(tickBackup, 60_000)
 
+  // Mensagens de voz do chat ficam numa pasta do servidor (não no banco) e são apagadas
+  // sozinhas depois de AUDIO_RETENTION_DAYS dias (padrão 30). Varredura a cada hora.
+  let ultimoErroAudios = ""
+  const tickAudios = async () => {
+    try {
+      const { limparAudiosExpirados } = await import("@/lib/audio-storage")
+      const resultado = await limparAudiosExpirados()
+      ultimoErroAudios = ""
+      if (resultado.removidos) console.log("[v0] limpeza de áudios do chat:", resultado)
+    } catch (error) {
+      const mensagem = error instanceof Error ? error.message : String(error)
+      if (mensagem !== ultimoErroAudios) console.error("[v0] falha na limpeza de áudios do chat:", error)
+      ultimoErroAudios = mensagem
+    }
+  }
+  setTimeout(tickAudios, 60_000)
+  setInterval(tickAudios, 60 * 60 * 1000)
+
   console.log(`[v0] engine de campanhas ativa (intervalo ${intervaloMs}ms).`)
 }

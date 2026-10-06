@@ -5,7 +5,8 @@ import { renderTemplate } from "@/lib/format"
 import { validarTelefoneBR, apenasDigitos } from "@/lib/telefone"
 import { recordAppLog } from "@/services/app-logs"
 import { emitWebhookEvent } from "@/services/webhooks"
-import { sendWhatsAppText } from "@/services/evolution"
+import { removerAudio, salvarAudio } from "@/lib/audio-storage"
+import { sendWhatsAppAudio, sendWhatsAppText } from "@/services/evolution"
 import { garantirProduto } from "@/services/produtos"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
 import type { Lead, LeadStatus, TimelineEvent } from "@/types"
@@ -1764,6 +1765,87 @@ export async function sendLeadMessage(
   })
 
   return { ok: true, message: "Mensagem enviada." }
+}
+
+/** Texto que aparece no chat e na prévia da lista para uma mensagem de voz. */
+export const TEXTO_MENSAGEM_DE_VOZ = "🎤 Mensagem de voz"
+
+/**
+ * Envia uma mensagem de voz avulsa para um lead.
+ *
+ * O arquivo NÃO vai para o banco: é gravado na pasta de áudios do servidor
+ * (`lib/audio-storage.ts`, apagado sozinho após o período de retenção) e a timeline
+ * guarda só o id dele numa linha `Audio: <id>`, que o chat usa para montar o player.
+ * Grava antes de enviar: se a pasta não estiver gravável, nada é enviado ao lead sem
+ * que a equipe consiga ouvir depois.
+ */
+export async function sendLeadAudio(
+  leadId: string,
+  audio: Buffer,
+  mime: string,
+  instanciaNome?: string | null,
+): Promise<SendLeadMessageResult> {
+  const lead = await prisma.lead.findUnique({
+    where: { id: leadId },
+    select: { id: true, nome: true, telefone: true },
+  })
+  if (!lead) return { ok: false, message: "Lead não encontrado." }
+
+  let audioId: string
+  try {
+    audioId = await salvarAudio(audio, mime)
+  } catch (error) {
+    await recordAppLog({
+      origem: "leads",
+      mensagem: "Falha ao gravar a mensagem de voz na pasta de áudios do servidor.",
+      detalhes: error,
+    })
+    return {
+      ok: false,
+      message: "Não foi possível guardar o áudio no servidor. Verifique a pasta de áudios (AUDIO_STORAGE_DIR) e suas permissões.",
+    }
+  }
+
+  const envio = await sendWhatsAppAudio({
+    telefone: lead.telefone,
+    audioBase64: audio.toString("base64"),
+    instanciaNome,
+  })
+
+  if (!envio.ok) {
+    await removerAudio(audioId)
+    await prisma.timelineEvent.create({
+      data: {
+        leadId: lead.id,
+        campanhaId: null,
+        mensagemId: null,
+        tipo: "falha",
+        descricao: "Falha ao enviar mensagem de voz.",
+        detalhes: envio.erro ?? null,
+        sucesso: false,
+      },
+    })
+    return { ok: false, message: envio.erro ?? "Não foi possível enviar a mensagem de voz." }
+  }
+
+  await prisma.timelineEvent.create({
+    data: {
+      leadId: lead.id,
+      campanhaId: null,
+      mensagemId: null,
+      tipo: "mensagem_enviada",
+      descricao: "Mensagem de voz enviada manualmente.",
+      detalhes: `Mensagem: "${TEXTO_MENSAGEM_DE_VOZ}"\nAudio: ${audioId}`,
+      sucesso: true,
+    },
+  })
+
+  await emitWebhookEvent("mensagem.manual", {
+    lead: { id: lead.id, nome: lead.nome, telefone: lead.telefone },
+    mensagem: TEXTO_MENSAGEM_DE_VOZ,
+  })
+
+  return { ok: true, message: "Mensagem de voz enviada." }
 }
 
 export interface SendLeadsMessageResult {
