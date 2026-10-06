@@ -26,6 +26,7 @@ export function NodeConfigPanel({
   no,
   flowId,
   variaveis,
+  atendentes = [],
   onNome,
   onConfig,
   onExcluir,
@@ -33,6 +34,8 @@ export function NodeConfigPanel({
   no: FlowNode
   flowId: string
   variaveis: string[]
+  /** Atendentes ativos do CRM, para o campo "atendente". */
+  atendentes?: { id: string; nome: string }[]
   onNome: (nome: string) => void
   onConfig: (patch: NodeConfig) => void
   onExcluir: () => void
@@ -60,7 +63,9 @@ export function NodeConfigPanel({
         <Input id="no-nome" value={no.name} maxLength={60} onChange={(event) => onNome(event.target.value)} />
       </Field>
 
-      {def.campos.map((campo) => {
+      {def.campos
+        .filter((campo) => !campo.mostrarSe || String(no.config[campo.mostrarSe.key] ?? "") === campo.mostrarSe.value)
+        .map((campo) => {
         const id = `no-${campo.key}`
         const valor = no.config[campo.key]
         return (
@@ -108,6 +113,17 @@ export function NodeConfigPanel({
                 onValueChange={(v) => onConfig({ [campo.key]: v })}
                 opcoes={campo.options ?? []}
               />
+            ) : null}
+            {campo.kind === "atendente" ? (
+              <SelectField
+                id={id}
+                value={String(valor ?? "")}
+                onValueChange={(v) => onConfig({ [campo.key]: v })}
+                opcoes={atendentes.map((a) => ({ value: a.id, label: a.nome }))}
+              />
+            ) : null}
+            {campo.kind === "atendente" && atendentes.length === 0 ? (
+              <FieldDescription>Nenhum atendente ativo. Cadastre em CRM → Atendentes.</FieldDescription>
             ) : null}
             {campo.help ? <FieldDescription>{campo.help}</FieldDescription> : null}
           </Field>

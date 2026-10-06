@@ -8,6 +8,7 @@ import {
   Phone,
   Send,
   Timer,
+  UserCheck,
   UserSearch,
   Webhook,
   type LucideIcon,
@@ -27,6 +28,7 @@ export const ICONES: Record<NodeDef["icone"], LucideIcon> = {
   MessageCircle,
   ListOrdered,
   Building2,
+  UserCheck,
 }
 
 /** Linha de resumo exibida no cartão do bloco, no canvas. */
@@ -53,6 +55,8 @@ export function resumoDoNo(no: FlowNode): string {
       const total = opcoesDoMenu(cfg).length
       return `${total} ${total === 1 ? "opção" : "opções"}`
     }
+    case "transferir_atendente":
+      return cfg.modo === "especifico" ? "Atendente específico" : "Distribuir entre atendentes"
     case "transferir_departamento":
       return String(cfg.departamento ?? "").trim() || "(escolha o departamento)"
     default:

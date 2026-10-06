@@ -63,7 +63,10 @@ export function FlowEditor({
   fluxo,
   execucoesIniciais,
   totalExecucoes,
+  atendentes = [],
 }: {
+  /** Atendentes ativos do CRM (para o bloco "Transferir para atendente"). */
+  atendentes?: { id: string; nome: string }[]
   fluxo: FlowRow
   execucoesIniciais: ExecutionRow[]
   totalExecucoes: number
@@ -379,6 +382,7 @@ export function FlowEditor({
                 no={noSelecionado}
                 flowId={fluxo.id}
                 variaveis={variaveis}
+                atendentes={atendentes}
                 onNome={(valor) =>
                   setNodes((atual) => atual.map((n) => (n.id === noSelecionado.id ? { ...n, name: valor } : n)))
                 }

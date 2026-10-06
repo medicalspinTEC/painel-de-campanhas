@@ -19,12 +19,13 @@ export type NodeType =
   | "mensagem_recebida"
   | "menu"
   | "transferir_departamento"
+  | "transferir_atendente"
 
 /** "automacao": disparada pelo webhook da Evolution. "bot": responde conversas do chat. */
 export type FlowKind = "automacao" | "bot"
 
 /** Blocos que só fazem sentido num bot (precisam de um lead em conversa). */
-export const BLOCOS_SO_BOT: NodeType[] = ["mensagem_recebida", "menu", "transferir_departamento"]
+export const BLOCOS_SO_BOT: NodeType[] = ["mensagem_recebida", "menu", "transferir_departamento", "transferir_atendente"]
 /** Blocos de automação que dependem do evento bruto da Evolution e por isso não existem no bot. */
 export const BLOCOS_SO_AUTOMACAO: NodeType[] = ["webhook", "extrair_telefone", "buscar_lead", "registrar_resposta"]
 
@@ -60,7 +61,10 @@ export type Categoria = "Gatilho" | "Lógica" | "Dados" | "Ação"
 export interface NodeField {
   key: string
   label: string
-  kind: "text" | "textarea" | "select" | "switch" | "number"
+  /** "atendente": lista de atendentes ativos cadastrados no CRM (o valor guardado é o id). */
+  kind: "text" | "textarea" | "select" | "switch" | "number" | "atendente"
+  /** Só mostra o campo quando outro campo do bloco tem este valor. */
+  mostrarSe?: { key: string; value: string }
   placeholder?: string
   help?: string
   options?: { value: string; label: string }[]
@@ -84,6 +88,7 @@ export interface NodeDef {
     | "MessageCircle"
     | "ListOrdered"
     | "Building2"
+    | "UserCheck"
   /** Classes de cor do ícone (Tailwind). */
   cor: string
   temEntrada: boolean
@@ -309,6 +314,47 @@ export const NODE_CATALOG: Record<NodeType, NodeDef> = {
       textoInvalido: "Não entendi. Responda com o número de uma das opções.",
     },
   },
+  transferir_atendente: {
+    type: "transferir_atendente",
+    label: "Transferir para atendente",
+    descricao:
+      "Passa a conversa para uma pessoa: um atendente escolhido ou, na distribuição, o que tem menos conversas. O bot para de responder.",
+    categoria: "Ação",
+    icone: "UserCheck",
+    cor: "bg-teal-500/15 text-teal-600 dark:text-teal-400",
+    temEntrada: true,
+    saidas: [
+      { id: "main", label: "Transferido" },
+      { id: "sem_atendente", label: "Sem atendente" },
+    ],
+    campos: [
+      {
+        key: "modo",
+        label: "Como escolher",
+        kind: "select",
+        options: [
+          { value: "balanceado", label: "Distribuir entre os atendentes" },
+          { value: "especifico", label: "Atendente específico" },
+        ],
+        help: "Distribuir: a conversa vai para o atendente com menos conversas atribuídas (em empate, sorteia entre eles).",
+      },
+      {
+        key: "atendenteId",
+        label: "Atendente",
+        kind: "atendente",
+        mostrarSe: { key: "modo", value: "especifico" },
+      },
+      {
+        key: "departamento",
+        label: "Só atendentes do departamento",
+        kind: "text",
+        placeholder: "(todos os atendentes)",
+        mostrarSe: { key: "modo", value: "balanceado" },
+        help: "Opcional. Em branco, a distribuição considera todos os atendentes ativos; com um nome, só os desse departamento (e a conversa passa a pertencer a ele).",
+      },
+    ],
+    padrao: { modo: "balanceado", atendenteId: "", departamento: "" },
+  },
   transferir_departamento: {
     type: "transferir_departamento",
     label: "Transferir para departamento",
@@ -482,6 +528,11 @@ export function validarGrafo(
       if (no.type !== "menu") continue
       if (opcoesDoMenu(no.config ?? {}).length < 2) return `O menu “${no.name}” precisa de pelo menos 2 opções.`
       if (!String(no.config?.texto ?? "").trim()) return `O menu “${no.name}” precisa de uma mensagem.`
+    }
+    for (const no of nodes) {
+      if (no.type === "transferir_atendente" && no.config?.modo === "especifico" && !String(no.config?.atendenteId ?? "").trim()) {
+        return `Escolha o atendente do bloco “${no.name}”.`
+      }
     }
   }
   return null

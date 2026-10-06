@@ -839,3 +839,131 @@ export async function transferirConversaPorBot(
 
   return { departamento: departamento.nome }
 }
+
+/** Atendentes ativos (com usuário ativo e acesso ao chat), para escolher no bloco do No Code. */
+export async function listAtendentesAtivos(): Promise<{ id: string; nome: string }[]> {
+  const lista = await prisma.atendente.findMany({
+    where: { ativo: true, user: { ativo: true } },
+    orderBy: { user: { nome: "asc" } },
+    select: { id: true, user: { select: { nome: true, role: true, secoes: true } } },
+  })
+  return lista
+    .filter((a) => podeAcessar({ role: a.user.role, secoes: a.user.secoes }, "chat"))
+    .map((a) => ({ id: a.id, nome: a.user.nome }))
+}
+
+/**
+ * Passa a conversa para um atendente, a pedido de um bot (bloco "Transferir para atendente").
+ *
+ * - "especifico": o atendente escolhido, se ele estiver ativo e com acesso ao chat.
+ * - "balanceado": entre os atendentes ativos (opcionalmente só os de um departamento), o que tem
+ *   MENOS conversas atribuídas; em empate, sorteia. Ex.: com 5, 4 e 3 conversas, vai para o de 3.
+ *   Se a conversa já é de um deles, ela não conta contra ele na comparação.
+ *
+ * Devolve `{ ok: false }` (sem lançar) quando não há atendente disponível, para o fluxo poder
+ * seguir pela saída "Sem atendente". O bot é pausado na conversa: agora um humano conduz.
+ */
+export async function transferirParaAtendentePorBot(
+  leadId: string,
+  opcoes: { modo: "balanceado" | "especifico"; atendenteId?: string; departamento?: string; nomeBot?: string },
+): Promise<{ ok: true; atendente: { id: string; nome: string }; departamento: string | null } | { ok: false; motivo: string }> {
+  const nomeBot = opcoes.nomeBot ? `bot “${opcoes.nomeBot}”` : "bot"
+  const nomeDepartamento = limparTexto(opcoes.departamento)
+
+  const [atual, departamento] = await Promise.all([
+    prisma.leadAtendimento.findUnique({
+      where: { leadId },
+      select: { departamentoId: true, atendenteId: true, departamento: { select: { nome: true } }, atendente: { select: { user: { select: { nome: true } } } } },
+    }),
+    opcoes.modo === "balanceado" && nomeDepartamento
+      ? prisma.departamento.findFirst({
+          where: { nome: { equals: nomeDepartamento, mode: "insensitive" } },
+          select: { id: true, nome: true, ativo: true },
+        })
+      : Promise.resolve(null),
+  ])
+  if (opcoes.modo === "balanceado" && nomeDepartamento) {
+    if (!departamento) throw new CrmError(`Departamento “${nomeDepartamento}” não encontrado em CRM → Departamentos.`)
+    if (!departamento.ativo) throw new CrmError(`O departamento “${departamento.nome}” está inativo.`)
+  }
+
+  const candidatosBrutos = await prisma.atendente.findMany({
+    where: {
+      ativo: true,
+      user: { ativo: true },
+      ...(opcoes.modo === "especifico" ? { id: limparTexto(opcoes.atendenteId) } : {}),
+      ...(departamento ? { departamentos: { some: { departamentoId: departamento.id } } } : {}),
+    },
+    select: { id: true, user: { select: { nome: true, role: true, secoes: true } } },
+  })
+  const candidatos = candidatosBrutos.filter((a) => podeAcessar({ role: a.user.role, secoes: a.user.secoes }, "chat"))
+  if (candidatos.length === 0) {
+    return {
+      ok: false,
+      motivo:
+        opcoes.modo === "especifico"
+          ? "O atendente escolhido está inativo ou sem acesso ao chat."
+          : departamento
+            ? `Nenhum atendente ativo no departamento “${departamento.nome}”.`
+            : "Nenhum atendente ativo disponível.",
+    }
+  }
+
+  let escolhido = candidatos[0]
+  if (candidatos.length > 1) {
+    const cargas = await prisma.leadAtendimento.groupBy({
+      by: ["atendenteId"],
+      where: { atendenteId: { in: candidatos.map((a) => a.id) } },
+      _count: { _all: true },
+    })
+    const carga = new Map<string, number>()
+    for (const linha of cargas) if (linha.atendenteId) carga.set(linha.atendenteId, linha._count._all)
+    // A conversa que está sendo redistribuída não pesa contra quem já está com ela.
+    if (atual?.atendenteId && carga.has(atual.atendenteId)) carga.set(atual.atendenteId, (carga.get(atual.atendenteId) ?? 1) - 1)
+    const menor = Math.min(...candidatos.map((a) => carga.get(a.id) ?? 0))
+    const empatados = candidatos.filter((a) => (carga.get(a.id) ?? 0) === menor)
+    escolhido = empatados[Math.floor(Math.random() * empatados.length)]
+  }
+
+  const departamentoIdFinal = departamento?.id ?? atual?.departamentoId ?? null
+  const departamentoNomeFinal = departamento?.nome ?? atual?.departamento?.nome ?? null
+  const de = rotuloResponsavel(atual?.departamento?.nome, atual?.atendente?.user.nome)
+  const para = rotuloResponsavel(departamentoNomeFinal, escolhido.user.nome)
+  const motivo = opcoes.modo === "balanceado" ? "Distribuição automática pelo bot" : "Escolha do bot"
+
+  await prisma.$transaction([
+    prisma.leadAtendimento.upsert({
+      where: { leadId },
+      create: { leadId, departamentoId: departamentoIdFinal, atendenteId: escolhido.id },
+      update: { departamentoId: departamentoIdFinal, atendenteId: escolhido.id, transferidoEm: new Date() },
+    }),
+    prisma.atendimentoTransferencia.create({
+      data: {
+        leadId,
+        deDepartamento: atual?.departamento?.nome ?? null,
+        paraDepartamento: departamentoNomeFinal,
+        deAtendente: atual?.atendente?.user.nome ?? null,
+        paraAtendente: escolhido.user.nome,
+        porUsuario: nomeBot,
+        motivo,
+      },
+    }),
+    prisma.chatInternalNote.create({
+      data: { leadId, texto: `Conversa transferida pelo ${nomeBot}: ${de} → ${para}. ${motivo}.` },
+    }),
+  ])
+
+  await pausarBotComNota(leadId, `Conversa transferida pelo ${nomeBot} para ${escolhido.user.nome}.`)
+
+  const lead = await prisma.lead.findUnique({ where: { id: leadId }, select: { nome: true } })
+  void emitWebhookEvent("atendimento.transferido", {
+    leadId,
+    leadNome: lead?.nome ?? "",
+    de: { departamento: atual?.departamento?.nome ?? null, atendente: atual?.atendente?.user.nome ?? null },
+    para: { departamento: departamentoNomeFinal, atendente: escolhido.user.nome },
+    porUsuario: nomeBot,
+    motivo,
+  })
+
+  return { ok: true, atendente: { id: escolhido.id, nome: escolhido.user.nome }, departamento: departamentoNomeFinal }
+}

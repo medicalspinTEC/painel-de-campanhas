@@ -24,7 +24,7 @@ import {
 } from "@/services/nocode-webhook-execucoes"
 import { configurarWebhookEvolution, sendWhatsAppText } from "@/services/evolution"
 import { processarRespostaLead, telefonesBatem } from "@/services/lead-response"
-import { transferirConversaPorBot } from "@/services/crm"
+import { transferirConversaPorBot, transferirParaAtendentePorBot } from "@/services/crm"
 
 // ---------------------------------------------------------------------------
 // Tipos e acesso aos dados
@@ -550,6 +550,23 @@ async function executarBloco(no: FlowNode, ctx: Contexto, simulacao: boolean): P
       if (!envio.ok) throw new Error(envio.erro ?? "Falha ao enviar o menu.")
       await registrarMensagemBot(bot, corpo)
       return { saida: "", espera: true, resumo: { aguardando: "Resposta do lead ao menu", opcoes } }
+    }
+
+    case "transferir_atendente": {
+      const modo = cfg.modo === "especifico" ? "especifico" : "balanceado"
+      const atendenteId = String(cfg.atendenteId ?? "").trim()
+      const departamento = renderizar(texto("departamento"), ctx).trim()
+      if (modo === "especifico" && !atendenteId) throw new Error("Escolha o atendente da transferência.")
+      if (simulacao) return { saida: "main", status: "simulado", resumo: { modo, atendenteId: atendenteId || null, departamento: departamento || null } }
+      const bot = botDe(ctx)
+      if (!bot) throw new Error("A transferência só funciona dentro de um bot (numa conversa com um lead).")
+      const resultado = await transferirParaAtendentePorBot(bot.leadId, { modo, atendenteId, departamento, nomeBot: bot.flowNome })
+      if (!resultado.ok) return { saida: "sem_atendente", resumo: { motivo: resultado.motivo } }
+      return {
+        saida: "main",
+        vars: { atendente: resultado.atendente, ...(resultado.departamento ? { departamento: { nome: resultado.departamento } } : {}) },
+        resumo: { atendente: resultado.atendente.nome },
+      }
     }
 
     case "transferir_departamento": {
