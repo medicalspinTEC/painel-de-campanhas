@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react"
-import { ArrowLeft, FlaskConical, Loader2, Lock, RefreshCw, Save, Send } from "lucide-react"
+import { ArrowLeft, Bot, FlaskConical, Loader2, Lock, RefreshCw, Save, Send } from "lucide-react"
 import { toast } from "sonner"
 
 import { listExecutionsAction, saveFlowAction, testFlowAction, toggleFlowAction } from "@/app/actions/nocode"
@@ -25,11 +25,15 @@ import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import {
+  blocoPermitido,
   criarNo,
+  gatilhoDoTipo,
+  MENSAGEM_EXEMPLO_BOT,
   NODE_CATALOG,
   novoId,
   ORDEM_CATEGORIAS,
   PAYLOAD_EXEMPLO,
+  podarArestas,
   type FlowEdge,
   type FlowNode,
   type NodeConfig,
@@ -44,6 +48,15 @@ const VARIAVEIS_WEBHOOK = [
   "webhook.data.pushName",
   "webhook.data.message.conversation",
 ]
+const VARIAVEIS_BOT = [
+  "mensagem",
+  "telefone",
+  "lead.nome",
+  "lead.id",
+  "lead.status",
+  "departamento.nome",
+]
+const VARIAVEIS_MENU = ["opcao.numero", "opcao.texto"]
 const VARIAVEIS_LEAD = ["lead.encontrado", "lead.id", "lead.nome", "lead.status", "lead.temCampanha", "lead.campanhasIds"]
 
 export function FlowEditor({
@@ -60,6 +73,7 @@ export function FlowEditor({
   const [edges, setEdges] = useState<FlowEdge[]>(fluxo.edges)
   const [ativo, setAtivo] = useState(fluxo.ativo)
   const sistema = fluxo.sistema
+  const bot = fluxo.tipo === "bot"
   const [selecao, setSelecao] = useState<Selecao>(null)
   const [aba, setAba] = useState<"editor" | "execucoes">("editor")
   const [execucoes, setExecucoes] = useState(execucoesIniciais)
@@ -70,7 +84,7 @@ export function FlowEditor({
   const [salvo, setSalvo] = useState(() => JSON.stringify({ nome: fluxo.nome, nodes: fluxo.nodes, edges: fluxo.edges }))
   const [pending, startTransition] = useTransition()
   const [testeAberto, setTesteAberto] = useState(false)
-  const [payload, setPayload] = useState(() => JSON.stringify(PAYLOAD_EXEMPLO, null, 2))
+  const [payload, setPayload] = useState(() => JSON.stringify(bot ? MENSAGEM_EXEMPLO_BOT : PAYLOAD_EXEMPLO, null, 2))
   const [resultadoTeste, setResultadoTeste] = useState<ExecutionRow | null>(null)
   const [testando, setTestando] = useState(false)
   const centroRef = useRef<(() => { x: number; y: number }) | null>(null)
@@ -79,11 +93,12 @@ export function FlowEditor({
   const noSelecionado = selecao?.tipo === "no" ? nodes.find((n) => n.id === selecao.id) : undefined
 
   const variaveis = useMemo(() => {
+    if (bot) return nodes.some((n) => n.type === "menu") ? [...VARIAVEIS_BOT, ...VARIAVEIS_MENU] : VARIAVEIS_BOT
     const lista = [...VARIAVEIS_WEBHOOK]
     if (nodes.some((n) => n.type === "extrair_telefone")) lista.push("telefone")
     if (nodes.some((n) => n.type === "buscar_lead")) lista.push(...VARIAVEIS_LEAD)
     return lista
-  }, [nodes])
+  }, [nodes, bot])
 
   // Avisa antes de sair com alterações não salvas.
   useEffect(() => {
@@ -122,8 +137,9 @@ export function FlowEditor({
   }, [selecao, removerNo, removerAresta])
 
   function adicionar(tipo: NodeType) {
-    if (tipo === "webhook" && nodes.some((n) => n.type === "webhook")) {
-      toast.error("O fluxo já tem um gatilho Webhook.")
+    const gatilho = gatilhoDoTipo(fluxo.tipo)
+    if (tipo === gatilho && nodes.some((n) => n.type === gatilho)) {
+      toast.error(`O fluxo já tem um gatilho “${NODE_CATALOG[gatilho].label}”.`)
       return
     }
     const centro = centroRef.current?.() ?? { x: 200, y: 160 }
@@ -144,12 +160,15 @@ export function FlowEditor({
   }
 
   async function salvarAgora(): Promise<boolean> {
-    const resultado = await saveFlowAction(fluxo.id, { nome, nodes, edges })
+    // Opções removidas de um menu deixam conexões órfãs: elas saem junto, em vez de impedir o salvamento.
+    const arestas = podarArestas(nodes, edges)
+    if (arestas.length !== edges.length) setEdges(arestas)
+    const resultado = await saveFlowAction(fluxo.id, { nome, nodes, edges: arestas })
     if (!resultado.ok) {
       toast.error(resultado.message)
       return false
     }
-    setSalvo(JSON.stringify({ nome, nodes, edges }))
+    setSalvo(JSON.stringify({ nome, nodes, edges: arestas }))
     return true
   }
 
@@ -176,7 +195,7 @@ export function FlowEditor({
   async function testar() {
     setTestando(true)
     try {
-      const resultado = await testFlowAction(fluxo.id, { nodes, edges, payload })
+      const resultado = await testFlowAction(fluxo.id, { nodes, edges: podarArestas(nodes, edges), payload })
       if (!resultado.ok) {
         toast.error(resultado.message)
         return
@@ -234,6 +253,12 @@ export function FlowEditor({
           <Badge variant="outline" title="Responde aos leads do app; não pode ser desativado nem excluído">
             <Lock className="size-3" />
             Fluxo do sistema
+          </Badge>
+        ) : null}
+        {bot ? (
+          <Badge variant="outline" title="Responde as conversas do chat (CRM → Departamentos)">
+            <Bot className="size-3" />
+            {fluxo.botEntrada ? "Bot de entrada" : fluxo.departamentoNome ? `Bot · ${fluxo.departamentoNome}` : "Bot sem departamento"}
           </Badge>
         ) : null}
         {sujo ? <Badge variant="secondary">Alterações não salvas</Badge> : null}
@@ -307,7 +332,7 @@ export function FlowEditor({
               <div key={categoria} className="flex flex-col gap-1">
                 <p className="px-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{categoria}</p>
                 {Object.values(NODE_CATALOG)
-                  .filter((def) => def.categoria === categoria)
+                  .filter((def) => def.categoria === categoria && blocoPermitido(def.type, fluxo.tipo))
                   .map((def) => {
                     const Icone = ICONES[def.icone]
                     return (
@@ -398,8 +423,9 @@ export function FlowEditor({
           <DialogHeader>
             <DialogTitle>Testar fluxo</DialogTitle>
             <DialogDescription>
-              Roda o fluxo (mesmo sem salvar) com o evento abaixo. A busca do lead lê o banco de verdade; registrar
-              resposta e enviar mensagem são só simulados.
+              {bot
+                ? "Roda o bot (mesmo sem salvar) como se o lead tivesse enviado a “mensagem” abaixo. Menus seguem a opção que essa mensagem escolher (ex.: \"1\"); nada é enviado e nenhuma conversa é alterada."
+                : "Roda o fluxo (mesmo sem salvar) com o evento abaixo. A busca do lead lê o banco de verdade; registrar resposta e enviar mensagem são só simulados."}
             </DialogDescription>
           </DialogHeader>
           <Textarea

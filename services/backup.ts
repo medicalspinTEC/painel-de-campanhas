@@ -118,6 +118,17 @@ const LEITORES: Record<string, Leitor> = {
     unicaPagina: true,
   },
   AtendimentoTransferencia: porId(prisma.atendimentoTransferencia),
+  BotConversa: {
+    // A chave primária é o próprio leadId (como em LeadAtendimento).
+    contar: () => prisma.botConversa.count(),
+    pagina: (depoisDeId, tamanho) =>
+      prisma.botConversa.findMany({
+        orderBy: { leadId: "asc" },
+        take: tamanho,
+        ...(depoisDeId ? { cursor: { leadId: depoisDeId }, skip: 1 } : {}),
+      }) as unknown as Promise<Array<Record<string, unknown>>>,
+    tamanho: 1000,
+  },
   NoCodeFlow: porId(prisma.noCodeFlow, { tamanho: 200, omitir: [...COLUNAS_SECRETAS.NoCodeFlow] }),
   NoCodeExecution: porId(prisma.noCodeExecution, { tamanho: 300 }),
   User: porId(prisma.user, { omitir: [...COLUNAS_SECRETAS.User] }),

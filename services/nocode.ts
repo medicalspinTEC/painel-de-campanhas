@@ -2,11 +2,17 @@ import { timingSafeEqual } from "node:crypto"
 
 import { prisma, prismaGlobal } from "@/lib/prisma"
 import {
+  escolherOpcao,
+  gatilhoDoTipo,
+  modeloBotDepartamento,
+  modeloBotTriagem,
   modeloFluxoResposta,
+  opcoesDoMenu,
   NODE_CATALOG,
   OPERADORES_SEM_VALOR,
   validarGrafo,
   type FlowEdge,
+  type FlowKind,
   type FlowNode,
 } from "@/lib/nocode/catalog"
 import { recordAppLog } from "@/services/app-logs"
@@ -18,6 +24,7 @@ import {
 } from "@/services/nocode-webhook-execucoes"
 import { configurarWebhookEvolution, sendWhatsAppText } from "@/services/evolution"
 import { processarRespostaLead, telefonesBatem } from "@/services/lead-response"
+import { transferirConversaPorBot } from "@/services/crm"
 
 // ---------------------------------------------------------------------------
 // Tipos e acesso aos dados
@@ -29,6 +36,13 @@ export interface FlowRow {
   ativo: boolean
   /** Fluxo do sistema (“Fluxo de resposta”): sempre ativo, não pode ser desativado nem excluído. */
   sistema: boolean
+  /** "automacao" (webhook da Evolution) ou "bot" (responde conversas do chat). */
+  tipo: FlowKind
+  /** Bot de entrada (triagem): atende quem ainda não está em nenhum departamento. */
+  botEntrada: boolean
+  /** Bot de departamento: o departamento que ele atende. */
+  departamentoId: string | null
+  departamentoNome: string | null
   /** Webhook que recebe cada execução. O segredo nunca sai do servidor: só se informa se existe. */
   webhookExecucoes: ConfigWebhookExecucoes
   nodes: FlowNode[]
@@ -80,6 +94,10 @@ function paraFlow(row: {
   nome: string
   ativo: boolean
   sistema: boolean
+  tipo?: string
+  botEntrada?: boolean
+  departamentoId?: string | null
+  departamento?: { nome: string } | null
   execWebhookAtivo?: boolean
   execWebhookUrl?: string | null
   execWebhookSegredo?: string | null
@@ -93,6 +111,10 @@ function paraFlow(row: {
     nome: row.nome,
     ativo: row.ativo || row.sistema,
     sistema: row.sistema,
+    tipo: row.tipo === "bot" ? "bot" : "automacao",
+    botEntrada: row.botEntrada ?? false,
+    departamentoId: row.departamentoId ?? null,
+    departamentoNome: row.departamento?.nome ?? null,
     webhookExecucoes: {
       ativo: row.execWebhookAtivo ?? false,
       url: row.execWebhookUrl ?? "",
@@ -143,7 +165,10 @@ function paraExecucao(row: {
 
 export async function listFlows(): Promise<FlowRow[]> {
   // O fluxo do sistema vem sempre primeiro; os demais, do mais recente para o mais antigo.
-  const rows = await prisma.noCodeFlow.findMany({ orderBy: [{ sistema: "desc" }, { atualizadoEm: "desc" }] })
+  const rows = await prisma.noCodeFlow.findMany({
+    orderBy: [{ sistema: "desc" }, { atualizadoEm: "desc" }],
+    include: { departamento: { select: { nome: true } } },
+  })
   return rows.map(paraFlow)
 }
 
@@ -180,15 +205,63 @@ export async function garantirFluxoResposta(): Promise<FlowRow> {
 }
 
 export async function getFlow(id: string): Promise<FlowRow | null> {
-  const row = await prisma.noCodeFlow.findUnique({ where: { id } })
+  const row = await prisma.noCodeFlow.findUnique({ where: { id }, include: { departamento: { select: { nome: true } } } })
   return row ? paraFlow(row) : null
 }
 
-export async function createFlow(input: { nome: string; nodes: FlowNode[]; edges: FlowEdge[] }): Promise<FlowRow> {
+export async function createFlow(input: {
+  nome: string
+  nodes: FlowNode[]
+  edges: FlowEdge[]
+  tipo?: FlowKind
+  botEntrada?: boolean
+  departamentoId?: string | null
+}): Promise<FlowRow> {
   const row = await prisma.noCodeFlow.create({
-    data: { nome: input.nome, nodes: input.nodes as never, edges: input.edges as never },
+    data: {
+      nome: input.nome,
+      nodes: input.nodes as never,
+      edges: input.edges as never,
+      ...(input.tipo ? { tipo: input.tipo } : {}),
+      ...(input.botEntrada ? { botEntrada: true } : {}),
+      ...(input.departamentoId ? { departamentoId: input.departamentoId } : {}),
+    },
   })
   return paraFlow(row)
+}
+
+/**
+ * Cria um bot já com um modelo inicial: de entrada (triagem por menu) ou de um departamento.
+ * Nasce desativado: o usuário edita no No Code e ativa quando estiver pronto.
+ */
+export async function createBot(input: { nome: string; departamentoId: string | null }): Promise<FlowRow> {
+  const entrada = input.departamentoId === null
+  const base = entrada ? modeloBotTriagem() : modeloBotDepartamento()
+  return createFlow({
+    nome: input.nome,
+    ...base,
+    tipo: "bot",
+    botEntrada: entrada,
+    departamentoId: input.departamentoId,
+  })
+}
+
+/**
+ * Só um bot ativo por escopo (o de entrada, ou um por departamento): ao ativar um, os outros do
+ * mesmo escopo são desativados. Evita dois bots respondendo a mesma mensagem.
+ */
+export async function desativarBotsConcorrentes(bot: { id: string; botEntrada: boolean; departamentoId: string | null }): Promise<number> {
+  if (!bot.botEntrada && !bot.departamentoId) return 0
+  const resultado = await prisma.noCodeFlow.updateMany({
+    where: {
+      id: { not: bot.id },
+      tipo: "bot",
+      ativo: true,
+      ...(bot.botEntrada ? { botEntrada: true } : { departamentoId: bot.departamentoId }),
+    },
+    data: { ativo: false },
+  })
+  return resultado.count
 }
 
 export async function updateFlow(
@@ -331,6 +404,36 @@ interface ResultadoBloco {
   status?: PassoExecucao["status"]
   /** Encerra o fluxo marcando-o como ignorado. */
   fim?: "ignorado"
+  /** O bloco enviou uma pergunta e o fluxo PARA aqui até o lead responder (só em bots). */
+  espera?: boolean
+}
+
+/** Conversa em que um bot está rodando; fica em `ctx.bot` (nunca aparece nas variáveis do editor). */
+export interface ContextoBot {
+  leadId: string
+  flowNome: string
+}
+const botDe = (ctx: Contexto): ContextoBot | null => (ctx.bot as ContextoBot | undefined) ?? null
+
+/** Grava no chat a mensagem que o bot enviou, para a equipe vê-la na conversa. */
+async function registrarMensagemBot(bot: ContextoBot, texto: string): Promise<void> {
+  await prisma.timelineEvent.create({
+    data: {
+      leadId: bot.leadId,
+      campanhaId: null,
+      mensagemId: null,
+      tipo: "mensagem_enviada",
+      descricao: `Resposta automática do bot “${bot.flowNome}”.`,
+      detalhes: `Mensagem: "${texto}"`,
+      sucesso: true,
+    },
+  })
+}
+
+/** Texto do menu: a mensagem seguida das opções numeradas (e do aviso, se a resposta anterior foi inválida). */
+export function montarTextoMenu(mensagem: string, opcoes: string[], aviso = ""): string {
+  const lista = opcoes.map((opcao, i) => `${i + 1} - ${opcao}`).join("\n")
+  return [aviso.trim(), mensagem.trim(), lista].filter(Boolean).join("\n\n")
 }
 
 const digitos = (v: unknown) => textoDe(v).replace(/\D/g, "")
@@ -410,6 +513,8 @@ async function executarBloco(no: FlowNode, ctx: Contexto, simulacao: boolean): P
       if (simulacao) return { saida: "main", status: "simulado", resumo: { telefone, texto: mensagem } }
       const envio = await sendWhatsAppText({ telefone, texto: mensagem })
       if (!envio.ok) throw new Error(envio.erro ?? "Falha ao enviar a mensagem.")
+      const bot = botDe(ctx)
+      if (bot) await registrarMensagemBot(bot, mensagem)
       return { saida: "main", vars: { envio: { ok: true } }, resumo: { telefone } }
     }
 
@@ -422,6 +527,42 @@ async function executarBloco(no: FlowNode, ctx: Contexto, simulacao: boolean): P
     case "ignorar":
       return { saida: "main", fim: "ignorado", status: "ignorado", resumo: "Fluxo encerrado." }
 
+    case "mensagem_recebida":
+      return { saida: "main", resumo: { mensagem: textoDe(ctx.mensagem) } }
+
+    case "menu": {
+      const opcoes = opcoesDoMenu(cfg)
+      const aviso = ctx.botInvalido === true ? renderizar(texto("textoInvalido"), ctx) : ""
+      const corpo = montarTextoMenu(renderizar(texto("texto"), ctx), opcoes, aviso)
+      if (simulacao) {
+        // No teste não há lead para responder: a "mensagem" do evento de teste faz o papel da escolha.
+        const indice = escolherOpcao(textoDe(ctx.mensagem), opcoes)
+        return {
+          saida: indice >= 0 ? `op_${indice + 1}` : "outra",
+          status: "simulado",
+          resumo: { texto: corpo, mensagemDoTeste: textoDe(ctx.mensagem), opcaoEscolhida: indice >= 0 ? opcoes[indice] : null },
+        }
+      }
+      const bot = botDe(ctx)
+      const telefone = textoDe(ctx.telefone)
+      if (!bot || !telefone) throw new Error("O menu só funciona dentro de um bot (numa conversa com um lead).")
+      const envio = await sendWhatsAppText({ telefone, texto: corpo })
+      if (!envio.ok) throw new Error(envio.erro ?? "Falha ao enviar o menu.")
+      await registrarMensagemBot(bot, corpo)
+      return { saida: "", espera: true, resumo: { aguardando: "Resposta do lead ao menu", opcoes } }
+    }
+
+    case "transferir_departamento": {
+      const departamento = renderizar(texto("departamento"), ctx).trim()
+      if (!departamento) throw new Error("Informe o departamento da transferência.")
+      const pausarBot = cfg.pausarBot === true
+      if (simulacao) return { saida: "main", status: "simulado", resumo: { departamento, pausarBot } }
+      const bot = botDe(ctx)
+      if (!bot) throw new Error("A transferência só funciona dentro de um bot (numa conversa com um lead).")
+      const resultado = await transferirConversaPorBot(bot.leadId, departamento, { pausarBot, nomeBot: bot.flowNome })
+      return { saida: "main", vars: { departamento: { nome: resultado.departamento } }, resumo: resultado }
+    }
+
     default:
       throw new Error(`Bloco desconhecido: ${String(no.type)}.`)
   }
@@ -432,6 +573,16 @@ export interface ResultadoExecucao {
   passos: PassoExecucao[]
   erro: string | null
   duracaoMs: number
+  /** Bot parado num menu, esperando o lead responder (a conversa guarda este bloco). */
+  espera?: { nodeId: string }
+}
+
+export interface OpcoesExecucao {
+  kind?: FlowKind
+  /** Continua a partir destes blocos em vez de começar no gatilho (retomada de um menu). */
+  filaInicial?: string[]
+  /** Variáveis já conhecidas ao começar (num bot: mensagem, telefone, lead, bot…). */
+  ctxInicial?: Contexto
 }
 
 /**
@@ -443,18 +594,26 @@ export async function executarFluxo(
   fluxo: { nodes: FlowNode[]; edges: FlowEdge[] },
   entrada: unknown,
   simulacao = false,
+  opcoes: OpcoesExecucao = {},
 ): Promise<ResultadoExecucao> {
   const inicio = Date.now()
   const passos: PassoExecucao[] = []
-  const gatilho = fluxo.nodes.find((n) => n.type === "webhook")
-  if (!gatilho) {
-    return { status: "erro", passos, erro: "O fluxo não tem um bloco Webhook (gatilho).", duracaoMs: 0 }
+  const tipoGatilho = gatilhoDoTipo(opcoes.kind ?? "automacao")
+  const gatilho = opcoes.filaInicial ? null : fluxo.nodes.find((n) => n.type === tipoGatilho)
+  if (!opcoes.filaInicial && !gatilho) {
+    return {
+      status: "erro",
+      passos,
+      erro: `O fluxo não tem um bloco ${NODE_CATALOG[tipoGatilho].label} (gatilho).`,
+      duracaoMs: 0,
+    }
   }
 
-  let ctx: Contexto = { webhook: entrada }
+  let ctx: Contexto = { webhook: entrada, ...(opcoes.ctxInicial ?? {}) }
   let ignorado = false
   let erro: string | null = null
-  const fila: string[] = [gatilho.id]
+  let espera: { nodeId: string } | undefined
+  const fila: string[] = opcoes.filaInicial ? [...opcoes.filaInicial] : [gatilho!.id]
 
   while (fila.length > 0 && passos.length < MAX_PASSOS) {
     const idAtual = fila.shift()
@@ -477,6 +636,11 @@ export async function executarFluxo(
       if (resultado.fim === "ignorado") ignorado = true
       if (resultado.status === "ignorado" && no.type === "registrar_resposta") ignorado = true
       if (resultado.fim) continue
+      if (resultado.espera) {
+        // O bot perguntou e agora é a vez do lead: este ramo para aqui.
+        espera = { nodeId: no.id }
+        continue
+      }
       for (const aresta of fluxo.edges) {
         if (aresta.source === no.id && aresta.sourceHandle === resultado.saida) fila.push(aresta.target)
       }
@@ -494,6 +658,18 @@ export async function executarFluxo(
     passos,
     erro,
     duracaoMs: Date.now() - inicio,
+    ...(espera && !erro ? { espera } : {}),
+  }
+}
+
+/** Variáveis do evento de teste de um bot: a "mensagem" do JSON faz o papel da resposta do lead. */
+function contextoBotDeTeste(entrada: unknown): Contexto {
+  const mensagem = textoDe(lerCaminho(entrada, "mensagem"))
+  return {
+    mensagem,
+    telefone: "5579999999999",
+    lead: { encontrado: true, id: "teste", nome: "Contato de teste", status: "novo", temCampanha: false, campanhasIds: [] },
+    departamento: null,
   }
 }
 
@@ -503,8 +679,23 @@ export async function executarEGravar(
   fluxo: { nodes: FlowNode[]; edges: FlowEdge[] },
   entrada: unknown,
   origem: "webhook" | "teste",
+  kind: FlowKind = "automacao",
 ): Promise<ExecutionRow> {
-  const resultado = await executarFluxo(fluxo, entrada, origem === "teste")
+  const simulacao = origem === "teste"
+  const resultado = await executarFluxo(fluxo, entrada, simulacao, {
+    kind,
+    ctxInicial: kind === "bot" && simulacao ? contextoBotDeTeste(entrada) : undefined,
+  })
+  return gravarExecucao(flowId, entrada, origem, resultado)
+}
+
+/** Grava no histórico uma execução já feita (e entrega ao webhook de execuções, se houver). */
+export async function gravarExecucao(
+  flowId: string,
+  entrada: unknown,
+  origem: "webhook" | "teste",
+  resultado: ResultadoExecucao,
+): Promise<ExecutionRow> {
   const config = await prisma.noCodeFlow.findUnique({
     where: { id: flowId },
     select: { sistema: true, execWebhookAtivo: true, execWebhookUrl: true },
@@ -588,7 +779,7 @@ export async function workspaceDoFluxo(flowId: string): Promise<string | null> {
 /** Valida fluxo + token antes de aceitar o evento (a execução em si roda depois da resposta). */
 export async function prepararWebhook(flowId: string, token: string | null): Promise<PreparoWebhook> {
   const fluxo = await getFlow(flowId)
-  if (!fluxo) return { ok: false, status: 404, erro: "Fluxo não encontrado." }
+  if (!fluxo || fluxo.tipo === "bot") return { ok: false, status: 404, erro: "Fluxo não encontrado." }
 
   const gatilho = fluxo.nodes.find((n) => n.type === "webhook")
   const esperado = String(gatilho?.config.token ?? "")
@@ -649,7 +840,7 @@ export async function urlWebhookDoFluxoAtivo(origem: string): Promise<{ url: str
   // Garante o fluxo de resposta do app (ele é o preferido: o mais recente fica só como reserva).
   await garantirFluxoResposta()
   const ativos = await prisma.noCodeFlow.findMany({
-    where: { OR: [{ ativo: true }, { sistema: true }] },
+    where: { tipo: "automacao", OR: [{ ativo: true }, { sistema: true }] },
     orderBy: [{ sistema: "desc" }, { atualizadoEm: "desc" }],
   })
   for (const linha of ativos) {

@@ -10,7 +10,8 @@ import { recordAppLog } from "@/services/app-logs"
 import { validarTelefoneBR } from "@/lib/telefone"
 import { type LeadStatus } from "@/types"
 import { assertSecao } from "@/lib/session"
-import { filtrarLeadsParaEnvio } from "@/services/crm"
+import { filtrarLeadsParaEnvio, pausarBotComNota } from "@/services/crm"
+import { getCrmPluginAtivo } from "@/services/settings"
 
 export interface ActionState {
   ok: boolean
@@ -231,7 +232,13 @@ export async function sendLeadMessageAction(
     const resultado = agendadoPara
       ? await scheduleLeadMessage(leadId, textoLimpo, agendadoPara, instanciaNome)
       : await sendLeadMessage(leadId, textoLimpo, instanciaNome)
-    if (resultado.ok) revalidatePath(`/leads/${leadId}`)
+    if (resultado.ok) {
+      revalidatePath(`/leads/${leadId}`)
+      // Um humano respondeu o lead: o bot sai da conversa até alguém reativá-lo (só envio imediato).
+      if (!agendadoPara && (await getCrmPluginAtivo().catch(() => false))) {
+        await pausarBotComNota(leadId, `Mensagem enviada por ${usuario.nome}.`)
+      }
+    }
     return resultado
   } catch (error) {
     await recordAppLog({ origem: "leads", mensagem: `Falha ao enviar mensagem individual para o lead id=${leadId}.`, detalhes: error })

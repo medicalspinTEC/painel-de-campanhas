@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react"
 import { toast } from "sonner"
-import { ArrowLeft, ArrowRightLeft, Building2, CheckCheck, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Search, Send, Smile, StickyNote, UserCheck, UserRound, X } from "lucide-react"
+import { ArrowLeft, ArrowRightLeft, Bot, Building2, CheckCheck, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Search, Send, Smile, StickyNote, UserCheck, UserRound, X } from "lucide-react"
 
-import { assumirConversaAction } from "@/app/actions/crm"
+import { alternarBotConversaAction, assumirConversaAction } from "@/app/actions/crm"
 import { createChatInternalNoteAction, loadChatMessagesAction, refreshChatInboxAction } from "@/app/actions/chat"
 import { sendLeadMessageAction, setLeadStatusAction } from "@/app/actions/leads"
 import { saveChatIdentificarAction } from "@/app/actions/users"
@@ -116,6 +116,7 @@ export function ChatInbox({
   const [transferirAberto, setTransferirAberto] = useState(false)
   const [modoEscolhido, setModoComposicao] = useState<"mensagem" | "nota" | "resposta">("mensagem")
   const [assumindo, setAssumindo] = useState(false)
+  const [alterandoBot, setAlterandoBot] = useState(false)
   const [texto, setTexto] = useState("")
   const [seletorEmojiAberto, setSeletorEmojiAberto] = useState(false)
   const [instancia, setInstancia] = useState(instancias[0]?.nome ?? "")
@@ -390,6 +391,20 @@ export function ChatInbox({
       toast.error(resultado.message)
       // Pode ter sido assumida por outra pessoa: recarrega para refletir o estado real.
       await aoTransferir()
+      return
+    }
+    toast.success(resultado.message)
+    await aoTransferir()
+  }
+
+  async function alternarBotAtual(ativo: boolean) {
+    const leadId = conversaAtiva?.id
+    if (!leadId || alterandoBot) return
+    setAlterandoBot(true)
+    const resultado = await alternarBotConversaAction(leadId, ativo)
+    setAlterandoBot(false)
+    if (!resultado.ok) {
+      toast.error(resultado.message)
       return
     }
     toast.success(resultado.message)
@@ -733,6 +748,23 @@ export function ChatInbox({
                             </Badge>
                           ) : null}
                         </div>
+                      ) : null}
+                      {conversaAtiva.bot && permissoes?.podeEnviar ? (
+                        <Button
+                          variant={conversaAtiva.bot.ativo ? "ghost" : "outline"}
+                          size="sm"
+                          className="rounded-full"
+                          disabled={alterandoBot}
+                          title={
+                            conversaAtiva.bot.ativo
+                              ? "O bot responde esta conversa. Clique para pausá-lo."
+                              : `${conversaAtiva.bot.motivo ?? "Bot pausado nesta conversa."} Clique para reativá-lo.`
+                          }
+                          onClick={() => void alternarBotAtual(!conversaAtiva.bot!.ativo)}
+                        >
+                          <Bot className="size-4" />
+                          <span className="hidden sm:inline">{conversaAtiva.bot.ativo ? "Pausar bot" : "Reativar bot"}</span>
+                        </Button>
                       ) : null}
                       {permissoes?.podeAssumir ? (
                         <Button size="sm" className="rounded-full" disabled={assumindo} onClick={() => void assumirConversaAtual()}>

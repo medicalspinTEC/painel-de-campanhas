@@ -7,6 +7,7 @@ import { ICONES, resumoDoNo } from "@/components/features/nocode/node-visuals"
 import { Button } from "@/components/ui/button"
 import {
   alturaDoNo,
+  saidasDoNo,
   NODE_CATALOG,
   NODE_LARGURA,
   posicaoEntrada,
@@ -121,7 +122,7 @@ export function FlowCanvas({
     const minX = Math.min(...nodes.map((n) => n.position.x))
     const minY = Math.min(...nodes.map((n) => n.position.y))
     const maxX = Math.max(...nodes.map((n) => n.position.x + NODE_LARGURA))
-    const maxY = Math.max(...nodes.map((n) => n.position.y + alturaDoNo(n.type)))
+    const maxY = Math.max(...nodes.map((n) => n.position.y + alturaDoNo(n)))
     const margem = 48
     const novo = Math.min(
       1,
@@ -288,7 +289,8 @@ export function FlowCanvas({
         {nodes.map((no) => {
           const def = NODE_CATALOG[no.type]
           const Icone = ICONES[def.icone]
-          const altura = alturaDoNo(no.type)
+          const altura = alturaDoNo(no)
+          const saidas = saidasDoNo(no)
           const selecionado = selecao?.tipo === "no" && selecao.id === no.id
           return (
             <div
@@ -320,7 +322,7 @@ export function FlowCanvas({
                 </span>
               ) : null}
 
-              {def.saidas.map((saida, indice) => (
+              {saidas.map((saida, indice) => (
                 <button
                   key={saida.id}
                   type="button"
@@ -328,7 +330,7 @@ export function FlowCanvas({
                   title={saida.label || "Arraste para conectar"}
                   onPointerDown={(event) => aoPressionarSaida(event, no, saida.id)}
                   className="absolute -right-2 flex size-4 -translate-y-1/2 cursor-crosshair items-center justify-center rounded-full"
-                  style={{ top: (altura * (indice + 1)) / (def.saidas.length + 1) }}
+                  style={{ top: (altura * (indice + 1)) / (saidas.length + 1) }}
                 >
                   <span
                     className={cn(
@@ -342,12 +344,12 @@ export function FlowCanvas({
                   />
                 </button>
               ))}
-              {def.saidas.length > 1
-                ? def.saidas.map((saida, indice) => (
+              {saidas.length > 1
+                ? saidas.map((saida, indice) => (
                     <span
                       key={`rotulo-${saida.id}`}
                       className="pointer-events-none absolute right-3 -translate-y-1/2 text-[10px] font-medium text-muted-foreground"
-                      style={{ top: (altura * (indice + 1)) / (def.saidas.length + 1) }}
+                      style={{ top: (altura * (indice + 1)) / (saidas.length + 1) }}
                     >
                       {saida.label}
                     </span>

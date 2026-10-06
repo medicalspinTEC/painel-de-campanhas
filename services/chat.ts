@@ -1,3 +1,4 @@
+import { listBotsPorLead, type BotConversaInfo } from "@/services/bot-estado"
 import { prisma } from "@/lib/prisma"
 import { workspaceAtualId } from "@/lib/workspace-context"
 import { listAtendimentosPorLead, type ChatAtendimento } from "@/services/crm"
@@ -33,6 +34,11 @@ export interface ChatConversation {
   ultimaMensagem: ChatMessage | null
   /** Plugin CRM: responsável pela conversa. Sempre nulo com o plugin desativado. */
   atendimento: ChatAtendimento | null
+  /**
+   * Plugin CRM: estado do bot nesta conversa. Nulo = o bot nunca interagiu nela (ou o plugin está
+   * desativado). `ativo: false` = pausado porque um humano assumiu; só uma pessoa o reativa.
+   */
+  bot: BotConversaInfo | null
 }
 
 export interface ChatInboxSnapshot {
@@ -184,7 +190,7 @@ export async function getChatInbox(
   // (antes era uma consulta depois da outra).
   const buscarJunto = conversaId && !opcoes.semMensagens ? conversaId : null
 
-  const [leads, ultimas, mensagensAdiantadas, atendimentos] = await Promise.all([
+  const [leads, ultimas, mensagensAdiantadas, atendimentos, bots] = await Promise.all([
     prisma.lead.findMany({
       select: {
         id: true,
@@ -209,6 +215,9 @@ export async function getChatInbox(
     getCrmPluginAtivo()
       .then((ativo) => (ativo ? listAtendimentosPorLead() : null))
       .catch(() => null),
+    getCrmPluginAtivo()
+      .then((ativo) => (ativo ? listBotsPorLead() : null))
+      .catch(() => null),
   ])
 
   const conversas: ChatConversation[] = leads.map((lead) => {
@@ -228,6 +237,7 @@ export async function getChatInbox(
       atualizadoEm: ultimaMensagem ? ultimaMensagem.data : lead.atualizadoEm.toISOString(),
       ultimaMensagem,
       atendimento: atendimentos?.get(lead.id) ?? null,
+      bot: bots?.get(lead.id) ?? null,
     }
   })
   conversas.sort((a, b) => new Date(b.atualizadoEm).getTime() - new Date(a.atualizadoEm).getTime())

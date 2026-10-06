@@ -1,6 +1,19 @@
-import { Ban, GitBranch, MessageSquareReply, Phone, Send, Timer, UserSearch, Webhook, type LucideIcon } from "lucide-react"
+import {
+  Ban,
+  Building2,
+  GitBranch,
+  ListOrdered,
+  MessageCircle,
+  MessageSquareReply,
+  Phone,
+  Send,
+  Timer,
+  UserSearch,
+  Webhook,
+  type LucideIcon,
+} from "lucide-react"
 
-import { NODE_CATALOG, OPERADORES, type FlowNode, type NodeDef } from "@/lib/nocode/catalog"
+import { NODE_CATALOG, opcoesDoMenu, OPERADORES, type FlowNode, type NodeDef } from "@/lib/nocode/catalog"
 
 export const ICONES: Record<NodeDef["icone"], LucideIcon> = {
   Webhook,
@@ -11,6 +24,9 @@ export const ICONES: Record<NodeDef["icone"], LucideIcon> = {
   Send,
   Timer,
   Ban,
+  MessageCircle,
+  ListOrdered,
+  Building2,
 }
 
 /** Linha de resumo exibida no cartão do bloco, no canvas. */
@@ -31,6 +47,14 @@ export function resumoDoNo(no: FlowNode): string {
       return `${Number(cfg.segundos) || 0} s`
     case "enviar_mensagem":
       return String(cfg.texto ?? "").trim() || "(sem mensagem)"
+    case "mensagem_recebida":
+      return "Lead enviou uma mensagem"
+    case "menu": {
+      const total = opcoesDoMenu(cfg).length
+      return `${total} ${total === 1 ? "opção" : "opções"}`
+    }
+    case "transferir_departamento":
+      return String(cfg.departamento ?? "").trim() || "(escolha o departamento)"
     default:
       return NODE_CATALOG[no.type].label
   }

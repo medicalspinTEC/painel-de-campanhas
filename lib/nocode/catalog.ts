@@ -15,6 +15,27 @@ export type NodeType =
   | "enviar_mensagem"
   | "aguardar"
   | "ignorar"
+  // Blocos exclusivos de bots (conversa com o lead no chat).
+  | "mensagem_recebida"
+  | "menu"
+  | "transferir_departamento"
+
+/** "automacao": disparada pelo webhook da Evolution. "bot": responde conversas do chat. */
+export type FlowKind = "automacao" | "bot"
+
+/** Blocos que só fazem sentido num bot (precisam de um lead em conversa). */
+export const BLOCOS_SO_BOT: NodeType[] = ["mensagem_recebida", "menu", "transferir_departamento"]
+/** Blocos de automação que dependem do evento bruto da Evolution e por isso não existem no bot. */
+export const BLOCOS_SO_AUTOMACAO: NodeType[] = ["webhook", "extrair_telefone", "buscar_lead", "registrar_resposta"]
+
+export function blocoPermitido(type: NodeType, kind: FlowKind): boolean {
+  return kind === "bot" ? !BLOCOS_SO_AUTOMACAO.includes(type) : !BLOCOS_SO_BOT.includes(type)
+}
+
+/** Gatilho de cada tipo de fluxo. */
+export function gatilhoDoTipo(kind: FlowKind): NodeType {
+  return kind === "bot" ? "mensagem_recebida" : "webhook"
+}
 
 export type NodeConfig = Record<string, string | number | boolean>
 
@@ -51,7 +72,18 @@ export interface NodeDef {
   descricao: string
   categoria: Categoria
   /** Nome do ícone lucide usado pelo editor. */
-  icone: "Webhook" | "Phone" | "GitBranch" | "UserSearch" | "MessageSquareReply" | "Send" | "Timer" | "Ban"
+  icone:
+    | "Webhook"
+    | "Phone"
+    | "GitBranch"
+    | "UserSearch"
+    | "MessageSquareReply"
+    | "Send"
+    | "Timer"
+    | "Ban"
+    | "MessageCircle"
+    | "ListOrdered"
+    | "Building2"
   /** Classes de cor do ícone (Tailwind). */
   cor: string
   temEntrada: boolean
@@ -218,6 +250,91 @@ export const NODE_CATALOG: Record<NodeType, NodeDef> = {
     campos: [{ key: "segundos", label: "Segundos", kind: "number", placeholder: "5" }],
     padrao: { segundos: 5 },
   },
+  mensagem_recebida: {
+    type: "mensagem_recebida",
+    label: "Mensagem recebida (bot)",
+    descricao: "Inicia o bot quando o lead envia uma mensagem e não há um humano na conversa.",
+    categoria: "Gatilho",
+    icone: "MessageCircle",
+    cor: "bg-violet-500/15 text-violet-600 dark:text-violet-400",
+    temEntrada: false,
+    saidas: [{ id: "main", label: "" }],
+    campos: [
+      {
+        key: "reiniciarAposHoras",
+        label: "Recomeçar após (horas)",
+        kind: "number",
+        placeholder: "12",
+        help: "Quando o lead escreve de novo depois desse tempo, o bot recomeça do início; antes disso ele não repete a resposta. 0 = recomeça a cada mensagem. Um menu sem resposta expira em 24 h.",
+      },
+    ],
+    padrao: { reiniciarAposHoras: 12 },
+  },
+  menu: {
+    type: "menu",
+    label: "Menu de opções",
+    descricao: "Envia uma pergunta com opções numeradas e espera o lead escolher. Cada opção vira uma saída.",
+    categoria: "Ação",
+    icone: "ListOrdered",
+    cor: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400",
+    temEntrada: true,
+    // As saídas reais vêm das opções: ver `saidasDoNo`.
+    saidas: [{ id: "outra", label: "Outra resposta" }],
+    campos: [
+      {
+        key: "texto",
+        label: "Mensagem",
+        kind: "textarea",
+        placeholder: "Olá, {{lead.nome}}! Com qual departamento você quer falar?",
+        help: "As opções são acrescentadas abaixo, numeradas. Aceita variáveis {{...}}.",
+      },
+      {
+        key: "opcoes",
+        label: "Opções (uma por linha)",
+        kind: "textarea",
+        placeholder: "Comercial\nSuporte\nFinanceiro",
+        help: "Até 9 opções. O lead responde com o número ou com o texto da opção.",
+      },
+      {
+        key: "textoInvalido",
+        label: "Resposta inválida",
+        kind: "textarea",
+        placeholder: "Não entendi. Responda com o número de uma das opções.",
+        help: "Enviada junto com o menu quando o lead responde algo que não é uma opção (se a saída “Outra resposta” estiver desconectada).",
+      },
+    ],
+    padrao: {
+      texto: "Olá! Como podemos ajudar? Escolha uma opção:",
+      opcoes: "Comercial\nSuporte",
+      textoInvalido: "Não entendi. Responda com o número de uma das opções.",
+    },
+  },
+  transferir_departamento: {
+    type: "transferir_departamento",
+    label: "Transferir para departamento",
+    descricao: "Coloca a conversa na fila de um departamento (o bot desse departamento passa a atender).",
+    categoria: "Ação",
+    icone: "Building2",
+    cor: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
+    temEntrada: true,
+    saidas: [{ id: "main", label: "" }],
+    campos: [
+      {
+        key: "departamento",
+        label: "Nome do departamento",
+        kind: "text",
+        placeholder: "Comercial",
+        help: "Precisa ser igual ao nome cadastrado em CRM → Departamentos (ignora maiúsculas).",
+      },
+      {
+        key: "pausarBot",
+        label: "Pausar o bot nesta conversa",
+        kind: "switch",
+        help: "Ligado: o bot para de responder até alguém reativá-lo no chat (use para entregar a um humano).",
+      },
+    ],
+    padrao: { departamento: "", pausarBot: false },
+  },
   ignorar: {
     type: "ignorar",
     label: "Encerrar (ignorar)",
@@ -237,18 +354,77 @@ export const ORDEM_CATEGORIAS: Categoria[] = ["Gatilho", "Lógica", "Dados", "A�
 /** Dimensões usadas pelo canvas e para posicionar as conexões. */
 export const NODE_LARGURA = 232
 export const NODE_ALTURA_BASE = 68
-export function alturaDoNo(type: NodeType): number {
-  const saidas = NODE_CATALOG[type].saidas.length
+
+export const MENU_MAX_OPCOES = 9
+
+/** Opções de um bloco Menu: uma por linha, sem linhas vazias nem repetidas. */
+export function opcoesDoMenu(config: NodeConfig): string[] {
+  const vistas = new Set<string>()
+  const lista: string[] = []
+  for (const linha of String(config.opcoes ?? "").split(/\r?\n/)) {
+    const texto = linha.trim()
+    if (!texto || vistas.has(texto.toLowerCase())) continue
+    vistas.add(texto.toLowerCase())
+    lista.push(texto)
+    if (lista.length >= MENU_MAX_OPCOES) break
+  }
+  return lista
+}
+
+const semAcento = (texto: string) =>
+  texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/\s+/g, " ")
+
+/**
+ * Qual opção do menu o lead escolheu: devolve o índice (0 = primeira) ou -1 se a resposta não
+ * corresponde a nenhuma. Aceita o número ("2", "2.", "2)"), o texto exato da opção ou uma frase
+ * que contenha o texto de UMA só opção ("quero o suporte"). Ignora maiúsculas e acentos.
+ */
+export function escolherOpcao(resposta: string, opcoes: string[]): number {
+  const limpo = semAcento(resposta)
+  if (!limpo) return -1
+  const numero = limpo.match(/^(\d{1,2})\s*[-.)]?$/)
+  if (numero) {
+    const n = Number(numero[1])
+    return n >= 1 && n <= opcoes.length ? n - 1 : -1
+  }
+  const exata = opcoes.findIndex((o) => semAcento(o) === limpo)
+  if (exata >= 0) return exata
+  const contidas = opcoes.map((o, i) => (semAcento(o) && limpo.includes(semAcento(o)) ? i : -1)).filter((i) => i >= 0)
+  return contidas.length === 1 ? contidas[0] : -1
+}
+
+/** Saídas reais de um bloco (o Menu tem uma por opção, as demais vêm do catálogo). */
+export function saidasDoNo(no: Pick<FlowNode, "type" | "config">): { id: string; label: string }[] {
+  if (no.type === "menu") {
+    const opcoes = opcoesDoMenu(no.config ?? {})
+    return [
+      ...opcoes.map((texto, i) => ({ id: `op_${i + 1}`, label: `${i + 1}. ${texto.length > 18 ? `${texto.slice(0, 17)}…` : texto}` })),
+      { id: "outra", label: "Outra resposta" },
+    ]
+  }
+  return NODE_CATALOG[no.type].saidas
+}
+
+/** Descarta conexões que saem de uma saída que não existe mais (ex.: opção removida de um menu). */
+export function podarArestas(nodes: FlowNode[], edges: FlowEdge[]): FlowEdge[] {
+  return edges.filter((aresta) => {
+    const origem = nodes.find((n) => n.id === aresta.source)
+    return Boolean(origem) && saidasDoNo(origem!).some((s) => s.id === aresta.sourceHandle)
+  })
+}
+
+export function alturaDoNo(no: Pick<FlowNode, "type" | "config">): number {
+  const saidas = saidasDoNo(no).length
   return saidas > 1 ? NODE_ALTURA_BASE + 24 * (saidas - 1) : NODE_ALTURA_BASE
 }
 export function posicaoSaida(node: FlowNode, handle: string): { x: number; y: number } {
-  const def = NODE_CATALOG[node.type]
-  const indice = Math.max(0, def.saidas.findIndex((s) => s.id === handle))
-  const altura = alturaDoNo(node.type)
-  return { x: node.position.x + NODE_LARGURA, y: node.position.y + (altura * (indice + 1)) / (def.saidas.length + 1) }
+  const saidas = saidasDoNo(node)
+  const indice = Math.max(0, saidas.findIndex((s) => s.id === handle))
+  const altura = alturaDoNo(node)
+  return { x: node.position.x + NODE_LARGURA, y: node.position.y + (altura * (indice + 1)) / (saidas.length + 1) }
 }
 export function posicaoEntrada(node: FlowNode): { x: number; y: number } {
-  return { x: node.position.x, y: node.position.y + alturaDoNo(node.type) / 2 }
+  return { x: node.position.x, y: node.position.y + alturaDoNo(node) / 2 }
 }
 
 export function novoId(prefixo = "n"): string {
@@ -273,24 +449,80 @@ export function criarNo(type: NodeType, position: { x: number; y: number }): Flo
 }
 
 /** Valida o grafo antes de salvar/ativar. Devolve a mensagem de erro ou null. */
-export function validarGrafo(nodes: FlowNode[], edges: FlowEdge[], exigirGatilho = false): string | null {
+export function validarGrafo(
+  nodes: FlowNode[],
+  edges: FlowEdge[],
+  exigirGatilho = false,
+  kind: FlowKind = "automacao",
+): string | null {
   const ids = new Set<string>()
   for (const no of nodes) {
     if (!NODE_CATALOG[no.type]) return `Bloco desconhecido: ${String(no.type)}.`
     if (ids.has(no.id)) return "Há blocos com o mesmo identificador."
     ids.add(no.id)
+    if (!blocoPermitido(no.type, kind)) {
+      return kind === "bot"
+        ? `O bloco “${NODE_CATALOG[no.type].label}” não pode ser usado em bots.`
+        : `O bloco “${NODE_CATALOG[no.type].label}” só pode ser usado em bots.`
+    }
   }
-  if (nodes.filter((n) => n.type === "webhook").length > 1) return "Use apenas um gatilho Webhook por fluxo."
-  if (exigirGatilho && !nodes.some((n) => n.type === "webhook")) return "Adicione um bloco Webhook (gatilho) ao fluxo."
+  const gatilho = gatilhoDoTipo(kind)
+  const rotulo = NODE_CATALOG[gatilho].label
+  if (nodes.filter((n) => n.type === gatilho).length > 1) return `Use apenas um gatilho “${rotulo}” por fluxo.`
+  if (exigirGatilho && !nodes.some((n) => n.type === gatilho)) return `Adicione um bloco “${rotulo}” (gatilho) ao fluxo.`
   for (const aresta of edges) {
     const origem = nodes.find((n) => n.id === aresta.source)
     if (!origem || !ids.has(aresta.target)) return "Há conexões apontando para blocos inexistentes."
-    if (!NODE_CATALOG[origem.type].saidas.some((s) => s.id === aresta.sourceHandle)) return "Conexão com saída inválida."
+    if (!saidasDoNo(origem).some((s) => s.id === aresta.sourceHandle)) return "Conexão com saída inválida."
     const destino = nodes.find((n) => n.id === aresta.target)
     if (destino && !NODE_CATALOG[destino.type].temEntrada) return "O gatilho não pode receber conexões."
   }
+  if (kind === "bot") {
+    for (const no of nodes) {
+      if (no.type !== "menu") continue
+      if (opcoesDoMenu(no.config ?? {}).length < 2) return `O menu “${no.name}” precisa de pelo menos 2 opções.`
+      if (!String(no.config?.texto ?? "").trim()) return `O menu “${no.name}” precisa de uma mensagem.`
+    }
+  }
   return null
 }
+
+/** Modelo inicial de um bot de triagem: pergunta o departamento e responde conforme a opção. */
+export function modeloBotTriagem(): { nodes: FlowNode[]; edges: FlowEdge[] } {
+  const gatilho = criarNo("mensagem_recebida", { x: 40, y: 140 })
+  const menu = criarNo("menu", { x: 340, y: 120 })
+  menu.name = "Escolha o departamento"
+  const comercial = criarNo("enviar_mensagem", { x: 700, y: 20 })
+  comercial.name = "Resposta: Comercial"
+  comercial.config = { telefone: "{{telefone}}", texto: "Certo! Já vamos te passar para o Comercial." }
+  const suporte = criarNo("enviar_mensagem", { x: 700, y: 180 })
+  suporte.name = "Resposta: Suporte"
+  suporte.config = { telefone: "{{telefone}}", texto: "Certo! Já vamos te passar para o Suporte." }
+  const liga = (a: FlowNode, handle: string, b: FlowNode): FlowEdge => ({
+    id: novoId("e"),
+    source: a.id,
+    sourceHandle: handle,
+    target: b.id,
+  })
+  return {
+    nodes: [gatilho, menu, comercial, suporte],
+    edges: [liga(gatilho, "main", menu), liga(menu, "op_1", comercial), liga(menu, "op_2", suporte)],
+  }
+}
+
+/** Modelo inicial de um bot de departamento: uma resposta simples. */
+export function modeloBotDepartamento(): { nodes: FlowNode[]; edges: FlowEdge[] } {
+  const gatilho = criarNo("mensagem_recebida", { x: 40, y: 100 })
+  const resposta = criarNo("enviar_mensagem", { x: 340, y: 80 })
+  resposta.config = { telefone: "{{telefone}}", texto: "Olá, {{lead.nome}}! Recebemos sua mensagem e um atendente vai responder em breve." }
+  return {
+    nodes: [gatilho, resposta],
+    edges: [{ id: novoId("e"), source: gatilho.id, sourceHandle: "main", target: resposta.id }],
+  }
+}
+
+/** Evento de exemplo usado para testar um bot no editor. */
+export const MENSAGEM_EXEMPLO_BOT = { mensagem: "1" }
 
 /** Exemplo de evento da Evolution (messages.upsert) usado nos testes. */
 export const PAYLOAD_EXEMPLO = {

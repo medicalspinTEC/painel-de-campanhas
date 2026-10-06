@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache"
 
 import { assertPoder, assertSecao, ForbiddenError } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
+import { ativarBotDoCrm, criarBotDoCrm, excluirBotDoCrm } from "@/services/bots"
 import {
+  alternarBotConversa,
   createAtendente,
   createDepartamento,
   assumirConversa,
@@ -191,5 +193,71 @@ export async function assumirConversaAction(leadId: string): Promise<CrmActionRe
     return { ok: true, message: "Você assumiu a conversa." }
   } catch (error) {
     return falha(error, "Não foi possível assumir a conversa.")
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Bots (fluxos No Code do tipo "bot")
+// ---------------------------------------------------------------------------
+
+/** Cria um bot de entrada (`departamentoId` nulo) ou de um departamento e devolve o id para abrir no editor. */
+export async function createBotAction(input: {
+  nome: string
+  departamentoId: string | null
+}): Promise<CrmActionResult & { id?: string }> {
+  try {
+    await exigirGestaoCrm()
+    const { id } = await criarBotDoCrm({ nome: input?.nome, departamentoId: input?.departamentoId ?? null })
+    revalidarCrm()
+    revalidatePath("/nocode")
+    return { ok: true, message: "Bot criado. Monte o fluxo no No Code e ative-o quando estiver pronto.", id }
+  } catch (error) {
+    return falha(error, "Não foi possível criar o bot.")
+  }
+}
+
+export async function setBotAtivoAction(id: string, ativo: boolean): Promise<CrmActionResult> {
+  try {
+    await exigirGestaoCrm()
+    if (typeof ativo !== "boolean") return { ok: false, message: "Estado inválido." }
+    const { desativados } = await ativarBotDoCrm(id, ativo)
+    revalidarCrm()
+    revalidatePath("/nocode")
+    if (!ativo) return { ok: true, message: "Bot desativado." }
+    return {
+      ok: true,
+      message: desativados > 0 ? "Bot ativado. O outro bot ativo deste mesmo escopo foi desativado." : "Bot ativado.",
+    }
+  } catch (error) {
+    return falha(error, "Não foi possível alterar o bot.")
+  }
+}
+
+export async function deleteBotAction(id: string): Promise<CrmActionResult> {
+  try {
+    await exigirGestaoCrm()
+    await excluirBotDoCrm(id)
+    revalidarCrm()
+    revalidatePath("/nocode")
+    return { ok: true, message: "Bot excluído." }
+  } catch (error) {
+    return falha(error, "Não foi possível excluir o bot.")
+  }
+}
+
+/**
+ * Liga ou pausa o bot numa conversa específica (botão do chat). Depois que um humano assume, o bot
+ * só volta a responder aquela conversa quando alguém o reativa por aqui.
+ */
+export async function alternarBotConversaAction(leadId: string, ativo: boolean): Promise<CrmActionResult> {
+  try {
+    const usuario = await assertSecao("chat")
+    if (!(await getCrmPluginAtivo())) throw new CrmError("O plugin CRM está desativado.")
+    if (typeof ativo !== "boolean" || !String(leadId ?? "").trim()) return { ok: false, message: "Pedido inválido." }
+    await alternarBotConversa(leadId, ativo, usuario)
+    revalidatePath("/chat")
+    return { ok: true, message: ativo ? "Bot reativado nesta conversa." : "Bot pausado nesta conversa." }
+  } catch (error) {
+    return falha(error, "Não foi possível alterar o bot da conversa.")
   }
 }

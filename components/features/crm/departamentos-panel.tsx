@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { Building2, Pencil, Plus, Power, PowerOff, Trash2 } from "lucide-react"
+import { Bot, Building2, Pencil, Plus, Power, PowerOff, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 import { deleteDepartamentoAction, setDepartamentoAtivoAction } from "@/app/actions/crm"
+import { BotsLista } from "@/components/features/crm/bots-lista"
 import { DepartamentoFormDialog } from "@/components/features/crm/departamento-form-dialog"
 import {
   AlertDialog,
@@ -21,14 +22,18 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
-import type { DepartamentoItem } from "@/services/crm"
+import type { BotItem, DepartamentoItem } from "@/services/crm"
 
 export function DepartamentosPanel({
   departamentos,
+  botsEntrada,
   chatAtivo,
+  podeEditarNoCode,
 }: {
   departamentos: DepartamentoItem[]
+  botsEntrada: BotItem[]
   chatAtivo: boolean
+  podeEditarNoCode: boolean
 }) {
   const [dialogAberto, setDialogAberto] = useState(false)
   const [emEdicao, setEmEdicao] = useState<DepartamentoItem | null>(null)
@@ -67,6 +72,23 @@ export function DepartamentosPanel({
   return (
     <div className="flex flex-col gap-4">
       <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bot className="size-4 text-muted-foreground" aria-hidden="true" />
+            Bot de entrada
+          </CardTitle>
+          <CardDescription>
+            Atende quem ainda não está em nenhum departamento: por exemplo, pergunta com qual departamento o lead quer falar e
+            responde conforme a opção escolhida. Quando um humano assume a conversa, o bot para de responder nela até você
+            reativá-lo no chat.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <BotsLista bots={botsEntrada} departamentoId={null} rotuloEscopo="de entrada" podeEditarNoCode={podeEditarNoCode} />
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-1.5">
             <CardTitle className="flex items-center gap-2">
@@ -104,10 +126,8 @@ export function DepartamentosPanel({
           ) : (
             <ul className="flex flex-col gap-3">
               {departamentos.map((departamento) => (
-                <li
-                  key={departamento.id}
-                  className="flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between"
-                >
+                <li key={departamento.id} className="flex flex-col gap-3 rounded-xl border p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-w-0 flex-col gap-1.5">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="truncate font-medium">{departamento.nome}</span>
@@ -135,6 +155,19 @@ export function DepartamentosPanel({
                       Excluir
                     </Button>
                   </div>
+                  </div>
+                  <div className="flex flex-col gap-2 border-t pt-3">
+                    <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                      <Bot className="size-3.5" aria-hidden="true" />
+                      Bots e fluxos de resposta
+                    </p>
+                    <BotsLista
+                      bots={departamento.bots}
+                      departamentoId={departamento.id}
+                      rotuloEscopo={`do departamento ${departamento.nome}`}
+                      podeEditarNoCode={podeEditarNoCode}
+                    />
+                  </div>
                 </li>
               ))}
             </ul>
@@ -151,6 +184,10 @@ export function DepartamentosPanel({
             <AlertDialogDescription>
               {excluindo
                 ? `"${excluindo.nome}" será removido e os atendentes deixam de pertencer a ele.${
+                    excluindo.bots.length > 0
+                      ? ` ${excluindo.bots.length === 1 ? "O bot dele será desativado" : "Os bots dele serão desativados"} (continuam no No Code, sem departamento).`
+                      : ""
+                  }${
                     excluindo.totalConversas > 0
                       ? ` ${excluindo.totalConversas} ${excluindo.totalConversas === 1 ? "conversa ficará" : "conversas ficarão"} sem departamento.`
                       : ""

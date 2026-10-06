@@ -124,6 +124,14 @@ export type Instance = $Result.DefaultSelection<Prisma.$InstancePayload>
  */
 export type NoCodeFlow = $Result.DefaultSelection<Prisma.$NoCodeFlowPayload>
 /**
+ * Model BotConversa
+ * Estado do bot numa conversa (no máximo uma linha por lead): se o bot está ligado,
+ * em que bloco ele aguarda a resposta do lead e quando houve a última interação.
+ * Quando um humano assume a conversa o bot é pausado (`botAtivo = false`) e só volta
+ * quando alguém o reativa para ESSA conversa.
+ */
+export type BotConversa = $Result.DefaultSelection<Prisma.$BotConversaPayload>
+/**
  * Model NoCodeExecution
  * Histórico de execuções dos fluxos (uma por evento recebido ou teste manual).
  */
@@ -602,6 +610,16 @@ export class PrismaClient<
     * ```
     */
   get noCodeFlow(): Prisma.NoCodeFlowDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.botConversa`: Exposes CRUD operations for the **BotConversa** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more BotConversas
+    * const botConversas = await prisma.botConversa.findMany()
+    * ```
+    */
+  get botConversa(): Prisma.BotConversaDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.noCodeExecution`: Exposes CRUD operations for the **NoCodeExecution** model.
@@ -1162,6 +1180,7 @@ export namespace Prisma {
     InboundEvent: 'InboundEvent',
     Instance: 'Instance',
     NoCodeFlow: 'NoCodeFlow',
+    BotConversa: 'BotConversa',
     NoCodeExecution: 'NoCodeExecution',
     BackupConfig: 'BackupConfig',
     BackupExecucao: 'BackupExecucao',
@@ -1190,7 +1209,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia"
+      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "botConversa" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2600,6 +2619,80 @@ export namespace Prisma {
           }
         }
       }
+      BotConversa: {
+        payload: Prisma.$BotConversaPayload<ExtArgs>
+        fields: Prisma.BotConversaFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.BotConversaFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BotConversaPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.BotConversaFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BotConversaPayload>
+          }
+          findFirst: {
+            args: Prisma.BotConversaFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BotConversaPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.BotConversaFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BotConversaPayload>
+          }
+          findMany: {
+            args: Prisma.BotConversaFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BotConversaPayload>[]
+          }
+          create: {
+            args: Prisma.BotConversaCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BotConversaPayload>
+          }
+          createMany: {
+            args: Prisma.BotConversaCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.BotConversaCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BotConversaPayload>[]
+          }
+          delete: {
+            args: Prisma.BotConversaDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BotConversaPayload>
+          }
+          update: {
+            args: Prisma.BotConversaUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BotConversaPayload>
+          }
+          deleteMany: {
+            args: Prisma.BotConversaDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.BotConversaUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.BotConversaUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BotConversaPayload>[]
+          }
+          upsert: {
+            args: Prisma.BotConversaUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BotConversaPayload>
+          }
+          aggregate: {
+            args: Prisma.BotConversaAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBotConversa>
+          }
+          groupBy: {
+            args: Prisma.BotConversaGroupByArgs<ExtArgs>
+            result: $Utils.Optional<BotConversaGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.BotConversaCountArgs<ExtArgs>
+            result: $Utils.Optional<BotConversaCountAggregateOutputType> | number
+          }
+        }
+      }
       NoCodeExecution: {
         payload: Prisma.$NoCodeExecutionPayload<ExtArgs>
         fields: Prisma.NoCodeExecutionFieldRefs
@@ -3455,6 +3548,7 @@ export namespace Prisma {
     inboundEvent?: InboundEventOmit
     instance?: InstanceOmit
     noCodeFlow?: NoCodeFlowOmit
+    botConversa?: BotConversaOmit
     noCodeExecution?: NoCodeExecutionOmit
     backupConfig?: BackupConfigOmit
     backupExecucao?: BackupExecucaoOmit
@@ -3702,10 +3796,12 @@ export namespace Prisma {
 
   export type NoCodeFlowCountOutputType = {
     execucoes: number
+    conversasBot: number
   }
 
   export type NoCodeFlowCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     execucoes?: boolean | NoCodeFlowCountOutputTypeCountExecucoesArgs
+    conversasBot?: boolean | NoCodeFlowCountOutputTypeCountConversasBotArgs
   }
 
   // Custom InputTypes
@@ -3726,6 +3822,13 @@ export namespace Prisma {
     where?: NoCodeExecutionWhereInput
   }
 
+  /**
+   * NoCodeFlowCountOutputType without action
+   */
+  export type NoCodeFlowCountOutputTypeCountConversasBotArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BotConversaWhereInput
+  }
+
 
   /**
    * Count Type DepartamentoCountOutputType
@@ -3734,11 +3837,13 @@ export namespace Prisma {
   export type DepartamentoCountOutputType = {
     atendentes: number
     atendimentos: number
+    bots: number
   }
 
   export type DepartamentoCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     atendentes?: boolean | DepartamentoCountOutputTypeCountAtendentesArgs
     atendimentos?: boolean | DepartamentoCountOutputTypeCountAtendimentosArgs
+    bots?: boolean | DepartamentoCountOutputTypeCountBotsArgs
   }
 
   // Custom InputTypes
@@ -3764,6 +3869,13 @@ export namespace Prisma {
    */
   export type DepartamentoCountOutputTypeCountAtendimentosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: LeadAtendimentoWhereInput
+  }
+
+  /**
+   * DepartamentoCountOutputType without action
+   */
+  export type DepartamentoCountOutputTypeCountBotsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NoCodeFlowWhereInput
   }
 
 
@@ -4070,6 +4182,7 @@ export namespace Prisma {
     notasInternas?: boolean | Lead$notasInternasArgs<ExtArgs>
     atendimento?: boolean | Lead$atendimentoArgs<ExtArgs>
     transferencias?: boolean | Lead$transferenciasArgs<ExtArgs>
+    botConversa?: boolean | Lead$botConversaArgs<ExtArgs>
     _count?: boolean | LeadCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["lead"]>
 
@@ -4141,6 +4254,7 @@ export namespace Prisma {
     notasInternas?: boolean | Lead$notasInternasArgs<ExtArgs>
     atendimento?: boolean | Lead$atendimentoArgs<ExtArgs>
     transferencias?: boolean | Lead$transferenciasArgs<ExtArgs>
+    botConversa?: boolean | Lead$botConversaArgs<ExtArgs>
     _count?: boolean | LeadCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type LeadIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4163,6 +4277,10 @@ export namespace Prisma {
        */
       atendimento: Prisma.$LeadAtendimentoPayload<ExtArgs> | null
       transferencias: Prisma.$AtendimentoTransferenciaPayload<ExtArgs>[]
+      /**
+       * Estado do bot nesta conversa (pausa quando um humano assume).
+       */
+      botConversa: Prisma.$BotConversaPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -4585,6 +4703,7 @@ export namespace Prisma {
     notasInternas<T extends Lead$notasInternasArgs<ExtArgs> = {}>(args?: Subset<T, Lead$notasInternasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatInternalNotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     atendimento<T extends Lead$atendimentoArgs<ExtArgs> = {}>(args?: Subset<T, Lead$atendimentoArgs<ExtArgs>>): Prisma__LeadAtendimentoClient<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     transferencias<T extends Lead$transferenciasArgs<ExtArgs> = {}>(args?: Subset<T, Lead$transferenciasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendimentoTransferenciaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    botConversa<T extends Lead$botConversaArgs<ExtArgs> = {}>(args?: Subset<T, Lead$botConversaArgs<ExtArgs>>): Prisma__BotConversaClient<$Result.GetResult<Prisma.$BotConversaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5181,6 +5300,25 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AtendimentoTransferenciaScalarFieldEnum | AtendimentoTransferenciaScalarFieldEnum[]
+  }
+
+  /**
+   * Lead.botConversa
+   */
+  export type Lead$botConversaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BotConversa
+     */
+    select?: BotConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BotConversa
+     */
+    omit?: BotConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BotConversaInclude<ExtArgs> | null
+    where?: BotConversaWhereInput
   }
 
   /**
@@ -23943,6 +24081,9 @@ export namespace Prisma {
     execWebhookAtivo: boolean | null
     execWebhookUrl: string | null
     execWebhookSegredo: string | null
+    tipo: string | null
+    botEntrada: boolean | null
+    departamentoId: string | null
     criadoEm: Date | null
     atualizadoEm: Date | null
   }
@@ -23956,6 +24097,9 @@ export namespace Prisma {
     execWebhookAtivo: boolean | null
     execWebhookUrl: string | null
     execWebhookSegredo: string | null
+    tipo: string | null
+    botEntrada: boolean | null
+    departamentoId: string | null
     criadoEm: Date | null
     atualizadoEm: Date | null
   }
@@ -23969,6 +24113,9 @@ export namespace Prisma {
     execWebhookAtivo: number
     execWebhookUrl: number
     execWebhookSegredo: number
+    tipo: number
+    botEntrada: number
+    departamentoId: number
     nodes: number
     edges: number
     criadoEm: number
@@ -23986,6 +24133,9 @@ export namespace Prisma {
     execWebhookAtivo?: true
     execWebhookUrl?: true
     execWebhookSegredo?: true
+    tipo?: true
+    botEntrada?: true
+    departamentoId?: true
     criadoEm?: true
     atualizadoEm?: true
   }
@@ -23999,6 +24149,9 @@ export namespace Prisma {
     execWebhookAtivo?: true
     execWebhookUrl?: true
     execWebhookSegredo?: true
+    tipo?: true
+    botEntrada?: true
+    departamentoId?: true
     criadoEm?: true
     atualizadoEm?: true
   }
@@ -24012,6 +24165,9 @@ export namespace Prisma {
     execWebhookAtivo?: true
     execWebhookUrl?: true
     execWebhookSegredo?: true
+    tipo?: true
+    botEntrada?: true
+    departamentoId?: true
     nodes?: true
     edges?: true
     criadoEm?: true
@@ -24100,6 +24256,9 @@ export namespace Prisma {
     execWebhookAtivo: boolean
     execWebhookUrl: string | null
     execWebhookSegredo: string | null
+    tipo: string
+    botEntrada: boolean
+    departamentoId: string | null
     nodes: JsonValue
     edges: JsonValue
     criadoEm: Date
@@ -24132,11 +24291,16 @@ export namespace Prisma {
     execWebhookAtivo?: boolean
     execWebhookUrl?: boolean
     execWebhookSegredo?: boolean
+    tipo?: boolean
+    botEntrada?: boolean
+    departamentoId?: boolean
     nodes?: boolean
     edges?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
+    departamento?: boolean | NoCodeFlow$departamentoArgs<ExtArgs>
     execucoes?: boolean | NoCodeFlow$execucoesArgs<ExtArgs>
+    conversasBot?: boolean | NoCodeFlow$conversasBotArgs<ExtArgs>
     _count?: boolean | NoCodeFlowCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["noCodeFlow"]>
 
@@ -24149,10 +24313,14 @@ export namespace Prisma {
     execWebhookAtivo?: boolean
     execWebhookUrl?: boolean
     execWebhookSegredo?: boolean
+    tipo?: boolean
+    botEntrada?: boolean
+    departamentoId?: boolean
     nodes?: boolean
     edges?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
+    departamento?: boolean | NoCodeFlow$departamentoArgs<ExtArgs>
   }, ExtArgs["result"]["noCodeFlow"]>
 
   export type NoCodeFlowSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -24164,10 +24332,14 @@ export namespace Prisma {
     execWebhookAtivo?: boolean
     execWebhookUrl?: boolean
     execWebhookSegredo?: boolean
+    tipo?: boolean
+    botEntrada?: boolean
+    departamentoId?: boolean
     nodes?: boolean
     edges?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
+    departamento?: boolean | NoCodeFlow$departamentoArgs<ExtArgs>
   }, ExtArgs["result"]["noCodeFlow"]>
 
   export type NoCodeFlowSelectScalar = {
@@ -24179,24 +24351,35 @@ export namespace Prisma {
     execWebhookAtivo?: boolean
     execWebhookUrl?: boolean
     execWebhookSegredo?: boolean
+    tipo?: boolean
+    botEntrada?: boolean
+    departamentoId?: boolean
     nodes?: boolean
     edges?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
   }
 
-  export type NoCodeFlowOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "ativo" | "sistema" | "execWebhookAtivo" | "execWebhookUrl" | "execWebhookSegredo" | "nodes" | "edges" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["noCodeFlow"]>
+  export type NoCodeFlowOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "ativo" | "sistema" | "execWebhookAtivo" | "execWebhookUrl" | "execWebhookSegredo" | "tipo" | "botEntrada" | "departamentoId" | "nodes" | "edges" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["noCodeFlow"]>
   export type NoCodeFlowInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    departamento?: boolean | NoCodeFlow$departamentoArgs<ExtArgs>
     execucoes?: boolean | NoCodeFlow$execucoesArgs<ExtArgs>
+    conversasBot?: boolean | NoCodeFlow$conversasBotArgs<ExtArgs>
     _count?: boolean | NoCodeFlowCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type NoCodeFlowIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type NoCodeFlowIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type NoCodeFlowIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    departamento?: boolean | NoCodeFlow$departamentoArgs<ExtArgs>
+  }
+  export type NoCodeFlowIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    departamento?: boolean | NoCodeFlow$departamentoArgs<ExtArgs>
+  }
 
   export type $NoCodeFlowPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "NoCodeFlow"
     objects: {
+      departamento: Prisma.$DepartamentoPayload<ExtArgs> | null
       execucoes: Prisma.$NoCodeExecutionPayload<ExtArgs>[]
+      conversasBot: Prisma.$BotConversaPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -24220,6 +24403,19 @@ export namespace Prisma {
        * Segredo opcional: assina o corpo enviado (HMAC-SHA256 no header X-Execution-Signature).
        */
       execWebhookSegredo: string | null
+      /**
+       * "automacao" (padrão) | "bot". Bots respondem conversas do chat (ver `services/bots.ts`).
+       */
+      tipo: string
+      /**
+       * Bot de entrada (triagem): atende quem ainda não está em nenhum departamento.
+       */
+      botEntrada: boolean
+      /**
+       * Bot de departamento: atende as conversas desse departamento enquanto não houver humano.
+       * Se o departamento for excluído o bot fica órfão (sem departamento e sem ser de entrada): nunca roda.
+       */
+      departamentoId: string | null
       /**
        * Nós do canvas: [{ id, type, name, position: {x,y}, config }].
        */
@@ -24624,7 +24820,9 @@ export namespace Prisma {
    */
   export interface Prisma__NoCodeFlowClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    departamento<T extends NoCodeFlow$departamentoArgs<ExtArgs> = {}>(args?: Subset<T, NoCodeFlow$departamentoArgs<ExtArgs>>): Prisma__DepartamentoClient<$Result.GetResult<Prisma.$DepartamentoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     execucoes<T extends NoCodeFlow$execucoesArgs<ExtArgs> = {}>(args?: Subset<T, NoCodeFlow$execucoesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NoCodeExecutionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    conversasBot<T extends NoCodeFlow$conversasBotArgs<ExtArgs> = {}>(args?: Subset<T, NoCodeFlow$conversasBotArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BotConversaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -24662,6 +24860,9 @@ export namespace Prisma {
     readonly execWebhookAtivo: FieldRef<"NoCodeFlow", 'Boolean'>
     readonly execWebhookUrl: FieldRef<"NoCodeFlow", 'String'>
     readonly execWebhookSegredo: FieldRef<"NoCodeFlow", 'String'>
+    readonly tipo: FieldRef<"NoCodeFlow", 'String'>
+    readonly botEntrada: FieldRef<"NoCodeFlow", 'Boolean'>
+    readonly departamentoId: FieldRef<"NoCodeFlow", 'String'>
     readonly nodes: FieldRef<"NoCodeFlow", 'Json'>
     readonly edges: FieldRef<"NoCodeFlow", 'Json'>
     readonly criadoEm: FieldRef<"NoCodeFlow", 'DateTime'>
@@ -24915,6 +25116,10 @@ export namespace Prisma {
      */
     data: NoCodeFlowCreateManyInput | NoCodeFlowCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeFlowIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -24985,6 +25190,10 @@ export namespace Prisma {
      * Limit how many NoCodeFlows to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeFlowIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -25054,6 +25263,25 @@ export namespace Prisma {
   }
 
   /**
+   * NoCodeFlow.departamento
+   */
+  export type NoCodeFlow$departamentoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Departamento
+     */
+    select?: DepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Departamento
+     */
+    omit?: DepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartamentoInclude<ExtArgs> | null
+    where?: DepartamentoWhereInput
+  }
+
+  /**
    * NoCodeFlow.execucoes
    */
   export type NoCodeFlow$execucoesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -25078,6 +25306,30 @@ export namespace Prisma {
   }
 
   /**
+   * NoCodeFlow.conversasBot
+   */
+  export type NoCodeFlow$conversasBotArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BotConversa
+     */
+    select?: BotConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BotConversa
+     */
+    omit?: BotConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BotConversaInclude<ExtArgs> | null
+    where?: BotConversaWhereInput
+    orderBy?: BotConversaOrderByWithRelationInput | BotConversaOrderByWithRelationInput[]
+    cursor?: BotConversaWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BotConversaScalarFieldEnum | BotConversaScalarFieldEnum[]
+  }
+
+  /**
    * NoCodeFlow without action
    */
   export type NoCodeFlowDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -25093,6 +25345,1199 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: NoCodeFlowInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model BotConversa
+   */
+
+  export type AggregateBotConversa = {
+    _count: BotConversaCountAggregateOutputType | null
+    _avg: BotConversaAvgAggregateOutputType | null
+    _sum: BotConversaSumAggregateOutputType | null
+    _min: BotConversaMinAggregateOutputType | null
+    _max: BotConversaMaxAggregateOutputType | null
+  }
+
+  export type BotConversaAvgAggregateOutputType = {
+    tentativas: number | null
+  }
+
+  export type BotConversaSumAggregateOutputType = {
+    tentativas: number | null
+  }
+
+  export type BotConversaMinAggregateOutputType = {
+    leadId: string | null
+    botAtivo: boolean | null
+    pausadoMotivo: string | null
+    pausadoEm: Date | null
+    flowId: string | null
+    aguardandoNoId: string | null
+    tentativas: number | null
+    ultimaInteracaoEm: Date | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type BotConversaMaxAggregateOutputType = {
+    leadId: string | null
+    botAtivo: boolean | null
+    pausadoMotivo: string | null
+    pausadoEm: Date | null
+    flowId: string | null
+    aguardandoNoId: string | null
+    tentativas: number | null
+    ultimaInteracaoEm: Date | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type BotConversaCountAggregateOutputType = {
+    leadId: number
+    botAtivo: number
+    pausadoMotivo: number
+    pausadoEm: number
+    flowId: number
+    aguardandoNoId: number
+    tentativas: number
+    ultimaInteracaoEm: number
+    criadoEm: number
+    atualizadoEm: number
+    _all: number
+  }
+
+
+  export type BotConversaAvgAggregateInputType = {
+    tentativas?: true
+  }
+
+  export type BotConversaSumAggregateInputType = {
+    tentativas?: true
+  }
+
+  export type BotConversaMinAggregateInputType = {
+    leadId?: true
+    botAtivo?: true
+    pausadoMotivo?: true
+    pausadoEm?: true
+    flowId?: true
+    aguardandoNoId?: true
+    tentativas?: true
+    ultimaInteracaoEm?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type BotConversaMaxAggregateInputType = {
+    leadId?: true
+    botAtivo?: true
+    pausadoMotivo?: true
+    pausadoEm?: true
+    flowId?: true
+    aguardandoNoId?: true
+    tentativas?: true
+    ultimaInteracaoEm?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type BotConversaCountAggregateInputType = {
+    leadId?: true
+    botAtivo?: true
+    pausadoMotivo?: true
+    pausadoEm?: true
+    flowId?: true
+    aguardandoNoId?: true
+    tentativas?: true
+    ultimaInteracaoEm?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    _all?: true
+  }
+
+  export type BotConversaAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BotConversa to aggregate.
+     */
+    where?: BotConversaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BotConversas to fetch.
+     */
+    orderBy?: BotConversaOrderByWithRelationInput | BotConversaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: BotConversaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BotConversas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BotConversas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned BotConversas
+    **/
+    _count?: true | BotConversaCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: BotConversaAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: BotConversaSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: BotConversaMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: BotConversaMaxAggregateInputType
+  }
+
+  export type GetBotConversaAggregateType<T extends BotConversaAggregateArgs> = {
+        [P in keyof T & keyof AggregateBotConversa]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateBotConversa[P]>
+      : GetScalarType<T[P], AggregateBotConversa[P]>
+  }
+
+
+
+
+  export type BotConversaGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BotConversaWhereInput
+    orderBy?: BotConversaOrderByWithAggregationInput | BotConversaOrderByWithAggregationInput[]
+    by: BotConversaScalarFieldEnum[] | BotConversaScalarFieldEnum
+    having?: BotConversaScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: BotConversaCountAggregateInputType | true
+    _avg?: BotConversaAvgAggregateInputType
+    _sum?: BotConversaSumAggregateInputType
+    _min?: BotConversaMinAggregateInputType
+    _max?: BotConversaMaxAggregateInputType
+  }
+
+  export type BotConversaGroupByOutputType = {
+    leadId: string
+    botAtivo: boolean
+    pausadoMotivo: string | null
+    pausadoEm: Date | null
+    flowId: string | null
+    aguardandoNoId: string | null
+    tentativas: number
+    ultimaInteracaoEm: Date
+    criadoEm: Date
+    atualizadoEm: Date
+    _count: BotConversaCountAggregateOutputType | null
+    _avg: BotConversaAvgAggregateOutputType | null
+    _sum: BotConversaSumAggregateOutputType | null
+    _min: BotConversaMinAggregateOutputType | null
+    _max: BotConversaMaxAggregateOutputType | null
+  }
+
+  type GetBotConversaGroupByPayload<T extends BotConversaGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<BotConversaGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof BotConversaGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], BotConversaGroupByOutputType[P]>
+            : GetScalarType<T[P], BotConversaGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type BotConversaSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    leadId?: boolean
+    botAtivo?: boolean
+    pausadoMotivo?: boolean
+    pausadoEm?: boolean
+    flowId?: boolean
+    aguardandoNoId?: boolean
+    tentativas?: boolean
+    ultimaInteracaoEm?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    flow?: boolean | BotConversa$flowArgs<ExtArgs>
+  }, ExtArgs["result"]["botConversa"]>
+
+  export type BotConversaSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    leadId?: boolean
+    botAtivo?: boolean
+    pausadoMotivo?: boolean
+    pausadoEm?: boolean
+    flowId?: boolean
+    aguardandoNoId?: boolean
+    tentativas?: boolean
+    ultimaInteracaoEm?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    flow?: boolean | BotConversa$flowArgs<ExtArgs>
+  }, ExtArgs["result"]["botConversa"]>
+
+  export type BotConversaSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    leadId?: boolean
+    botAtivo?: boolean
+    pausadoMotivo?: boolean
+    pausadoEm?: boolean
+    flowId?: boolean
+    aguardandoNoId?: boolean
+    tentativas?: boolean
+    ultimaInteracaoEm?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    flow?: boolean | BotConversa$flowArgs<ExtArgs>
+  }, ExtArgs["result"]["botConversa"]>
+
+  export type BotConversaSelectScalar = {
+    leadId?: boolean
+    botAtivo?: boolean
+    pausadoMotivo?: boolean
+    pausadoEm?: boolean
+    flowId?: boolean
+    aguardandoNoId?: boolean
+    tentativas?: boolean
+    ultimaInteracaoEm?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }
+
+  export type BotConversaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"leadId" | "botAtivo" | "pausadoMotivo" | "pausadoEm" | "flowId" | "aguardandoNoId" | "tentativas" | "ultimaInteracaoEm" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["botConversa"]>
+  export type BotConversaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    flow?: boolean | BotConversa$flowArgs<ExtArgs>
+  }
+  export type BotConversaIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    flow?: boolean | BotConversa$flowArgs<ExtArgs>
+  }
+  export type BotConversaIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    flow?: boolean | BotConversa$flowArgs<ExtArgs>
+  }
+
+  export type $BotConversaPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "BotConversa"
+    objects: {
+      lead: Prisma.$LeadPayload<ExtArgs>
+      flow: Prisma.$NoCodeFlowPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      leadId: string
+      botAtivo: boolean
+      /**
+       * Por que o bot foi pausado (ex.: "Conversa assumida por Fulano").
+       */
+      pausadoMotivo: string | null
+      pausadoEm: Date | null
+      /**
+       * Bot que está conduzindo a conversa e o bloco (menu) em que espera a resposta do lead.
+       */
+      flowId: string | null
+      aguardandoNoId: string | null
+      /**
+       * Respostas inválidas seguidas ao menu atual.
+       */
+      tentativas: number
+      ultimaInteracaoEm: Date
+      criadoEm: Date
+      atualizadoEm: Date
+    }, ExtArgs["result"]["botConversa"]>
+    composites: {}
+  }
+
+  type BotConversaGetPayload<S extends boolean | null | undefined | BotConversaDefaultArgs> = $Result.GetResult<Prisma.$BotConversaPayload, S>
+
+  type BotConversaCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<BotConversaFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: BotConversaCountAggregateInputType | true
+    }
+
+  export interface BotConversaDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['BotConversa'], meta: { name: 'BotConversa' } }
+    /**
+     * Find zero or one BotConversa that matches the filter.
+     * @param {BotConversaFindUniqueArgs} args - Arguments to find a BotConversa
+     * @example
+     * // Get one BotConversa
+     * const botConversa = await prisma.botConversa.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends BotConversaFindUniqueArgs>(args: SelectSubset<T, BotConversaFindUniqueArgs<ExtArgs>>): Prisma__BotConversaClient<$Result.GetResult<Prisma.$BotConversaPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one BotConversa that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {BotConversaFindUniqueOrThrowArgs} args - Arguments to find a BotConversa
+     * @example
+     * // Get one BotConversa
+     * const botConversa = await prisma.botConversa.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends BotConversaFindUniqueOrThrowArgs>(args: SelectSubset<T, BotConversaFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BotConversaClient<$Result.GetResult<Prisma.$BotConversaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BotConversa that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BotConversaFindFirstArgs} args - Arguments to find a BotConversa
+     * @example
+     * // Get one BotConversa
+     * const botConversa = await prisma.botConversa.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends BotConversaFindFirstArgs>(args?: SelectSubset<T, BotConversaFindFirstArgs<ExtArgs>>): Prisma__BotConversaClient<$Result.GetResult<Prisma.$BotConversaPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BotConversa that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BotConversaFindFirstOrThrowArgs} args - Arguments to find a BotConversa
+     * @example
+     * // Get one BotConversa
+     * const botConversa = await prisma.botConversa.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends BotConversaFindFirstOrThrowArgs>(args?: SelectSubset<T, BotConversaFindFirstOrThrowArgs<ExtArgs>>): Prisma__BotConversaClient<$Result.GetResult<Prisma.$BotConversaPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more BotConversas that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BotConversaFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all BotConversas
+     * const botConversas = await prisma.botConversa.findMany()
+     * 
+     * // Get first 10 BotConversas
+     * const botConversas = await prisma.botConversa.findMany({ take: 10 })
+     * 
+     * // Only select the `leadId`
+     * const botConversaWithLeadIdOnly = await prisma.botConversa.findMany({ select: { leadId: true } })
+     * 
+     */
+    findMany<T extends BotConversaFindManyArgs>(args?: SelectSubset<T, BotConversaFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BotConversaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a BotConversa.
+     * @param {BotConversaCreateArgs} args - Arguments to create a BotConversa.
+     * @example
+     * // Create one BotConversa
+     * const BotConversa = await prisma.botConversa.create({
+     *   data: {
+     *     // ... data to create a BotConversa
+     *   }
+     * })
+     * 
+     */
+    create<T extends BotConversaCreateArgs>(args: SelectSubset<T, BotConversaCreateArgs<ExtArgs>>): Prisma__BotConversaClient<$Result.GetResult<Prisma.$BotConversaPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many BotConversas.
+     * @param {BotConversaCreateManyArgs} args - Arguments to create many BotConversas.
+     * @example
+     * // Create many BotConversas
+     * const botConversa = await prisma.botConversa.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends BotConversaCreateManyArgs>(args?: SelectSubset<T, BotConversaCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many BotConversas and returns the data saved in the database.
+     * @param {BotConversaCreateManyAndReturnArgs} args - Arguments to create many BotConversas.
+     * @example
+     * // Create many BotConversas
+     * const botConversa = await prisma.botConversa.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many BotConversas and only return the `leadId`
+     * const botConversaWithLeadIdOnly = await prisma.botConversa.createManyAndReturn({
+     *   select: { leadId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends BotConversaCreateManyAndReturnArgs>(args?: SelectSubset<T, BotConversaCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BotConversaPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a BotConversa.
+     * @param {BotConversaDeleteArgs} args - Arguments to delete one BotConversa.
+     * @example
+     * // Delete one BotConversa
+     * const BotConversa = await prisma.botConversa.delete({
+     *   where: {
+     *     // ... filter to delete one BotConversa
+     *   }
+     * })
+     * 
+     */
+    delete<T extends BotConversaDeleteArgs>(args: SelectSubset<T, BotConversaDeleteArgs<ExtArgs>>): Prisma__BotConversaClient<$Result.GetResult<Prisma.$BotConversaPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one BotConversa.
+     * @param {BotConversaUpdateArgs} args - Arguments to update one BotConversa.
+     * @example
+     * // Update one BotConversa
+     * const botConversa = await prisma.botConversa.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends BotConversaUpdateArgs>(args: SelectSubset<T, BotConversaUpdateArgs<ExtArgs>>): Prisma__BotConversaClient<$Result.GetResult<Prisma.$BotConversaPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more BotConversas.
+     * @param {BotConversaDeleteManyArgs} args - Arguments to filter BotConversas to delete.
+     * @example
+     * // Delete a few BotConversas
+     * const { count } = await prisma.botConversa.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends BotConversaDeleteManyArgs>(args?: SelectSubset<T, BotConversaDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BotConversas.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BotConversaUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many BotConversas
+     * const botConversa = await prisma.botConversa.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends BotConversaUpdateManyArgs>(args: SelectSubset<T, BotConversaUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BotConversas and returns the data updated in the database.
+     * @param {BotConversaUpdateManyAndReturnArgs} args - Arguments to update many BotConversas.
+     * @example
+     * // Update many BotConversas
+     * const botConversa = await prisma.botConversa.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more BotConversas and only return the `leadId`
+     * const botConversaWithLeadIdOnly = await prisma.botConversa.updateManyAndReturn({
+     *   select: { leadId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends BotConversaUpdateManyAndReturnArgs>(args: SelectSubset<T, BotConversaUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BotConversaPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one BotConversa.
+     * @param {BotConversaUpsertArgs} args - Arguments to update or create a BotConversa.
+     * @example
+     * // Update or create a BotConversa
+     * const botConversa = await prisma.botConversa.upsert({
+     *   create: {
+     *     // ... data to create a BotConversa
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the BotConversa we want to update
+     *   }
+     * })
+     */
+    upsert<T extends BotConversaUpsertArgs>(args: SelectSubset<T, BotConversaUpsertArgs<ExtArgs>>): Prisma__BotConversaClient<$Result.GetResult<Prisma.$BotConversaPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of BotConversas.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BotConversaCountArgs} args - Arguments to filter BotConversas to count.
+     * @example
+     * // Count the number of BotConversas
+     * const count = await prisma.botConversa.count({
+     *   where: {
+     *     // ... the filter for the BotConversas we want to count
+     *   }
+     * })
+    **/
+    count<T extends BotConversaCountArgs>(
+      args?: Subset<T, BotConversaCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], BotConversaCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a BotConversa.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BotConversaAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends BotConversaAggregateArgs>(args: Subset<T, BotConversaAggregateArgs>): Prisma.PrismaPromise<GetBotConversaAggregateType<T>>
+
+    /**
+     * Group by BotConversa.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BotConversaGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends BotConversaGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: BotConversaGroupByArgs['orderBy'] }
+        : { orderBy?: BotConversaGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, BotConversaGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBotConversaGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the BotConversa model
+   */
+  readonly fields: BotConversaFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for BotConversa.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__BotConversaClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    lead<T extends LeadDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LeadDefaultArgs<ExtArgs>>): Prisma__LeadClient<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    flow<T extends BotConversa$flowArgs<ExtArgs> = {}>(args?: Subset<T, BotConversa$flowArgs<ExtArgs>>): Prisma__NoCodeFlowClient<$Result.GetResult<Prisma.$NoCodeFlowPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the BotConversa model
+   */
+  interface BotConversaFieldRefs {
+    readonly leadId: FieldRef<"BotConversa", 'String'>
+    readonly botAtivo: FieldRef<"BotConversa", 'Boolean'>
+    readonly pausadoMotivo: FieldRef<"BotConversa", 'String'>
+    readonly pausadoEm: FieldRef<"BotConversa", 'DateTime'>
+    readonly flowId: FieldRef<"BotConversa", 'String'>
+    readonly aguardandoNoId: FieldRef<"BotConversa", 'String'>
+    readonly tentativas: FieldRef<"BotConversa", 'Int'>
+    readonly ultimaInteracaoEm: FieldRef<"BotConversa", 'DateTime'>
+    readonly criadoEm: FieldRef<"BotConversa", 'DateTime'>
+    readonly atualizadoEm: FieldRef<"BotConversa", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * BotConversa findUnique
+   */
+  export type BotConversaFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BotConversa
+     */
+    select?: BotConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BotConversa
+     */
+    omit?: BotConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BotConversaInclude<ExtArgs> | null
+    /**
+     * Filter, which BotConversa to fetch.
+     */
+    where: BotConversaWhereUniqueInput
+  }
+
+  /**
+   * BotConversa findUniqueOrThrow
+   */
+  export type BotConversaFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BotConversa
+     */
+    select?: BotConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BotConversa
+     */
+    omit?: BotConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BotConversaInclude<ExtArgs> | null
+    /**
+     * Filter, which BotConversa to fetch.
+     */
+    where: BotConversaWhereUniqueInput
+  }
+
+  /**
+   * BotConversa findFirst
+   */
+  export type BotConversaFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BotConversa
+     */
+    select?: BotConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BotConversa
+     */
+    omit?: BotConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BotConversaInclude<ExtArgs> | null
+    /**
+     * Filter, which BotConversa to fetch.
+     */
+    where?: BotConversaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BotConversas to fetch.
+     */
+    orderBy?: BotConversaOrderByWithRelationInput | BotConversaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BotConversas.
+     */
+    cursor?: BotConversaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BotConversas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BotConversas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BotConversas.
+     */
+    distinct?: BotConversaScalarFieldEnum | BotConversaScalarFieldEnum[]
+  }
+
+  /**
+   * BotConversa findFirstOrThrow
+   */
+  export type BotConversaFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BotConversa
+     */
+    select?: BotConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BotConversa
+     */
+    omit?: BotConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BotConversaInclude<ExtArgs> | null
+    /**
+     * Filter, which BotConversa to fetch.
+     */
+    where?: BotConversaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BotConversas to fetch.
+     */
+    orderBy?: BotConversaOrderByWithRelationInput | BotConversaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BotConversas.
+     */
+    cursor?: BotConversaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BotConversas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BotConversas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BotConversas.
+     */
+    distinct?: BotConversaScalarFieldEnum | BotConversaScalarFieldEnum[]
+  }
+
+  /**
+   * BotConversa findMany
+   */
+  export type BotConversaFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BotConversa
+     */
+    select?: BotConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BotConversa
+     */
+    omit?: BotConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BotConversaInclude<ExtArgs> | null
+    /**
+     * Filter, which BotConversas to fetch.
+     */
+    where?: BotConversaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BotConversas to fetch.
+     */
+    orderBy?: BotConversaOrderByWithRelationInput | BotConversaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing BotConversas.
+     */
+    cursor?: BotConversaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BotConversas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BotConversas.
+     */
+    skip?: number
+    distinct?: BotConversaScalarFieldEnum | BotConversaScalarFieldEnum[]
+  }
+
+  /**
+   * BotConversa create
+   */
+  export type BotConversaCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BotConversa
+     */
+    select?: BotConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BotConversa
+     */
+    omit?: BotConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BotConversaInclude<ExtArgs> | null
+    /**
+     * The data needed to create a BotConversa.
+     */
+    data: XOR<BotConversaCreateInput, BotConversaUncheckedCreateInput>
+  }
+
+  /**
+   * BotConversa createMany
+   */
+  export type BotConversaCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many BotConversas.
+     */
+    data: BotConversaCreateManyInput | BotConversaCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * BotConversa createManyAndReturn
+   */
+  export type BotConversaCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BotConversa
+     */
+    select?: BotConversaSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the BotConversa
+     */
+    omit?: BotConversaOmit<ExtArgs> | null
+    /**
+     * The data used to create many BotConversas.
+     */
+    data: BotConversaCreateManyInput | BotConversaCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BotConversaIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BotConversa update
+   */
+  export type BotConversaUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BotConversa
+     */
+    select?: BotConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BotConversa
+     */
+    omit?: BotConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BotConversaInclude<ExtArgs> | null
+    /**
+     * The data needed to update a BotConversa.
+     */
+    data: XOR<BotConversaUpdateInput, BotConversaUncheckedUpdateInput>
+    /**
+     * Choose, which BotConversa to update.
+     */
+    where: BotConversaWhereUniqueInput
+  }
+
+  /**
+   * BotConversa updateMany
+   */
+  export type BotConversaUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update BotConversas.
+     */
+    data: XOR<BotConversaUpdateManyMutationInput, BotConversaUncheckedUpdateManyInput>
+    /**
+     * Filter which BotConversas to update
+     */
+    where?: BotConversaWhereInput
+    /**
+     * Limit how many BotConversas to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * BotConversa updateManyAndReturn
+   */
+  export type BotConversaUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BotConversa
+     */
+    select?: BotConversaSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the BotConversa
+     */
+    omit?: BotConversaOmit<ExtArgs> | null
+    /**
+     * The data used to update BotConversas.
+     */
+    data: XOR<BotConversaUpdateManyMutationInput, BotConversaUncheckedUpdateManyInput>
+    /**
+     * Filter which BotConversas to update
+     */
+    where?: BotConversaWhereInput
+    /**
+     * Limit how many BotConversas to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BotConversaIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BotConversa upsert
+   */
+  export type BotConversaUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BotConversa
+     */
+    select?: BotConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BotConversa
+     */
+    omit?: BotConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BotConversaInclude<ExtArgs> | null
+    /**
+     * The filter to search for the BotConversa to update in case it exists.
+     */
+    where: BotConversaWhereUniqueInput
+    /**
+     * In case the BotConversa found by the `where` argument doesn't exist, create a new BotConversa with this data.
+     */
+    create: XOR<BotConversaCreateInput, BotConversaUncheckedCreateInput>
+    /**
+     * In case the BotConversa was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<BotConversaUpdateInput, BotConversaUncheckedUpdateInput>
+  }
+
+  /**
+   * BotConversa delete
+   */
+  export type BotConversaDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BotConversa
+     */
+    select?: BotConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BotConversa
+     */
+    omit?: BotConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BotConversaInclude<ExtArgs> | null
+    /**
+     * Filter which BotConversa to delete.
+     */
+    where: BotConversaWhereUniqueInput
+  }
+
+  /**
+   * BotConversa deleteMany
+   */
+  export type BotConversaDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BotConversas to delete
+     */
+    where?: BotConversaWhereInput
+    /**
+     * Limit how many BotConversas to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * BotConversa.flow
+   */
+  export type BotConversa$flowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeFlow
+     */
+    select?: NoCodeFlowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeFlow
+     */
+    omit?: NoCodeFlowOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeFlowInclude<ExtArgs> | null
+    where?: NoCodeFlowWhereInput
+  }
+
+  /**
+   * BotConversa without action
+   */
+  export type BotConversaDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BotConversa
+     */
+    select?: BotConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BotConversa
+     */
+    omit?: BotConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BotConversaInclude<ExtArgs> | null
   }
 
 
@@ -31012,6 +32457,7 @@ export namespace Prisma {
     atualizadoEm?: boolean
     atendentes?: boolean | Departamento$atendentesArgs<ExtArgs>
     atendimentos?: boolean | Departamento$atendimentosArgs<ExtArgs>
+    bots?: boolean | Departamento$botsArgs<ExtArgs>
     _count?: boolean | DepartamentoCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["departamento"]>
 
@@ -31049,6 +32495,7 @@ export namespace Prisma {
   export type DepartamentoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     atendentes?: boolean | Departamento$atendentesArgs<ExtArgs>
     atendimentos?: boolean | Departamento$atendimentosArgs<ExtArgs>
+    bots?: boolean | Departamento$botsArgs<ExtArgs>
     _count?: boolean | DepartamentoCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type DepartamentoIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -31059,6 +32506,10 @@ export namespace Prisma {
     objects: {
       atendentes: Prisma.$AtendenteDepartamentoPayload<ExtArgs>[]
       atendimentos: Prisma.$LeadAtendimentoPayload<ExtArgs>[]
+      /**
+       * Bots (fluxos No Code do tipo "bot") deste departamento.
+       */
+      bots: Prisma.$NoCodeFlowPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -31467,6 +32918,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     atendentes<T extends Departamento$atendentesArgs<ExtArgs> = {}>(args?: Subset<T, Departamento$atendentesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendenteDepartamentoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     atendimentos<T extends Departamento$atendimentosArgs<ExtArgs> = {}>(args?: Subset<T, Departamento$atendimentosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    bots<T extends Departamento$botsArgs<ExtArgs> = {}>(args?: Subset<T, Departamento$botsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NoCodeFlowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -31936,6 +33388,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: LeadAtendimentoScalarFieldEnum | LeadAtendimentoScalarFieldEnum[]
+  }
+
+  /**
+   * Departamento.bots
+   */
+  export type Departamento$botsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NoCodeFlow
+     */
+    select?: NoCodeFlowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NoCodeFlow
+     */
+    omit?: NoCodeFlowOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoCodeFlowInclude<ExtArgs> | null
+    where?: NoCodeFlowWhereInput
+    orderBy?: NoCodeFlowOrderByWithRelationInput | NoCodeFlowOrderByWithRelationInput[]
+    cursor?: NoCodeFlowWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: NoCodeFlowScalarFieldEnum | NoCodeFlowScalarFieldEnum[]
   }
 
   /**
@@ -36618,6 +38094,9 @@ export namespace Prisma {
     execWebhookAtivo: 'execWebhookAtivo',
     execWebhookUrl: 'execWebhookUrl',
     execWebhookSegredo: 'execWebhookSegredo',
+    tipo: 'tipo',
+    botEntrada: 'botEntrada',
+    departamentoId: 'departamentoId',
     nodes: 'nodes',
     edges: 'edges',
     criadoEm: 'criadoEm',
@@ -36625,6 +38104,22 @@ export namespace Prisma {
   };
 
   export type NoCodeFlowScalarFieldEnum = (typeof NoCodeFlowScalarFieldEnum)[keyof typeof NoCodeFlowScalarFieldEnum]
+
+
+  export const BotConversaScalarFieldEnum: {
+    leadId: 'leadId',
+    botAtivo: 'botAtivo',
+    pausadoMotivo: 'pausadoMotivo',
+    pausadoEm: 'pausadoEm',
+    flowId: 'flowId',
+    aguardandoNoId: 'aguardandoNoId',
+    tentativas: 'tentativas',
+    ultimaInteracaoEm: 'ultimaInteracaoEm',
+    criadoEm: 'criadoEm',
+    atualizadoEm: 'atualizadoEm'
+  };
+
+  export type BotConversaScalarFieldEnum = (typeof BotConversaScalarFieldEnum)[keyof typeof BotConversaScalarFieldEnum]
 
 
   export const NoCodeExecutionScalarFieldEnum: {
@@ -37031,6 +38526,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteListRelationFilter
     atendimento?: XOR<LeadAtendimentoNullableScalarRelationFilter, LeadAtendimentoWhereInput> | null
     transferencias?: AtendimentoTransferenciaListRelationFilter
+    botConversa?: XOR<BotConversaNullableScalarRelationFilter, BotConversaWhereInput> | null
   }
 
   export type LeadOrderByWithRelationInput = {
@@ -37057,6 +38553,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteOrderByRelationAggregateInput
     atendimento?: LeadAtendimentoOrderByWithRelationInput
     transferencias?: AtendimentoTransferenciaOrderByRelationAggregateInput
+    botConversa?: BotConversaOrderByWithRelationInput
   }
 
   export type LeadWhereUniqueInput = Prisma.AtLeast<{
@@ -37086,6 +38583,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteListRelationFilter
     atendimento?: XOR<LeadAtendimentoNullableScalarRelationFilter, LeadAtendimentoWhereInput> | null
     transferencias?: AtendimentoTransferenciaListRelationFilter
+    botConversa?: XOR<BotConversaNullableScalarRelationFilter, BotConversaWhereInput> | null
   }, "id">
 
   export type LeadOrderByWithAggregationInput = {
@@ -38456,11 +39954,16 @@ export namespace Prisma {
     execWebhookAtivo?: BoolFilter<"NoCodeFlow"> | boolean
     execWebhookUrl?: StringNullableFilter<"NoCodeFlow"> | string | null
     execWebhookSegredo?: StringNullableFilter<"NoCodeFlow"> | string | null
+    tipo?: StringFilter<"NoCodeFlow"> | string
+    botEntrada?: BoolFilter<"NoCodeFlow"> | boolean
+    departamentoId?: StringNullableFilter<"NoCodeFlow"> | string | null
     nodes?: JsonFilter<"NoCodeFlow">
     edges?: JsonFilter<"NoCodeFlow">
     criadoEm?: DateTimeFilter<"NoCodeFlow"> | Date | string
     atualizadoEm?: DateTimeFilter<"NoCodeFlow"> | Date | string
+    departamento?: XOR<DepartamentoNullableScalarRelationFilter, DepartamentoWhereInput> | null
     execucoes?: NoCodeExecutionListRelationFilter
+    conversasBot?: BotConversaListRelationFilter
   }
 
   export type NoCodeFlowOrderByWithRelationInput = {
@@ -38472,11 +39975,16 @@ export namespace Prisma {
     execWebhookAtivo?: SortOrder
     execWebhookUrl?: SortOrderInput | SortOrder
     execWebhookSegredo?: SortOrderInput | SortOrder
+    tipo?: SortOrder
+    botEntrada?: SortOrder
+    departamentoId?: SortOrderInput | SortOrder
     nodes?: SortOrder
     edges?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
+    departamento?: DepartamentoOrderByWithRelationInput
     execucoes?: NoCodeExecutionOrderByRelationAggregateInput
+    conversasBot?: BotConversaOrderByRelationAggregateInput
   }
 
   export type NoCodeFlowWhereUniqueInput = Prisma.AtLeast<{
@@ -38491,11 +39999,16 @@ export namespace Prisma {
     execWebhookAtivo?: BoolFilter<"NoCodeFlow"> | boolean
     execWebhookUrl?: StringNullableFilter<"NoCodeFlow"> | string | null
     execWebhookSegredo?: StringNullableFilter<"NoCodeFlow"> | string | null
+    tipo?: StringFilter<"NoCodeFlow"> | string
+    botEntrada?: BoolFilter<"NoCodeFlow"> | boolean
+    departamentoId?: StringNullableFilter<"NoCodeFlow"> | string | null
     nodes?: JsonFilter<"NoCodeFlow">
     edges?: JsonFilter<"NoCodeFlow">
     criadoEm?: DateTimeFilter<"NoCodeFlow"> | Date | string
     atualizadoEm?: DateTimeFilter<"NoCodeFlow"> | Date | string
+    departamento?: XOR<DepartamentoNullableScalarRelationFilter, DepartamentoWhereInput> | null
     execucoes?: NoCodeExecutionListRelationFilter
+    conversasBot?: BotConversaListRelationFilter
   }, "id">
 
   export type NoCodeFlowOrderByWithAggregationInput = {
@@ -38507,6 +40020,9 @@ export namespace Prisma {
     execWebhookAtivo?: SortOrder
     execWebhookUrl?: SortOrderInput | SortOrder
     execWebhookSegredo?: SortOrderInput | SortOrder
+    tipo?: SortOrder
+    botEntrada?: SortOrder
+    departamentoId?: SortOrderInput | SortOrder
     nodes?: SortOrder
     edges?: SortOrder
     criadoEm?: SortOrder
@@ -38528,10 +40044,98 @@ export namespace Prisma {
     execWebhookAtivo?: BoolWithAggregatesFilter<"NoCodeFlow"> | boolean
     execWebhookUrl?: StringNullableWithAggregatesFilter<"NoCodeFlow"> | string | null
     execWebhookSegredo?: StringNullableWithAggregatesFilter<"NoCodeFlow"> | string | null
+    tipo?: StringWithAggregatesFilter<"NoCodeFlow"> | string
+    botEntrada?: BoolWithAggregatesFilter<"NoCodeFlow"> | boolean
+    departamentoId?: StringNullableWithAggregatesFilter<"NoCodeFlow"> | string | null
     nodes?: JsonWithAggregatesFilter<"NoCodeFlow">
     edges?: JsonWithAggregatesFilter<"NoCodeFlow">
     criadoEm?: DateTimeWithAggregatesFilter<"NoCodeFlow"> | Date | string
     atualizadoEm?: DateTimeWithAggregatesFilter<"NoCodeFlow"> | Date | string
+  }
+
+  export type BotConversaWhereInput = {
+    AND?: BotConversaWhereInput | BotConversaWhereInput[]
+    OR?: BotConversaWhereInput[]
+    NOT?: BotConversaWhereInput | BotConversaWhereInput[]
+    leadId?: StringFilter<"BotConversa"> | string
+    botAtivo?: BoolFilter<"BotConversa"> | boolean
+    pausadoMotivo?: StringNullableFilter<"BotConversa"> | string | null
+    pausadoEm?: DateTimeNullableFilter<"BotConversa"> | Date | string | null
+    flowId?: StringNullableFilter<"BotConversa"> | string | null
+    aguardandoNoId?: StringNullableFilter<"BotConversa"> | string | null
+    tentativas?: IntFilter<"BotConversa"> | number
+    ultimaInteracaoEm?: DateTimeFilter<"BotConversa"> | Date | string
+    criadoEm?: DateTimeFilter<"BotConversa"> | Date | string
+    atualizadoEm?: DateTimeFilter<"BotConversa"> | Date | string
+    lead?: XOR<LeadScalarRelationFilter, LeadWhereInput>
+    flow?: XOR<NoCodeFlowNullableScalarRelationFilter, NoCodeFlowWhereInput> | null
+  }
+
+  export type BotConversaOrderByWithRelationInput = {
+    leadId?: SortOrder
+    botAtivo?: SortOrder
+    pausadoMotivo?: SortOrderInput | SortOrder
+    pausadoEm?: SortOrderInput | SortOrder
+    flowId?: SortOrderInput | SortOrder
+    aguardandoNoId?: SortOrderInput | SortOrder
+    tentativas?: SortOrder
+    ultimaInteracaoEm?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    lead?: LeadOrderByWithRelationInput
+    flow?: NoCodeFlowOrderByWithRelationInput
+  }
+
+  export type BotConversaWhereUniqueInput = Prisma.AtLeast<{
+    leadId?: string
+    AND?: BotConversaWhereInput | BotConversaWhereInput[]
+    OR?: BotConversaWhereInput[]
+    NOT?: BotConversaWhereInput | BotConversaWhereInput[]
+    botAtivo?: BoolFilter<"BotConversa"> | boolean
+    pausadoMotivo?: StringNullableFilter<"BotConversa"> | string | null
+    pausadoEm?: DateTimeNullableFilter<"BotConversa"> | Date | string | null
+    flowId?: StringNullableFilter<"BotConversa"> | string | null
+    aguardandoNoId?: StringNullableFilter<"BotConversa"> | string | null
+    tentativas?: IntFilter<"BotConversa"> | number
+    ultimaInteracaoEm?: DateTimeFilter<"BotConversa"> | Date | string
+    criadoEm?: DateTimeFilter<"BotConversa"> | Date | string
+    atualizadoEm?: DateTimeFilter<"BotConversa"> | Date | string
+    lead?: XOR<LeadScalarRelationFilter, LeadWhereInput>
+    flow?: XOR<NoCodeFlowNullableScalarRelationFilter, NoCodeFlowWhereInput> | null
+  }, "leadId">
+
+  export type BotConversaOrderByWithAggregationInput = {
+    leadId?: SortOrder
+    botAtivo?: SortOrder
+    pausadoMotivo?: SortOrderInput | SortOrder
+    pausadoEm?: SortOrderInput | SortOrder
+    flowId?: SortOrderInput | SortOrder
+    aguardandoNoId?: SortOrderInput | SortOrder
+    tentativas?: SortOrder
+    ultimaInteracaoEm?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    _count?: BotConversaCountOrderByAggregateInput
+    _avg?: BotConversaAvgOrderByAggregateInput
+    _max?: BotConversaMaxOrderByAggregateInput
+    _min?: BotConversaMinOrderByAggregateInput
+    _sum?: BotConversaSumOrderByAggregateInput
+  }
+
+  export type BotConversaScalarWhereWithAggregatesInput = {
+    AND?: BotConversaScalarWhereWithAggregatesInput | BotConversaScalarWhereWithAggregatesInput[]
+    OR?: BotConversaScalarWhereWithAggregatesInput[]
+    NOT?: BotConversaScalarWhereWithAggregatesInput | BotConversaScalarWhereWithAggregatesInput[]
+    leadId?: StringWithAggregatesFilter<"BotConversa"> | string
+    botAtivo?: BoolWithAggregatesFilter<"BotConversa"> | boolean
+    pausadoMotivo?: StringNullableWithAggregatesFilter<"BotConversa"> | string | null
+    pausadoEm?: DateTimeNullableWithAggregatesFilter<"BotConversa"> | Date | string | null
+    flowId?: StringNullableWithAggregatesFilter<"BotConversa"> | string | null
+    aguardandoNoId?: StringNullableWithAggregatesFilter<"BotConversa"> | string | null
+    tentativas?: IntWithAggregatesFilter<"BotConversa"> | number
+    ultimaInteracaoEm?: DateTimeWithAggregatesFilter<"BotConversa"> | Date | string
+    criadoEm?: DateTimeWithAggregatesFilter<"BotConversa"> | Date | string
+    atualizadoEm?: DateTimeWithAggregatesFilter<"BotConversa"> | Date | string
   }
 
   export type NoCodeExecutionWhereInput = {
@@ -38989,6 +40593,7 @@ export namespace Prisma {
     atualizadoEm?: DateTimeFilter<"Departamento"> | Date | string
     atendentes?: AtendenteDepartamentoListRelationFilter
     atendimentos?: LeadAtendimentoListRelationFilter
+    bots?: NoCodeFlowListRelationFilter
   }
 
   export type DepartamentoOrderByWithRelationInput = {
@@ -39001,6 +40606,7 @@ export namespace Prisma {
     atualizadoEm?: SortOrder
     atendentes?: AtendenteDepartamentoOrderByRelationAggregateInput
     atendimentos?: LeadAtendimentoOrderByRelationAggregateInput
+    bots?: NoCodeFlowOrderByRelationAggregateInput
   }
 
   export type DepartamentoWhereUniqueInput = Prisma.AtLeast<{
@@ -39017,6 +40623,7 @@ export namespace Prisma {
     atualizadoEm?: DateTimeFilter<"Departamento"> | Date | string
     atendentes?: AtendenteDepartamentoListRelationFilter
     atendimentos?: LeadAtendimentoListRelationFilter
+    bots?: NoCodeFlowListRelationFilter
   }, "id" | "workspaceId_nome">
 
   export type DepartamentoOrderByWithAggregationInput = {
@@ -39304,6 +40911,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateInput = {
@@ -39329,6 +40937,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUpdateInput = {
@@ -39354,6 +40963,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateInput = {
@@ -39379,6 +40989,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadCreateManyInput = {
@@ -40926,11 +42537,15 @@ export namespace Prisma {
     execWebhookAtivo?: boolean
     execWebhookUrl?: string | null
     execWebhookSegredo?: string | null
+    tipo?: string
+    botEntrada?: boolean
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: Date | string
     atualizadoEm?: Date | string
+    departamento?: DepartamentoCreateNestedOneWithoutBotsInput
     execucoes?: NoCodeExecutionCreateNestedManyWithoutFlowInput
+    conversasBot?: BotConversaCreateNestedManyWithoutFlowInput
   }
 
   export type NoCodeFlowUncheckedCreateInput = {
@@ -40942,11 +42557,15 @@ export namespace Prisma {
     execWebhookAtivo?: boolean
     execWebhookUrl?: string | null
     execWebhookSegredo?: string | null
+    tipo?: string
+    botEntrada?: boolean
+    departamentoId?: string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: Date | string
     atualizadoEm?: Date | string
     execucoes?: NoCodeExecutionUncheckedCreateNestedManyWithoutFlowInput
+    conversasBot?: BotConversaUncheckedCreateNestedManyWithoutFlowInput
   }
 
   export type NoCodeFlowUpdateInput = {
@@ -40958,11 +42577,15 @@ export namespace Prisma {
     execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
     execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
     execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
+    tipo?: StringFieldUpdateOperationsInput | string
+    botEntrada?: BoolFieldUpdateOperationsInput | boolean
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    departamento?: DepartamentoUpdateOneWithoutBotsNestedInput
     execucoes?: NoCodeExecutionUpdateManyWithoutFlowNestedInput
+    conversasBot?: BotConversaUpdateManyWithoutFlowNestedInput
   }
 
   export type NoCodeFlowUncheckedUpdateInput = {
@@ -40974,11 +42597,15 @@ export namespace Prisma {
     execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
     execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
     execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
+    tipo?: StringFieldUpdateOperationsInput | string
+    botEntrada?: BoolFieldUpdateOperationsInput | boolean
+    departamentoId?: NullableStringFieldUpdateOperationsInput | string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     execucoes?: NoCodeExecutionUncheckedUpdateManyWithoutFlowNestedInput
+    conversasBot?: BotConversaUncheckedUpdateManyWithoutFlowNestedInput
   }
 
   export type NoCodeFlowCreateManyInput = {
@@ -40990,6 +42617,9 @@ export namespace Prisma {
     execWebhookAtivo?: boolean
     execWebhookUrl?: string | null
     execWebhookSegredo?: string | null
+    tipo?: string
+    botEntrada?: boolean
+    departamentoId?: string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: Date | string
@@ -41005,6 +42635,8 @@ export namespace Prisma {
     execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
     execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
     execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
+    tipo?: StringFieldUpdateOperationsInput | string
+    botEntrada?: BoolFieldUpdateOperationsInput | boolean
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41020,8 +42652,100 @@ export namespace Prisma {
     execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
     execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
     execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
+    tipo?: StringFieldUpdateOperationsInput | string
+    botEntrada?: BoolFieldUpdateOperationsInput | boolean
+    departamentoId?: NullableStringFieldUpdateOperationsInput | string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BotConversaCreateInput = {
+    botAtivo?: boolean
+    pausadoMotivo?: string | null
+    pausadoEm?: Date | string | null
+    aguardandoNoId?: string | null
+    tentativas?: number
+    ultimaInteracaoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    lead: LeadCreateNestedOneWithoutBotConversaInput
+    flow?: NoCodeFlowCreateNestedOneWithoutConversasBotInput
+  }
+
+  export type BotConversaUncheckedCreateInput = {
+    leadId: string
+    botAtivo?: boolean
+    pausadoMotivo?: string | null
+    pausadoEm?: Date | string | null
+    flowId?: string | null
+    aguardandoNoId?: string | null
+    tentativas?: number
+    ultimaInteracaoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type BotConversaUpdateInput = {
+    botAtivo?: BoolFieldUpdateOperationsInput | boolean
+    pausadoMotivo?: NullableStringFieldUpdateOperationsInput | string | null
+    pausadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    aguardandoNoId?: NullableStringFieldUpdateOperationsInput | string | null
+    tentativas?: IntFieldUpdateOperationsInput | number
+    ultimaInteracaoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    lead?: LeadUpdateOneRequiredWithoutBotConversaNestedInput
+    flow?: NoCodeFlowUpdateOneWithoutConversasBotNestedInput
+  }
+
+  export type BotConversaUncheckedUpdateInput = {
+    leadId?: StringFieldUpdateOperationsInput | string
+    botAtivo?: BoolFieldUpdateOperationsInput | boolean
+    pausadoMotivo?: NullableStringFieldUpdateOperationsInput | string | null
+    pausadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    flowId?: NullableStringFieldUpdateOperationsInput | string | null
+    aguardandoNoId?: NullableStringFieldUpdateOperationsInput | string | null
+    tentativas?: IntFieldUpdateOperationsInput | number
+    ultimaInteracaoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BotConversaCreateManyInput = {
+    leadId: string
+    botAtivo?: boolean
+    pausadoMotivo?: string | null
+    pausadoEm?: Date | string | null
+    flowId?: string | null
+    aguardandoNoId?: string | null
+    tentativas?: number
+    ultimaInteracaoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type BotConversaUpdateManyMutationInput = {
+    botAtivo?: BoolFieldUpdateOperationsInput | boolean
+    pausadoMotivo?: NullableStringFieldUpdateOperationsInput | string | null
+    pausadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    aguardandoNoId?: NullableStringFieldUpdateOperationsInput | string | null
+    tentativas?: IntFieldUpdateOperationsInput | number
+    ultimaInteracaoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BotConversaUncheckedUpdateManyInput = {
+    leadId?: StringFieldUpdateOperationsInput | string
+    botAtivo?: BoolFieldUpdateOperationsInput | boolean
+    pausadoMotivo?: NullableStringFieldUpdateOperationsInput | string | null
+    pausadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    flowId?: NullableStringFieldUpdateOperationsInput | string | null
+    aguardandoNoId?: NullableStringFieldUpdateOperationsInput | string | null
+    tentativas?: IntFieldUpdateOperationsInput | number
+    ultimaInteracaoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -41557,6 +43281,7 @@ export namespace Prisma {
     atualizadoEm?: Date | string
     atendentes?: AtendenteDepartamentoCreateNestedManyWithoutDepartamentoInput
     atendimentos?: LeadAtendimentoCreateNestedManyWithoutDepartamentoInput
+    bots?: NoCodeFlowCreateNestedManyWithoutDepartamentoInput
   }
 
   export type DepartamentoUncheckedCreateInput = {
@@ -41569,6 +43294,7 @@ export namespace Prisma {
     atualizadoEm?: Date | string
     atendentes?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput
     atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutDepartamentoInput
+    bots?: NoCodeFlowUncheckedCreateNestedManyWithoutDepartamentoInput
   }
 
   export type DepartamentoUpdateInput = {
@@ -41581,6 +43307,7 @@ export namespace Prisma {
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atendentes?: AtendenteDepartamentoUpdateManyWithoutDepartamentoNestedInput
     atendimentos?: LeadAtendimentoUpdateManyWithoutDepartamentoNestedInput
+    bots?: NoCodeFlowUpdateManyWithoutDepartamentoNestedInput
   }
 
   export type DepartamentoUncheckedUpdateInput = {
@@ -41593,6 +43320,7 @@ export namespace Prisma {
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atendentes?: AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput
     atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoNestedInput
+    bots?: NoCodeFlowUncheckedUpdateManyWithoutDepartamentoNestedInput
   }
 
   export type DepartamentoCreateManyInput = {
@@ -41948,6 +43676,11 @@ export namespace Prisma {
     every?: AtendimentoTransferenciaWhereInput
     some?: AtendimentoTransferenciaWhereInput
     none?: AtendimentoTransferenciaWhereInput
+  }
+
+  export type BotConversaNullableScalarRelationFilter = {
+    is?: BotConversaWhereInput | null
+    isNot?: BotConversaWhereInput | null
   }
 
   export type SortOrderInput = {
@@ -43067,13 +44800,28 @@ export namespace Prisma {
     atualizadoEm?: SortOrder
   }
 
+  export type DepartamentoNullableScalarRelationFilter = {
+    is?: DepartamentoWhereInput | null
+    isNot?: DepartamentoWhereInput | null
+  }
+
   export type NoCodeExecutionListRelationFilter = {
     every?: NoCodeExecutionWhereInput
     some?: NoCodeExecutionWhereInput
     none?: NoCodeExecutionWhereInput
   }
 
+  export type BotConversaListRelationFilter = {
+    every?: BotConversaWhereInput
+    some?: BotConversaWhereInput
+    none?: BotConversaWhereInput
+  }
+
   export type NoCodeExecutionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type BotConversaOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -43086,6 +44834,9 @@ export namespace Prisma {
     execWebhookAtivo?: SortOrder
     execWebhookUrl?: SortOrder
     execWebhookSegredo?: SortOrder
+    tipo?: SortOrder
+    botEntrada?: SortOrder
+    departamentoId?: SortOrder
     nodes?: SortOrder
     edges?: SortOrder
     criadoEm?: SortOrder
@@ -43101,6 +44852,9 @@ export namespace Prisma {
     execWebhookAtivo?: SortOrder
     execWebhookUrl?: SortOrder
     execWebhookSegredo?: SortOrder
+    tipo?: SortOrder
+    botEntrada?: SortOrder
+    departamentoId?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
   }
@@ -43114,8 +44868,63 @@ export namespace Prisma {
     execWebhookAtivo?: SortOrder
     execWebhookUrl?: SortOrder
     execWebhookSegredo?: SortOrder
+    tipo?: SortOrder
+    botEntrada?: SortOrder
+    departamentoId?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
+  }
+
+  export type NoCodeFlowNullableScalarRelationFilter = {
+    is?: NoCodeFlowWhereInput | null
+    isNot?: NoCodeFlowWhereInput | null
+  }
+
+  export type BotConversaCountOrderByAggregateInput = {
+    leadId?: SortOrder
+    botAtivo?: SortOrder
+    pausadoMotivo?: SortOrder
+    pausadoEm?: SortOrder
+    flowId?: SortOrder
+    aguardandoNoId?: SortOrder
+    tentativas?: SortOrder
+    ultimaInteracaoEm?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type BotConversaAvgOrderByAggregateInput = {
+    tentativas?: SortOrder
+  }
+
+  export type BotConversaMaxOrderByAggregateInput = {
+    leadId?: SortOrder
+    botAtivo?: SortOrder
+    pausadoMotivo?: SortOrder
+    pausadoEm?: SortOrder
+    flowId?: SortOrder
+    aguardandoNoId?: SortOrder
+    tentativas?: SortOrder
+    ultimaInteracaoEm?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type BotConversaMinOrderByAggregateInput = {
+    leadId?: SortOrder
+    botAtivo?: SortOrder
+    pausadoMotivo?: SortOrder
+    pausadoEm?: SortOrder
+    flowId?: SortOrder
+    aguardandoNoId?: SortOrder
+    tentativas?: SortOrder
+    ultimaInteracaoEm?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type BotConversaSumOrderByAggregateInput = {
+    tentativas?: SortOrder
   }
   export type JsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -43448,11 +45257,21 @@ export namespace Prisma {
     none?: LeadAtendimentoWhereInput
   }
 
+  export type NoCodeFlowListRelationFilter = {
+    every?: NoCodeFlowWhereInput
+    some?: NoCodeFlowWhereInput
+    none?: NoCodeFlowWhereInput
+  }
+
   export type AtendenteDepartamentoOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type LeadAtendimentoOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type NoCodeFlowOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -43548,11 +45367,6 @@ export namespace Prisma {
   export type AtendenteDepartamentoMinOrderByAggregateInput = {
     atendenteId?: SortOrder
     departamentoId?: SortOrder
-  }
-
-  export type DepartamentoNullableScalarRelationFilter = {
-    is?: DepartamentoWhereInput | null
-    isNot?: DepartamentoWhereInput | null
   }
 
   export type LeadAtendimentoCountOrderByAggregateInput = {
@@ -43659,6 +45473,12 @@ export namespace Prisma {
     connect?: AtendimentoTransferenciaWhereUniqueInput | AtendimentoTransferenciaWhereUniqueInput[]
   }
 
+  export type BotConversaCreateNestedOneWithoutLeadInput = {
+    create?: XOR<BotConversaCreateWithoutLeadInput, BotConversaUncheckedCreateWithoutLeadInput>
+    connectOrCreate?: BotConversaCreateOrConnectWithoutLeadInput
+    connect?: BotConversaWhereUniqueInput
+  }
+
   export type LeadCampaignUncheckedCreateNestedManyWithoutLeadInput = {
     create?: XOR<LeadCampaignCreateWithoutLeadInput, LeadCampaignUncheckedCreateWithoutLeadInput> | LeadCampaignCreateWithoutLeadInput[] | LeadCampaignUncheckedCreateWithoutLeadInput[]
     connectOrCreate?: LeadCampaignCreateOrConnectWithoutLeadInput | LeadCampaignCreateOrConnectWithoutLeadInput[]
@@ -43698,6 +45518,12 @@ export namespace Prisma {
     connectOrCreate?: AtendimentoTransferenciaCreateOrConnectWithoutLeadInput | AtendimentoTransferenciaCreateOrConnectWithoutLeadInput[]
     createMany?: AtendimentoTransferenciaCreateManyLeadInputEnvelope
     connect?: AtendimentoTransferenciaWhereUniqueInput | AtendimentoTransferenciaWhereUniqueInput[]
+  }
+
+  export type BotConversaUncheckedCreateNestedOneWithoutLeadInput = {
+    create?: XOR<BotConversaCreateWithoutLeadInput, BotConversaUncheckedCreateWithoutLeadInput>
+    connectOrCreate?: BotConversaCreateOrConnectWithoutLeadInput
+    connect?: BotConversaWhereUniqueInput
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -43810,6 +45636,16 @@ export namespace Prisma {
     deleteMany?: AtendimentoTransferenciaScalarWhereInput | AtendimentoTransferenciaScalarWhereInput[]
   }
 
+  export type BotConversaUpdateOneWithoutLeadNestedInput = {
+    create?: XOR<BotConversaCreateWithoutLeadInput, BotConversaUncheckedCreateWithoutLeadInput>
+    connectOrCreate?: BotConversaCreateOrConnectWithoutLeadInput
+    upsert?: BotConversaUpsertWithoutLeadInput
+    disconnect?: BotConversaWhereInput | boolean
+    delete?: BotConversaWhereInput | boolean
+    connect?: BotConversaWhereUniqueInput
+    update?: XOR<XOR<BotConversaUpdateToOneWithWhereWithoutLeadInput, BotConversaUpdateWithoutLeadInput>, BotConversaUncheckedUpdateWithoutLeadInput>
+  }
+
   export type LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput = {
     create?: XOR<LeadCampaignCreateWithoutLeadInput, LeadCampaignUncheckedCreateWithoutLeadInput> | LeadCampaignCreateWithoutLeadInput[] | LeadCampaignUncheckedCreateWithoutLeadInput[]
     connectOrCreate?: LeadCampaignCreateOrConnectWithoutLeadInput | LeadCampaignCreateOrConnectWithoutLeadInput[]
@@ -43888,6 +45724,16 @@ export namespace Prisma {
     update?: AtendimentoTransferenciaUpdateWithWhereUniqueWithoutLeadInput | AtendimentoTransferenciaUpdateWithWhereUniqueWithoutLeadInput[]
     updateMany?: AtendimentoTransferenciaUpdateManyWithWhereWithoutLeadInput | AtendimentoTransferenciaUpdateManyWithWhereWithoutLeadInput[]
     deleteMany?: AtendimentoTransferenciaScalarWhereInput | AtendimentoTransferenciaScalarWhereInput[]
+  }
+
+  export type BotConversaUncheckedUpdateOneWithoutLeadNestedInput = {
+    create?: XOR<BotConversaCreateWithoutLeadInput, BotConversaUncheckedCreateWithoutLeadInput>
+    connectOrCreate?: BotConversaCreateOrConnectWithoutLeadInput
+    upsert?: BotConversaUpsertWithoutLeadInput
+    disconnect?: BotConversaWhereInput | boolean
+    delete?: BotConversaWhereInput | boolean
+    connect?: BotConversaWhereUniqueInput
+    update?: XOR<XOR<BotConversaUpdateToOneWithWhereWithoutLeadInput, BotConversaUpdateWithoutLeadInput>, BotConversaUncheckedUpdateWithoutLeadInput>
   }
 
   export type LeadCreateNestedOneWithoutNotasInternasInput = {
@@ -44265,6 +46111,12 @@ export namespace Prisma {
     update?: XOR<XOR<CampaignMessageUpdateToOneWithWhereWithoutEventosInput, CampaignMessageUpdateWithoutEventosInput>, CampaignMessageUncheckedUpdateWithoutEventosInput>
   }
 
+  export type DepartamentoCreateNestedOneWithoutBotsInput = {
+    create?: XOR<DepartamentoCreateWithoutBotsInput, DepartamentoUncheckedCreateWithoutBotsInput>
+    connectOrCreate?: DepartamentoCreateOrConnectWithoutBotsInput
+    connect?: DepartamentoWhereUniqueInput
+  }
+
   export type NoCodeExecutionCreateNestedManyWithoutFlowInput = {
     create?: XOR<NoCodeExecutionCreateWithoutFlowInput, NoCodeExecutionUncheckedCreateWithoutFlowInput> | NoCodeExecutionCreateWithoutFlowInput[] | NoCodeExecutionUncheckedCreateWithoutFlowInput[]
     connectOrCreate?: NoCodeExecutionCreateOrConnectWithoutFlowInput | NoCodeExecutionCreateOrConnectWithoutFlowInput[]
@@ -44272,11 +46124,35 @@ export namespace Prisma {
     connect?: NoCodeExecutionWhereUniqueInput | NoCodeExecutionWhereUniqueInput[]
   }
 
+  export type BotConversaCreateNestedManyWithoutFlowInput = {
+    create?: XOR<BotConversaCreateWithoutFlowInput, BotConversaUncheckedCreateWithoutFlowInput> | BotConversaCreateWithoutFlowInput[] | BotConversaUncheckedCreateWithoutFlowInput[]
+    connectOrCreate?: BotConversaCreateOrConnectWithoutFlowInput | BotConversaCreateOrConnectWithoutFlowInput[]
+    createMany?: BotConversaCreateManyFlowInputEnvelope
+    connect?: BotConversaWhereUniqueInput | BotConversaWhereUniqueInput[]
+  }
+
   export type NoCodeExecutionUncheckedCreateNestedManyWithoutFlowInput = {
     create?: XOR<NoCodeExecutionCreateWithoutFlowInput, NoCodeExecutionUncheckedCreateWithoutFlowInput> | NoCodeExecutionCreateWithoutFlowInput[] | NoCodeExecutionUncheckedCreateWithoutFlowInput[]
     connectOrCreate?: NoCodeExecutionCreateOrConnectWithoutFlowInput | NoCodeExecutionCreateOrConnectWithoutFlowInput[]
     createMany?: NoCodeExecutionCreateManyFlowInputEnvelope
     connect?: NoCodeExecutionWhereUniqueInput | NoCodeExecutionWhereUniqueInput[]
+  }
+
+  export type BotConversaUncheckedCreateNestedManyWithoutFlowInput = {
+    create?: XOR<BotConversaCreateWithoutFlowInput, BotConversaUncheckedCreateWithoutFlowInput> | BotConversaCreateWithoutFlowInput[] | BotConversaUncheckedCreateWithoutFlowInput[]
+    connectOrCreate?: BotConversaCreateOrConnectWithoutFlowInput | BotConversaCreateOrConnectWithoutFlowInput[]
+    createMany?: BotConversaCreateManyFlowInputEnvelope
+    connect?: BotConversaWhereUniqueInput | BotConversaWhereUniqueInput[]
+  }
+
+  export type DepartamentoUpdateOneWithoutBotsNestedInput = {
+    create?: XOR<DepartamentoCreateWithoutBotsInput, DepartamentoUncheckedCreateWithoutBotsInput>
+    connectOrCreate?: DepartamentoCreateOrConnectWithoutBotsInput
+    upsert?: DepartamentoUpsertWithoutBotsInput
+    disconnect?: DepartamentoWhereInput | boolean
+    delete?: DepartamentoWhereInput | boolean
+    connect?: DepartamentoWhereUniqueInput
+    update?: XOR<XOR<DepartamentoUpdateToOneWithWhereWithoutBotsInput, DepartamentoUpdateWithoutBotsInput>, DepartamentoUncheckedUpdateWithoutBotsInput>
   }
 
   export type NoCodeExecutionUpdateManyWithoutFlowNestedInput = {
@@ -44293,6 +46169,20 @@ export namespace Prisma {
     deleteMany?: NoCodeExecutionScalarWhereInput | NoCodeExecutionScalarWhereInput[]
   }
 
+  export type BotConversaUpdateManyWithoutFlowNestedInput = {
+    create?: XOR<BotConversaCreateWithoutFlowInput, BotConversaUncheckedCreateWithoutFlowInput> | BotConversaCreateWithoutFlowInput[] | BotConversaUncheckedCreateWithoutFlowInput[]
+    connectOrCreate?: BotConversaCreateOrConnectWithoutFlowInput | BotConversaCreateOrConnectWithoutFlowInput[]
+    upsert?: BotConversaUpsertWithWhereUniqueWithoutFlowInput | BotConversaUpsertWithWhereUniqueWithoutFlowInput[]
+    createMany?: BotConversaCreateManyFlowInputEnvelope
+    set?: BotConversaWhereUniqueInput | BotConversaWhereUniqueInput[]
+    disconnect?: BotConversaWhereUniqueInput | BotConversaWhereUniqueInput[]
+    delete?: BotConversaWhereUniqueInput | BotConversaWhereUniqueInput[]
+    connect?: BotConversaWhereUniqueInput | BotConversaWhereUniqueInput[]
+    update?: BotConversaUpdateWithWhereUniqueWithoutFlowInput | BotConversaUpdateWithWhereUniqueWithoutFlowInput[]
+    updateMany?: BotConversaUpdateManyWithWhereWithoutFlowInput | BotConversaUpdateManyWithWhereWithoutFlowInput[]
+    deleteMany?: BotConversaScalarWhereInput | BotConversaScalarWhereInput[]
+  }
+
   export type NoCodeExecutionUncheckedUpdateManyWithoutFlowNestedInput = {
     create?: XOR<NoCodeExecutionCreateWithoutFlowInput, NoCodeExecutionUncheckedCreateWithoutFlowInput> | NoCodeExecutionCreateWithoutFlowInput[] | NoCodeExecutionUncheckedCreateWithoutFlowInput[]
     connectOrCreate?: NoCodeExecutionCreateOrConnectWithoutFlowInput | NoCodeExecutionCreateOrConnectWithoutFlowInput[]
@@ -44305,6 +46195,50 @@ export namespace Prisma {
     update?: NoCodeExecutionUpdateWithWhereUniqueWithoutFlowInput | NoCodeExecutionUpdateWithWhereUniqueWithoutFlowInput[]
     updateMany?: NoCodeExecutionUpdateManyWithWhereWithoutFlowInput | NoCodeExecutionUpdateManyWithWhereWithoutFlowInput[]
     deleteMany?: NoCodeExecutionScalarWhereInput | NoCodeExecutionScalarWhereInput[]
+  }
+
+  export type BotConversaUncheckedUpdateManyWithoutFlowNestedInput = {
+    create?: XOR<BotConversaCreateWithoutFlowInput, BotConversaUncheckedCreateWithoutFlowInput> | BotConversaCreateWithoutFlowInput[] | BotConversaUncheckedCreateWithoutFlowInput[]
+    connectOrCreate?: BotConversaCreateOrConnectWithoutFlowInput | BotConversaCreateOrConnectWithoutFlowInput[]
+    upsert?: BotConversaUpsertWithWhereUniqueWithoutFlowInput | BotConversaUpsertWithWhereUniqueWithoutFlowInput[]
+    createMany?: BotConversaCreateManyFlowInputEnvelope
+    set?: BotConversaWhereUniqueInput | BotConversaWhereUniqueInput[]
+    disconnect?: BotConversaWhereUniqueInput | BotConversaWhereUniqueInput[]
+    delete?: BotConversaWhereUniqueInput | BotConversaWhereUniqueInput[]
+    connect?: BotConversaWhereUniqueInput | BotConversaWhereUniqueInput[]
+    update?: BotConversaUpdateWithWhereUniqueWithoutFlowInput | BotConversaUpdateWithWhereUniqueWithoutFlowInput[]
+    updateMany?: BotConversaUpdateManyWithWhereWithoutFlowInput | BotConversaUpdateManyWithWhereWithoutFlowInput[]
+    deleteMany?: BotConversaScalarWhereInput | BotConversaScalarWhereInput[]
+  }
+
+  export type LeadCreateNestedOneWithoutBotConversaInput = {
+    create?: XOR<LeadCreateWithoutBotConversaInput, LeadUncheckedCreateWithoutBotConversaInput>
+    connectOrCreate?: LeadCreateOrConnectWithoutBotConversaInput
+    connect?: LeadWhereUniqueInput
+  }
+
+  export type NoCodeFlowCreateNestedOneWithoutConversasBotInput = {
+    create?: XOR<NoCodeFlowCreateWithoutConversasBotInput, NoCodeFlowUncheckedCreateWithoutConversasBotInput>
+    connectOrCreate?: NoCodeFlowCreateOrConnectWithoutConversasBotInput
+    connect?: NoCodeFlowWhereUniqueInput
+  }
+
+  export type LeadUpdateOneRequiredWithoutBotConversaNestedInput = {
+    create?: XOR<LeadCreateWithoutBotConversaInput, LeadUncheckedCreateWithoutBotConversaInput>
+    connectOrCreate?: LeadCreateOrConnectWithoutBotConversaInput
+    upsert?: LeadUpsertWithoutBotConversaInput
+    connect?: LeadWhereUniqueInput
+    update?: XOR<XOR<LeadUpdateToOneWithWhereWithoutBotConversaInput, LeadUpdateWithoutBotConversaInput>, LeadUncheckedUpdateWithoutBotConversaInput>
+  }
+
+  export type NoCodeFlowUpdateOneWithoutConversasBotNestedInput = {
+    create?: XOR<NoCodeFlowCreateWithoutConversasBotInput, NoCodeFlowUncheckedCreateWithoutConversasBotInput>
+    connectOrCreate?: NoCodeFlowCreateOrConnectWithoutConversasBotInput
+    upsert?: NoCodeFlowUpsertWithoutConversasBotInput
+    disconnect?: NoCodeFlowWhereInput | boolean
+    delete?: NoCodeFlowWhereInput | boolean
+    connect?: NoCodeFlowWhereUniqueInput
+    update?: XOR<XOR<NoCodeFlowUpdateToOneWithWhereWithoutConversasBotInput, NoCodeFlowUpdateWithoutConversasBotInput>, NoCodeFlowUncheckedUpdateWithoutConversasBotInput>
   }
 
   export type NoCodeFlowCreateNestedOneWithoutExecucoesInput = {
@@ -44407,6 +46341,13 @@ export namespace Prisma {
     connect?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
   }
 
+  export type NoCodeFlowCreateNestedManyWithoutDepartamentoInput = {
+    create?: XOR<NoCodeFlowCreateWithoutDepartamentoInput, NoCodeFlowUncheckedCreateWithoutDepartamentoInput> | NoCodeFlowCreateWithoutDepartamentoInput[] | NoCodeFlowUncheckedCreateWithoutDepartamentoInput[]
+    connectOrCreate?: NoCodeFlowCreateOrConnectWithoutDepartamentoInput | NoCodeFlowCreateOrConnectWithoutDepartamentoInput[]
+    createMany?: NoCodeFlowCreateManyDepartamentoInputEnvelope
+    connect?: NoCodeFlowWhereUniqueInput | NoCodeFlowWhereUniqueInput[]
+  }
+
   export type AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput = {
     create?: XOR<AtendenteDepartamentoCreateWithoutDepartamentoInput, AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput> | AtendenteDepartamentoCreateWithoutDepartamentoInput[] | AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput[]
     connectOrCreate?: AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput | AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput[]
@@ -44419,6 +46360,13 @@ export namespace Prisma {
     connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutDepartamentoInput | LeadAtendimentoCreateOrConnectWithoutDepartamentoInput[]
     createMany?: LeadAtendimentoCreateManyDepartamentoInputEnvelope
     connect?: LeadAtendimentoWhereUniqueInput | LeadAtendimentoWhereUniqueInput[]
+  }
+
+  export type NoCodeFlowUncheckedCreateNestedManyWithoutDepartamentoInput = {
+    create?: XOR<NoCodeFlowCreateWithoutDepartamentoInput, NoCodeFlowUncheckedCreateWithoutDepartamentoInput> | NoCodeFlowCreateWithoutDepartamentoInput[] | NoCodeFlowUncheckedCreateWithoutDepartamentoInput[]
+    connectOrCreate?: NoCodeFlowCreateOrConnectWithoutDepartamentoInput | NoCodeFlowCreateOrConnectWithoutDepartamentoInput[]
+    createMany?: NoCodeFlowCreateManyDepartamentoInputEnvelope
+    connect?: NoCodeFlowWhereUniqueInput | NoCodeFlowWhereUniqueInput[]
   }
 
   export type AtendenteDepartamentoUpdateManyWithoutDepartamentoNestedInput = {
@@ -44449,6 +46397,20 @@ export namespace Prisma {
     deleteMany?: LeadAtendimentoScalarWhereInput | LeadAtendimentoScalarWhereInput[]
   }
 
+  export type NoCodeFlowUpdateManyWithoutDepartamentoNestedInput = {
+    create?: XOR<NoCodeFlowCreateWithoutDepartamentoInput, NoCodeFlowUncheckedCreateWithoutDepartamentoInput> | NoCodeFlowCreateWithoutDepartamentoInput[] | NoCodeFlowUncheckedCreateWithoutDepartamentoInput[]
+    connectOrCreate?: NoCodeFlowCreateOrConnectWithoutDepartamentoInput | NoCodeFlowCreateOrConnectWithoutDepartamentoInput[]
+    upsert?: NoCodeFlowUpsertWithWhereUniqueWithoutDepartamentoInput | NoCodeFlowUpsertWithWhereUniqueWithoutDepartamentoInput[]
+    createMany?: NoCodeFlowCreateManyDepartamentoInputEnvelope
+    set?: NoCodeFlowWhereUniqueInput | NoCodeFlowWhereUniqueInput[]
+    disconnect?: NoCodeFlowWhereUniqueInput | NoCodeFlowWhereUniqueInput[]
+    delete?: NoCodeFlowWhereUniqueInput | NoCodeFlowWhereUniqueInput[]
+    connect?: NoCodeFlowWhereUniqueInput | NoCodeFlowWhereUniqueInput[]
+    update?: NoCodeFlowUpdateWithWhereUniqueWithoutDepartamentoInput | NoCodeFlowUpdateWithWhereUniqueWithoutDepartamentoInput[]
+    updateMany?: NoCodeFlowUpdateManyWithWhereWithoutDepartamentoInput | NoCodeFlowUpdateManyWithWhereWithoutDepartamentoInput[]
+    deleteMany?: NoCodeFlowScalarWhereInput | NoCodeFlowScalarWhereInput[]
+  }
+
   export type AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput = {
     create?: XOR<AtendenteDepartamentoCreateWithoutDepartamentoInput, AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput> | AtendenteDepartamentoCreateWithoutDepartamentoInput[] | AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput[]
     connectOrCreate?: AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput | AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput[]
@@ -44475,6 +46437,20 @@ export namespace Prisma {
     update?: LeadAtendimentoUpdateWithWhereUniqueWithoutDepartamentoInput | LeadAtendimentoUpdateWithWhereUniqueWithoutDepartamentoInput[]
     updateMany?: LeadAtendimentoUpdateManyWithWhereWithoutDepartamentoInput | LeadAtendimentoUpdateManyWithWhereWithoutDepartamentoInput[]
     deleteMany?: LeadAtendimentoScalarWhereInput | LeadAtendimentoScalarWhereInput[]
+  }
+
+  export type NoCodeFlowUncheckedUpdateManyWithoutDepartamentoNestedInput = {
+    create?: XOR<NoCodeFlowCreateWithoutDepartamentoInput, NoCodeFlowUncheckedCreateWithoutDepartamentoInput> | NoCodeFlowCreateWithoutDepartamentoInput[] | NoCodeFlowUncheckedCreateWithoutDepartamentoInput[]
+    connectOrCreate?: NoCodeFlowCreateOrConnectWithoutDepartamentoInput | NoCodeFlowCreateOrConnectWithoutDepartamentoInput[]
+    upsert?: NoCodeFlowUpsertWithWhereUniqueWithoutDepartamentoInput | NoCodeFlowUpsertWithWhereUniqueWithoutDepartamentoInput[]
+    createMany?: NoCodeFlowCreateManyDepartamentoInputEnvelope
+    set?: NoCodeFlowWhereUniqueInput | NoCodeFlowWhereUniqueInput[]
+    disconnect?: NoCodeFlowWhereUniqueInput | NoCodeFlowWhereUniqueInput[]
+    delete?: NoCodeFlowWhereUniqueInput | NoCodeFlowWhereUniqueInput[]
+    connect?: NoCodeFlowWhereUniqueInput | NoCodeFlowWhereUniqueInput[]
+    update?: NoCodeFlowUpdateWithWhereUniqueWithoutDepartamentoInput | NoCodeFlowUpdateWithWhereUniqueWithoutDepartamentoInput[]
+    updateMany?: NoCodeFlowUpdateManyWithWhereWithoutDepartamentoInput | NoCodeFlowUpdateManyWithWhereWithoutDepartamentoInput[]
+    deleteMany?: NoCodeFlowScalarWhereInput | NoCodeFlowScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutAtendenteInput = {
@@ -45251,6 +47227,35 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type BotConversaCreateWithoutLeadInput = {
+    botAtivo?: boolean
+    pausadoMotivo?: string | null
+    pausadoEm?: Date | string | null
+    aguardandoNoId?: string | null
+    tentativas?: number
+    ultimaInteracaoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    flow?: NoCodeFlowCreateNestedOneWithoutConversasBotInput
+  }
+
+  export type BotConversaUncheckedCreateWithoutLeadInput = {
+    botAtivo?: boolean
+    pausadoMotivo?: string | null
+    pausadoEm?: Date | string | null
+    flowId?: string | null
+    aguardandoNoId?: string | null
+    tentativas?: number
+    ultimaInteracaoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type BotConversaCreateOrConnectWithoutLeadInput = {
+    where: BotConversaWhereUniqueInput
+    create: XOR<BotConversaCreateWithoutLeadInput, BotConversaUncheckedCreateWithoutLeadInput>
+  }
+
   export type CampaignUpsertWithoutLeadsInput = {
     update: XOR<CampaignUpdateWithoutLeadsInput, CampaignUncheckedUpdateWithoutLeadsInput>
     create: XOR<CampaignCreateWithoutLeadsInput, CampaignUncheckedCreateWithoutLeadsInput>
@@ -45482,6 +47487,41 @@ export namespace Prisma {
     data?: DateTimeFilter<"AtendimentoTransferencia"> | Date | string
   }
 
+  export type BotConversaUpsertWithoutLeadInput = {
+    update: XOR<BotConversaUpdateWithoutLeadInput, BotConversaUncheckedUpdateWithoutLeadInput>
+    create: XOR<BotConversaCreateWithoutLeadInput, BotConversaUncheckedCreateWithoutLeadInput>
+    where?: BotConversaWhereInput
+  }
+
+  export type BotConversaUpdateToOneWithWhereWithoutLeadInput = {
+    where?: BotConversaWhereInput
+    data: XOR<BotConversaUpdateWithoutLeadInput, BotConversaUncheckedUpdateWithoutLeadInput>
+  }
+
+  export type BotConversaUpdateWithoutLeadInput = {
+    botAtivo?: BoolFieldUpdateOperationsInput | boolean
+    pausadoMotivo?: NullableStringFieldUpdateOperationsInput | string | null
+    pausadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    aguardandoNoId?: NullableStringFieldUpdateOperationsInput | string | null
+    tentativas?: IntFieldUpdateOperationsInput | number
+    ultimaInteracaoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    flow?: NoCodeFlowUpdateOneWithoutConversasBotNestedInput
+  }
+
+  export type BotConversaUncheckedUpdateWithoutLeadInput = {
+    botAtivo?: BoolFieldUpdateOperationsInput | boolean
+    pausadoMotivo?: NullableStringFieldUpdateOperationsInput | string | null
+    pausadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    flowId?: NullableStringFieldUpdateOperationsInput | string | null
+    aguardandoNoId?: NullableStringFieldUpdateOperationsInput | string | null
+    tentativas?: IntFieldUpdateOperationsInput | number
+    ultimaInteracaoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type LeadCreateWithoutNotasInternasInput = {
     id?: string
     workspaceId: string
@@ -45504,6 +47544,7 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutNotasInternasInput = {
@@ -45528,6 +47569,7 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutNotasInternasInput = {
@@ -45568,6 +47610,7 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutNotasInternasInput = {
@@ -45592,6 +47635,7 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
   export type CampaignMessageCreateWithoutCampanhaInput = {
@@ -45642,6 +47686,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutCampanhaInput = {
@@ -45666,6 +47711,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutCampanhaInput = {
@@ -45859,6 +47905,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutCampanhasInput = {
@@ -45883,6 +47930,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutCampanhasInput = {
@@ -45974,6 +48022,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutCampanhasInput = {
@@ -45998,6 +48047,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
   export type CampaignUpsertWithoutLeadCampaignsInput = {
@@ -46233,6 +48283,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutMensagensAgendadasInput = {
@@ -46257,6 +48308,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutMensagensAgendadasInput = {
@@ -46297,6 +48349,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutMensagensAgendadasInput = {
@@ -46321,6 +48374,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadCreateWithoutEventosInput = {
@@ -46345,6 +48399,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutEventosInput = {
@@ -46369,6 +48424,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutEventosInput = {
@@ -46481,6 +48537,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutEventosInput = {
@@ -46505,6 +48562,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
   export type CampaignUpsertWithoutEventosInput = {
@@ -46590,6 +48648,35 @@ export namespace Prisma {
     campanhaId?: StringFieldUpdateOperationsInput | string
   }
 
+  export type DepartamentoCreateWithoutBotsInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendentes?: AtendenteDepartamentoCreateNestedManyWithoutDepartamentoInput
+    atendimentos?: LeadAtendimentoCreateNestedManyWithoutDepartamentoInput
+  }
+
+  export type DepartamentoUncheckedCreateWithoutBotsInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendentes?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput
+    atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutDepartamentoInput
+  }
+
+  export type DepartamentoCreateOrConnectWithoutBotsInput = {
+    where: DepartamentoWhereUniqueInput
+    create: XOR<DepartamentoCreateWithoutBotsInput, DepartamentoUncheckedCreateWithoutBotsInput>
+  }
+
   export type NoCodeExecutionCreateWithoutFlowInput = {
     id?: string
     status: string
@@ -46632,6 +48719,75 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type BotConversaCreateWithoutFlowInput = {
+    botAtivo?: boolean
+    pausadoMotivo?: string | null
+    pausadoEm?: Date | string | null
+    aguardandoNoId?: string | null
+    tentativas?: number
+    ultimaInteracaoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    lead: LeadCreateNestedOneWithoutBotConversaInput
+  }
+
+  export type BotConversaUncheckedCreateWithoutFlowInput = {
+    leadId: string
+    botAtivo?: boolean
+    pausadoMotivo?: string | null
+    pausadoEm?: Date | string | null
+    aguardandoNoId?: string | null
+    tentativas?: number
+    ultimaInteracaoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type BotConversaCreateOrConnectWithoutFlowInput = {
+    where: BotConversaWhereUniqueInput
+    create: XOR<BotConversaCreateWithoutFlowInput, BotConversaUncheckedCreateWithoutFlowInput>
+  }
+
+  export type BotConversaCreateManyFlowInputEnvelope = {
+    data: BotConversaCreateManyFlowInput | BotConversaCreateManyFlowInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DepartamentoUpsertWithoutBotsInput = {
+    update: XOR<DepartamentoUpdateWithoutBotsInput, DepartamentoUncheckedUpdateWithoutBotsInput>
+    create: XOR<DepartamentoCreateWithoutBotsInput, DepartamentoUncheckedCreateWithoutBotsInput>
+    where?: DepartamentoWhereInput
+  }
+
+  export type DepartamentoUpdateToOneWithWhereWithoutBotsInput = {
+    where?: DepartamentoWhereInput
+    data: XOR<DepartamentoUpdateWithoutBotsInput, DepartamentoUncheckedUpdateWithoutBotsInput>
+  }
+
+  export type DepartamentoUpdateWithoutBotsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendentes?: AtendenteDepartamentoUpdateManyWithoutDepartamentoNestedInput
+    atendimentos?: LeadAtendimentoUpdateManyWithoutDepartamentoNestedInput
+  }
+
+  export type DepartamentoUncheckedUpdateWithoutBotsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendentes?: AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput
+    atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoNestedInput
+  }
+
   export type NoCodeExecutionUpsertWithWhereUniqueWithoutFlowInput = {
     where: NoCodeExecutionWhereUniqueInput
     update: XOR<NoCodeExecutionUpdateWithoutFlowInput, NoCodeExecutionUncheckedUpdateWithoutFlowInput>
@@ -46668,6 +48824,246 @@ export namespace Prisma {
     webhookEnviadoEm?: DateTimeNullableFilter<"NoCodeExecution"> | Date | string | null
   }
 
+  export type BotConversaUpsertWithWhereUniqueWithoutFlowInput = {
+    where: BotConversaWhereUniqueInput
+    update: XOR<BotConversaUpdateWithoutFlowInput, BotConversaUncheckedUpdateWithoutFlowInput>
+    create: XOR<BotConversaCreateWithoutFlowInput, BotConversaUncheckedCreateWithoutFlowInput>
+  }
+
+  export type BotConversaUpdateWithWhereUniqueWithoutFlowInput = {
+    where: BotConversaWhereUniqueInput
+    data: XOR<BotConversaUpdateWithoutFlowInput, BotConversaUncheckedUpdateWithoutFlowInput>
+  }
+
+  export type BotConversaUpdateManyWithWhereWithoutFlowInput = {
+    where: BotConversaScalarWhereInput
+    data: XOR<BotConversaUpdateManyMutationInput, BotConversaUncheckedUpdateManyWithoutFlowInput>
+  }
+
+  export type BotConversaScalarWhereInput = {
+    AND?: BotConversaScalarWhereInput | BotConversaScalarWhereInput[]
+    OR?: BotConversaScalarWhereInput[]
+    NOT?: BotConversaScalarWhereInput | BotConversaScalarWhereInput[]
+    leadId?: StringFilter<"BotConversa"> | string
+    botAtivo?: BoolFilter<"BotConversa"> | boolean
+    pausadoMotivo?: StringNullableFilter<"BotConversa"> | string | null
+    pausadoEm?: DateTimeNullableFilter<"BotConversa"> | Date | string | null
+    flowId?: StringNullableFilter<"BotConversa"> | string | null
+    aguardandoNoId?: StringNullableFilter<"BotConversa"> | string | null
+    tentativas?: IntFilter<"BotConversa"> | number
+    ultimaInteracaoEm?: DateTimeFilter<"BotConversa"> | Date | string
+    criadoEm?: DateTimeFilter<"BotConversa"> | Date | string
+    atualizadoEm?: DateTimeFilter<"BotConversa"> | Date | string
+  }
+
+  export type LeadCreateWithoutBotConversaInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    telefone: string
+    produto: string
+    marca: string
+    persona: string
+    regiao: string
+    status?: $Enums.LeadStatus
+    notas?: string | null
+    negocio?: string | null
+    atividade?: string | null
+    entradaCampanhaEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    campanha?: CampaignCreateNestedOneWithoutLeadsInput
+    campanhas?: LeadCampaignCreateNestedManyWithoutLeadInput
+    eventos?: TimelineEventCreateNestedManyWithoutLeadInput
+    mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
+    notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
+  }
+
+  export type LeadUncheckedCreateWithoutBotConversaInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    telefone: string
+    produto: string
+    marca: string
+    persona: string
+    regiao: string
+    status?: $Enums.LeadStatus
+    notas?: string | null
+    negocio?: string | null
+    atividade?: string | null
+    campanhaId?: string | null
+    entradaCampanhaEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    campanhas?: LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
+    eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
+    mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
+    notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
+  }
+
+  export type LeadCreateOrConnectWithoutBotConversaInput = {
+    where: LeadWhereUniqueInput
+    create: XOR<LeadCreateWithoutBotConversaInput, LeadUncheckedCreateWithoutBotConversaInput>
+  }
+
+  export type NoCodeFlowCreateWithoutConversasBotInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    ativo?: boolean
+    sistema?: boolean
+    execWebhookAtivo?: boolean
+    execWebhookUrl?: string | null
+    execWebhookSegredo?: string | null
+    tipo?: string
+    botEntrada?: boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    departamento?: DepartamentoCreateNestedOneWithoutBotsInput
+    execucoes?: NoCodeExecutionCreateNestedManyWithoutFlowInput
+  }
+
+  export type NoCodeFlowUncheckedCreateWithoutConversasBotInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    ativo?: boolean
+    sistema?: boolean
+    execWebhookAtivo?: boolean
+    execWebhookUrl?: string | null
+    execWebhookSegredo?: string | null
+    tipo?: string
+    botEntrada?: boolean
+    departamentoId?: string | null
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    execucoes?: NoCodeExecutionUncheckedCreateNestedManyWithoutFlowInput
+  }
+
+  export type NoCodeFlowCreateOrConnectWithoutConversasBotInput = {
+    where: NoCodeFlowWhereUniqueInput
+    create: XOR<NoCodeFlowCreateWithoutConversasBotInput, NoCodeFlowUncheckedCreateWithoutConversasBotInput>
+  }
+
+  export type LeadUpsertWithoutBotConversaInput = {
+    update: XOR<LeadUpdateWithoutBotConversaInput, LeadUncheckedUpdateWithoutBotConversaInput>
+    create: XOR<LeadCreateWithoutBotConversaInput, LeadUncheckedCreateWithoutBotConversaInput>
+    where?: LeadWhereInput
+  }
+
+  export type LeadUpdateToOneWithWhereWithoutBotConversaInput = {
+    where?: LeadWhereInput
+    data: XOR<LeadUpdateWithoutBotConversaInput, LeadUncheckedUpdateWithoutBotConversaInput>
+  }
+
+  export type LeadUpdateWithoutBotConversaInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    produto?: StringFieldUpdateOperationsInput | string
+    marca?: StringFieldUpdateOperationsInput | string
+    persona?: StringFieldUpdateOperationsInput | string
+    regiao?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
+    notas?: NullableStringFieldUpdateOperationsInput | string | null
+    negocio?: NullableStringFieldUpdateOperationsInput | string | null
+    atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    campanha?: CampaignUpdateOneWithoutLeadsNestedInput
+    campanhas?: LeadCampaignUpdateManyWithoutLeadNestedInput
+    eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
+    mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
+    notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
+  }
+
+  export type LeadUncheckedUpdateWithoutBotConversaInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    produto?: StringFieldUpdateOperationsInput | string
+    marca?: StringFieldUpdateOperationsInput | string
+    persona?: StringFieldUpdateOperationsInput | string
+    regiao?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
+    notas?: NullableStringFieldUpdateOperationsInput | string | null
+    negocio?: NullableStringFieldUpdateOperationsInput | string | null
+    atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
+    entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    campanhas?: LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
+    eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
+    mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
+    notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
+  }
+
+  export type NoCodeFlowUpsertWithoutConversasBotInput = {
+    update: XOR<NoCodeFlowUpdateWithoutConversasBotInput, NoCodeFlowUncheckedUpdateWithoutConversasBotInput>
+    create: XOR<NoCodeFlowCreateWithoutConversasBotInput, NoCodeFlowUncheckedCreateWithoutConversasBotInput>
+    where?: NoCodeFlowWhereInput
+  }
+
+  export type NoCodeFlowUpdateToOneWithWhereWithoutConversasBotInput = {
+    where?: NoCodeFlowWhereInput
+    data: XOR<NoCodeFlowUpdateWithoutConversasBotInput, NoCodeFlowUncheckedUpdateWithoutConversasBotInput>
+  }
+
+  export type NoCodeFlowUpdateWithoutConversasBotInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    sistema?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
+    tipo?: StringFieldUpdateOperationsInput | string
+    botEntrada?: BoolFieldUpdateOperationsInput | boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    departamento?: DepartamentoUpdateOneWithoutBotsNestedInput
+    execucoes?: NoCodeExecutionUpdateManyWithoutFlowNestedInput
+  }
+
+  export type NoCodeFlowUncheckedUpdateWithoutConversasBotInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    sistema?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
+    tipo?: StringFieldUpdateOperationsInput | string
+    botEntrada?: BoolFieldUpdateOperationsInput | boolean
+    departamentoId?: NullableStringFieldUpdateOperationsInput | string | null
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    execucoes?: NoCodeExecutionUncheckedUpdateManyWithoutFlowNestedInput
+  }
+
   export type NoCodeFlowCreateWithoutExecucoesInput = {
     id?: string
     workspaceId: string
@@ -46677,10 +49073,14 @@ export namespace Prisma {
     execWebhookAtivo?: boolean
     execWebhookUrl?: string | null
     execWebhookSegredo?: string | null
+    tipo?: string
+    botEntrada?: boolean
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: Date | string
     atualizadoEm?: Date | string
+    departamento?: DepartamentoCreateNestedOneWithoutBotsInput
+    conversasBot?: BotConversaCreateNestedManyWithoutFlowInput
   }
 
   export type NoCodeFlowUncheckedCreateWithoutExecucoesInput = {
@@ -46692,10 +49092,14 @@ export namespace Prisma {
     execWebhookAtivo?: boolean
     execWebhookUrl?: string | null
     execWebhookSegredo?: string | null
+    tipo?: string
+    botEntrada?: boolean
+    departamentoId?: string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: Date | string
     atualizadoEm?: Date | string
+    conversasBot?: BotConversaUncheckedCreateNestedManyWithoutFlowInput
   }
 
   export type NoCodeFlowCreateOrConnectWithoutExecucoesInput = {
@@ -46723,10 +49127,14 @@ export namespace Prisma {
     execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
     execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
     execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
+    tipo?: StringFieldUpdateOperationsInput | string
+    botEntrada?: BoolFieldUpdateOperationsInput | boolean
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    departamento?: DepartamentoUpdateOneWithoutBotsNestedInput
+    conversasBot?: BotConversaUpdateManyWithoutFlowNestedInput
   }
 
   export type NoCodeFlowUncheckedUpdateWithoutExecucoesInput = {
@@ -46738,10 +49146,14 @@ export namespace Prisma {
     execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
     execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
     execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
+    tipo?: StringFieldUpdateOperationsInput | string
+    botEntrada?: BoolFieldUpdateOperationsInput | boolean
+    departamentoId?: NullableStringFieldUpdateOperationsInput | string | null
     nodes?: JsonNullValueInput | InputJsonValue
     edges?: JsonNullValueInput | InputJsonValue
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversasBot?: BotConversaUncheckedUpdateManyWithoutFlowNestedInput
   }
 
   export type AtendenteCreateWithoutUserInput = {
@@ -46836,6 +49248,54 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type NoCodeFlowCreateWithoutDepartamentoInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    ativo?: boolean
+    sistema?: boolean
+    execWebhookAtivo?: boolean
+    execWebhookUrl?: string | null
+    execWebhookSegredo?: string | null
+    tipo?: string
+    botEntrada?: boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    execucoes?: NoCodeExecutionCreateNestedManyWithoutFlowInput
+    conversasBot?: BotConversaCreateNestedManyWithoutFlowInput
+  }
+
+  export type NoCodeFlowUncheckedCreateWithoutDepartamentoInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    ativo?: boolean
+    sistema?: boolean
+    execWebhookAtivo?: boolean
+    execWebhookUrl?: string | null
+    execWebhookSegredo?: string | null
+    tipo?: string
+    botEntrada?: boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    execucoes?: NoCodeExecutionUncheckedCreateNestedManyWithoutFlowInput
+    conversasBot?: BotConversaUncheckedCreateNestedManyWithoutFlowInput
+  }
+
+  export type NoCodeFlowCreateOrConnectWithoutDepartamentoInput = {
+    where: NoCodeFlowWhereUniqueInput
+    create: XOR<NoCodeFlowCreateWithoutDepartamentoInput, NoCodeFlowUncheckedCreateWithoutDepartamentoInput>
+  }
+
+  export type NoCodeFlowCreateManyDepartamentoInputEnvelope = {
+    data: NoCodeFlowCreateManyDepartamentoInput | NoCodeFlowCreateManyDepartamentoInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AtendenteDepartamentoUpsertWithWhereUniqueWithoutDepartamentoInput = {
     where: AtendenteDepartamentoWhereUniqueInput
     update: XOR<AtendenteDepartamentoUpdateWithoutDepartamentoInput, AtendenteDepartamentoUncheckedUpdateWithoutDepartamentoInput>
@@ -46884,6 +49344,43 @@ export namespace Prisma {
     departamentoId?: StringNullableFilter<"LeadAtendimento"> | string | null
     atendenteId?: StringNullableFilter<"LeadAtendimento"> | string | null
     transferidoEm?: DateTimeFilter<"LeadAtendimento"> | Date | string
+  }
+
+  export type NoCodeFlowUpsertWithWhereUniqueWithoutDepartamentoInput = {
+    where: NoCodeFlowWhereUniqueInput
+    update: XOR<NoCodeFlowUpdateWithoutDepartamentoInput, NoCodeFlowUncheckedUpdateWithoutDepartamentoInput>
+    create: XOR<NoCodeFlowCreateWithoutDepartamentoInput, NoCodeFlowUncheckedCreateWithoutDepartamentoInput>
+  }
+
+  export type NoCodeFlowUpdateWithWhereUniqueWithoutDepartamentoInput = {
+    where: NoCodeFlowWhereUniqueInput
+    data: XOR<NoCodeFlowUpdateWithoutDepartamentoInput, NoCodeFlowUncheckedUpdateWithoutDepartamentoInput>
+  }
+
+  export type NoCodeFlowUpdateManyWithWhereWithoutDepartamentoInput = {
+    where: NoCodeFlowScalarWhereInput
+    data: XOR<NoCodeFlowUpdateManyMutationInput, NoCodeFlowUncheckedUpdateManyWithoutDepartamentoInput>
+  }
+
+  export type NoCodeFlowScalarWhereInput = {
+    AND?: NoCodeFlowScalarWhereInput | NoCodeFlowScalarWhereInput[]
+    OR?: NoCodeFlowScalarWhereInput[]
+    NOT?: NoCodeFlowScalarWhereInput | NoCodeFlowScalarWhereInput[]
+    id?: StringFilter<"NoCodeFlow"> | string
+    workspaceId?: StringFilter<"NoCodeFlow"> | string
+    nome?: StringFilter<"NoCodeFlow"> | string
+    ativo?: BoolFilter<"NoCodeFlow"> | boolean
+    sistema?: BoolFilter<"NoCodeFlow"> | boolean
+    execWebhookAtivo?: BoolFilter<"NoCodeFlow"> | boolean
+    execWebhookUrl?: StringNullableFilter<"NoCodeFlow"> | string | null
+    execWebhookSegredo?: StringNullableFilter<"NoCodeFlow"> | string | null
+    tipo?: StringFilter<"NoCodeFlow"> | string
+    botEntrada?: BoolFilter<"NoCodeFlow"> | boolean
+    departamentoId?: StringNullableFilter<"NoCodeFlow"> | string | null
+    nodes?: JsonFilter<"NoCodeFlow">
+    edges?: JsonFilter<"NoCodeFlow">
+    criadoEm?: DateTimeFilter<"NoCodeFlow"> | Date | string
+    atualizadoEm?: DateTimeFilter<"NoCodeFlow"> | Date | string
   }
 
   export type UserCreateWithoutAtendenteInput = {
@@ -47070,6 +49567,7 @@ export namespace Prisma {
     criadoEm?: Date | string
     atualizadoEm?: Date | string
     atendimentos?: LeadAtendimentoCreateNestedManyWithoutDepartamentoInput
+    bots?: NoCodeFlowCreateNestedManyWithoutDepartamentoInput
   }
 
   export type DepartamentoUncheckedCreateWithoutAtendentesInput = {
@@ -47081,6 +49579,7 @@ export namespace Prisma {
     criadoEm?: Date | string
     atualizadoEm?: Date | string
     atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutDepartamentoInput
+    bots?: NoCodeFlowUncheckedCreateNestedManyWithoutDepartamentoInput
   }
 
   export type DepartamentoCreateOrConnectWithoutAtendentesInput = {
@@ -47137,6 +49636,7 @@ export namespace Prisma {
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atendimentos?: LeadAtendimentoUpdateManyWithoutDepartamentoNestedInput
+    bots?: NoCodeFlowUpdateManyWithoutDepartamentoNestedInput
   }
 
   export type DepartamentoUncheckedUpdateWithoutAtendentesInput = {
@@ -47148,6 +49648,7 @@ export namespace Prisma {
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoNestedInput
+    bots?: NoCodeFlowUncheckedUpdateManyWithoutDepartamentoNestedInput
   }
 
   export type LeadCreateWithoutAtendimentoInput = {
@@ -47172,6 +49673,7 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutAtendimentoInput = {
@@ -47196,6 +49698,7 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutAtendimentoInput = {
@@ -47212,6 +49715,7 @@ export namespace Prisma {
     criadoEm?: Date | string
     atualizadoEm?: Date | string
     atendentes?: AtendenteDepartamentoCreateNestedManyWithoutDepartamentoInput
+    bots?: NoCodeFlowCreateNestedManyWithoutDepartamentoInput
   }
 
   export type DepartamentoUncheckedCreateWithoutAtendimentosInput = {
@@ -47223,6 +49727,7 @@ export namespace Prisma {
     criadoEm?: Date | string
     atualizadoEm?: Date | string
     atendentes?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput
+    bots?: NoCodeFlowUncheckedCreateNestedManyWithoutDepartamentoInput
   }
 
   export type DepartamentoCreateOrConnectWithoutAtendimentosInput = {
@@ -47286,6 +49791,7 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutAtendimentoInput = {
@@ -47310,6 +49816,7 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
   export type DepartamentoUpsertWithoutAtendimentosInput = {
@@ -47332,6 +49839,7 @@ export namespace Prisma {
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atendentes?: AtendenteDepartamentoUpdateManyWithoutDepartamentoNestedInput
+    bots?: NoCodeFlowUpdateManyWithoutDepartamentoNestedInput
   }
 
   export type DepartamentoUncheckedUpdateWithoutAtendimentosInput = {
@@ -47343,6 +49851,7 @@ export namespace Prisma {
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atendentes?: AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput
+    bots?: NoCodeFlowUncheckedUpdateManyWithoutDepartamentoNestedInput
   }
 
   export type AtendenteUpsertWithoutAtendimentosInput = {
@@ -47396,6 +49905,7 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
+    botConversa?: BotConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutTransferenciasInput = {
@@ -47420,6 +49930,7 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
+    botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutTransferenciasInput = {
@@ -47460,6 +49971,7 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
+    botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutTransferenciasInput = {
@@ -47484,6 +49996,7 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
+    botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadCampaignCreateManyLeadInput = {
@@ -47785,6 +50298,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutCampanhaInput = {
@@ -47809,6 +50323,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateManyWithoutCampanhaInput = {
@@ -47952,6 +50467,18 @@ export namespace Prisma {
     webhookEnviadoEm?: Date | string | null
   }
 
+  export type BotConversaCreateManyFlowInput = {
+    leadId: string
+    botAtivo?: boolean
+    pausadoMotivo?: string | null
+    pausadoEm?: Date | string | null
+    aguardandoNoId?: string | null
+    tentativas?: number
+    ultimaInteracaoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
   export type NoCodeExecutionUpdateWithoutFlowInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -48000,6 +50527,42 @@ export namespace Prisma {
     webhookEnviadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type BotConversaUpdateWithoutFlowInput = {
+    botAtivo?: BoolFieldUpdateOperationsInput | boolean
+    pausadoMotivo?: NullableStringFieldUpdateOperationsInput | string | null
+    pausadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    aguardandoNoId?: NullableStringFieldUpdateOperationsInput | string | null
+    tentativas?: IntFieldUpdateOperationsInput | number
+    ultimaInteracaoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    lead?: LeadUpdateOneRequiredWithoutBotConversaNestedInput
+  }
+
+  export type BotConversaUncheckedUpdateWithoutFlowInput = {
+    leadId?: StringFieldUpdateOperationsInput | string
+    botAtivo?: BoolFieldUpdateOperationsInput | boolean
+    pausadoMotivo?: NullableStringFieldUpdateOperationsInput | string | null
+    pausadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    aguardandoNoId?: NullableStringFieldUpdateOperationsInput | string | null
+    tentativas?: IntFieldUpdateOperationsInput | number
+    ultimaInteracaoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BotConversaUncheckedUpdateManyWithoutFlowInput = {
+    leadId?: StringFieldUpdateOperationsInput | string
+    botAtivo?: BoolFieldUpdateOperationsInput | boolean
+    pausadoMotivo?: NullableStringFieldUpdateOperationsInput | string | null
+    pausadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    aguardandoNoId?: NullableStringFieldUpdateOperationsInput | string | null
+    tentativas?: IntFieldUpdateOperationsInput | number
+    ultimaInteracaoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type AtendenteDepartamentoCreateManyDepartamentoInput = {
     atendenteId: string
   }
@@ -48008,6 +50571,23 @@ export namespace Prisma {
     leadId: string
     atendenteId?: string | null
     transferidoEm?: Date | string
+  }
+
+  export type NoCodeFlowCreateManyDepartamentoInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    ativo?: boolean
+    sistema?: boolean
+    execWebhookAtivo?: boolean
+    execWebhookUrl?: string | null
+    execWebhookSegredo?: string | null
+    tipo?: string
+    botEntrada?: boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
   }
 
   export type AtendenteDepartamentoUpdateWithoutDepartamentoInput = {
@@ -48038,6 +50618,61 @@ export namespace Prisma {
     leadId?: StringFieldUpdateOperationsInput | string
     atendenteId?: NullableStringFieldUpdateOperationsInput | string | null
     transferidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NoCodeFlowUpdateWithoutDepartamentoInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    sistema?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
+    tipo?: StringFieldUpdateOperationsInput | string
+    botEntrada?: BoolFieldUpdateOperationsInput | boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    execucoes?: NoCodeExecutionUpdateManyWithoutFlowNestedInput
+    conversasBot?: BotConversaUpdateManyWithoutFlowNestedInput
+  }
+
+  export type NoCodeFlowUncheckedUpdateWithoutDepartamentoInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    sistema?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
+    tipo?: StringFieldUpdateOperationsInput | string
+    botEntrada?: BoolFieldUpdateOperationsInput | boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    execucoes?: NoCodeExecutionUncheckedUpdateManyWithoutFlowNestedInput
+    conversasBot?: BotConversaUncheckedUpdateManyWithoutFlowNestedInput
+  }
+
+  export type NoCodeFlowUncheckedUpdateManyWithoutDepartamentoInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    sistema?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookAtivo?: BoolFieldUpdateOperationsInput | boolean
+    execWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    execWebhookSegredo?: NullableStringFieldUpdateOperationsInput | string | null
+    tipo?: StringFieldUpdateOperationsInput | string
+    botEntrada?: BoolFieldUpdateOperationsInput | boolean
+    nodes?: JsonNullValueInput | InputJsonValue
+    edges?: JsonNullValueInput | InputJsonValue
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AtendenteDepartamentoCreateManyAtendenteInput = {

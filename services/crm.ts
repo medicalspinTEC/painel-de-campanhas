@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { normalizarSecoes, podeAcessar, podeGerenciarNivel, type SecaoKey, type UserRole } from "@/lib/permissoes"
 import { avaliarAtendimento, type ContextoAtendimento } from "@/lib/crm-permissoes"
 import { createUser, deleteUser, updateUser, type Ator } from "@/services/users"
+import { pausarBot, reativarBot } from "@/services/bot-estado"
 import { getCrmPluginAtivo } from "@/services/settings"
 import { emitWebhookEvent } from "@/services/webhooks"
 
@@ -20,6 +21,15 @@ export class CrmError extends Error {}
 // Tipos (serializáveis: trafegam do servidor para os componentes)
 // ---------------------------------------------------------------------------
 
+/** Bot (fluxo No Code do tipo "bot") exibido na página do CRM. */
+export type BotItem = {
+  id: string
+  nome: string
+  ativo: boolean
+  /** Total de blocos do fluxo (0 = ainda vazio). */
+  totalBlocos: number
+}
+
 export type DepartamentoItem = {
   id: string
   nome: string
@@ -27,6 +37,8 @@ export type DepartamentoItem = {
   ativo: boolean
   totalAtendentes: number
   totalConversas: number
+  /** Bots que atendem as conversas deste departamento enquanto não houver humano. */
+  bots: BotItem[]
 }
 
 export type AtendenteItem = {
@@ -48,6 +60,8 @@ export type AtendenteItem = {
 export type UsuarioDisponivel = { id: string; nome: string; username: string; role: UserRole }
 
 export type CrmData = {
+  /** Bots de entrada (triagem): atendem quem ainda não está em nenhum departamento. */
+  botsEntrada: BotItem[]
   departamentos: DepartamentoItem[]
   atendentes: AtendenteItem[]
   /** Usuários ativos que ainda não são atendentes (para vincular um existente). */
@@ -131,6 +145,9 @@ export async function deleteDepartamento(id: string): Promise<{ conversas: numbe
   const atual = await prisma.departamento.findUnique({ where: { id }, select: { id: true } })
   if (!atual) throw new CrmError("Departamento não encontrado.")
   const conversas = await prisma.leadAtendimento.count({ where: { departamentoId: id } })
+  // Os bots do departamento ficam órfãos (o vínculo vira nulo): desativa antes, para nunca
+  // passarem a atender como se fossem o bot de entrada.
+  await prisma.noCodeFlow.updateMany({ where: { departamentoId: id }, data: { ativo: false } })
   await prisma.departamento.delete({ where: { id } })
   return { conversas }
 }
@@ -287,7 +304,7 @@ export async function deleteAtendente(id: string, ator: Ator, excluirUsuario: bo
 // ---------------------------------------------------------------------------
 
 export async function getCrmData(ator: Pick<Ator, "id" | "role">): Promise<CrmData> {
-  const [departamentos, atendentes, conversasPorDepartamento, conversasPorAtendente, usuarios] = await Promise.all([
+  const [departamentos, atendentes, conversasPorDepartamento, conversasPorAtendente, usuarios, bots] = await Promise.all([
     prisma.departamento.findMany({
       orderBy: [{ ativo: "desc" }, { nome: "asc" }],
       select: { id: true, nome: true, descricao: true, ativo: true, _count: { select: { atendentes: true } } },
@@ -310,7 +327,19 @@ export async function getCrmData(ator: Pick<Ator, "id" | "role">): Promise<CrmDa
       orderBy: { nome: "asc" },
       select: { id: true, nome: true, username: true, role: true },
     }),
+    prisma.noCodeFlow.findMany({
+      where: { tipo: "bot" },
+      orderBy: [{ ativo: "desc" }, { nome: "asc" }],
+      select: { id: true, nome: true, ativo: true, botEntrada: true, departamentoId: true, nodes: true },
+    }),
   ])
+
+  const paraBotItem = (b: (typeof bots)[number]): BotItem => ({
+    id: b.id,
+    nome: b.nome,
+    ativo: b.ativo,
+    totalBlocos: Array.isArray(b.nodes) ? b.nodes.length : 0,
+  })
 
   const porDepartamento = new Map<string, number>()
   for (const linha of conversasPorDepartamento) {
@@ -322,6 +351,7 @@ export async function getCrmData(ator: Pick<Ator, "id" | "role">): Promise<CrmDa
   }
 
   return {
+    botsEntrada: bots.filter((b) => b.botEntrada).map(paraBotItem),
     departamentos: departamentos.map((d) => ({
       id: d.id,
       nome: d.nome,
@@ -329,6 +359,7 @@ export async function getCrmData(ator: Pick<Ator, "id" | "role">): Promise<CrmDa
       ativo: d.ativo,
       totalAtendentes: d._count.atendentes,
       totalConversas: porDepartamento.get(d.id) ?? 0,
+      bots: bots.filter((b) => b.departamentoId === d.id).map(paraBotItem),
     })),
     atendentes: atendentes.map((a) => ({
       id: a.id,
@@ -507,6 +538,9 @@ export async function assumirConversa(
     prisma.chatInternalNote.create({ data: { leadId, texto: nota } }),
   ])
 
+  // Um humano assumiu: o bot para de responder esta conversa até alguém reativá-lo.
+  await pausarBotComNota(leadId, `Conversa assumida por ${executor.nome}.`)
+
   void emitWebhookEvent("atendimento.transferido", {
     leadId,
     leadNome: lead.nome,
@@ -660,6 +694,10 @@ export async function transferirConversa(
     prisma.chatInternalNote.create({ data: { leadId, texto: nota } }),
   ])
 
+  // Transferir para uma pessoa = um humano passa a conduzir: pausa o bot. Para a fila de um
+  // departamento (sem atendente) o bot do departamento continua valendo.
+  if (atendente) await pausarBotComNota(leadId, `Conversa transferida para ${atendente.user.nome}.`)
+
   void emitWebhookEvent("atendimento.transferido", {
     leadId,
     leadNome: lead.nome,
@@ -670,4 +708,134 @@ export async function transferirConversa(
   })
 
   return { para }
+}
+
+// ---------------------------------------------------------------------------
+// Bots nas conversas
+// ---------------------------------------------------------------------------
+
+/**
+ * Pausa o bot e, quando ele estava ligado numa conversa em que já tinha falado, deixa uma
+ * nota interna no chat para a equipe saber por que ele parou. Nunca derruba a ação principal.
+ */
+export async function pausarBotComNota(leadId: string, motivo: string): Promise<void> {
+  try {
+    const jaTinhaBot = Boolean(await prisma.botConversa.findUnique({ where: { leadId }, select: { leadId: true } }))
+    const mudou = await pausarBot(leadId, motivo)
+    if (mudou && jaTinhaBot) {
+      await prisma.chatInternalNote.create({ data: { leadId, texto: `Bot pausado nesta conversa. ${motivo}` } })
+    }
+  } catch (error) {
+    console.error("[crm] falha ao pausar o bot da conversa", error)
+  }
+}
+
+/**
+ * Liga ou pausa o bot numa conversa específica, a pedido de uma pessoa. Quem pode responder
+ * a conversa (responsável, atendente do departamento ou admin) pode mexer no bot dela.
+ */
+export async function alternarBotConversa(
+  leadId: string,
+  ativo: boolean,
+  executor: { id: string; nome: string; role: UserRole },
+): Promise<void> {
+  const [lead, atual, ctx] = await Promise.all([
+    prisma.lead.findUnique({ where: { id: leadId }, select: { id: true } }),
+    prisma.leadAtendimento.findUnique({
+      where: { leadId },
+      select: {
+        departamentoId: true,
+        atendenteId: true,
+        departamento: { select: { nome: true } },
+        atendente: { select: { user: { select: { nome: true } } } },
+      },
+    }),
+    getContextoAtendimento(executor),
+  ])
+  if (!lead) throw new CrmError("Lead não encontrado.")
+
+  const permissoes = avaliarAtendimento(
+    atual
+      ? {
+          departamentoId: atual.departamentoId,
+          atendenteId: atual.atendenteId,
+          departamentoNome: atual.departamento?.nome ?? null,
+          atendenteNome: atual.atendente?.user.nome ?? null,
+        }
+      : null,
+    ctx,
+  )
+  if (!permissoes.podeEnviar) throw new CrmError(permissoes.motivo ?? "Você não pode alterar o bot desta conversa.")
+
+  if (ativo) {
+    await reativarBot(leadId)
+    await prisma.chatInternalNote.create({ data: { leadId, texto: `Bot reativado nesta conversa por ${executor.nome}.` } })
+  } else {
+    await pausarBotComNota(leadId, `Pausado por ${executor.nome}.`)
+  }
+}
+
+/**
+ * Coloca a conversa na fila de um departamento, a pedido de um bot (bloco "Transferir para
+ * departamento"). O departamento é achado pelo nome. Deixa o histórico e a nota interna.
+ */
+export async function transferirConversaPorBot(
+  leadId: string,
+  nomeDepartamento: string,
+  opcoes: { pausarBot?: boolean; nomeBot?: string } = {},
+): Promise<{ departamento: string }> {
+  const nome = limparTexto(nomeDepartamento)
+  if (!nome) throw new CrmError("Informe o departamento da transferência.")
+  const nomeBot = opcoes.nomeBot ? `bot “${opcoes.nomeBot}”` : "bot"
+
+  const [departamento, atual] = await Promise.all([
+    prisma.departamento.findFirst({
+      where: { nome: { equals: nome, mode: "insensitive" } },
+      select: { id: true, nome: true, ativo: true },
+    }),
+    prisma.leadAtendimento.findUnique({
+      where: { leadId },
+      select: { departamentoId: true, atendenteId: true, departamento: { select: { nome: true } }, atendente: { select: { user: { select: { nome: true } } } } },
+    }),
+  ])
+  if (!departamento) throw new CrmError(`Departamento “${nome}” não encontrado em CRM → Departamentos.`)
+  if (!departamento.ativo) throw new CrmError(`O departamento “${departamento.nome}” está inativo.`)
+  if ((atual?.departamentoId ?? null) === departamento.id && !atual?.atendenteId) return { departamento: departamento.nome }
+
+  const de = rotuloResponsavel(atual?.departamento?.nome, atual?.atendente?.user.nome)
+  await prisma.$transaction([
+    prisma.leadAtendimento.upsert({
+      where: { leadId },
+      create: { leadId, departamentoId: departamento.id, atendenteId: null },
+      update: { departamentoId: departamento.id, atendenteId: null, transferidoEm: new Date() },
+    }),
+    prisma.atendimentoTransferencia.create({
+      data: {
+        leadId,
+        deDepartamento: atual?.departamento?.nome ?? null,
+        paraDepartamento: departamento.nome,
+        deAtendente: atual?.atendente?.user.nome ?? null,
+        paraAtendente: null,
+        porUsuario: nomeBot,
+        motivo: "Escolha do lead no menu do bot",
+      },
+    }),
+    prisma.chatInternalNote.create({
+      data: { leadId, texto: `Conversa transferida pelo ${nomeBot}: ${de} → ${departamento.nome}.` },
+    }),
+  ])
+
+  if (opcoes.pausarBot) await pausarBotComNota(leadId, `Pausado pelo ${nomeBot} ao transferir para ${departamento.nome}.`)
+
+  const lead = await prisma.lead.findUnique({ where: { id: leadId }, select: { nome: true } })
+  void emitWebhookEvent("atendimento.transferido", {
+    leadId,
+    leadNome: lead?.nome ?? "",
+    de: { departamento: atual?.departamento?.nome ?? null, atendente: atual?.atendente?.user.nome ?? null },
+    para: { departamento: departamento.nome, atendente: null },
+    porUsuario: nomeBot,
+    motivo: "Escolha do lead no menu do bot",
+  })
+
+  return { departamento: departamento.nome }
 }

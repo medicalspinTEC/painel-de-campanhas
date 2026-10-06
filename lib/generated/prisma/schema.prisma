@@ -121,6 +121,8 @@ model Lead {
   /// Plugin CRM: departamento/atendente responsável pela conversa (1:1, opcional).
   atendimento        LeadAtendimento?
   transferencias     AtendimentoTransferencia[]
+  /// Estado do bot nesta conversa (pausa quando um humano assume).
+  botConversa        BotConversa?
 
   // A listagem ordena por data de criação e filtra por campanha e status.
   @@index([campanhaId])
@@ -540,27 +542,64 @@ model NoCodeFlow {
   /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
   workspaceId        String
   nome               String
-  ativo              Boolean @default(false)
+  ativo              Boolean       @default(false)
   /// Fluxo do sistema (o "Fluxo de resposta" do app): nasce ativo e não pode ser
   /// desativado nem excluído. Só existe um (índice único parcial na migration).
-  sistema            Boolean @default(false)
+  sistema            Boolean       @default(false)
   /// Envia cada execução (completa) para um webhook externo, para guardá-la fora do app.
-  execWebhookAtivo   Boolean @default(false)
+  execWebhookAtivo   Boolean       @default(false)
   execWebhookUrl     String?
   /// Segredo opcional: assina o corpo enviado (HMAC-SHA256 no header X-Execution-Signature).
   execWebhookSegredo String?
+  /// "automacao" (padrão) | "bot". Bots respondem conversas do chat (ver `services/bots.ts`).
+  tipo               String        @default("automacao")
+  /// Bot de entrada (triagem): atende quem ainda não está em nenhum departamento.
+  botEntrada         Boolean       @default(false)
+  /// Bot de departamento: atende as conversas desse departamento enquanto não houver humano.
+  /// Se o departamento for excluído o bot fica órfão (sem departamento e sem ser de entrada): nunca roda.
+  departamentoId     String?
+  departamento       Departamento? @relation(fields: [departamentoId], references: [id], onDelete: SetNull)
   /// Nós do canvas: [{ id, type, name, position: {x,y}, config }].
-  nodes              Json    @default("[]")
+  nodes              Json          @default("[]")
   /// Conexões: [{ id, source, sourceHandle, target }].
-  edges              Json    @default("[]")
+  edges              Json          @default("[]")
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
-  execucoes NoCodeExecution[]
+  execucoes    NoCodeExecution[]
+  conversasBot BotConversa[]
 
   @@index([atualizadoEm])
   @@index([workspaceId])
+  @@index([departamentoId])
+}
+
+/// Estado do bot numa conversa (no máximo uma linha por lead): se o bot está ligado,
+/// em que bloco ele aguarda a resposta do lead e quando houve a última interação.
+/// Quando um humano assume a conversa o bot é pausado (`botAtivo = false`) e só volta
+/// quando alguém o reativa para ESSA conversa.
+model BotConversa {
+  leadId String @id
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  botAtivo      Boolean   @default(true)
+  /// Por que o bot foi pausado (ex.: "Conversa assumida por Fulano").
+  pausadoMotivo String?
+  pausadoEm     DateTime?
+
+  /// Bot que está conduzindo a conversa e o bloco (menu) em que espera a resposta do lead.
+  flowId         String?
+  flow           NoCodeFlow? @relation(fields: [flowId], references: [id], onDelete: SetNull)
+  aguardandoNoId String?
+  /// Respostas inválidas seguidas ao menu atual.
+  tentativas     Int         @default(0)
+
+  ultimaInteracaoEm DateTime @default(now())
+  criadoEm          DateTime @default(now())
+  atualizadoEm      DateTime @updatedAt
+
+  @@index([flowId])
 }
 
 /// Histórico de execuções dos fluxos (uma por evento recebido ou teste manual).
@@ -737,6 +776,8 @@ model Departamento {
 
   atendentes   AtendenteDepartamento[]
   atendimentos LeadAtendimento[]
+  /// Bots (fluxos No Code do tipo "bot") deste departamento.
+  bots         NoCodeFlow[]
 
   @@unique([workspaceId, nome])
   @@index([ativo, nome])

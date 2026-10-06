@@ -14,6 +14,7 @@ import { emitWebhookEvent } from "@/services/webhooks"
  *   4. se o lead estiver em mais de uma campanha, escolhe aquela que enviou a
  *      última mensagem (é ela quem "qualifica" o lead);
  *   5. registra a resposta na timeline (visível no feed de eventos);
+ */
 
 export interface RespostaLeadResultado {
   ok: boolean
@@ -31,7 +32,7 @@ function digitos(valor: string | null | undefined): string {
  * Extrai o número de telefone do `remoteJid` do WhatsApp.
  * Ex.: "557991200617@s.whatsapp.net" -> "557991200617".
  */
-function telefoneDoRemoteJid(remoteJid: string): string {
+export function telefoneDoRemoteJid(remoteJid: string): string {
   const base = remoteJid.split("@")[0]?.split(":")[0] ?? ""
   return digitos(base)
 }
@@ -62,7 +63,7 @@ export function telefonesBatem(a: string, b: string): boolean {
   return nucleoTelefone(da) === nucleoTelefone(db)
 }
 
-interface MensagemRecebida {
+export interface MensagemRecebida {
   fromMe: boolean
   remoteJid: string
   texto: string
@@ -74,7 +75,7 @@ interface MensagemRecebida {
  * completo do webhook (`{ body: { data: { ... } } }`), como `{ data: { ... } }`
  * ou já como o próprio objeto `data`.
  */
-function extrairMensagem(payload: unknown): MensagemRecebida {
+export function extrairMensagem(payload: unknown): MensagemRecebida {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const p = payload as any
   const data = p?.body?.data ?? p?.data ?? p ?? {}
@@ -92,6 +93,17 @@ function extrairMensagem(payload: unknown): MensagemRecebida {
     texto: String(texto),
     pushName: data?.pushName != null ? String(data.pushName) : null,
   }
+}
+
+/** Localiza o lead de um telefone (ignora código do país e 9º dígito). */
+export async function localizarLeadPorTelefone(telefone: string) {
+  const ultimos8 = digitos(telefone).slice(-8)
+  if (!ultimos8) return null
+  const candidatos = await prisma.lead.findMany({
+    where: { telefone: { contains: ultimos8 } },
+    select: { id: true, nome: true, telefone: true, status: true },
+  })
+  return candidatos.find((c) => telefonesBatem(c.telefone, telefone)) ?? null
 }
 
 /**

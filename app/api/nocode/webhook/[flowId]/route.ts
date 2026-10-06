@@ -1,6 +1,7 @@
 import { after, NextResponse } from "next/server"
 
 import { runInWorkspace } from "@/lib/workspace-context"
+import { processarMensagemParaBots } from "@/services/bots"
 import { prepararWebhook, processarEventoWebhook, workspaceDoFluxo } from "@/services/nocode"
 
 /**
@@ -33,6 +34,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ flo
     return NextResponse.json({ ok: preparo.status === 202, erro: preparo.erro }, { status: preparo.status })
   }
 
-  after(() => runInWorkspace(workspaceId, () => processarEventoWebhook(preparo.fluxo, payload)))
+  after(() =>
+    runInWorkspace(workspaceId, async () => {
+      await processarEventoWebhook(preparo.fluxo, payload)
+      // O fluxo de resposta do sistema recebe toda mensagem dos leads: depois de registrá-la,
+      // os bots de departamento respondem (se houver bot ativo e nenhum humano na conversa).
+      if (preparo.fluxo.sistema) await processarMensagemParaBots(payload)
+    }),
+  )
   return NextResponse.json({ ok: true })
 }

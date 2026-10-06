@@ -12,12 +12,15 @@ export function CrmManager({
   chatAtivo,
   usuarioAtualId,
   ehRoot,
+  podeEditarNoCode,
 }: {
   dados: CrmData
   chatAtivo: boolean
   usuarioAtualId: string
   /** Só o Root pode criar/promover administradores. */
   ehRoot: boolean
+  /** Seção No Code liberada e plugin ativo: só então o link do editor dos bots aparece. */
+  podeEditarNoCode: boolean
 }) {
   return (
     <Tabs defaultValue="departamentos">
@@ -33,7 +36,12 @@ export function CrmManager({
       </TabsList>
 
       <TabsContent value="departamentos">
-        <DepartamentosPanel departamentos={dados.departamentos} chatAtivo={chatAtivo} />
+        <DepartamentosPanel
+          departamentos={dados.departamentos}
+          botsEntrada={dados.botsEntrada}
+          chatAtivo={chatAtivo}
+          podeEditarNoCode={podeEditarNoCode}
+        />
       </TabsContent>
       <TabsContent value="atendentes">
         <AtendentesPanel

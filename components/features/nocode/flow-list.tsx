@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { GitBranch, Lock, Plus, Trash2, Workflow } from "lucide-react"
+import { Bot, GitBranch, Lock, Plus, Trash2, Workflow } from "lucide-react"
 import { toast } from "sonner"
 
 import { createFlowAction, deleteFlowAction, toggleFlowAction } from "@/app/actions/nocode"
@@ -144,6 +144,12 @@ export function FlowList({ fluxos }: { fluxos: FlowRow[] | null }) {
                     <Badge variant="outline" title="Responde aos leads do app; não pode ser desativado nem excluído">
                       <Lock className="size-3" />
                       Sistema
+                    </Badge>
+                  ) : null}
+                  {fluxo.tipo === "bot" ? (
+                    <Badge variant="outline" title="Responde as conversas do chat (gerencie em CRM → Departamentos)">
+                      <Bot className="size-3" />
+                      {fluxo.botEntrada ? "Bot de entrada" : fluxo.departamentoNome ? `Bot · ${fluxo.departamentoNome}` : "Bot sem departamento"}
                     </Badge>
                   ) : null}
                 </div>

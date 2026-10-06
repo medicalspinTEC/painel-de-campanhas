@@ -50,8 +50,8 @@ export const SECOES_BACKUP: SecaoBackup[] = [
   {
     chave: "crm",
     nome: "CRM",
-    descricao: "Departamentos, atendentes, conversas atribuídas e histórico de transferências.",
-    tabelas: ["Departamento", "Atendente", "AtendenteDepartamento", "LeadAtendimento", "AtendimentoTransferencia"],
+    descricao: "Departamentos, atendentes, conversas atribuídas, histórico de transferências e estado dos bots nas conversas.",
+    tabelas: ["Departamento", "Atendente", "AtendenteDepartamento", "LeadAtendimento", "AtendimentoTransferencia", "BotConversa"],
   },
   {
     chave: "nocode",

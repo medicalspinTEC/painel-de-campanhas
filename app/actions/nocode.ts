@@ -2,8 +2,17 @@
 
 import { revalidatePath } from "next/cache"
 
-import { modeloFluxoResposta, PAYLOAD_EXEMPLO, validarGrafo, type FlowEdge, type FlowNode } from "@/lib/nocode/catalog"
+import {
+  modeloFluxoResposta,
+  PAYLOAD_EXEMPLO,
+  validarGrafo,
+  type FlowEdge,
+  type FlowKind,
+  type FlowNode,
+} from "@/lib/nocode/catalog"
 import { recordAppLog } from "@/services/app-logs"
+import { ativarBotDoCrm } from "@/services/bots"
+import { CrmError } from "@/services/crm"
 import {
   createFlow,
   deleteFlow,
@@ -35,10 +44,14 @@ function nomeValido(valor: unknown): string | null {
   return nome && nome.length <= LIMITE_NOME ? nome : null
 }
 
-function grafoValido(nodes: unknown, edges: unknown): { nodes: FlowNode[]; edges: FlowEdge[] } | string {
+function grafoValido(
+  nodes: unknown,
+  edges: unknown,
+  kind: FlowKind = "automacao",
+): { nodes: FlowNode[]; edges: FlowEdge[] } | string {
   if (!Array.isArray(nodes) || !Array.isArray(edges)) return "Fluxo inválido."
   if (nodes.length > LIMITE_NOS) return `O fluxo pode ter no máximo ${LIMITE_NOS} blocos.`
-  const erro = validarGrafo(nodes as FlowNode[], edges as FlowEdge[])
+  const erro = validarGrafo(nodes as FlowNode[], edges as FlowEdge[], false, kind)
   return erro ?? { nodes: nodes as FlowNode[], edges: edges as FlowEdge[] }
 }
 
@@ -72,15 +85,16 @@ export async function saveFlowAction(
   await assertSecao("nocode")
   const nome = nomeValido(input?.nome)
   if (!nome) return { ok: false, message: `Informe um nome de até ${LIMITE_NOME} caracteres.` }
-  const grafo = grafoValido(input?.nodes, input?.edges)
-  if (typeof grafo === "string") return { ok: false, message: grafo }
 
   try {
     const atual = await getFlow(id)
     if (!atual) return { ok: false, message: "Fluxo não encontrado." }
+    // O tipo do fluxo (automação ou bot) define quais blocos e qual gatilho valem.
+    const grafo = grafoValido(input?.nodes, input?.edges, atual.tipo)
+    if (typeof grafo === "string") return { ok: false, message: grafo }
     // Um fluxo ativo (e o do sistema, que é sempre ativo) precisa continuar válido (com gatilho) depois da edição.
     if (atual.ativo || atual.sistema) {
-      const erro = validarGrafo(grafo.nodes, grafo.edges, true)
+      const erro = validarGrafo(grafo.nodes, grafo.edges, true, atual.tipo)
       if (erro) {
         return {
           ok: false,
@@ -114,6 +128,22 @@ export async function toggleFlowAction(id: string, ativo: boolean): Promise<Resu
       return ativo
         ? { ok: true, message: "O fluxo de resposta já fica sempre ativo.", ativo: true }
         : { ok: false, message: MSG_FLUXO_SISTEMA_DESATIVAR }
+    }
+    if (fluxo.tipo === "bot") {
+      // Bot: só um ativo por escopo (entrada ou departamento); a regra e a validação ficam no serviço.
+      try {
+        const { desativados } = await ativarBotDoCrm(id, ativo)
+        revalidatePath("/nocode")
+        revalidatePath("/crm")
+        return {
+          ok: true,
+          message: !ativo ? "Bot desativado." : desativados > 0 ? "Bot ativado. O outro bot ativo deste escopo foi desativado." : "Bot ativado.",
+          ativo,
+        }
+      } catch (error) {
+        if (error instanceof CrmError) return { ok: false, message: error.message }
+        throw error
+      }
     }
     if (ativo) {
       const erro = validarGrafo(fluxo.nodes, fluxo.edges, true)
@@ -152,9 +182,11 @@ export async function testFlowAction(
   input: { nodes: FlowNode[]; edges: FlowEdge[]; payload: string },
 ): Promise<Resultado<{ execucao: ExecutionRow }>> {
   await assertSecao("nocode")
-  const grafo = grafoValido(input?.nodes, input?.edges)
+  const alvo = await getFlow(id).catch(() => null)
+  if (!alvo) return { ok: false, message: "Fluxo não encontrado." }
+  const grafo = grafoValido(input?.nodes, input?.edges, alvo.tipo)
   if (typeof grafo === "string") return { ok: false, message: grafo }
-  const semGatilho = validarGrafo(grafo.nodes, grafo.edges, true)
+  const semGatilho = validarGrafo(grafo.nodes, grafo.edges, true, alvo.tipo)
   if (semGatilho) return { ok: false, message: semGatilho }
 
   let payload: unknown
@@ -165,8 +197,7 @@ export async function testFlowAction(
   }
 
   try {
-    if (!(await getFlow(id))) return { ok: false, message: "Fluxo não encontrado." }
-    const execucao = await executarEGravar(id, grafo, payload, "teste")
+    const execucao = await executarEGravar(id, grafo, payload, "teste", alvo.tipo)
     return { ok: true, message: "Teste executado.", execucao }
   } catch (error) {
     return falha("Não foi possível executar o teste.", error)

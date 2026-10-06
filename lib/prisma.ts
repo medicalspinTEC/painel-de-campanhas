@@ -63,6 +63,7 @@ const FILHOS: Record<string, string> = {
   AtendenteDepartamento: "departamento",
   LeadAtendimento: "lead",
   AtendimentoTransferencia: "lead",
+  BotConversa: "lead",
 }
 
 /** Coluna de chave estrangeira → modelo apontado. */
@@ -103,6 +104,9 @@ const CAMPOS_RELACIONAIS = new Set([
   "atendimentos",
   "departamentos",
   "execucoes",
+  "botConversa",
+  "conversasBot",
+  "bots",
 ])
 
 type Obj = Record<string, unknown>
