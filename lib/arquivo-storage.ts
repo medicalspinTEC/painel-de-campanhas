@@ -24,7 +24,7 @@ import { pastaDeAudios } from "@/lib/audio-storage"
  *  - ARQUIVO_RETENTION_DAYS: dias até apagar um arquivo que ninguém baixou. Padrão: 7.
  */
 
-export const ARQUIVO_TAMANHO_MAXIMO = 16 * 1024 * 1024 // 16 MB (limite de imagem do WhatsApp)
+export const ARQUIVO_TAMANHO_MAXIMO = 160 * 1024 * 1024 // 160 MB (limite de imagem do WhatsApp)
 
 const DIAS_PADRAO = 7
 const DIA_MS = 24 * 60 * 60 * 1000

@@ -19,7 +19,7 @@ import path from "node:path"
  *  - AUDIO_RETENTION_DAYS: por quantos dias o áudio é mantido. Padrão: 30.
  */
 
-export const AUDIO_TAMANHO_MAXIMO = 8 * 1024 * 1024 // 8 MB (~30+ min de voz em opus)
+export const AUDIO_TAMANHO_MAXIMO = 16 * 1024 * 1024 // 16 MB (~30+ min de voz em opus)
 
 const DIAS_PADRAO = 30
 const DIA_MS = 24 * 60 * 60 * 1000
