@@ -129,6 +129,19 @@ const LEITORES: Record<string, Leitor> = {
       }) as unknown as Promise<Array<Record<string, unknown>>>,
     tamanho: 1000,
   },
+  FollowUpBot: porId(prisma.followUpBot),
+  FollowUpTemplate: porId(prisma.followUpTemplate),
+  FollowUpConversa: {
+    // A chave primária é o próprio leadId (como em BotConversa).
+    contar: () => prisma.followUpConversa.count(),
+    pagina: (depoisDeId, tamanho) =>
+      prisma.followUpConversa.findMany({
+        orderBy: { leadId: "asc" },
+        take: tamanho,
+        ...(depoisDeId ? { cursor: { leadId: depoisDeId }, skip: 1 } : {}),
+      }) as unknown as Promise<Array<Record<string, unknown>>>,
+    tamanho: 1000,
+  },
   NoCodeFlow: porId(prisma.noCodeFlow, { tamanho: 200, omitir: [...COLUNAS_SECRETAS.NoCodeFlow] }),
   NoCodeExecution: porId(prisma.noCodeExecution, { tamanho: 300 }),
   User: porId(prisma.user, { omitir: [...COLUNAS_SECRETAS.User] }),

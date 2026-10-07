@@ -123,6 +123,7 @@ model Lead {
   transferencias     AtendimentoTransferencia[]
   /// Estado do bot nesta conversa (pausa quando um humano assume).
   botConversa        BotConversa?
+  followUpConversa   FollowUpConversa?
 
   // A listagem ordena por data de criação e filtra por campanha e status.
   @@index([campanhaId])
@@ -778,6 +779,8 @@ model Departamento {
   atendimentos LeadAtendimento[]
   /// Bots (fluxos No Code do tipo "bot") deste departamento.
   bots         NoCodeFlow[]
+  /// Bot especialista em follow-up deste departamento (no máximo um).
+  followUpBot  FollowUpBot?
 
   @@unique([workspaceId, nome])
   @@index([ativo, nome])
@@ -849,4 +852,81 @@ model AtendimentoTransferencia {
   data             DateTime @default(now())
 
   @@index([leadId, data])
+}
+
+/// Bot especialista em FOLLOW-UP de um departamento (no máximo um por departamento).
+/// Quando o lead fica `minutosSemResposta` sem responder à última mensagem da equipe, o bot envia
+/// um template. Só atua em conversas do departamento, sem campanha, cuja última mensagem da equipe
+/// foi enviada DEPOIS de o bot ser ativado (`ativadoEm`): ligar o bot não reabre conversas antigas.
+model FollowUpBot {
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId    String
+  departamentoId String       @unique
+  departamento   Departamento @relation(fields: [departamentoId], references: [id], onDelete: Cascade)
+
+  nome      String
+  ativo     Boolean   @default(false)
+  /// Quando foi ligado pela última vez (só mensagens enviadas depois disso disparam follow-up).
+  ativadoEm DateTime?
+
+  /// Tempo sem resposta do lead até enviar o follow-up (em minutos).
+  minutosSemResposta Int     @default(60)
+  /// Quantos follow-ups seguidos enviar enquanto o lead não responder (cada um espera `minutosSemResposta`).
+  maxFollowUps       Int     @default(1)
+  /// "aleatorio" (sorteia entre os templates ativos) | "especifico" (sempre `templateFixoId`).
+  modoTemplate       String  @default("aleatorio")
+  templateFixoId     String?
+  /// Só envia entre `janelaInicio` e `janelaFim` (hora cheia, 0–24), no horário do servidor.
+  janelaAtiva        Boolean @default(false)
+  janelaInicio       Int     @default(8)
+  janelaFim          Int     @default(20)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  templates FollowUpTemplate[]
+
+  @@index([workspaceId])
+}
+
+/// Mensagem-modelo do bot de follow-up. Aceita as mesmas variáveis do chat (ex.: `{{primeiro_nome}}`).
+model FollowUpTemplate {
+  id    String      @id @default(cuid())
+  botId String
+  bot   FollowUpBot @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  nome  String
+  texto String
+  ativo Boolean @default(true)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  conversas FollowUpConversa[]
+
+  @@index([botId])
+}
+
+/// Ajustes e andamento do follow-up numa conversa (no máximo uma linha por lead).
+model FollowUpConversa {
+  leadId String @id
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  /// Follow-up desligado só para este chat.
+  desativado Boolean           @default(false)
+  /// Template escolhido manualmente para este chat (nulo = vale a regra do bot: específico ou aleatório).
+  templateId String?
+  template   FollowUpTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  /// Follow-ups enviados desde a última resposta do lead (zera sozinho quando ele responde).
+  enviados         Int       @default(0)
+  ultimoEnvioEm    DateTime?
+  ultimoTemplateId String?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@index([templateId])
 }

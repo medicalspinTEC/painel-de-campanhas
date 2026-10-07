@@ -6,6 +6,7 @@ import { toast } from "sonner"
 
 import { deleteDepartamentoAction, setDepartamentoAtivoAction } from "@/app/actions/crm"
 import { BotsLista } from "@/components/features/crm/bots-lista"
+import { FollowUpBotCard } from "@/components/features/crm/followup-bot-card"
 import { DepartamentoFormDialog } from "@/components/features/crm/departamento-form-dialog"
 import {
   AlertDialog,
@@ -23,15 +24,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
 import type { BotItem, DepartamentoItem } from "@/services/crm"
+import type { FollowUpBotItem } from "@/services/followup"
 
 export function DepartamentosPanel({
   departamentos,
   botsEntrada,
+  followUpBots,
   chatAtivo,
   podeEditarNoCode,
 }: {
   departamentos: DepartamentoItem[]
   botsEntrada: BotItem[]
+  followUpBots: FollowUpBotItem[]
   chatAtivo: boolean
   podeEditarNoCode: boolean
 }) {
@@ -168,6 +172,12 @@ export function DepartamentosPanel({
                       podeEditarNoCode={podeEditarNoCode}
                     />
                   </div>
+                  <div className="border-t pt-3">
+                    <FollowUpBotCard
+                      departamentoId={departamento.id}
+                      bot={followUpBots.find((b) => b.departamentoId === departamento.id) ?? null}
+                    />
+                  </div>
                 </li>
               ))}
             </ul>
@@ -186,6 +196,10 @@ export function DepartamentosPanel({
                 ? `"${excluindo.nome}" será removido e os atendentes deixam de pertencer a ele.${
                     excluindo.bots.length > 0
                       ? ` ${excluindo.bots.length === 1 ? "O bot dele será desativado" : "Os bots dele serão desativados"} (continuam no No Code, sem departamento).`
+                      : ""
+                  }${
+                    followUpBots.some((b) => b.departamentoId === excluindo.id)
+                      ? " O bot de follow-up e os templates dele também serão excluídos."
                       : ""
                   }${
                     excluindo.totalConversas > 0

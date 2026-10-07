@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 
 import { manutencaoBackup } from "@/services/backup"
 import { processDueMessages } from "@/services/campaign-engine"
+import { processarFollowUps } from "@/services/followup"
 import { manutencaoNoCode } from "@/services/nocode-webhook-execucoes"
 
 /**
@@ -37,9 +38,15 @@ async function handle(request: Request) {
       console.error("[v0] rotina de backup falhou:", error)
       return null
     })
+    // Follow-ups dos bots de departamento (não derruba a engine se falhar).
+    const followUp = await processarFollowUps().catch((error) => {
+      console.error("[v0] follow-up dos bots falhou:", error)
+      return null
+    })
     return NextResponse.json({
       ok: true,
       ...resultado,
+      ...(followUp ? { followUp } : {}),
       ...(nocode ? { nocode } : {}),
       ...(backup ? { backup } : {}),
     })

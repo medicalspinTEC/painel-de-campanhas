@@ -1,6 +1,7 @@
 import { arquivoExiste, lerLinhaDeArquivo, type ArquivoMeta } from "@/lib/arquivo-storage"
 import { audioExiste } from "@/lib/audio-storage"
 import { listBotsPorLead, type BotConversaInfo } from "@/services/bot-estado"
+import { listarResumoFollowUpPorLead, type FollowUpResumo } from "@/services/followup"
 import { prisma } from "@/lib/prisma"
 import { workspaceAtualId } from "@/lib/workspace-context"
 import { listAtendimentosPorLead, type ChatAtendimento } from "@/services/crm"
@@ -51,6 +52,11 @@ export interface ChatConversation {
    * desativado). `ativo: false` = pausado porque um humano assumiu; só uma pessoa o reativa.
    */
   bot: BotConversaInfo | null
+  /**
+   * Plugin CRM: o departamento da conversa tem bot de follow-up. Nulo = não tem (ou o plugin está
+   * desativado).
+   */
+  followUp: FollowUpResumo | null
 }
 
 export interface ChatInboxSnapshot {
@@ -219,7 +225,7 @@ export async function getChatInbox(
   // (antes era uma consulta depois da outra).
   const buscarJunto = conversaId && !opcoes.semMensagens ? conversaId : null
 
-  const [leads, ultimas, mensagensAdiantadas, atendimentos, bots] = await Promise.all([
+  const [leads, ultimas, mensagensAdiantadas, atendimentos, bots, followUps] = await Promise.all([
     prisma.lead.findMany({
       select: {
         id: true,
@@ -247,6 +253,9 @@ export async function getChatInbox(
     getCrmPluginAtivo()
       .then((ativo) => (ativo ? listBotsPorLead() : null))
       .catch(() => null),
+    getCrmPluginAtivo()
+      .then((ativo) => (ativo ? listarResumoFollowUpPorLead() : null))
+      .catch(() => null),
   ])
 
   const conversas: ChatConversation[] = leads.map((lead) => {
@@ -267,6 +276,7 @@ export async function getChatInbox(
       ultimaMensagem,
       atendimento: atendimentos?.get(lead.id) ?? null,
       bot: bots?.get(lead.id) ?? null,
+      followUp: followUps?.get(lead.id) ?? null,
     }
   })
   conversas.sort((a, b) => new Date(b.atualizadoEm).getTime() - new Date(a.atualizadoEm).getTime())

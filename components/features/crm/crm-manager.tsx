@@ -6,15 +6,19 @@ import { AtendentesPanel } from "@/components/features/crm/atendentes-panel"
 import { DepartamentosPanel } from "@/components/features/crm/departamentos-panel"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { CrmData } from "@/services/crm"
+import type { FollowUpBotItem } from "@/services/followup"
 
 export function CrmManager({
   dados,
+  followUpBots,
   chatAtivo,
   usuarioAtualId,
   ehRoot,
   podeEditarNoCode,
 }: {
   dados: CrmData
+  /** Bots de follow-up (um por departamento). */
+  followUpBots: FollowUpBotItem[]
   chatAtivo: boolean
   usuarioAtualId: string
   /** Só o Root pode criar/promover administradores. */
@@ -39,6 +43,7 @@ export function CrmManager({
         <DepartamentosPanel
           departamentos={dados.departamentos}
           botsEntrada={dados.botsEntrada}
+          followUpBots={followUpBots}
           chatAtivo={chatAtivo}
           podeEditarNoCode={podeEditarNoCode}
         />

@@ -44,6 +44,24 @@ export async function register() {
   setTimeout(tick, 10_000)
   setInterval(tick, intervaloMs)
 
+  // Bots de follow-up dos departamentos: envia o template quando o lead fica o tempo configurado sem responder.
+  let ultimoErroFollowUp = ""
+  const tickFollowUp = async () => {
+    try {
+      const { processarFollowUps } = await import("@/services/followup")
+      const resultado = await processarFollowUps()
+      ultimoErroFollowUp = ""
+      if (resultado.enviados) console.log("[v0] follow-ups enviados pelos bots:", resultado)
+    } catch (error) {
+      // Só loga quando o erro muda (ex.: migration ainda não aplicada), para não encher o log a cada minuto.
+      const mensagem = error instanceof Error ? error.message : String(error)
+      if (mensagem !== ultimoErroFollowUp) console.error("[v0] falha na varredura de follow-up:", error)
+      ultimoErroFollowUp = mensagem
+    }
+  }
+  setTimeout(tickFollowUp, 25_000)
+  setInterval(tickFollowUp, 60_000)
+
   // Manutenção do No Code: apaga execuções com mais de 24h e reenvia ao webhook as entregas que falharam.
   let ultimoErroNoCode = ""
   const tickNoCode = async () => {

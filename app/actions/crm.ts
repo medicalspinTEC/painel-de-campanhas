@@ -23,6 +23,16 @@ import {
   type DepartamentoInput,
   type TransferenciaInput,
 } from "@/services/crm"
+import {
+  ativarFollowUpBot,
+  criarFollowUpBot,
+  excluirFollowUpBot,
+  excluirFollowUpTemplate,
+  salvarFollowUpBot,
+  salvarFollowUpTemplate,
+  type FollowUpBotInput,
+  type FollowUpTemplateInput,
+} from "@/services/followup"
 import { getChatPluginAtivo, getCrmPluginAtivo } from "@/services/settings"
 import { UserError } from "@/services/users"
 
@@ -269,5 +279,80 @@ export async function alternarBotConversaAction(leadId: string, ativo: boolean):
     return { ok: true, message: ativo ? "Bot reativado nesta conversa." : "Bot pausado nesta conversa." }
   } catch (error) {
     return falha(error, "Não foi possível alterar o bot da conversa.")
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Bot de follow-up do departamento
+// ---------------------------------------------------------------------------
+
+export async function createFollowUpBotAction(departamentoId: string, nome?: string): Promise<CrmActionResult & { id?: string }> {
+  try {
+    await exigirGestaoCrm()
+    const { id } = await criarFollowUpBot({ departamentoId, nome })
+    revalidarCrm()
+    return { ok: true, message: "Bot de follow-up criado. Cadastre os templates e ligue o bot.", id }
+  } catch (error) {
+    return falha(error, "Não foi possível criar o bot de follow-up.")
+  }
+}
+
+export async function saveFollowUpBotAction(id: string, input: FollowUpBotInput): Promise<CrmActionResult> {
+  try {
+    await exigirGestaoCrm()
+    await salvarFollowUpBot(id, input)
+    revalidarCrm()
+    return { ok: true, message: "Configurações do follow-up salvas." }
+  } catch (error) {
+    return falha(error, "Não foi possível salvar o bot de follow-up.")
+  }
+}
+
+export async function setFollowUpBotAtivoAction(id: string, ativo: boolean): Promise<CrmActionResult> {
+  try {
+    await exigirGestaoCrm()
+    await ativarFollowUpBot(id, ativo)
+    revalidarCrm()
+    return {
+      ok: true,
+      message: ativo
+        ? "Bot de follow-up ligado. Ele vale para mensagens enviadas a partir de agora."
+        : "Bot de follow-up desligado.",
+    }
+  } catch (error) {
+    return falha(error, "Não foi possível alterar o bot de follow-up.")
+  }
+}
+
+export async function deleteFollowUpBotAction(id: string): Promise<CrmActionResult> {
+  try {
+    await exigirGestaoCrm()
+    await excluirFollowUpBot(id)
+    revalidarCrm()
+    return { ok: true, message: "Bot de follow-up excluído." }
+  } catch (error) {
+    return falha(error, "Não foi possível excluir o bot de follow-up.")
+  }
+}
+
+export async function saveFollowUpTemplateAction(botId: string, input: FollowUpTemplateInput): Promise<CrmActionResult> {
+  try {
+    await exigirGestaoCrm()
+    await salvarFollowUpTemplate(botId, input)
+    revalidarCrm()
+    return { ok: true, message: input.id ? "Template salvo." : "Template criado." }
+  } catch (error) {
+    return falha(error, "Não foi possível salvar o template.")
+  }
+}
+
+export async function deleteFollowUpTemplateAction(id: string): Promise<CrmActionResult> {
+  try {
+    await exigirGestaoCrm()
+    await excluirFollowUpTemplate(id)
+    revalidarCrm()
+    return { ok: true, message: "Template excluído." }
+  } catch (error) {
+    return falha(error, "Não foi possível excluir o template.")
   }
 }

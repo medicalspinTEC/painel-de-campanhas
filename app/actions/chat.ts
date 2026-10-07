@@ -2,12 +2,14 @@
 
 import { revalidatePath } from "next/cache"
 
+import { PluginDesativadoError } from "@/lib/plugins"
 import { ARQUIVO_TAMANHO_MAXIMO } from "@/lib/arquivo-storage"
 import { AUDIO_TAMANHO_MAXIMO, extensaoDoMime } from "@/lib/audio-storage"
 import { assertSecao } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
 import { addChatInternalNote, getChatInbox, getChatMessages, getChatsForExport } from "@/services/chat"
-import { filtrarLeadsParaEnvio, pausarBotComNota } from "@/services/crm"
+import { CrmError, filtrarLeadsParaEnvio, pausarBotComNota } from "@/services/crm"
+import { configurarFollowUpChat, enviarFollowUpAgora, getFollowUpChat } from "@/services/followup"
 import { sendLeadAudio, sendLeadFile } from "@/services/leads"
 import { getCrmPluginAtivo } from "@/services/settings"
 
@@ -133,5 +135,50 @@ export async function sendChatFileAction(leadId: string, formData: FormData) {
   } catch (error) {
     await recordAppLog({ origem: "chat", mensagem: `Falha ao enviar arquivo para o lead id=${leadId}.`, detalhes: error })
     return { ok: false, message: "Não foi possível enviar o arquivo. Verifique a conexão com o banco." }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Follow-up automático da conversa (bot de follow-up do departamento)
+// ---------------------------------------------------------------------------
+
+/** Situação do follow-up na conversa, ou nulo se o departamento dela não tem bot de follow-up. */
+export async function getFollowUpChatAction(leadId: string) {
+  await assertSecao("chat")
+  try {
+    return { ok: true as const, info: await getFollowUpChat(leadId) }
+  } catch (error) {
+    await recordAppLog({ origem: "chat", mensagem: `Falha ao ler o follow-up do lead id=${leadId}.`, detalhes: error })
+    return { ok: false as const, info: null, message: "Não foi possível carregar o follow-up desta conversa." }
+  }
+}
+
+/** Liga/desliga o follow-up neste chat e/ou escolhe o template (`templateId: null` = regra do bot). */
+export async function configureFollowUpChatAction(
+  leadId: string,
+  ajustes: { desativado?: boolean; templateId?: string | null },
+) {
+  const usuario = await assertSecao("chat")
+  try {
+    await configurarFollowUpChat(leadId, ajustes, usuario)
+    return { ok: true, message: "Follow-up desta conversa atualizado." }
+  } catch (error) {
+    if (error instanceof CrmError || error instanceof PluginDesativadoError) return { ok: false, message: error.message }
+    await recordAppLog({ origem: "chat", mensagem: `Falha ao ajustar o follow-up do lead id=${leadId}.`, detalhes: error })
+    return { ok: false, message: "Não foi possível atualizar o follow-up desta conversa." }
+  }
+}
+
+/** Envia agora um template de follow-up nesta conversa. */
+export async function sendFollowUpNowAction(leadId: string, templateId: string | null) {
+  const usuario = await assertSecao("chat")
+  try {
+    const resultado = await enviarFollowUpAgora(leadId, templateId, usuario)
+    if (resultado.ok) revalidatePath(`/leads/${leadId}`)
+    return resultado
+  } catch (error) {
+    if (error instanceof CrmError || error instanceof PluginDesativadoError) return { ok: false, message: error.message }
+    await recordAppLog({ origem: "chat", mensagem: `Falha ao enviar follow-up manual ao lead id=${leadId}.`, detalhes: error })
+    return { ok: false, message: "Não foi possível enviar o follow-up." }
   }
 }

@@ -200,6 +200,24 @@ export type LeadAtendimento = $Result.DefaultSelection<Prisma.$LeadAtendimentoPa
  * excluído depois.
  */
 export type AtendimentoTransferencia = $Result.DefaultSelection<Prisma.$AtendimentoTransferenciaPayload>
+/**
+ * Model FollowUpBot
+ * Bot especialista em FOLLOW-UP de um departamento (no máximo um por departamento).
+ * Quando o lead fica `minutosSemResposta` sem responder à última mensagem da equipe, o bot envia
+ * um template. Só atua em conversas do departamento, sem campanha, cuja última mensagem da equipe
+ * foi enviada DEPOIS de o bot ser ativado (`ativadoEm`): ligar o bot não reabre conversas antigas.
+ */
+export type FollowUpBot = $Result.DefaultSelection<Prisma.$FollowUpBotPayload>
+/**
+ * Model FollowUpTemplate
+ * Mensagem-modelo do bot de follow-up. Aceita as mesmas variáveis do chat (ex.: `{{primeiro_nome}}`).
+ */
+export type FollowUpTemplate = $Result.DefaultSelection<Prisma.$FollowUpTemplatePayload>
+/**
+ * Model FollowUpConversa
+ * Ajustes e andamento do follow-up numa conversa (no máximo uma linha por lead).
+ */
+export type FollowUpConversa = $Result.DefaultSelection<Prisma.$FollowUpConversaPayload>
 
 /**
  * Enums
@@ -720,6 +738,36 @@ export class PrismaClient<
     * ```
     */
   get atendimentoTransferencia(): Prisma.AtendimentoTransferenciaDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.followUpBot`: Exposes CRUD operations for the **FollowUpBot** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more FollowUpBots
+    * const followUpBots = await prisma.followUpBot.findMany()
+    * ```
+    */
+  get followUpBot(): Prisma.FollowUpBotDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.followUpTemplate`: Exposes CRUD operations for the **FollowUpTemplate** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more FollowUpTemplates
+    * const followUpTemplates = await prisma.followUpTemplate.findMany()
+    * ```
+    */
+  get followUpTemplate(): Prisma.FollowUpTemplateDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.followUpConversa`: Exposes CRUD operations for the **FollowUpConversa** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more FollowUpConversas
+    * const followUpConversas = await prisma.followUpConversa.findMany()
+    * ```
+    */
+  get followUpConversa(): Prisma.FollowUpConversaDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1190,7 +1238,10 @@ export namespace Prisma {
     Atendente: 'Atendente',
     AtendenteDepartamento: 'AtendenteDepartamento',
     LeadAtendimento: 'LeadAtendimento',
-    AtendimentoTransferencia: 'AtendimentoTransferencia'
+    AtendimentoTransferencia: 'AtendimentoTransferencia',
+    FollowUpBot: 'FollowUpBot',
+    FollowUpTemplate: 'FollowUpTemplate',
+    FollowUpConversa: 'FollowUpConversa'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1209,7 +1260,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "botConversa" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia"
+      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "botConversa" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia" | "followUpBot" | "followUpTemplate" | "followUpConversa"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3433,6 +3484,228 @@ export namespace Prisma {
           }
         }
       }
+      FollowUpBot: {
+        payload: Prisma.$FollowUpBotPayload<ExtArgs>
+        fields: Prisma.FollowUpBotFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FollowUpBotFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpBotPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FollowUpBotFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpBotPayload>
+          }
+          findFirst: {
+            args: Prisma.FollowUpBotFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpBotPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FollowUpBotFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpBotPayload>
+          }
+          findMany: {
+            args: Prisma.FollowUpBotFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpBotPayload>[]
+          }
+          create: {
+            args: Prisma.FollowUpBotCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpBotPayload>
+          }
+          createMany: {
+            args: Prisma.FollowUpBotCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FollowUpBotCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpBotPayload>[]
+          }
+          delete: {
+            args: Prisma.FollowUpBotDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpBotPayload>
+          }
+          update: {
+            args: Prisma.FollowUpBotUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpBotPayload>
+          }
+          deleteMany: {
+            args: Prisma.FollowUpBotDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FollowUpBotUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.FollowUpBotUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpBotPayload>[]
+          }
+          upsert: {
+            args: Prisma.FollowUpBotUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpBotPayload>
+          }
+          aggregate: {
+            args: Prisma.FollowUpBotAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFollowUpBot>
+          }
+          groupBy: {
+            args: Prisma.FollowUpBotGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FollowUpBotGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FollowUpBotCountArgs<ExtArgs>
+            result: $Utils.Optional<FollowUpBotCountAggregateOutputType> | number
+          }
+        }
+      }
+      FollowUpTemplate: {
+        payload: Prisma.$FollowUpTemplatePayload<ExtArgs>
+        fields: Prisma.FollowUpTemplateFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FollowUpTemplateFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FollowUpTemplateFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>
+          }
+          findFirst: {
+            args: Prisma.FollowUpTemplateFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FollowUpTemplateFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>
+          }
+          findMany: {
+            args: Prisma.FollowUpTemplateFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>[]
+          }
+          create: {
+            args: Prisma.FollowUpTemplateCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>
+          }
+          createMany: {
+            args: Prisma.FollowUpTemplateCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FollowUpTemplateCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>[]
+          }
+          delete: {
+            args: Prisma.FollowUpTemplateDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>
+          }
+          update: {
+            args: Prisma.FollowUpTemplateUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>
+          }
+          deleteMany: {
+            args: Prisma.FollowUpTemplateDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FollowUpTemplateUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.FollowUpTemplateUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>[]
+          }
+          upsert: {
+            args: Prisma.FollowUpTemplateUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>
+          }
+          aggregate: {
+            args: Prisma.FollowUpTemplateAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFollowUpTemplate>
+          }
+          groupBy: {
+            args: Prisma.FollowUpTemplateGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FollowUpTemplateGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FollowUpTemplateCountArgs<ExtArgs>
+            result: $Utils.Optional<FollowUpTemplateCountAggregateOutputType> | number
+          }
+        }
+      }
+      FollowUpConversa: {
+        payload: Prisma.$FollowUpConversaPayload<ExtArgs>
+        fields: Prisma.FollowUpConversaFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FollowUpConversaFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpConversaPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FollowUpConversaFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpConversaPayload>
+          }
+          findFirst: {
+            args: Prisma.FollowUpConversaFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpConversaPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FollowUpConversaFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpConversaPayload>
+          }
+          findMany: {
+            args: Prisma.FollowUpConversaFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpConversaPayload>[]
+          }
+          create: {
+            args: Prisma.FollowUpConversaCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpConversaPayload>
+          }
+          createMany: {
+            args: Prisma.FollowUpConversaCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FollowUpConversaCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpConversaPayload>[]
+          }
+          delete: {
+            args: Prisma.FollowUpConversaDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpConversaPayload>
+          }
+          update: {
+            args: Prisma.FollowUpConversaUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpConversaPayload>
+          }
+          deleteMany: {
+            args: Prisma.FollowUpConversaDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FollowUpConversaUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.FollowUpConversaUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpConversaPayload>[]
+          }
+          upsert: {
+            args: Prisma.FollowUpConversaUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpConversaPayload>
+          }
+          aggregate: {
+            args: Prisma.FollowUpConversaAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFollowUpConversa>
+          }
+          groupBy: {
+            args: Prisma.FollowUpConversaGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FollowUpConversaGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FollowUpConversaCountArgs<ExtArgs>
+            result: $Utils.Optional<FollowUpConversaCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3559,6 +3832,9 @@ export namespace Prisma {
     atendenteDepartamento?: AtendenteDepartamentoOmit
     leadAtendimento?: LeadAtendimentoOmit
     atendimentoTransferencia?: AtendimentoTransferenciaOmit
+    followUpBot?: FollowUpBotOmit
+    followUpTemplate?: FollowUpTemplateOmit
+    followUpConversa?: FollowUpConversaOmit
   }
 
   /* Types for Logging */
@@ -3920,6 +4196,68 @@ export namespace Prisma {
 
 
   /**
+   * Count Type FollowUpBotCountOutputType
+   */
+
+  export type FollowUpBotCountOutputType = {
+    templates: number
+  }
+
+  export type FollowUpBotCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    templates?: boolean | FollowUpBotCountOutputTypeCountTemplatesArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * FollowUpBotCountOutputType without action
+   */
+  export type FollowUpBotCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpBotCountOutputType
+     */
+    select?: FollowUpBotCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * FollowUpBotCountOutputType without action
+   */
+  export type FollowUpBotCountOutputTypeCountTemplatesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FollowUpTemplateWhereInput
+  }
+
+
+  /**
+   * Count Type FollowUpTemplateCountOutputType
+   */
+
+  export type FollowUpTemplateCountOutputType = {
+    conversas: number
+  }
+
+  export type FollowUpTemplateCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    conversas?: boolean | FollowUpTemplateCountOutputTypeCountConversasArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * FollowUpTemplateCountOutputType without action
+   */
+  export type FollowUpTemplateCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplateCountOutputType
+     */
+    select?: FollowUpTemplateCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * FollowUpTemplateCountOutputType without action
+   */
+  export type FollowUpTemplateCountOutputTypeCountConversasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FollowUpConversaWhereInput
+  }
+
+
+  /**
    * Models
    */
 
@@ -4183,6 +4521,7 @@ export namespace Prisma {
     atendimento?: boolean | Lead$atendimentoArgs<ExtArgs>
     transferencias?: boolean | Lead$transferenciasArgs<ExtArgs>
     botConversa?: boolean | Lead$botConversaArgs<ExtArgs>
+    followUpConversa?: boolean | Lead$followUpConversaArgs<ExtArgs>
     _count?: boolean | LeadCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["lead"]>
 
@@ -4255,6 +4594,7 @@ export namespace Prisma {
     atendimento?: boolean | Lead$atendimentoArgs<ExtArgs>
     transferencias?: boolean | Lead$transferenciasArgs<ExtArgs>
     botConversa?: boolean | Lead$botConversaArgs<ExtArgs>
+    followUpConversa?: boolean | Lead$followUpConversaArgs<ExtArgs>
     _count?: boolean | LeadCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type LeadIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4281,6 +4621,7 @@ export namespace Prisma {
        * Estado do bot nesta conversa (pausa quando um humano assume).
        */
       botConversa: Prisma.$BotConversaPayload<ExtArgs> | null
+      followUpConversa: Prisma.$FollowUpConversaPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -4704,6 +5045,7 @@ export namespace Prisma {
     atendimento<T extends Lead$atendimentoArgs<ExtArgs> = {}>(args?: Subset<T, Lead$atendimentoArgs<ExtArgs>>): Prisma__LeadAtendimentoClient<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     transferencias<T extends Lead$transferenciasArgs<ExtArgs> = {}>(args?: Subset<T, Lead$transferenciasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendimentoTransferenciaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     botConversa<T extends Lead$botConversaArgs<ExtArgs> = {}>(args?: Subset<T, Lead$botConversaArgs<ExtArgs>>): Prisma__BotConversaClient<$Result.GetResult<Prisma.$BotConversaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    followUpConversa<T extends Lead$followUpConversaArgs<ExtArgs> = {}>(args?: Subset<T, Lead$followUpConversaArgs<ExtArgs>>): Prisma__FollowUpConversaClient<$Result.GetResult<Prisma.$FollowUpConversaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5319,6 +5661,25 @@ export namespace Prisma {
      */
     include?: BotConversaInclude<ExtArgs> | null
     where?: BotConversaWhereInput
+  }
+
+  /**
+   * Lead.followUpConversa
+   */
+  export type Lead$followUpConversaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpConversa
+     */
+    select?: FollowUpConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpConversa
+     */
+    omit?: FollowUpConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpConversaInclude<ExtArgs> | null
+    where?: FollowUpConversaWhereInput
   }
 
   /**
@@ -32458,6 +32819,7 @@ export namespace Prisma {
     atendentes?: boolean | Departamento$atendentesArgs<ExtArgs>
     atendimentos?: boolean | Departamento$atendimentosArgs<ExtArgs>
     bots?: boolean | Departamento$botsArgs<ExtArgs>
+    followUpBot?: boolean | Departamento$followUpBotArgs<ExtArgs>
     _count?: boolean | DepartamentoCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["departamento"]>
 
@@ -32496,6 +32858,7 @@ export namespace Prisma {
     atendentes?: boolean | Departamento$atendentesArgs<ExtArgs>
     atendimentos?: boolean | Departamento$atendimentosArgs<ExtArgs>
     bots?: boolean | Departamento$botsArgs<ExtArgs>
+    followUpBot?: boolean | Departamento$followUpBotArgs<ExtArgs>
     _count?: boolean | DepartamentoCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type DepartamentoIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -32510,6 +32873,10 @@ export namespace Prisma {
        * Bots (fluxos No Code do tipo "bot") deste departamento.
        */
       bots: Prisma.$NoCodeFlowPayload<ExtArgs>[]
+      /**
+       * Bot especialista em follow-up deste departamento (no máximo um).
+       */
+      followUpBot: Prisma.$FollowUpBotPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -32919,6 +33286,7 @@ export namespace Prisma {
     atendentes<T extends Departamento$atendentesArgs<ExtArgs> = {}>(args?: Subset<T, Departamento$atendentesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendenteDepartamentoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     atendimentos<T extends Departamento$atendimentosArgs<ExtArgs> = {}>(args?: Subset<T, Departamento$atendimentosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     bots<T extends Departamento$botsArgs<ExtArgs> = {}>(args?: Subset<T, Departamento$botsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NoCodeFlowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    followUpBot<T extends Departamento$followUpBotArgs<ExtArgs> = {}>(args?: Subset<T, Departamento$followUpBotArgs<ExtArgs>>): Prisma__FollowUpBotClient<$Result.GetResult<Prisma.$FollowUpBotPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -33412,6 +33780,25 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: NoCodeFlowScalarFieldEnum | NoCodeFlowScalarFieldEnum[]
+  }
+
+  /**
+   * Departamento.followUpBot
+   */
+  export type Departamento$followUpBotArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpBot
+     */
+    select?: FollowUpBotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpBot
+     */
+    omit?: FollowUpBotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpBotInclude<ExtArgs> | null
+    where?: FollowUpBotWhereInput
   }
 
   /**
@@ -37789,6 +38176,3569 @@ export namespace Prisma {
 
 
   /**
+   * Model FollowUpBot
+   */
+
+  export type AggregateFollowUpBot = {
+    _count: FollowUpBotCountAggregateOutputType | null
+    _avg: FollowUpBotAvgAggregateOutputType | null
+    _sum: FollowUpBotSumAggregateOutputType | null
+    _min: FollowUpBotMinAggregateOutputType | null
+    _max: FollowUpBotMaxAggregateOutputType | null
+  }
+
+  export type FollowUpBotAvgAggregateOutputType = {
+    minutosSemResposta: number | null
+    maxFollowUps: number | null
+    janelaInicio: number | null
+    janelaFim: number | null
+  }
+
+  export type FollowUpBotSumAggregateOutputType = {
+    minutosSemResposta: number | null
+    maxFollowUps: number | null
+    janelaInicio: number | null
+    janelaFim: number | null
+  }
+
+  export type FollowUpBotMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    departamentoId: string | null
+    nome: string | null
+    ativo: boolean | null
+    ativadoEm: Date | null
+    minutosSemResposta: number | null
+    maxFollowUps: number | null
+    modoTemplate: string | null
+    templateFixoId: string | null
+    janelaAtiva: boolean | null
+    janelaInicio: number | null
+    janelaFim: number | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type FollowUpBotMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    departamentoId: string | null
+    nome: string | null
+    ativo: boolean | null
+    ativadoEm: Date | null
+    minutosSemResposta: number | null
+    maxFollowUps: number | null
+    modoTemplate: string | null
+    templateFixoId: string | null
+    janelaAtiva: boolean | null
+    janelaInicio: number | null
+    janelaFim: number | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type FollowUpBotCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    departamentoId: number
+    nome: number
+    ativo: number
+    ativadoEm: number
+    minutosSemResposta: number
+    maxFollowUps: number
+    modoTemplate: number
+    templateFixoId: number
+    janelaAtiva: number
+    janelaInicio: number
+    janelaFim: number
+    criadoEm: number
+    atualizadoEm: number
+    _all: number
+  }
+
+
+  export type FollowUpBotAvgAggregateInputType = {
+    minutosSemResposta?: true
+    maxFollowUps?: true
+    janelaInicio?: true
+    janelaFim?: true
+  }
+
+  export type FollowUpBotSumAggregateInputType = {
+    minutosSemResposta?: true
+    maxFollowUps?: true
+    janelaInicio?: true
+    janelaFim?: true
+  }
+
+  export type FollowUpBotMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    departamentoId?: true
+    nome?: true
+    ativo?: true
+    ativadoEm?: true
+    minutosSemResposta?: true
+    maxFollowUps?: true
+    modoTemplate?: true
+    templateFixoId?: true
+    janelaAtiva?: true
+    janelaInicio?: true
+    janelaFim?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type FollowUpBotMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    departamentoId?: true
+    nome?: true
+    ativo?: true
+    ativadoEm?: true
+    minutosSemResposta?: true
+    maxFollowUps?: true
+    modoTemplate?: true
+    templateFixoId?: true
+    janelaAtiva?: true
+    janelaInicio?: true
+    janelaFim?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type FollowUpBotCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    departamentoId?: true
+    nome?: true
+    ativo?: true
+    ativadoEm?: true
+    minutosSemResposta?: true
+    maxFollowUps?: true
+    modoTemplate?: true
+    templateFixoId?: true
+    janelaAtiva?: true
+    janelaInicio?: true
+    janelaFim?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    _all?: true
+  }
+
+  export type FollowUpBotAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FollowUpBot to aggregate.
+     */
+    where?: FollowUpBotWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpBots to fetch.
+     */
+    orderBy?: FollowUpBotOrderByWithRelationInput | FollowUpBotOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FollowUpBotWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpBots from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpBots.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned FollowUpBots
+    **/
+    _count?: true | FollowUpBotCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: FollowUpBotAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: FollowUpBotSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FollowUpBotMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FollowUpBotMaxAggregateInputType
+  }
+
+  export type GetFollowUpBotAggregateType<T extends FollowUpBotAggregateArgs> = {
+        [P in keyof T & keyof AggregateFollowUpBot]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFollowUpBot[P]>
+      : GetScalarType<T[P], AggregateFollowUpBot[P]>
+  }
+
+
+
+
+  export type FollowUpBotGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FollowUpBotWhereInput
+    orderBy?: FollowUpBotOrderByWithAggregationInput | FollowUpBotOrderByWithAggregationInput[]
+    by: FollowUpBotScalarFieldEnum[] | FollowUpBotScalarFieldEnum
+    having?: FollowUpBotScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FollowUpBotCountAggregateInputType | true
+    _avg?: FollowUpBotAvgAggregateInputType
+    _sum?: FollowUpBotSumAggregateInputType
+    _min?: FollowUpBotMinAggregateInputType
+    _max?: FollowUpBotMaxAggregateInputType
+  }
+
+  export type FollowUpBotGroupByOutputType = {
+    id: string
+    workspaceId: string
+    departamentoId: string
+    nome: string
+    ativo: boolean
+    ativadoEm: Date | null
+    minutosSemResposta: number
+    maxFollowUps: number
+    modoTemplate: string
+    templateFixoId: string | null
+    janelaAtiva: boolean
+    janelaInicio: number
+    janelaFim: number
+    criadoEm: Date
+    atualizadoEm: Date
+    _count: FollowUpBotCountAggregateOutputType | null
+    _avg: FollowUpBotAvgAggregateOutputType | null
+    _sum: FollowUpBotSumAggregateOutputType | null
+    _min: FollowUpBotMinAggregateOutputType | null
+    _max: FollowUpBotMaxAggregateOutputType | null
+  }
+
+  type GetFollowUpBotGroupByPayload<T extends FollowUpBotGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FollowUpBotGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FollowUpBotGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FollowUpBotGroupByOutputType[P]>
+            : GetScalarType<T[P], FollowUpBotGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FollowUpBotSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    departamentoId?: boolean
+    nome?: boolean
+    ativo?: boolean
+    ativadoEm?: boolean
+    minutosSemResposta?: boolean
+    maxFollowUps?: boolean
+    modoTemplate?: boolean
+    templateFixoId?: boolean
+    janelaAtiva?: boolean
+    janelaInicio?: boolean
+    janelaFim?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    departamento?: boolean | DepartamentoDefaultArgs<ExtArgs>
+    templates?: boolean | FollowUpBot$templatesArgs<ExtArgs>
+    _count?: boolean | FollowUpBotCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["followUpBot"]>
+
+  export type FollowUpBotSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    departamentoId?: boolean
+    nome?: boolean
+    ativo?: boolean
+    ativadoEm?: boolean
+    minutosSemResposta?: boolean
+    maxFollowUps?: boolean
+    modoTemplate?: boolean
+    templateFixoId?: boolean
+    janelaAtiva?: boolean
+    janelaInicio?: boolean
+    janelaFim?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    departamento?: boolean | DepartamentoDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["followUpBot"]>
+
+  export type FollowUpBotSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    departamentoId?: boolean
+    nome?: boolean
+    ativo?: boolean
+    ativadoEm?: boolean
+    minutosSemResposta?: boolean
+    maxFollowUps?: boolean
+    modoTemplate?: boolean
+    templateFixoId?: boolean
+    janelaAtiva?: boolean
+    janelaInicio?: boolean
+    janelaFim?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    departamento?: boolean | DepartamentoDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["followUpBot"]>
+
+  export type FollowUpBotSelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    departamentoId?: boolean
+    nome?: boolean
+    ativo?: boolean
+    ativadoEm?: boolean
+    minutosSemResposta?: boolean
+    maxFollowUps?: boolean
+    modoTemplate?: boolean
+    templateFixoId?: boolean
+    janelaAtiva?: boolean
+    janelaInicio?: boolean
+    janelaFim?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }
+
+  export type FollowUpBotOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "departamentoId" | "nome" | "ativo" | "ativadoEm" | "minutosSemResposta" | "maxFollowUps" | "modoTemplate" | "templateFixoId" | "janelaAtiva" | "janelaInicio" | "janelaFim" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["followUpBot"]>
+  export type FollowUpBotInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    departamento?: boolean | DepartamentoDefaultArgs<ExtArgs>
+    templates?: boolean | FollowUpBot$templatesArgs<ExtArgs>
+    _count?: boolean | FollowUpBotCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type FollowUpBotIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    departamento?: boolean | DepartamentoDefaultArgs<ExtArgs>
+  }
+  export type FollowUpBotIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    departamento?: boolean | DepartamentoDefaultArgs<ExtArgs>
+  }
+
+  export type $FollowUpBotPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "FollowUpBot"
+    objects: {
+      departamento: Prisma.$DepartamentoPayload<ExtArgs>
+      templates: Prisma.$FollowUpTemplatePayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
+      departamentoId: string
+      nome: string
+      ativo: boolean
+      /**
+       * Quando foi ligado pela última vez (só mensagens enviadas depois disso disparam follow-up).
+       */
+      ativadoEm: Date | null
+      /**
+       * Tempo sem resposta do lead até enviar o follow-up (em minutos).
+       */
+      minutosSemResposta: number
+      /**
+       * Quantos follow-ups seguidos enviar enquanto o lead não responder (cada um espera `minutosSemResposta`).
+       */
+      maxFollowUps: number
+      /**
+       * "aleatorio" (sorteia entre os templates ativos) | "especifico" (sempre `templateFixoId`).
+       */
+      modoTemplate: string
+      templateFixoId: string | null
+      /**
+       * Só envia entre `janelaInicio` e `janelaFim` (hora cheia, 0–24), no horário do servidor.
+       */
+      janelaAtiva: boolean
+      janelaInicio: number
+      janelaFim: number
+      criadoEm: Date
+      atualizadoEm: Date
+    }, ExtArgs["result"]["followUpBot"]>
+    composites: {}
+  }
+
+  type FollowUpBotGetPayload<S extends boolean | null | undefined | FollowUpBotDefaultArgs> = $Result.GetResult<Prisma.$FollowUpBotPayload, S>
+
+  type FollowUpBotCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<FollowUpBotFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: FollowUpBotCountAggregateInputType | true
+    }
+
+  export interface FollowUpBotDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FollowUpBot'], meta: { name: 'FollowUpBot' } }
+    /**
+     * Find zero or one FollowUpBot that matches the filter.
+     * @param {FollowUpBotFindUniqueArgs} args - Arguments to find a FollowUpBot
+     * @example
+     * // Get one FollowUpBot
+     * const followUpBot = await prisma.followUpBot.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FollowUpBotFindUniqueArgs>(args: SelectSubset<T, FollowUpBotFindUniqueArgs<ExtArgs>>): Prisma__FollowUpBotClient<$Result.GetResult<Prisma.$FollowUpBotPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one FollowUpBot that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {FollowUpBotFindUniqueOrThrowArgs} args - Arguments to find a FollowUpBot
+     * @example
+     * // Get one FollowUpBot
+     * const followUpBot = await prisma.followUpBot.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FollowUpBotFindUniqueOrThrowArgs>(args: SelectSubset<T, FollowUpBotFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FollowUpBotClient<$Result.GetResult<Prisma.$FollowUpBotPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FollowUpBot that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpBotFindFirstArgs} args - Arguments to find a FollowUpBot
+     * @example
+     * // Get one FollowUpBot
+     * const followUpBot = await prisma.followUpBot.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FollowUpBotFindFirstArgs>(args?: SelectSubset<T, FollowUpBotFindFirstArgs<ExtArgs>>): Prisma__FollowUpBotClient<$Result.GetResult<Prisma.$FollowUpBotPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FollowUpBot that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpBotFindFirstOrThrowArgs} args - Arguments to find a FollowUpBot
+     * @example
+     * // Get one FollowUpBot
+     * const followUpBot = await prisma.followUpBot.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FollowUpBotFindFirstOrThrowArgs>(args?: SelectSubset<T, FollowUpBotFindFirstOrThrowArgs<ExtArgs>>): Prisma__FollowUpBotClient<$Result.GetResult<Prisma.$FollowUpBotPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more FollowUpBots that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpBotFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all FollowUpBots
+     * const followUpBots = await prisma.followUpBot.findMany()
+     * 
+     * // Get first 10 FollowUpBots
+     * const followUpBots = await prisma.followUpBot.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const followUpBotWithIdOnly = await prisma.followUpBot.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FollowUpBotFindManyArgs>(args?: SelectSubset<T, FollowUpBotFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpBotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a FollowUpBot.
+     * @param {FollowUpBotCreateArgs} args - Arguments to create a FollowUpBot.
+     * @example
+     * // Create one FollowUpBot
+     * const FollowUpBot = await prisma.followUpBot.create({
+     *   data: {
+     *     // ... data to create a FollowUpBot
+     *   }
+     * })
+     * 
+     */
+    create<T extends FollowUpBotCreateArgs>(args: SelectSubset<T, FollowUpBotCreateArgs<ExtArgs>>): Prisma__FollowUpBotClient<$Result.GetResult<Prisma.$FollowUpBotPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many FollowUpBots.
+     * @param {FollowUpBotCreateManyArgs} args - Arguments to create many FollowUpBots.
+     * @example
+     * // Create many FollowUpBots
+     * const followUpBot = await prisma.followUpBot.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FollowUpBotCreateManyArgs>(args?: SelectSubset<T, FollowUpBotCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many FollowUpBots and returns the data saved in the database.
+     * @param {FollowUpBotCreateManyAndReturnArgs} args - Arguments to create many FollowUpBots.
+     * @example
+     * // Create many FollowUpBots
+     * const followUpBot = await prisma.followUpBot.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many FollowUpBots and only return the `id`
+     * const followUpBotWithIdOnly = await prisma.followUpBot.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FollowUpBotCreateManyAndReturnArgs>(args?: SelectSubset<T, FollowUpBotCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpBotPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a FollowUpBot.
+     * @param {FollowUpBotDeleteArgs} args - Arguments to delete one FollowUpBot.
+     * @example
+     * // Delete one FollowUpBot
+     * const FollowUpBot = await prisma.followUpBot.delete({
+     *   where: {
+     *     // ... filter to delete one FollowUpBot
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FollowUpBotDeleteArgs>(args: SelectSubset<T, FollowUpBotDeleteArgs<ExtArgs>>): Prisma__FollowUpBotClient<$Result.GetResult<Prisma.$FollowUpBotPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one FollowUpBot.
+     * @param {FollowUpBotUpdateArgs} args - Arguments to update one FollowUpBot.
+     * @example
+     * // Update one FollowUpBot
+     * const followUpBot = await prisma.followUpBot.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FollowUpBotUpdateArgs>(args: SelectSubset<T, FollowUpBotUpdateArgs<ExtArgs>>): Prisma__FollowUpBotClient<$Result.GetResult<Prisma.$FollowUpBotPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more FollowUpBots.
+     * @param {FollowUpBotDeleteManyArgs} args - Arguments to filter FollowUpBots to delete.
+     * @example
+     * // Delete a few FollowUpBots
+     * const { count } = await prisma.followUpBot.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FollowUpBotDeleteManyArgs>(args?: SelectSubset<T, FollowUpBotDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FollowUpBots.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpBotUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many FollowUpBots
+     * const followUpBot = await prisma.followUpBot.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FollowUpBotUpdateManyArgs>(args: SelectSubset<T, FollowUpBotUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FollowUpBots and returns the data updated in the database.
+     * @param {FollowUpBotUpdateManyAndReturnArgs} args - Arguments to update many FollowUpBots.
+     * @example
+     * // Update many FollowUpBots
+     * const followUpBot = await prisma.followUpBot.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more FollowUpBots and only return the `id`
+     * const followUpBotWithIdOnly = await prisma.followUpBot.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends FollowUpBotUpdateManyAndReturnArgs>(args: SelectSubset<T, FollowUpBotUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpBotPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one FollowUpBot.
+     * @param {FollowUpBotUpsertArgs} args - Arguments to update or create a FollowUpBot.
+     * @example
+     * // Update or create a FollowUpBot
+     * const followUpBot = await prisma.followUpBot.upsert({
+     *   create: {
+     *     // ... data to create a FollowUpBot
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the FollowUpBot we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FollowUpBotUpsertArgs>(args: SelectSubset<T, FollowUpBotUpsertArgs<ExtArgs>>): Prisma__FollowUpBotClient<$Result.GetResult<Prisma.$FollowUpBotPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of FollowUpBots.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpBotCountArgs} args - Arguments to filter FollowUpBots to count.
+     * @example
+     * // Count the number of FollowUpBots
+     * const count = await prisma.followUpBot.count({
+     *   where: {
+     *     // ... the filter for the FollowUpBots we want to count
+     *   }
+     * })
+    **/
+    count<T extends FollowUpBotCountArgs>(
+      args?: Subset<T, FollowUpBotCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FollowUpBotCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a FollowUpBot.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpBotAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FollowUpBotAggregateArgs>(args: Subset<T, FollowUpBotAggregateArgs>): Prisma.PrismaPromise<GetFollowUpBotAggregateType<T>>
+
+    /**
+     * Group by FollowUpBot.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpBotGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FollowUpBotGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FollowUpBotGroupByArgs['orderBy'] }
+        : { orderBy?: FollowUpBotGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FollowUpBotGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFollowUpBotGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the FollowUpBot model
+   */
+  readonly fields: FollowUpBotFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for FollowUpBot.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FollowUpBotClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    departamento<T extends DepartamentoDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DepartamentoDefaultArgs<ExtArgs>>): Prisma__DepartamentoClient<$Result.GetResult<Prisma.$DepartamentoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    templates<T extends FollowUpBot$templatesArgs<ExtArgs> = {}>(args?: Subset<T, FollowUpBot$templatesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the FollowUpBot model
+   */
+  interface FollowUpBotFieldRefs {
+    readonly id: FieldRef<"FollowUpBot", 'String'>
+    readonly workspaceId: FieldRef<"FollowUpBot", 'String'>
+    readonly departamentoId: FieldRef<"FollowUpBot", 'String'>
+    readonly nome: FieldRef<"FollowUpBot", 'String'>
+    readonly ativo: FieldRef<"FollowUpBot", 'Boolean'>
+    readonly ativadoEm: FieldRef<"FollowUpBot", 'DateTime'>
+    readonly minutosSemResposta: FieldRef<"FollowUpBot", 'Int'>
+    readonly maxFollowUps: FieldRef<"FollowUpBot", 'Int'>
+    readonly modoTemplate: FieldRef<"FollowUpBot", 'String'>
+    readonly templateFixoId: FieldRef<"FollowUpBot", 'String'>
+    readonly janelaAtiva: FieldRef<"FollowUpBot", 'Boolean'>
+    readonly janelaInicio: FieldRef<"FollowUpBot", 'Int'>
+    readonly janelaFim: FieldRef<"FollowUpBot", 'Int'>
+    readonly criadoEm: FieldRef<"FollowUpBot", 'DateTime'>
+    readonly atualizadoEm: FieldRef<"FollowUpBot", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * FollowUpBot findUnique
+   */
+  export type FollowUpBotFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpBot
+     */
+    select?: FollowUpBotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpBot
+     */
+    omit?: FollowUpBotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpBotInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpBot to fetch.
+     */
+    where: FollowUpBotWhereUniqueInput
+  }
+
+  /**
+   * FollowUpBot findUniqueOrThrow
+   */
+  export type FollowUpBotFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpBot
+     */
+    select?: FollowUpBotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpBot
+     */
+    omit?: FollowUpBotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpBotInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpBot to fetch.
+     */
+    where: FollowUpBotWhereUniqueInput
+  }
+
+  /**
+   * FollowUpBot findFirst
+   */
+  export type FollowUpBotFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpBot
+     */
+    select?: FollowUpBotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpBot
+     */
+    omit?: FollowUpBotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpBotInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpBot to fetch.
+     */
+    where?: FollowUpBotWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpBots to fetch.
+     */
+    orderBy?: FollowUpBotOrderByWithRelationInput | FollowUpBotOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FollowUpBots.
+     */
+    cursor?: FollowUpBotWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpBots from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpBots.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FollowUpBots.
+     */
+    distinct?: FollowUpBotScalarFieldEnum | FollowUpBotScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpBot findFirstOrThrow
+   */
+  export type FollowUpBotFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpBot
+     */
+    select?: FollowUpBotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpBot
+     */
+    omit?: FollowUpBotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpBotInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpBot to fetch.
+     */
+    where?: FollowUpBotWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpBots to fetch.
+     */
+    orderBy?: FollowUpBotOrderByWithRelationInput | FollowUpBotOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FollowUpBots.
+     */
+    cursor?: FollowUpBotWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpBots from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpBots.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FollowUpBots.
+     */
+    distinct?: FollowUpBotScalarFieldEnum | FollowUpBotScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpBot findMany
+   */
+  export type FollowUpBotFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpBot
+     */
+    select?: FollowUpBotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpBot
+     */
+    omit?: FollowUpBotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpBotInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpBots to fetch.
+     */
+    where?: FollowUpBotWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpBots to fetch.
+     */
+    orderBy?: FollowUpBotOrderByWithRelationInput | FollowUpBotOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing FollowUpBots.
+     */
+    cursor?: FollowUpBotWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpBots from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpBots.
+     */
+    skip?: number
+    distinct?: FollowUpBotScalarFieldEnum | FollowUpBotScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpBot create
+   */
+  export type FollowUpBotCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpBot
+     */
+    select?: FollowUpBotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpBot
+     */
+    omit?: FollowUpBotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpBotInclude<ExtArgs> | null
+    /**
+     * The data needed to create a FollowUpBot.
+     */
+    data: XOR<FollowUpBotCreateInput, FollowUpBotUncheckedCreateInput>
+  }
+
+  /**
+   * FollowUpBot createMany
+   */
+  export type FollowUpBotCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many FollowUpBots.
+     */
+    data: FollowUpBotCreateManyInput | FollowUpBotCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * FollowUpBot createManyAndReturn
+   */
+  export type FollowUpBotCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpBot
+     */
+    select?: FollowUpBotSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpBot
+     */
+    omit?: FollowUpBotOmit<ExtArgs> | null
+    /**
+     * The data used to create many FollowUpBots.
+     */
+    data: FollowUpBotCreateManyInput | FollowUpBotCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpBotIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * FollowUpBot update
+   */
+  export type FollowUpBotUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpBot
+     */
+    select?: FollowUpBotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpBot
+     */
+    omit?: FollowUpBotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpBotInclude<ExtArgs> | null
+    /**
+     * The data needed to update a FollowUpBot.
+     */
+    data: XOR<FollowUpBotUpdateInput, FollowUpBotUncheckedUpdateInput>
+    /**
+     * Choose, which FollowUpBot to update.
+     */
+    where: FollowUpBotWhereUniqueInput
+  }
+
+  /**
+   * FollowUpBot updateMany
+   */
+  export type FollowUpBotUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update FollowUpBots.
+     */
+    data: XOR<FollowUpBotUpdateManyMutationInput, FollowUpBotUncheckedUpdateManyInput>
+    /**
+     * Filter which FollowUpBots to update
+     */
+    where?: FollowUpBotWhereInput
+    /**
+     * Limit how many FollowUpBots to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * FollowUpBot updateManyAndReturn
+   */
+  export type FollowUpBotUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpBot
+     */
+    select?: FollowUpBotSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpBot
+     */
+    omit?: FollowUpBotOmit<ExtArgs> | null
+    /**
+     * The data used to update FollowUpBots.
+     */
+    data: XOR<FollowUpBotUpdateManyMutationInput, FollowUpBotUncheckedUpdateManyInput>
+    /**
+     * Filter which FollowUpBots to update
+     */
+    where?: FollowUpBotWhereInput
+    /**
+     * Limit how many FollowUpBots to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpBotIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * FollowUpBot upsert
+   */
+  export type FollowUpBotUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpBot
+     */
+    select?: FollowUpBotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpBot
+     */
+    omit?: FollowUpBotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpBotInclude<ExtArgs> | null
+    /**
+     * The filter to search for the FollowUpBot to update in case it exists.
+     */
+    where: FollowUpBotWhereUniqueInput
+    /**
+     * In case the FollowUpBot found by the `where` argument doesn't exist, create a new FollowUpBot with this data.
+     */
+    create: XOR<FollowUpBotCreateInput, FollowUpBotUncheckedCreateInput>
+    /**
+     * In case the FollowUpBot was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FollowUpBotUpdateInput, FollowUpBotUncheckedUpdateInput>
+  }
+
+  /**
+   * FollowUpBot delete
+   */
+  export type FollowUpBotDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpBot
+     */
+    select?: FollowUpBotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpBot
+     */
+    omit?: FollowUpBotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpBotInclude<ExtArgs> | null
+    /**
+     * Filter which FollowUpBot to delete.
+     */
+    where: FollowUpBotWhereUniqueInput
+  }
+
+  /**
+   * FollowUpBot deleteMany
+   */
+  export type FollowUpBotDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FollowUpBots to delete
+     */
+    where?: FollowUpBotWhereInput
+    /**
+     * Limit how many FollowUpBots to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * FollowUpBot.templates
+   */
+  export type FollowUpBot$templatesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    where?: FollowUpTemplateWhereInput
+    orderBy?: FollowUpTemplateOrderByWithRelationInput | FollowUpTemplateOrderByWithRelationInput[]
+    cursor?: FollowUpTemplateWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FollowUpTemplateScalarFieldEnum | FollowUpTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpBot without action
+   */
+  export type FollowUpBotDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpBot
+     */
+    select?: FollowUpBotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpBot
+     */
+    omit?: FollowUpBotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpBotInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model FollowUpTemplate
+   */
+
+  export type AggregateFollowUpTemplate = {
+    _count: FollowUpTemplateCountAggregateOutputType | null
+    _min: FollowUpTemplateMinAggregateOutputType | null
+    _max: FollowUpTemplateMaxAggregateOutputType | null
+  }
+
+  export type FollowUpTemplateMinAggregateOutputType = {
+    id: string | null
+    botId: string | null
+    nome: string | null
+    texto: string | null
+    ativo: boolean | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type FollowUpTemplateMaxAggregateOutputType = {
+    id: string | null
+    botId: string | null
+    nome: string | null
+    texto: string | null
+    ativo: boolean | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type FollowUpTemplateCountAggregateOutputType = {
+    id: number
+    botId: number
+    nome: number
+    texto: number
+    ativo: number
+    criadoEm: number
+    atualizadoEm: number
+    _all: number
+  }
+
+
+  export type FollowUpTemplateMinAggregateInputType = {
+    id?: true
+    botId?: true
+    nome?: true
+    texto?: true
+    ativo?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type FollowUpTemplateMaxAggregateInputType = {
+    id?: true
+    botId?: true
+    nome?: true
+    texto?: true
+    ativo?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type FollowUpTemplateCountAggregateInputType = {
+    id?: true
+    botId?: true
+    nome?: true
+    texto?: true
+    ativo?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    _all?: true
+  }
+
+  export type FollowUpTemplateAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FollowUpTemplate to aggregate.
+     */
+    where?: FollowUpTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpTemplates to fetch.
+     */
+    orderBy?: FollowUpTemplateOrderByWithRelationInput | FollowUpTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FollowUpTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpTemplates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned FollowUpTemplates
+    **/
+    _count?: true | FollowUpTemplateCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FollowUpTemplateMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FollowUpTemplateMaxAggregateInputType
+  }
+
+  export type GetFollowUpTemplateAggregateType<T extends FollowUpTemplateAggregateArgs> = {
+        [P in keyof T & keyof AggregateFollowUpTemplate]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFollowUpTemplate[P]>
+      : GetScalarType<T[P], AggregateFollowUpTemplate[P]>
+  }
+
+
+
+
+  export type FollowUpTemplateGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FollowUpTemplateWhereInput
+    orderBy?: FollowUpTemplateOrderByWithAggregationInput | FollowUpTemplateOrderByWithAggregationInput[]
+    by: FollowUpTemplateScalarFieldEnum[] | FollowUpTemplateScalarFieldEnum
+    having?: FollowUpTemplateScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FollowUpTemplateCountAggregateInputType | true
+    _min?: FollowUpTemplateMinAggregateInputType
+    _max?: FollowUpTemplateMaxAggregateInputType
+  }
+
+  export type FollowUpTemplateGroupByOutputType = {
+    id: string
+    botId: string
+    nome: string
+    texto: string
+    ativo: boolean
+    criadoEm: Date
+    atualizadoEm: Date
+    _count: FollowUpTemplateCountAggregateOutputType | null
+    _min: FollowUpTemplateMinAggregateOutputType | null
+    _max: FollowUpTemplateMaxAggregateOutputType | null
+  }
+
+  type GetFollowUpTemplateGroupByPayload<T extends FollowUpTemplateGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FollowUpTemplateGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FollowUpTemplateGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FollowUpTemplateGroupByOutputType[P]>
+            : GetScalarType<T[P], FollowUpTemplateGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FollowUpTemplateSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    botId?: boolean
+    nome?: boolean
+    texto?: boolean
+    ativo?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    bot?: boolean | FollowUpBotDefaultArgs<ExtArgs>
+    conversas?: boolean | FollowUpTemplate$conversasArgs<ExtArgs>
+    _count?: boolean | FollowUpTemplateCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["followUpTemplate"]>
+
+  export type FollowUpTemplateSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    botId?: boolean
+    nome?: boolean
+    texto?: boolean
+    ativo?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    bot?: boolean | FollowUpBotDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["followUpTemplate"]>
+
+  export type FollowUpTemplateSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    botId?: boolean
+    nome?: boolean
+    texto?: boolean
+    ativo?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    bot?: boolean | FollowUpBotDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["followUpTemplate"]>
+
+  export type FollowUpTemplateSelectScalar = {
+    id?: boolean
+    botId?: boolean
+    nome?: boolean
+    texto?: boolean
+    ativo?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }
+
+  export type FollowUpTemplateOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "botId" | "nome" | "texto" | "ativo" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["followUpTemplate"]>
+  export type FollowUpTemplateInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    bot?: boolean | FollowUpBotDefaultArgs<ExtArgs>
+    conversas?: boolean | FollowUpTemplate$conversasArgs<ExtArgs>
+    _count?: boolean | FollowUpTemplateCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type FollowUpTemplateIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    bot?: boolean | FollowUpBotDefaultArgs<ExtArgs>
+  }
+  export type FollowUpTemplateIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    bot?: boolean | FollowUpBotDefaultArgs<ExtArgs>
+  }
+
+  export type $FollowUpTemplatePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "FollowUpTemplate"
+    objects: {
+      bot: Prisma.$FollowUpBotPayload<ExtArgs>
+      conversas: Prisma.$FollowUpConversaPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      botId: string
+      nome: string
+      texto: string
+      ativo: boolean
+      criadoEm: Date
+      atualizadoEm: Date
+    }, ExtArgs["result"]["followUpTemplate"]>
+    composites: {}
+  }
+
+  type FollowUpTemplateGetPayload<S extends boolean | null | undefined | FollowUpTemplateDefaultArgs> = $Result.GetResult<Prisma.$FollowUpTemplatePayload, S>
+
+  type FollowUpTemplateCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<FollowUpTemplateFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: FollowUpTemplateCountAggregateInputType | true
+    }
+
+  export interface FollowUpTemplateDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FollowUpTemplate'], meta: { name: 'FollowUpTemplate' } }
+    /**
+     * Find zero or one FollowUpTemplate that matches the filter.
+     * @param {FollowUpTemplateFindUniqueArgs} args - Arguments to find a FollowUpTemplate
+     * @example
+     * // Get one FollowUpTemplate
+     * const followUpTemplate = await prisma.followUpTemplate.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FollowUpTemplateFindUniqueArgs>(args: SelectSubset<T, FollowUpTemplateFindUniqueArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one FollowUpTemplate that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {FollowUpTemplateFindUniqueOrThrowArgs} args - Arguments to find a FollowUpTemplate
+     * @example
+     * // Get one FollowUpTemplate
+     * const followUpTemplate = await prisma.followUpTemplate.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FollowUpTemplateFindUniqueOrThrowArgs>(args: SelectSubset<T, FollowUpTemplateFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FollowUpTemplate that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpTemplateFindFirstArgs} args - Arguments to find a FollowUpTemplate
+     * @example
+     * // Get one FollowUpTemplate
+     * const followUpTemplate = await prisma.followUpTemplate.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FollowUpTemplateFindFirstArgs>(args?: SelectSubset<T, FollowUpTemplateFindFirstArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FollowUpTemplate that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpTemplateFindFirstOrThrowArgs} args - Arguments to find a FollowUpTemplate
+     * @example
+     * // Get one FollowUpTemplate
+     * const followUpTemplate = await prisma.followUpTemplate.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FollowUpTemplateFindFirstOrThrowArgs>(args?: SelectSubset<T, FollowUpTemplateFindFirstOrThrowArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more FollowUpTemplates that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpTemplateFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all FollowUpTemplates
+     * const followUpTemplates = await prisma.followUpTemplate.findMany()
+     * 
+     * // Get first 10 FollowUpTemplates
+     * const followUpTemplates = await prisma.followUpTemplate.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const followUpTemplateWithIdOnly = await prisma.followUpTemplate.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FollowUpTemplateFindManyArgs>(args?: SelectSubset<T, FollowUpTemplateFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a FollowUpTemplate.
+     * @param {FollowUpTemplateCreateArgs} args - Arguments to create a FollowUpTemplate.
+     * @example
+     * // Create one FollowUpTemplate
+     * const FollowUpTemplate = await prisma.followUpTemplate.create({
+     *   data: {
+     *     // ... data to create a FollowUpTemplate
+     *   }
+     * })
+     * 
+     */
+    create<T extends FollowUpTemplateCreateArgs>(args: SelectSubset<T, FollowUpTemplateCreateArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many FollowUpTemplates.
+     * @param {FollowUpTemplateCreateManyArgs} args - Arguments to create many FollowUpTemplates.
+     * @example
+     * // Create many FollowUpTemplates
+     * const followUpTemplate = await prisma.followUpTemplate.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FollowUpTemplateCreateManyArgs>(args?: SelectSubset<T, FollowUpTemplateCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many FollowUpTemplates and returns the data saved in the database.
+     * @param {FollowUpTemplateCreateManyAndReturnArgs} args - Arguments to create many FollowUpTemplates.
+     * @example
+     * // Create many FollowUpTemplates
+     * const followUpTemplate = await prisma.followUpTemplate.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many FollowUpTemplates and only return the `id`
+     * const followUpTemplateWithIdOnly = await prisma.followUpTemplate.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FollowUpTemplateCreateManyAndReturnArgs>(args?: SelectSubset<T, FollowUpTemplateCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a FollowUpTemplate.
+     * @param {FollowUpTemplateDeleteArgs} args - Arguments to delete one FollowUpTemplate.
+     * @example
+     * // Delete one FollowUpTemplate
+     * const FollowUpTemplate = await prisma.followUpTemplate.delete({
+     *   where: {
+     *     // ... filter to delete one FollowUpTemplate
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FollowUpTemplateDeleteArgs>(args: SelectSubset<T, FollowUpTemplateDeleteArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one FollowUpTemplate.
+     * @param {FollowUpTemplateUpdateArgs} args - Arguments to update one FollowUpTemplate.
+     * @example
+     * // Update one FollowUpTemplate
+     * const followUpTemplate = await prisma.followUpTemplate.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FollowUpTemplateUpdateArgs>(args: SelectSubset<T, FollowUpTemplateUpdateArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more FollowUpTemplates.
+     * @param {FollowUpTemplateDeleteManyArgs} args - Arguments to filter FollowUpTemplates to delete.
+     * @example
+     * // Delete a few FollowUpTemplates
+     * const { count } = await prisma.followUpTemplate.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FollowUpTemplateDeleteManyArgs>(args?: SelectSubset<T, FollowUpTemplateDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FollowUpTemplates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpTemplateUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many FollowUpTemplates
+     * const followUpTemplate = await prisma.followUpTemplate.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FollowUpTemplateUpdateManyArgs>(args: SelectSubset<T, FollowUpTemplateUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FollowUpTemplates and returns the data updated in the database.
+     * @param {FollowUpTemplateUpdateManyAndReturnArgs} args - Arguments to update many FollowUpTemplates.
+     * @example
+     * // Update many FollowUpTemplates
+     * const followUpTemplate = await prisma.followUpTemplate.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more FollowUpTemplates and only return the `id`
+     * const followUpTemplateWithIdOnly = await prisma.followUpTemplate.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends FollowUpTemplateUpdateManyAndReturnArgs>(args: SelectSubset<T, FollowUpTemplateUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one FollowUpTemplate.
+     * @param {FollowUpTemplateUpsertArgs} args - Arguments to update or create a FollowUpTemplate.
+     * @example
+     * // Update or create a FollowUpTemplate
+     * const followUpTemplate = await prisma.followUpTemplate.upsert({
+     *   create: {
+     *     // ... data to create a FollowUpTemplate
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the FollowUpTemplate we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FollowUpTemplateUpsertArgs>(args: SelectSubset<T, FollowUpTemplateUpsertArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of FollowUpTemplates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpTemplateCountArgs} args - Arguments to filter FollowUpTemplates to count.
+     * @example
+     * // Count the number of FollowUpTemplates
+     * const count = await prisma.followUpTemplate.count({
+     *   where: {
+     *     // ... the filter for the FollowUpTemplates we want to count
+     *   }
+     * })
+    **/
+    count<T extends FollowUpTemplateCountArgs>(
+      args?: Subset<T, FollowUpTemplateCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FollowUpTemplateCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a FollowUpTemplate.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpTemplateAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FollowUpTemplateAggregateArgs>(args: Subset<T, FollowUpTemplateAggregateArgs>): Prisma.PrismaPromise<GetFollowUpTemplateAggregateType<T>>
+
+    /**
+     * Group by FollowUpTemplate.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpTemplateGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FollowUpTemplateGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FollowUpTemplateGroupByArgs['orderBy'] }
+        : { orderBy?: FollowUpTemplateGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FollowUpTemplateGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFollowUpTemplateGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the FollowUpTemplate model
+   */
+  readonly fields: FollowUpTemplateFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for FollowUpTemplate.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FollowUpTemplateClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    bot<T extends FollowUpBotDefaultArgs<ExtArgs> = {}>(args?: Subset<T, FollowUpBotDefaultArgs<ExtArgs>>): Prisma__FollowUpBotClient<$Result.GetResult<Prisma.$FollowUpBotPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    conversas<T extends FollowUpTemplate$conversasArgs<ExtArgs> = {}>(args?: Subset<T, FollowUpTemplate$conversasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpConversaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the FollowUpTemplate model
+   */
+  interface FollowUpTemplateFieldRefs {
+    readonly id: FieldRef<"FollowUpTemplate", 'String'>
+    readonly botId: FieldRef<"FollowUpTemplate", 'String'>
+    readonly nome: FieldRef<"FollowUpTemplate", 'String'>
+    readonly texto: FieldRef<"FollowUpTemplate", 'String'>
+    readonly ativo: FieldRef<"FollowUpTemplate", 'Boolean'>
+    readonly criadoEm: FieldRef<"FollowUpTemplate", 'DateTime'>
+    readonly atualizadoEm: FieldRef<"FollowUpTemplate", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * FollowUpTemplate findUnique
+   */
+  export type FollowUpTemplateFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpTemplate to fetch.
+     */
+    where: FollowUpTemplateWhereUniqueInput
+  }
+
+  /**
+   * FollowUpTemplate findUniqueOrThrow
+   */
+  export type FollowUpTemplateFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpTemplate to fetch.
+     */
+    where: FollowUpTemplateWhereUniqueInput
+  }
+
+  /**
+   * FollowUpTemplate findFirst
+   */
+  export type FollowUpTemplateFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpTemplate to fetch.
+     */
+    where?: FollowUpTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpTemplates to fetch.
+     */
+    orderBy?: FollowUpTemplateOrderByWithRelationInput | FollowUpTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FollowUpTemplates.
+     */
+    cursor?: FollowUpTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpTemplates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FollowUpTemplates.
+     */
+    distinct?: FollowUpTemplateScalarFieldEnum | FollowUpTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpTemplate findFirstOrThrow
+   */
+  export type FollowUpTemplateFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpTemplate to fetch.
+     */
+    where?: FollowUpTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpTemplates to fetch.
+     */
+    orderBy?: FollowUpTemplateOrderByWithRelationInput | FollowUpTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FollowUpTemplates.
+     */
+    cursor?: FollowUpTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpTemplates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FollowUpTemplates.
+     */
+    distinct?: FollowUpTemplateScalarFieldEnum | FollowUpTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpTemplate findMany
+   */
+  export type FollowUpTemplateFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpTemplates to fetch.
+     */
+    where?: FollowUpTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpTemplates to fetch.
+     */
+    orderBy?: FollowUpTemplateOrderByWithRelationInput | FollowUpTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing FollowUpTemplates.
+     */
+    cursor?: FollowUpTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpTemplates.
+     */
+    skip?: number
+    distinct?: FollowUpTemplateScalarFieldEnum | FollowUpTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpTemplate create
+   */
+  export type FollowUpTemplateCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * The data needed to create a FollowUpTemplate.
+     */
+    data: XOR<FollowUpTemplateCreateInput, FollowUpTemplateUncheckedCreateInput>
+  }
+
+  /**
+   * FollowUpTemplate createMany
+   */
+  export type FollowUpTemplateCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many FollowUpTemplates.
+     */
+    data: FollowUpTemplateCreateManyInput | FollowUpTemplateCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * FollowUpTemplate createManyAndReturn
+   */
+  export type FollowUpTemplateCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * The data used to create many FollowUpTemplates.
+     */
+    data: FollowUpTemplateCreateManyInput | FollowUpTemplateCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * FollowUpTemplate update
+   */
+  export type FollowUpTemplateUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * The data needed to update a FollowUpTemplate.
+     */
+    data: XOR<FollowUpTemplateUpdateInput, FollowUpTemplateUncheckedUpdateInput>
+    /**
+     * Choose, which FollowUpTemplate to update.
+     */
+    where: FollowUpTemplateWhereUniqueInput
+  }
+
+  /**
+   * FollowUpTemplate updateMany
+   */
+  export type FollowUpTemplateUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update FollowUpTemplates.
+     */
+    data: XOR<FollowUpTemplateUpdateManyMutationInput, FollowUpTemplateUncheckedUpdateManyInput>
+    /**
+     * Filter which FollowUpTemplates to update
+     */
+    where?: FollowUpTemplateWhereInput
+    /**
+     * Limit how many FollowUpTemplates to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * FollowUpTemplate updateManyAndReturn
+   */
+  export type FollowUpTemplateUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * The data used to update FollowUpTemplates.
+     */
+    data: XOR<FollowUpTemplateUpdateManyMutationInput, FollowUpTemplateUncheckedUpdateManyInput>
+    /**
+     * Filter which FollowUpTemplates to update
+     */
+    where?: FollowUpTemplateWhereInput
+    /**
+     * Limit how many FollowUpTemplates to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * FollowUpTemplate upsert
+   */
+  export type FollowUpTemplateUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * The filter to search for the FollowUpTemplate to update in case it exists.
+     */
+    where: FollowUpTemplateWhereUniqueInput
+    /**
+     * In case the FollowUpTemplate found by the `where` argument doesn't exist, create a new FollowUpTemplate with this data.
+     */
+    create: XOR<FollowUpTemplateCreateInput, FollowUpTemplateUncheckedCreateInput>
+    /**
+     * In case the FollowUpTemplate was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FollowUpTemplateUpdateInput, FollowUpTemplateUncheckedUpdateInput>
+  }
+
+  /**
+   * FollowUpTemplate delete
+   */
+  export type FollowUpTemplateDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * Filter which FollowUpTemplate to delete.
+     */
+    where: FollowUpTemplateWhereUniqueInput
+  }
+
+  /**
+   * FollowUpTemplate deleteMany
+   */
+  export type FollowUpTemplateDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FollowUpTemplates to delete
+     */
+    where?: FollowUpTemplateWhereInput
+    /**
+     * Limit how many FollowUpTemplates to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * FollowUpTemplate.conversas
+   */
+  export type FollowUpTemplate$conversasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpConversa
+     */
+    select?: FollowUpConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpConversa
+     */
+    omit?: FollowUpConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpConversaInclude<ExtArgs> | null
+    where?: FollowUpConversaWhereInput
+    orderBy?: FollowUpConversaOrderByWithRelationInput | FollowUpConversaOrderByWithRelationInput[]
+    cursor?: FollowUpConversaWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FollowUpConversaScalarFieldEnum | FollowUpConversaScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpTemplate without action
+   */
+  export type FollowUpTemplateDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model FollowUpConversa
+   */
+
+  export type AggregateFollowUpConversa = {
+    _count: FollowUpConversaCountAggregateOutputType | null
+    _avg: FollowUpConversaAvgAggregateOutputType | null
+    _sum: FollowUpConversaSumAggregateOutputType | null
+    _min: FollowUpConversaMinAggregateOutputType | null
+    _max: FollowUpConversaMaxAggregateOutputType | null
+  }
+
+  export type FollowUpConversaAvgAggregateOutputType = {
+    enviados: number | null
+  }
+
+  export type FollowUpConversaSumAggregateOutputType = {
+    enviados: number | null
+  }
+
+  export type FollowUpConversaMinAggregateOutputType = {
+    leadId: string | null
+    desativado: boolean | null
+    templateId: string | null
+    enviados: number | null
+    ultimoEnvioEm: Date | null
+    ultimoTemplateId: string | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type FollowUpConversaMaxAggregateOutputType = {
+    leadId: string | null
+    desativado: boolean | null
+    templateId: string | null
+    enviados: number | null
+    ultimoEnvioEm: Date | null
+    ultimoTemplateId: string | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type FollowUpConversaCountAggregateOutputType = {
+    leadId: number
+    desativado: number
+    templateId: number
+    enviados: number
+    ultimoEnvioEm: number
+    ultimoTemplateId: number
+    criadoEm: number
+    atualizadoEm: number
+    _all: number
+  }
+
+
+  export type FollowUpConversaAvgAggregateInputType = {
+    enviados?: true
+  }
+
+  export type FollowUpConversaSumAggregateInputType = {
+    enviados?: true
+  }
+
+  export type FollowUpConversaMinAggregateInputType = {
+    leadId?: true
+    desativado?: true
+    templateId?: true
+    enviados?: true
+    ultimoEnvioEm?: true
+    ultimoTemplateId?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type FollowUpConversaMaxAggregateInputType = {
+    leadId?: true
+    desativado?: true
+    templateId?: true
+    enviados?: true
+    ultimoEnvioEm?: true
+    ultimoTemplateId?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type FollowUpConversaCountAggregateInputType = {
+    leadId?: true
+    desativado?: true
+    templateId?: true
+    enviados?: true
+    ultimoEnvioEm?: true
+    ultimoTemplateId?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    _all?: true
+  }
+
+  export type FollowUpConversaAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FollowUpConversa to aggregate.
+     */
+    where?: FollowUpConversaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpConversas to fetch.
+     */
+    orderBy?: FollowUpConversaOrderByWithRelationInput | FollowUpConversaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FollowUpConversaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpConversas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpConversas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned FollowUpConversas
+    **/
+    _count?: true | FollowUpConversaCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: FollowUpConversaAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: FollowUpConversaSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FollowUpConversaMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FollowUpConversaMaxAggregateInputType
+  }
+
+  export type GetFollowUpConversaAggregateType<T extends FollowUpConversaAggregateArgs> = {
+        [P in keyof T & keyof AggregateFollowUpConversa]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFollowUpConversa[P]>
+      : GetScalarType<T[P], AggregateFollowUpConversa[P]>
+  }
+
+
+
+
+  export type FollowUpConversaGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FollowUpConversaWhereInput
+    orderBy?: FollowUpConversaOrderByWithAggregationInput | FollowUpConversaOrderByWithAggregationInput[]
+    by: FollowUpConversaScalarFieldEnum[] | FollowUpConversaScalarFieldEnum
+    having?: FollowUpConversaScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FollowUpConversaCountAggregateInputType | true
+    _avg?: FollowUpConversaAvgAggregateInputType
+    _sum?: FollowUpConversaSumAggregateInputType
+    _min?: FollowUpConversaMinAggregateInputType
+    _max?: FollowUpConversaMaxAggregateInputType
+  }
+
+  export type FollowUpConversaGroupByOutputType = {
+    leadId: string
+    desativado: boolean
+    templateId: string | null
+    enviados: number
+    ultimoEnvioEm: Date | null
+    ultimoTemplateId: string | null
+    criadoEm: Date
+    atualizadoEm: Date
+    _count: FollowUpConversaCountAggregateOutputType | null
+    _avg: FollowUpConversaAvgAggregateOutputType | null
+    _sum: FollowUpConversaSumAggregateOutputType | null
+    _min: FollowUpConversaMinAggregateOutputType | null
+    _max: FollowUpConversaMaxAggregateOutputType | null
+  }
+
+  type GetFollowUpConversaGroupByPayload<T extends FollowUpConversaGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FollowUpConversaGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FollowUpConversaGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FollowUpConversaGroupByOutputType[P]>
+            : GetScalarType<T[P], FollowUpConversaGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FollowUpConversaSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    leadId?: boolean
+    desativado?: boolean
+    templateId?: boolean
+    enviados?: boolean
+    ultimoEnvioEm?: boolean
+    ultimoTemplateId?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    template?: boolean | FollowUpConversa$templateArgs<ExtArgs>
+  }, ExtArgs["result"]["followUpConversa"]>
+
+  export type FollowUpConversaSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    leadId?: boolean
+    desativado?: boolean
+    templateId?: boolean
+    enviados?: boolean
+    ultimoEnvioEm?: boolean
+    ultimoTemplateId?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    template?: boolean | FollowUpConversa$templateArgs<ExtArgs>
+  }, ExtArgs["result"]["followUpConversa"]>
+
+  export type FollowUpConversaSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    leadId?: boolean
+    desativado?: boolean
+    templateId?: boolean
+    enviados?: boolean
+    ultimoEnvioEm?: boolean
+    ultimoTemplateId?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    template?: boolean | FollowUpConversa$templateArgs<ExtArgs>
+  }, ExtArgs["result"]["followUpConversa"]>
+
+  export type FollowUpConversaSelectScalar = {
+    leadId?: boolean
+    desativado?: boolean
+    templateId?: boolean
+    enviados?: boolean
+    ultimoEnvioEm?: boolean
+    ultimoTemplateId?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }
+
+  export type FollowUpConversaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"leadId" | "desativado" | "templateId" | "enviados" | "ultimoEnvioEm" | "ultimoTemplateId" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["followUpConversa"]>
+  export type FollowUpConversaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    template?: boolean | FollowUpConversa$templateArgs<ExtArgs>
+  }
+  export type FollowUpConversaIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    template?: boolean | FollowUpConversa$templateArgs<ExtArgs>
+  }
+  export type FollowUpConversaIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    template?: boolean | FollowUpConversa$templateArgs<ExtArgs>
+  }
+
+  export type $FollowUpConversaPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "FollowUpConversa"
+    objects: {
+      lead: Prisma.$LeadPayload<ExtArgs>
+      template: Prisma.$FollowUpTemplatePayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      leadId: string
+      /**
+       * Follow-up desligado só para este chat.
+       */
+      desativado: boolean
+      /**
+       * Template escolhido manualmente para este chat (nulo = vale a regra do bot: específico ou aleatório).
+       */
+      templateId: string | null
+      /**
+       * Follow-ups enviados desde a última resposta do lead (zera sozinho quando ele responde).
+       */
+      enviados: number
+      ultimoEnvioEm: Date | null
+      ultimoTemplateId: string | null
+      criadoEm: Date
+      atualizadoEm: Date
+    }, ExtArgs["result"]["followUpConversa"]>
+    composites: {}
+  }
+
+  type FollowUpConversaGetPayload<S extends boolean | null | undefined | FollowUpConversaDefaultArgs> = $Result.GetResult<Prisma.$FollowUpConversaPayload, S>
+
+  type FollowUpConversaCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<FollowUpConversaFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: FollowUpConversaCountAggregateInputType | true
+    }
+
+  export interface FollowUpConversaDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FollowUpConversa'], meta: { name: 'FollowUpConversa' } }
+    /**
+     * Find zero or one FollowUpConversa that matches the filter.
+     * @param {FollowUpConversaFindUniqueArgs} args - Arguments to find a FollowUpConversa
+     * @example
+     * // Get one FollowUpConversa
+     * const followUpConversa = await prisma.followUpConversa.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FollowUpConversaFindUniqueArgs>(args: SelectSubset<T, FollowUpConversaFindUniqueArgs<ExtArgs>>): Prisma__FollowUpConversaClient<$Result.GetResult<Prisma.$FollowUpConversaPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one FollowUpConversa that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {FollowUpConversaFindUniqueOrThrowArgs} args - Arguments to find a FollowUpConversa
+     * @example
+     * // Get one FollowUpConversa
+     * const followUpConversa = await prisma.followUpConversa.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FollowUpConversaFindUniqueOrThrowArgs>(args: SelectSubset<T, FollowUpConversaFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FollowUpConversaClient<$Result.GetResult<Prisma.$FollowUpConversaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FollowUpConversa that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpConversaFindFirstArgs} args - Arguments to find a FollowUpConversa
+     * @example
+     * // Get one FollowUpConversa
+     * const followUpConversa = await prisma.followUpConversa.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FollowUpConversaFindFirstArgs>(args?: SelectSubset<T, FollowUpConversaFindFirstArgs<ExtArgs>>): Prisma__FollowUpConversaClient<$Result.GetResult<Prisma.$FollowUpConversaPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FollowUpConversa that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpConversaFindFirstOrThrowArgs} args - Arguments to find a FollowUpConversa
+     * @example
+     * // Get one FollowUpConversa
+     * const followUpConversa = await prisma.followUpConversa.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FollowUpConversaFindFirstOrThrowArgs>(args?: SelectSubset<T, FollowUpConversaFindFirstOrThrowArgs<ExtArgs>>): Prisma__FollowUpConversaClient<$Result.GetResult<Prisma.$FollowUpConversaPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more FollowUpConversas that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpConversaFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all FollowUpConversas
+     * const followUpConversas = await prisma.followUpConversa.findMany()
+     * 
+     * // Get first 10 FollowUpConversas
+     * const followUpConversas = await prisma.followUpConversa.findMany({ take: 10 })
+     * 
+     * // Only select the `leadId`
+     * const followUpConversaWithLeadIdOnly = await prisma.followUpConversa.findMany({ select: { leadId: true } })
+     * 
+     */
+    findMany<T extends FollowUpConversaFindManyArgs>(args?: SelectSubset<T, FollowUpConversaFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpConversaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a FollowUpConversa.
+     * @param {FollowUpConversaCreateArgs} args - Arguments to create a FollowUpConversa.
+     * @example
+     * // Create one FollowUpConversa
+     * const FollowUpConversa = await prisma.followUpConversa.create({
+     *   data: {
+     *     // ... data to create a FollowUpConversa
+     *   }
+     * })
+     * 
+     */
+    create<T extends FollowUpConversaCreateArgs>(args: SelectSubset<T, FollowUpConversaCreateArgs<ExtArgs>>): Prisma__FollowUpConversaClient<$Result.GetResult<Prisma.$FollowUpConversaPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many FollowUpConversas.
+     * @param {FollowUpConversaCreateManyArgs} args - Arguments to create many FollowUpConversas.
+     * @example
+     * // Create many FollowUpConversas
+     * const followUpConversa = await prisma.followUpConversa.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FollowUpConversaCreateManyArgs>(args?: SelectSubset<T, FollowUpConversaCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many FollowUpConversas and returns the data saved in the database.
+     * @param {FollowUpConversaCreateManyAndReturnArgs} args - Arguments to create many FollowUpConversas.
+     * @example
+     * // Create many FollowUpConversas
+     * const followUpConversa = await prisma.followUpConversa.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many FollowUpConversas and only return the `leadId`
+     * const followUpConversaWithLeadIdOnly = await prisma.followUpConversa.createManyAndReturn({
+     *   select: { leadId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FollowUpConversaCreateManyAndReturnArgs>(args?: SelectSubset<T, FollowUpConversaCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpConversaPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a FollowUpConversa.
+     * @param {FollowUpConversaDeleteArgs} args - Arguments to delete one FollowUpConversa.
+     * @example
+     * // Delete one FollowUpConversa
+     * const FollowUpConversa = await prisma.followUpConversa.delete({
+     *   where: {
+     *     // ... filter to delete one FollowUpConversa
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FollowUpConversaDeleteArgs>(args: SelectSubset<T, FollowUpConversaDeleteArgs<ExtArgs>>): Prisma__FollowUpConversaClient<$Result.GetResult<Prisma.$FollowUpConversaPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one FollowUpConversa.
+     * @param {FollowUpConversaUpdateArgs} args - Arguments to update one FollowUpConversa.
+     * @example
+     * // Update one FollowUpConversa
+     * const followUpConversa = await prisma.followUpConversa.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FollowUpConversaUpdateArgs>(args: SelectSubset<T, FollowUpConversaUpdateArgs<ExtArgs>>): Prisma__FollowUpConversaClient<$Result.GetResult<Prisma.$FollowUpConversaPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more FollowUpConversas.
+     * @param {FollowUpConversaDeleteManyArgs} args - Arguments to filter FollowUpConversas to delete.
+     * @example
+     * // Delete a few FollowUpConversas
+     * const { count } = await prisma.followUpConversa.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FollowUpConversaDeleteManyArgs>(args?: SelectSubset<T, FollowUpConversaDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FollowUpConversas.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpConversaUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many FollowUpConversas
+     * const followUpConversa = await prisma.followUpConversa.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FollowUpConversaUpdateManyArgs>(args: SelectSubset<T, FollowUpConversaUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FollowUpConversas and returns the data updated in the database.
+     * @param {FollowUpConversaUpdateManyAndReturnArgs} args - Arguments to update many FollowUpConversas.
+     * @example
+     * // Update many FollowUpConversas
+     * const followUpConversa = await prisma.followUpConversa.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more FollowUpConversas and only return the `leadId`
+     * const followUpConversaWithLeadIdOnly = await prisma.followUpConversa.updateManyAndReturn({
+     *   select: { leadId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends FollowUpConversaUpdateManyAndReturnArgs>(args: SelectSubset<T, FollowUpConversaUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpConversaPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one FollowUpConversa.
+     * @param {FollowUpConversaUpsertArgs} args - Arguments to update or create a FollowUpConversa.
+     * @example
+     * // Update or create a FollowUpConversa
+     * const followUpConversa = await prisma.followUpConversa.upsert({
+     *   create: {
+     *     // ... data to create a FollowUpConversa
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the FollowUpConversa we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FollowUpConversaUpsertArgs>(args: SelectSubset<T, FollowUpConversaUpsertArgs<ExtArgs>>): Prisma__FollowUpConversaClient<$Result.GetResult<Prisma.$FollowUpConversaPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of FollowUpConversas.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpConversaCountArgs} args - Arguments to filter FollowUpConversas to count.
+     * @example
+     * // Count the number of FollowUpConversas
+     * const count = await prisma.followUpConversa.count({
+     *   where: {
+     *     // ... the filter for the FollowUpConversas we want to count
+     *   }
+     * })
+    **/
+    count<T extends FollowUpConversaCountArgs>(
+      args?: Subset<T, FollowUpConversaCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FollowUpConversaCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a FollowUpConversa.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpConversaAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FollowUpConversaAggregateArgs>(args: Subset<T, FollowUpConversaAggregateArgs>): Prisma.PrismaPromise<GetFollowUpConversaAggregateType<T>>
+
+    /**
+     * Group by FollowUpConversa.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpConversaGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FollowUpConversaGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FollowUpConversaGroupByArgs['orderBy'] }
+        : { orderBy?: FollowUpConversaGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FollowUpConversaGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFollowUpConversaGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the FollowUpConversa model
+   */
+  readonly fields: FollowUpConversaFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for FollowUpConversa.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FollowUpConversaClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    lead<T extends LeadDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LeadDefaultArgs<ExtArgs>>): Prisma__LeadClient<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    template<T extends FollowUpConversa$templateArgs<ExtArgs> = {}>(args?: Subset<T, FollowUpConversa$templateArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the FollowUpConversa model
+   */
+  interface FollowUpConversaFieldRefs {
+    readonly leadId: FieldRef<"FollowUpConversa", 'String'>
+    readonly desativado: FieldRef<"FollowUpConversa", 'Boolean'>
+    readonly templateId: FieldRef<"FollowUpConversa", 'String'>
+    readonly enviados: FieldRef<"FollowUpConversa", 'Int'>
+    readonly ultimoEnvioEm: FieldRef<"FollowUpConversa", 'DateTime'>
+    readonly ultimoTemplateId: FieldRef<"FollowUpConversa", 'String'>
+    readonly criadoEm: FieldRef<"FollowUpConversa", 'DateTime'>
+    readonly atualizadoEm: FieldRef<"FollowUpConversa", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * FollowUpConversa findUnique
+   */
+  export type FollowUpConversaFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpConversa
+     */
+    select?: FollowUpConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpConversa
+     */
+    omit?: FollowUpConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpConversaInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpConversa to fetch.
+     */
+    where: FollowUpConversaWhereUniqueInput
+  }
+
+  /**
+   * FollowUpConversa findUniqueOrThrow
+   */
+  export type FollowUpConversaFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpConversa
+     */
+    select?: FollowUpConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpConversa
+     */
+    omit?: FollowUpConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpConversaInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpConversa to fetch.
+     */
+    where: FollowUpConversaWhereUniqueInput
+  }
+
+  /**
+   * FollowUpConversa findFirst
+   */
+  export type FollowUpConversaFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpConversa
+     */
+    select?: FollowUpConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpConversa
+     */
+    omit?: FollowUpConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpConversaInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpConversa to fetch.
+     */
+    where?: FollowUpConversaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpConversas to fetch.
+     */
+    orderBy?: FollowUpConversaOrderByWithRelationInput | FollowUpConversaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FollowUpConversas.
+     */
+    cursor?: FollowUpConversaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpConversas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpConversas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FollowUpConversas.
+     */
+    distinct?: FollowUpConversaScalarFieldEnum | FollowUpConversaScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpConversa findFirstOrThrow
+   */
+  export type FollowUpConversaFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpConversa
+     */
+    select?: FollowUpConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpConversa
+     */
+    omit?: FollowUpConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpConversaInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpConversa to fetch.
+     */
+    where?: FollowUpConversaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpConversas to fetch.
+     */
+    orderBy?: FollowUpConversaOrderByWithRelationInput | FollowUpConversaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FollowUpConversas.
+     */
+    cursor?: FollowUpConversaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpConversas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpConversas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FollowUpConversas.
+     */
+    distinct?: FollowUpConversaScalarFieldEnum | FollowUpConversaScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpConversa findMany
+   */
+  export type FollowUpConversaFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpConversa
+     */
+    select?: FollowUpConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpConversa
+     */
+    omit?: FollowUpConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpConversaInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpConversas to fetch.
+     */
+    where?: FollowUpConversaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpConversas to fetch.
+     */
+    orderBy?: FollowUpConversaOrderByWithRelationInput | FollowUpConversaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing FollowUpConversas.
+     */
+    cursor?: FollowUpConversaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpConversas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpConversas.
+     */
+    skip?: number
+    distinct?: FollowUpConversaScalarFieldEnum | FollowUpConversaScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpConversa create
+   */
+  export type FollowUpConversaCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpConversa
+     */
+    select?: FollowUpConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpConversa
+     */
+    omit?: FollowUpConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpConversaInclude<ExtArgs> | null
+    /**
+     * The data needed to create a FollowUpConversa.
+     */
+    data: XOR<FollowUpConversaCreateInput, FollowUpConversaUncheckedCreateInput>
+  }
+
+  /**
+   * FollowUpConversa createMany
+   */
+  export type FollowUpConversaCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many FollowUpConversas.
+     */
+    data: FollowUpConversaCreateManyInput | FollowUpConversaCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * FollowUpConversa createManyAndReturn
+   */
+  export type FollowUpConversaCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpConversa
+     */
+    select?: FollowUpConversaSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpConversa
+     */
+    omit?: FollowUpConversaOmit<ExtArgs> | null
+    /**
+     * The data used to create many FollowUpConversas.
+     */
+    data: FollowUpConversaCreateManyInput | FollowUpConversaCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpConversaIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * FollowUpConversa update
+   */
+  export type FollowUpConversaUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpConversa
+     */
+    select?: FollowUpConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpConversa
+     */
+    omit?: FollowUpConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpConversaInclude<ExtArgs> | null
+    /**
+     * The data needed to update a FollowUpConversa.
+     */
+    data: XOR<FollowUpConversaUpdateInput, FollowUpConversaUncheckedUpdateInput>
+    /**
+     * Choose, which FollowUpConversa to update.
+     */
+    where: FollowUpConversaWhereUniqueInput
+  }
+
+  /**
+   * FollowUpConversa updateMany
+   */
+  export type FollowUpConversaUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update FollowUpConversas.
+     */
+    data: XOR<FollowUpConversaUpdateManyMutationInput, FollowUpConversaUncheckedUpdateManyInput>
+    /**
+     * Filter which FollowUpConversas to update
+     */
+    where?: FollowUpConversaWhereInput
+    /**
+     * Limit how many FollowUpConversas to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * FollowUpConversa updateManyAndReturn
+   */
+  export type FollowUpConversaUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpConversa
+     */
+    select?: FollowUpConversaSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpConversa
+     */
+    omit?: FollowUpConversaOmit<ExtArgs> | null
+    /**
+     * The data used to update FollowUpConversas.
+     */
+    data: XOR<FollowUpConversaUpdateManyMutationInput, FollowUpConversaUncheckedUpdateManyInput>
+    /**
+     * Filter which FollowUpConversas to update
+     */
+    where?: FollowUpConversaWhereInput
+    /**
+     * Limit how many FollowUpConversas to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpConversaIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * FollowUpConversa upsert
+   */
+  export type FollowUpConversaUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpConversa
+     */
+    select?: FollowUpConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpConversa
+     */
+    omit?: FollowUpConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpConversaInclude<ExtArgs> | null
+    /**
+     * The filter to search for the FollowUpConversa to update in case it exists.
+     */
+    where: FollowUpConversaWhereUniqueInput
+    /**
+     * In case the FollowUpConversa found by the `where` argument doesn't exist, create a new FollowUpConversa with this data.
+     */
+    create: XOR<FollowUpConversaCreateInput, FollowUpConversaUncheckedCreateInput>
+    /**
+     * In case the FollowUpConversa was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FollowUpConversaUpdateInput, FollowUpConversaUncheckedUpdateInput>
+  }
+
+  /**
+   * FollowUpConversa delete
+   */
+  export type FollowUpConversaDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpConversa
+     */
+    select?: FollowUpConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpConversa
+     */
+    omit?: FollowUpConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpConversaInclude<ExtArgs> | null
+    /**
+     * Filter which FollowUpConversa to delete.
+     */
+    where: FollowUpConversaWhereUniqueInput
+  }
+
+  /**
+   * FollowUpConversa deleteMany
+   */
+  export type FollowUpConversaDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FollowUpConversas to delete
+     */
+    where?: FollowUpConversaWhereInput
+    /**
+     * Limit how many FollowUpConversas to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * FollowUpConversa.template
+   */
+  export type FollowUpConversa$templateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    where?: FollowUpTemplateWhereInput
+  }
+
+  /**
+   * FollowUpConversa without action
+   */
+  export type FollowUpConversaDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpConversa
+     */
+    select?: FollowUpConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpConversa
+     */
+    omit?: FollowUpConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpConversaInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -38268,6 +42218,54 @@ export namespace Prisma {
   export type AtendimentoTransferenciaScalarFieldEnum = (typeof AtendimentoTransferenciaScalarFieldEnum)[keyof typeof AtendimentoTransferenciaScalarFieldEnum]
 
 
+  export const FollowUpBotScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    departamentoId: 'departamentoId',
+    nome: 'nome',
+    ativo: 'ativo',
+    ativadoEm: 'ativadoEm',
+    minutosSemResposta: 'minutosSemResposta',
+    maxFollowUps: 'maxFollowUps',
+    modoTemplate: 'modoTemplate',
+    templateFixoId: 'templateFixoId',
+    janelaAtiva: 'janelaAtiva',
+    janelaInicio: 'janelaInicio',
+    janelaFim: 'janelaFim',
+    criadoEm: 'criadoEm',
+    atualizadoEm: 'atualizadoEm'
+  };
+
+  export type FollowUpBotScalarFieldEnum = (typeof FollowUpBotScalarFieldEnum)[keyof typeof FollowUpBotScalarFieldEnum]
+
+
+  export const FollowUpTemplateScalarFieldEnum: {
+    id: 'id',
+    botId: 'botId',
+    nome: 'nome',
+    texto: 'texto',
+    ativo: 'ativo',
+    criadoEm: 'criadoEm',
+    atualizadoEm: 'atualizadoEm'
+  };
+
+  export type FollowUpTemplateScalarFieldEnum = (typeof FollowUpTemplateScalarFieldEnum)[keyof typeof FollowUpTemplateScalarFieldEnum]
+
+
+  export const FollowUpConversaScalarFieldEnum: {
+    leadId: 'leadId',
+    desativado: 'desativado',
+    templateId: 'templateId',
+    enviados: 'enviados',
+    ultimoEnvioEm: 'ultimoEnvioEm',
+    ultimoTemplateId: 'ultimoTemplateId',
+    criadoEm: 'criadoEm',
+    atualizadoEm: 'atualizadoEm'
+  };
+
+  export type FollowUpConversaScalarFieldEnum = (typeof FollowUpConversaScalarFieldEnum)[keyof typeof FollowUpConversaScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -38527,6 +42525,7 @@ export namespace Prisma {
     atendimento?: XOR<LeadAtendimentoNullableScalarRelationFilter, LeadAtendimentoWhereInput> | null
     transferencias?: AtendimentoTransferenciaListRelationFilter
     botConversa?: XOR<BotConversaNullableScalarRelationFilter, BotConversaWhereInput> | null
+    followUpConversa?: XOR<FollowUpConversaNullableScalarRelationFilter, FollowUpConversaWhereInput> | null
   }
 
   export type LeadOrderByWithRelationInput = {
@@ -38554,6 +42553,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoOrderByWithRelationInput
     transferencias?: AtendimentoTransferenciaOrderByRelationAggregateInput
     botConversa?: BotConversaOrderByWithRelationInput
+    followUpConversa?: FollowUpConversaOrderByWithRelationInput
   }
 
   export type LeadWhereUniqueInput = Prisma.AtLeast<{
@@ -38584,6 +42584,7 @@ export namespace Prisma {
     atendimento?: XOR<LeadAtendimentoNullableScalarRelationFilter, LeadAtendimentoWhereInput> | null
     transferencias?: AtendimentoTransferenciaListRelationFilter
     botConversa?: XOR<BotConversaNullableScalarRelationFilter, BotConversaWhereInput> | null
+    followUpConversa?: XOR<FollowUpConversaNullableScalarRelationFilter, FollowUpConversaWhereInput> | null
   }, "id">
 
   export type LeadOrderByWithAggregationInput = {
@@ -40594,6 +44595,7 @@ export namespace Prisma {
     atendentes?: AtendenteDepartamentoListRelationFilter
     atendimentos?: LeadAtendimentoListRelationFilter
     bots?: NoCodeFlowListRelationFilter
+    followUpBot?: XOR<FollowUpBotNullableScalarRelationFilter, FollowUpBotWhereInput> | null
   }
 
   export type DepartamentoOrderByWithRelationInput = {
@@ -40607,6 +44609,7 @@ export namespace Prisma {
     atendentes?: AtendenteDepartamentoOrderByRelationAggregateInput
     atendimentos?: LeadAtendimentoOrderByRelationAggregateInput
     bots?: NoCodeFlowOrderByRelationAggregateInput
+    followUpBot?: FollowUpBotOrderByWithRelationInput
   }
 
   export type DepartamentoWhereUniqueInput = Prisma.AtLeast<{
@@ -40624,6 +44627,7 @@ export namespace Prisma {
     atendentes?: AtendenteDepartamentoListRelationFilter
     atendimentos?: LeadAtendimentoListRelationFilter
     bots?: NoCodeFlowListRelationFilter
+    followUpBot?: XOR<FollowUpBotNullableScalarRelationFilter, FollowUpBotWhereInput> | null
   }, "id" | "workspaceId_nome">
 
   export type DepartamentoOrderByWithAggregationInput = {
@@ -40888,6 +44892,259 @@ export namespace Prisma {
     data?: DateTimeWithAggregatesFilter<"AtendimentoTransferencia"> | Date | string
   }
 
+  export type FollowUpBotWhereInput = {
+    AND?: FollowUpBotWhereInput | FollowUpBotWhereInput[]
+    OR?: FollowUpBotWhereInput[]
+    NOT?: FollowUpBotWhereInput | FollowUpBotWhereInput[]
+    id?: StringFilter<"FollowUpBot"> | string
+    workspaceId?: StringFilter<"FollowUpBot"> | string
+    departamentoId?: StringFilter<"FollowUpBot"> | string
+    nome?: StringFilter<"FollowUpBot"> | string
+    ativo?: BoolFilter<"FollowUpBot"> | boolean
+    ativadoEm?: DateTimeNullableFilter<"FollowUpBot"> | Date | string | null
+    minutosSemResposta?: IntFilter<"FollowUpBot"> | number
+    maxFollowUps?: IntFilter<"FollowUpBot"> | number
+    modoTemplate?: StringFilter<"FollowUpBot"> | string
+    templateFixoId?: StringNullableFilter<"FollowUpBot"> | string | null
+    janelaAtiva?: BoolFilter<"FollowUpBot"> | boolean
+    janelaInicio?: IntFilter<"FollowUpBot"> | number
+    janelaFim?: IntFilter<"FollowUpBot"> | number
+    criadoEm?: DateTimeFilter<"FollowUpBot"> | Date | string
+    atualizadoEm?: DateTimeFilter<"FollowUpBot"> | Date | string
+    departamento?: XOR<DepartamentoScalarRelationFilter, DepartamentoWhereInput>
+    templates?: FollowUpTemplateListRelationFilter
+  }
+
+  export type FollowUpBotOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    departamentoId?: SortOrder
+    nome?: SortOrder
+    ativo?: SortOrder
+    ativadoEm?: SortOrderInput | SortOrder
+    minutosSemResposta?: SortOrder
+    maxFollowUps?: SortOrder
+    modoTemplate?: SortOrder
+    templateFixoId?: SortOrderInput | SortOrder
+    janelaAtiva?: SortOrder
+    janelaInicio?: SortOrder
+    janelaFim?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    departamento?: DepartamentoOrderByWithRelationInput
+    templates?: FollowUpTemplateOrderByRelationAggregateInput
+  }
+
+  export type FollowUpBotWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    departamentoId?: string
+    AND?: FollowUpBotWhereInput | FollowUpBotWhereInput[]
+    OR?: FollowUpBotWhereInput[]
+    NOT?: FollowUpBotWhereInput | FollowUpBotWhereInput[]
+    workspaceId?: StringFilter<"FollowUpBot"> | string
+    nome?: StringFilter<"FollowUpBot"> | string
+    ativo?: BoolFilter<"FollowUpBot"> | boolean
+    ativadoEm?: DateTimeNullableFilter<"FollowUpBot"> | Date | string | null
+    minutosSemResposta?: IntFilter<"FollowUpBot"> | number
+    maxFollowUps?: IntFilter<"FollowUpBot"> | number
+    modoTemplate?: StringFilter<"FollowUpBot"> | string
+    templateFixoId?: StringNullableFilter<"FollowUpBot"> | string | null
+    janelaAtiva?: BoolFilter<"FollowUpBot"> | boolean
+    janelaInicio?: IntFilter<"FollowUpBot"> | number
+    janelaFim?: IntFilter<"FollowUpBot"> | number
+    criadoEm?: DateTimeFilter<"FollowUpBot"> | Date | string
+    atualizadoEm?: DateTimeFilter<"FollowUpBot"> | Date | string
+    departamento?: XOR<DepartamentoScalarRelationFilter, DepartamentoWhereInput>
+    templates?: FollowUpTemplateListRelationFilter
+  }, "id" | "departamentoId">
+
+  export type FollowUpBotOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    departamentoId?: SortOrder
+    nome?: SortOrder
+    ativo?: SortOrder
+    ativadoEm?: SortOrderInput | SortOrder
+    minutosSemResposta?: SortOrder
+    maxFollowUps?: SortOrder
+    modoTemplate?: SortOrder
+    templateFixoId?: SortOrderInput | SortOrder
+    janelaAtiva?: SortOrder
+    janelaInicio?: SortOrder
+    janelaFim?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    _count?: FollowUpBotCountOrderByAggregateInput
+    _avg?: FollowUpBotAvgOrderByAggregateInput
+    _max?: FollowUpBotMaxOrderByAggregateInput
+    _min?: FollowUpBotMinOrderByAggregateInput
+    _sum?: FollowUpBotSumOrderByAggregateInput
+  }
+
+  export type FollowUpBotScalarWhereWithAggregatesInput = {
+    AND?: FollowUpBotScalarWhereWithAggregatesInput | FollowUpBotScalarWhereWithAggregatesInput[]
+    OR?: FollowUpBotScalarWhereWithAggregatesInput[]
+    NOT?: FollowUpBotScalarWhereWithAggregatesInput | FollowUpBotScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"FollowUpBot"> | string
+    workspaceId?: StringWithAggregatesFilter<"FollowUpBot"> | string
+    departamentoId?: StringWithAggregatesFilter<"FollowUpBot"> | string
+    nome?: StringWithAggregatesFilter<"FollowUpBot"> | string
+    ativo?: BoolWithAggregatesFilter<"FollowUpBot"> | boolean
+    ativadoEm?: DateTimeNullableWithAggregatesFilter<"FollowUpBot"> | Date | string | null
+    minutosSemResposta?: IntWithAggregatesFilter<"FollowUpBot"> | number
+    maxFollowUps?: IntWithAggregatesFilter<"FollowUpBot"> | number
+    modoTemplate?: StringWithAggregatesFilter<"FollowUpBot"> | string
+    templateFixoId?: StringNullableWithAggregatesFilter<"FollowUpBot"> | string | null
+    janelaAtiva?: BoolWithAggregatesFilter<"FollowUpBot"> | boolean
+    janelaInicio?: IntWithAggregatesFilter<"FollowUpBot"> | number
+    janelaFim?: IntWithAggregatesFilter<"FollowUpBot"> | number
+    criadoEm?: DateTimeWithAggregatesFilter<"FollowUpBot"> | Date | string
+    atualizadoEm?: DateTimeWithAggregatesFilter<"FollowUpBot"> | Date | string
+  }
+
+  export type FollowUpTemplateWhereInput = {
+    AND?: FollowUpTemplateWhereInput | FollowUpTemplateWhereInput[]
+    OR?: FollowUpTemplateWhereInput[]
+    NOT?: FollowUpTemplateWhereInput | FollowUpTemplateWhereInput[]
+    id?: StringFilter<"FollowUpTemplate"> | string
+    botId?: StringFilter<"FollowUpTemplate"> | string
+    nome?: StringFilter<"FollowUpTemplate"> | string
+    texto?: StringFilter<"FollowUpTemplate"> | string
+    ativo?: BoolFilter<"FollowUpTemplate"> | boolean
+    criadoEm?: DateTimeFilter<"FollowUpTemplate"> | Date | string
+    atualizadoEm?: DateTimeFilter<"FollowUpTemplate"> | Date | string
+    bot?: XOR<FollowUpBotScalarRelationFilter, FollowUpBotWhereInput>
+    conversas?: FollowUpConversaListRelationFilter
+  }
+
+  export type FollowUpTemplateOrderByWithRelationInput = {
+    id?: SortOrder
+    botId?: SortOrder
+    nome?: SortOrder
+    texto?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    bot?: FollowUpBotOrderByWithRelationInput
+    conversas?: FollowUpConversaOrderByRelationAggregateInput
+  }
+
+  export type FollowUpTemplateWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: FollowUpTemplateWhereInput | FollowUpTemplateWhereInput[]
+    OR?: FollowUpTemplateWhereInput[]
+    NOT?: FollowUpTemplateWhereInput | FollowUpTemplateWhereInput[]
+    botId?: StringFilter<"FollowUpTemplate"> | string
+    nome?: StringFilter<"FollowUpTemplate"> | string
+    texto?: StringFilter<"FollowUpTemplate"> | string
+    ativo?: BoolFilter<"FollowUpTemplate"> | boolean
+    criadoEm?: DateTimeFilter<"FollowUpTemplate"> | Date | string
+    atualizadoEm?: DateTimeFilter<"FollowUpTemplate"> | Date | string
+    bot?: XOR<FollowUpBotScalarRelationFilter, FollowUpBotWhereInput>
+    conversas?: FollowUpConversaListRelationFilter
+  }, "id">
+
+  export type FollowUpTemplateOrderByWithAggregationInput = {
+    id?: SortOrder
+    botId?: SortOrder
+    nome?: SortOrder
+    texto?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    _count?: FollowUpTemplateCountOrderByAggregateInput
+    _max?: FollowUpTemplateMaxOrderByAggregateInput
+    _min?: FollowUpTemplateMinOrderByAggregateInput
+  }
+
+  export type FollowUpTemplateScalarWhereWithAggregatesInput = {
+    AND?: FollowUpTemplateScalarWhereWithAggregatesInput | FollowUpTemplateScalarWhereWithAggregatesInput[]
+    OR?: FollowUpTemplateScalarWhereWithAggregatesInput[]
+    NOT?: FollowUpTemplateScalarWhereWithAggregatesInput | FollowUpTemplateScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"FollowUpTemplate"> | string
+    botId?: StringWithAggregatesFilter<"FollowUpTemplate"> | string
+    nome?: StringWithAggregatesFilter<"FollowUpTemplate"> | string
+    texto?: StringWithAggregatesFilter<"FollowUpTemplate"> | string
+    ativo?: BoolWithAggregatesFilter<"FollowUpTemplate"> | boolean
+    criadoEm?: DateTimeWithAggregatesFilter<"FollowUpTemplate"> | Date | string
+    atualizadoEm?: DateTimeWithAggregatesFilter<"FollowUpTemplate"> | Date | string
+  }
+
+  export type FollowUpConversaWhereInput = {
+    AND?: FollowUpConversaWhereInput | FollowUpConversaWhereInput[]
+    OR?: FollowUpConversaWhereInput[]
+    NOT?: FollowUpConversaWhereInput | FollowUpConversaWhereInput[]
+    leadId?: StringFilter<"FollowUpConversa"> | string
+    desativado?: BoolFilter<"FollowUpConversa"> | boolean
+    templateId?: StringNullableFilter<"FollowUpConversa"> | string | null
+    enviados?: IntFilter<"FollowUpConversa"> | number
+    ultimoEnvioEm?: DateTimeNullableFilter<"FollowUpConversa"> | Date | string | null
+    ultimoTemplateId?: StringNullableFilter<"FollowUpConversa"> | string | null
+    criadoEm?: DateTimeFilter<"FollowUpConversa"> | Date | string
+    atualizadoEm?: DateTimeFilter<"FollowUpConversa"> | Date | string
+    lead?: XOR<LeadScalarRelationFilter, LeadWhereInput>
+    template?: XOR<FollowUpTemplateNullableScalarRelationFilter, FollowUpTemplateWhereInput> | null
+  }
+
+  export type FollowUpConversaOrderByWithRelationInput = {
+    leadId?: SortOrder
+    desativado?: SortOrder
+    templateId?: SortOrderInput | SortOrder
+    enviados?: SortOrder
+    ultimoEnvioEm?: SortOrderInput | SortOrder
+    ultimoTemplateId?: SortOrderInput | SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    lead?: LeadOrderByWithRelationInput
+    template?: FollowUpTemplateOrderByWithRelationInput
+  }
+
+  export type FollowUpConversaWhereUniqueInput = Prisma.AtLeast<{
+    leadId?: string
+    AND?: FollowUpConversaWhereInput | FollowUpConversaWhereInput[]
+    OR?: FollowUpConversaWhereInput[]
+    NOT?: FollowUpConversaWhereInput | FollowUpConversaWhereInput[]
+    desativado?: BoolFilter<"FollowUpConversa"> | boolean
+    templateId?: StringNullableFilter<"FollowUpConversa"> | string | null
+    enviados?: IntFilter<"FollowUpConversa"> | number
+    ultimoEnvioEm?: DateTimeNullableFilter<"FollowUpConversa"> | Date | string | null
+    ultimoTemplateId?: StringNullableFilter<"FollowUpConversa"> | string | null
+    criadoEm?: DateTimeFilter<"FollowUpConversa"> | Date | string
+    atualizadoEm?: DateTimeFilter<"FollowUpConversa"> | Date | string
+    lead?: XOR<LeadScalarRelationFilter, LeadWhereInput>
+    template?: XOR<FollowUpTemplateNullableScalarRelationFilter, FollowUpTemplateWhereInput> | null
+  }, "leadId">
+
+  export type FollowUpConversaOrderByWithAggregationInput = {
+    leadId?: SortOrder
+    desativado?: SortOrder
+    templateId?: SortOrderInput | SortOrder
+    enviados?: SortOrder
+    ultimoEnvioEm?: SortOrderInput | SortOrder
+    ultimoTemplateId?: SortOrderInput | SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    _count?: FollowUpConversaCountOrderByAggregateInput
+    _avg?: FollowUpConversaAvgOrderByAggregateInput
+    _max?: FollowUpConversaMaxOrderByAggregateInput
+    _min?: FollowUpConversaMinOrderByAggregateInput
+    _sum?: FollowUpConversaSumOrderByAggregateInput
+  }
+
+  export type FollowUpConversaScalarWhereWithAggregatesInput = {
+    AND?: FollowUpConversaScalarWhereWithAggregatesInput | FollowUpConversaScalarWhereWithAggregatesInput[]
+    OR?: FollowUpConversaScalarWhereWithAggregatesInput[]
+    NOT?: FollowUpConversaScalarWhereWithAggregatesInput | FollowUpConversaScalarWhereWithAggregatesInput[]
+    leadId?: StringWithAggregatesFilter<"FollowUpConversa"> | string
+    desativado?: BoolWithAggregatesFilter<"FollowUpConversa"> | boolean
+    templateId?: StringNullableWithAggregatesFilter<"FollowUpConversa"> | string | null
+    enviados?: IntWithAggregatesFilter<"FollowUpConversa"> | number
+    ultimoEnvioEm?: DateTimeNullableWithAggregatesFilter<"FollowUpConversa"> | Date | string | null
+    ultimoTemplateId?: StringNullableWithAggregatesFilter<"FollowUpConversa"> | string | null
+    criadoEm?: DateTimeWithAggregatesFilter<"FollowUpConversa"> | Date | string
+    atualizadoEm?: DateTimeWithAggregatesFilter<"FollowUpConversa"> | Date | string
+  }
+
   export type LeadCreateInput = {
     id?: string
     workspaceId: string
@@ -40912,6 +45169,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateInput = {
@@ -40938,6 +45196,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUpdateInput = {
@@ -40964,6 +45223,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateInput = {
@@ -40990,6 +45250,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadCreateManyInput = {
@@ -43282,6 +47543,7 @@ export namespace Prisma {
     atendentes?: AtendenteDepartamentoCreateNestedManyWithoutDepartamentoInput
     atendimentos?: LeadAtendimentoCreateNestedManyWithoutDepartamentoInput
     bots?: NoCodeFlowCreateNestedManyWithoutDepartamentoInput
+    followUpBot?: FollowUpBotCreateNestedOneWithoutDepartamentoInput
   }
 
   export type DepartamentoUncheckedCreateInput = {
@@ -43295,6 +47557,7 @@ export namespace Prisma {
     atendentes?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput
     atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutDepartamentoInput
     bots?: NoCodeFlowUncheckedCreateNestedManyWithoutDepartamentoInput
+    followUpBot?: FollowUpBotUncheckedCreateNestedOneWithoutDepartamentoInput
   }
 
   export type DepartamentoUpdateInput = {
@@ -43308,6 +47571,7 @@ export namespace Prisma {
     atendentes?: AtendenteDepartamentoUpdateManyWithoutDepartamentoNestedInput
     atendimentos?: LeadAtendimentoUpdateManyWithoutDepartamentoNestedInput
     bots?: NoCodeFlowUpdateManyWithoutDepartamentoNestedInput
+    followUpBot?: FollowUpBotUpdateOneWithoutDepartamentoNestedInput
   }
 
   export type DepartamentoUncheckedUpdateInput = {
@@ -43321,6 +47585,7 @@ export namespace Prisma {
     atendentes?: AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput
     atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoNestedInput
     bots?: NoCodeFlowUncheckedUpdateManyWithoutDepartamentoNestedInput
+    followUpBot?: FollowUpBotUncheckedUpdateOneWithoutDepartamentoNestedInput
   }
 
   export type DepartamentoCreateManyInput = {
@@ -43579,6 +47844,283 @@ export namespace Prisma {
     data?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type FollowUpBotCreateInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    ativo?: boolean
+    ativadoEm?: Date | string | null
+    minutosSemResposta?: number
+    maxFollowUps?: number
+    modoTemplate?: string
+    templateFixoId?: string | null
+    janelaAtiva?: boolean
+    janelaInicio?: number
+    janelaFim?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    departamento: DepartamentoCreateNestedOneWithoutFollowUpBotInput
+    templates?: FollowUpTemplateCreateNestedManyWithoutBotInput
+  }
+
+  export type FollowUpBotUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    departamentoId: string
+    nome: string
+    ativo?: boolean
+    ativadoEm?: Date | string | null
+    minutosSemResposta?: number
+    maxFollowUps?: number
+    modoTemplate?: string
+    templateFixoId?: string | null
+    janelaAtiva?: boolean
+    janelaInicio?: number
+    janelaFim?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    templates?: FollowUpTemplateUncheckedCreateNestedManyWithoutBotInput
+  }
+
+  export type FollowUpBotUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ativadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    minutosSemResposta?: IntFieldUpdateOperationsInput | number
+    maxFollowUps?: IntFieldUpdateOperationsInput | number
+    modoTemplate?: StringFieldUpdateOperationsInput | string
+    templateFixoId?: NullableStringFieldUpdateOperationsInput | string | null
+    janelaAtiva?: BoolFieldUpdateOperationsInput | boolean
+    janelaInicio?: IntFieldUpdateOperationsInput | number
+    janelaFim?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    departamento?: DepartamentoUpdateOneRequiredWithoutFollowUpBotNestedInput
+    templates?: FollowUpTemplateUpdateManyWithoutBotNestedInput
+  }
+
+  export type FollowUpBotUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    departamentoId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ativadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    minutosSemResposta?: IntFieldUpdateOperationsInput | number
+    maxFollowUps?: IntFieldUpdateOperationsInput | number
+    modoTemplate?: StringFieldUpdateOperationsInput | string
+    templateFixoId?: NullableStringFieldUpdateOperationsInput | string | null
+    janelaAtiva?: BoolFieldUpdateOperationsInput | boolean
+    janelaInicio?: IntFieldUpdateOperationsInput | number
+    janelaFim?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    templates?: FollowUpTemplateUncheckedUpdateManyWithoutBotNestedInput
+  }
+
+  export type FollowUpBotCreateManyInput = {
+    id?: string
+    workspaceId: string
+    departamentoId: string
+    nome: string
+    ativo?: boolean
+    ativadoEm?: Date | string | null
+    minutosSemResposta?: number
+    maxFollowUps?: number
+    modoTemplate?: string
+    templateFixoId?: string | null
+    janelaAtiva?: boolean
+    janelaInicio?: number
+    janelaFim?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type FollowUpBotUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ativadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    minutosSemResposta?: IntFieldUpdateOperationsInput | number
+    maxFollowUps?: IntFieldUpdateOperationsInput | number
+    modoTemplate?: StringFieldUpdateOperationsInput | string
+    templateFixoId?: NullableStringFieldUpdateOperationsInput | string | null
+    janelaAtiva?: BoolFieldUpdateOperationsInput | boolean
+    janelaInicio?: IntFieldUpdateOperationsInput | number
+    janelaFim?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpBotUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    departamentoId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ativadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    minutosSemResposta?: IntFieldUpdateOperationsInput | number
+    maxFollowUps?: IntFieldUpdateOperationsInput | number
+    modoTemplate?: StringFieldUpdateOperationsInput | string
+    templateFixoId?: NullableStringFieldUpdateOperationsInput | string | null
+    janelaAtiva?: BoolFieldUpdateOperationsInput | boolean
+    janelaInicio?: IntFieldUpdateOperationsInput | number
+    janelaFim?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpTemplateCreateInput = {
+    id?: string
+    nome: string
+    texto: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    bot: FollowUpBotCreateNestedOneWithoutTemplatesInput
+    conversas?: FollowUpConversaCreateNestedManyWithoutTemplateInput
+  }
+
+  export type FollowUpTemplateUncheckedCreateInput = {
+    id?: string
+    botId: string
+    nome: string
+    texto: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    conversas?: FollowUpConversaUncheckedCreateNestedManyWithoutTemplateInput
+  }
+
+  export type FollowUpTemplateUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    bot?: FollowUpBotUpdateOneRequiredWithoutTemplatesNestedInput
+    conversas?: FollowUpConversaUpdateManyWithoutTemplateNestedInput
+  }
+
+  export type FollowUpTemplateUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    botId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversas?: FollowUpConversaUncheckedUpdateManyWithoutTemplateNestedInput
+  }
+
+  export type FollowUpTemplateCreateManyInput = {
+    id?: string
+    botId: string
+    nome: string
+    texto: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type FollowUpTemplateUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpTemplateUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    botId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpConversaCreateInput = {
+    desativado?: boolean
+    enviados?: number
+    ultimoEnvioEm?: Date | string | null
+    ultimoTemplateId?: string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    lead: LeadCreateNestedOneWithoutFollowUpConversaInput
+    template?: FollowUpTemplateCreateNestedOneWithoutConversasInput
+  }
+
+  export type FollowUpConversaUncheckedCreateInput = {
+    leadId: string
+    desativado?: boolean
+    templateId?: string | null
+    enviados?: number
+    ultimoEnvioEm?: Date | string | null
+    ultimoTemplateId?: string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type FollowUpConversaUpdateInput = {
+    desativado?: BoolFieldUpdateOperationsInput | boolean
+    enviados?: IntFieldUpdateOperationsInput | number
+    ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ultimoTemplateId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    lead?: LeadUpdateOneRequiredWithoutFollowUpConversaNestedInput
+    template?: FollowUpTemplateUpdateOneWithoutConversasNestedInput
+  }
+
+  export type FollowUpConversaUncheckedUpdateInput = {
+    leadId?: StringFieldUpdateOperationsInput | string
+    desativado?: BoolFieldUpdateOperationsInput | boolean
+    templateId?: NullableStringFieldUpdateOperationsInput | string | null
+    enviados?: IntFieldUpdateOperationsInput | number
+    ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ultimoTemplateId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpConversaCreateManyInput = {
+    leadId: string
+    desativado?: boolean
+    templateId?: string | null
+    enviados?: number
+    ultimoEnvioEm?: Date | string | null
+    ultimoTemplateId?: string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type FollowUpConversaUpdateManyMutationInput = {
+    desativado?: BoolFieldUpdateOperationsInput | boolean
+    enviados?: IntFieldUpdateOperationsInput | number
+    ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ultimoTemplateId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpConversaUncheckedUpdateManyInput = {
+    leadId?: StringFieldUpdateOperationsInput | string
+    desativado?: BoolFieldUpdateOperationsInput | boolean
+    templateId?: NullableStringFieldUpdateOperationsInput | string | null
+    enviados?: IntFieldUpdateOperationsInput | number
+    ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ultimoTemplateId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -43681,6 +48223,11 @@ export namespace Prisma {
   export type BotConversaNullableScalarRelationFilter = {
     is?: BotConversaWhereInput | null
     isNot?: BotConversaWhereInput | null
+  }
+
+  export type FollowUpConversaNullableScalarRelationFilter = {
+    is?: FollowUpConversaWhereInput | null
+    isNot?: FollowUpConversaWhereInput | null
   }
 
   export type SortOrderInput = {
@@ -45263,6 +49810,11 @@ export namespace Prisma {
     none?: NoCodeFlowWhereInput
   }
 
+  export type FollowUpBotNullableScalarRelationFilter = {
+    is?: FollowUpBotWhereInput | null
+    isNot?: FollowUpBotWhereInput | null
+  }
+
   export type AtendenteDepartamentoOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -45426,6 +49978,175 @@ export namespace Prisma {
     data?: SortOrder
   }
 
+  export type FollowUpTemplateListRelationFilter = {
+    every?: FollowUpTemplateWhereInput
+    some?: FollowUpTemplateWhereInput
+    none?: FollowUpTemplateWhereInput
+  }
+
+  export type FollowUpTemplateOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type FollowUpBotCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    departamentoId?: SortOrder
+    nome?: SortOrder
+    ativo?: SortOrder
+    ativadoEm?: SortOrder
+    minutosSemResposta?: SortOrder
+    maxFollowUps?: SortOrder
+    modoTemplate?: SortOrder
+    templateFixoId?: SortOrder
+    janelaAtiva?: SortOrder
+    janelaInicio?: SortOrder
+    janelaFim?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type FollowUpBotAvgOrderByAggregateInput = {
+    minutosSemResposta?: SortOrder
+    maxFollowUps?: SortOrder
+    janelaInicio?: SortOrder
+    janelaFim?: SortOrder
+  }
+
+  export type FollowUpBotMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    departamentoId?: SortOrder
+    nome?: SortOrder
+    ativo?: SortOrder
+    ativadoEm?: SortOrder
+    minutosSemResposta?: SortOrder
+    maxFollowUps?: SortOrder
+    modoTemplate?: SortOrder
+    templateFixoId?: SortOrder
+    janelaAtiva?: SortOrder
+    janelaInicio?: SortOrder
+    janelaFim?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type FollowUpBotMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    departamentoId?: SortOrder
+    nome?: SortOrder
+    ativo?: SortOrder
+    ativadoEm?: SortOrder
+    minutosSemResposta?: SortOrder
+    maxFollowUps?: SortOrder
+    modoTemplate?: SortOrder
+    templateFixoId?: SortOrder
+    janelaAtiva?: SortOrder
+    janelaInicio?: SortOrder
+    janelaFim?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type FollowUpBotSumOrderByAggregateInput = {
+    minutosSemResposta?: SortOrder
+    maxFollowUps?: SortOrder
+    janelaInicio?: SortOrder
+    janelaFim?: SortOrder
+  }
+
+  export type FollowUpBotScalarRelationFilter = {
+    is?: FollowUpBotWhereInput
+    isNot?: FollowUpBotWhereInput
+  }
+
+  export type FollowUpConversaListRelationFilter = {
+    every?: FollowUpConversaWhereInput
+    some?: FollowUpConversaWhereInput
+    none?: FollowUpConversaWhereInput
+  }
+
+  export type FollowUpConversaOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type FollowUpTemplateCountOrderByAggregateInput = {
+    id?: SortOrder
+    botId?: SortOrder
+    nome?: SortOrder
+    texto?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type FollowUpTemplateMaxOrderByAggregateInput = {
+    id?: SortOrder
+    botId?: SortOrder
+    nome?: SortOrder
+    texto?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type FollowUpTemplateMinOrderByAggregateInput = {
+    id?: SortOrder
+    botId?: SortOrder
+    nome?: SortOrder
+    texto?: SortOrder
+    ativo?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type FollowUpTemplateNullableScalarRelationFilter = {
+    is?: FollowUpTemplateWhereInput | null
+    isNot?: FollowUpTemplateWhereInput | null
+  }
+
+  export type FollowUpConversaCountOrderByAggregateInput = {
+    leadId?: SortOrder
+    desativado?: SortOrder
+    templateId?: SortOrder
+    enviados?: SortOrder
+    ultimoEnvioEm?: SortOrder
+    ultimoTemplateId?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type FollowUpConversaAvgOrderByAggregateInput = {
+    enviados?: SortOrder
+  }
+
+  export type FollowUpConversaMaxOrderByAggregateInput = {
+    leadId?: SortOrder
+    desativado?: SortOrder
+    templateId?: SortOrder
+    enviados?: SortOrder
+    ultimoEnvioEm?: SortOrder
+    ultimoTemplateId?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type FollowUpConversaMinOrderByAggregateInput = {
+    leadId?: SortOrder
+    desativado?: SortOrder
+    templateId?: SortOrder
+    enviados?: SortOrder
+    ultimoEnvioEm?: SortOrder
+    ultimoTemplateId?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type FollowUpConversaSumOrderByAggregateInput = {
+    enviados?: SortOrder
+  }
+
   export type CampaignCreateNestedOneWithoutLeadsInput = {
     create?: XOR<CampaignCreateWithoutLeadsInput, CampaignUncheckedCreateWithoutLeadsInput>
     connectOrCreate?: CampaignCreateOrConnectWithoutLeadsInput
@@ -45479,6 +50200,12 @@ export namespace Prisma {
     connect?: BotConversaWhereUniqueInput
   }
 
+  export type FollowUpConversaCreateNestedOneWithoutLeadInput = {
+    create?: XOR<FollowUpConversaCreateWithoutLeadInput, FollowUpConversaUncheckedCreateWithoutLeadInput>
+    connectOrCreate?: FollowUpConversaCreateOrConnectWithoutLeadInput
+    connect?: FollowUpConversaWhereUniqueInput
+  }
+
   export type LeadCampaignUncheckedCreateNestedManyWithoutLeadInput = {
     create?: XOR<LeadCampaignCreateWithoutLeadInput, LeadCampaignUncheckedCreateWithoutLeadInput> | LeadCampaignCreateWithoutLeadInput[] | LeadCampaignUncheckedCreateWithoutLeadInput[]
     connectOrCreate?: LeadCampaignCreateOrConnectWithoutLeadInput | LeadCampaignCreateOrConnectWithoutLeadInput[]
@@ -45524,6 +50251,12 @@ export namespace Prisma {
     create?: XOR<BotConversaCreateWithoutLeadInput, BotConversaUncheckedCreateWithoutLeadInput>
     connectOrCreate?: BotConversaCreateOrConnectWithoutLeadInput
     connect?: BotConversaWhereUniqueInput
+  }
+
+  export type FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput = {
+    create?: XOR<FollowUpConversaCreateWithoutLeadInput, FollowUpConversaUncheckedCreateWithoutLeadInput>
+    connectOrCreate?: FollowUpConversaCreateOrConnectWithoutLeadInput
+    connect?: FollowUpConversaWhereUniqueInput
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -45646,6 +50379,16 @@ export namespace Prisma {
     update?: XOR<XOR<BotConversaUpdateToOneWithWhereWithoutLeadInput, BotConversaUpdateWithoutLeadInput>, BotConversaUncheckedUpdateWithoutLeadInput>
   }
 
+  export type FollowUpConversaUpdateOneWithoutLeadNestedInput = {
+    create?: XOR<FollowUpConversaCreateWithoutLeadInput, FollowUpConversaUncheckedCreateWithoutLeadInput>
+    connectOrCreate?: FollowUpConversaCreateOrConnectWithoutLeadInput
+    upsert?: FollowUpConversaUpsertWithoutLeadInput
+    disconnect?: FollowUpConversaWhereInput | boolean
+    delete?: FollowUpConversaWhereInput | boolean
+    connect?: FollowUpConversaWhereUniqueInput
+    update?: XOR<XOR<FollowUpConversaUpdateToOneWithWhereWithoutLeadInput, FollowUpConversaUpdateWithoutLeadInput>, FollowUpConversaUncheckedUpdateWithoutLeadInput>
+  }
+
   export type LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput = {
     create?: XOR<LeadCampaignCreateWithoutLeadInput, LeadCampaignUncheckedCreateWithoutLeadInput> | LeadCampaignCreateWithoutLeadInput[] | LeadCampaignUncheckedCreateWithoutLeadInput[]
     connectOrCreate?: LeadCampaignCreateOrConnectWithoutLeadInput | LeadCampaignCreateOrConnectWithoutLeadInput[]
@@ -45734,6 +50477,16 @@ export namespace Prisma {
     delete?: BotConversaWhereInput | boolean
     connect?: BotConversaWhereUniqueInput
     update?: XOR<XOR<BotConversaUpdateToOneWithWhereWithoutLeadInput, BotConversaUpdateWithoutLeadInput>, BotConversaUncheckedUpdateWithoutLeadInput>
+  }
+
+  export type FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput = {
+    create?: XOR<FollowUpConversaCreateWithoutLeadInput, FollowUpConversaUncheckedCreateWithoutLeadInput>
+    connectOrCreate?: FollowUpConversaCreateOrConnectWithoutLeadInput
+    upsert?: FollowUpConversaUpsertWithoutLeadInput
+    disconnect?: FollowUpConversaWhereInput | boolean
+    delete?: FollowUpConversaWhereInput | boolean
+    connect?: FollowUpConversaWhereUniqueInput
+    update?: XOR<XOR<FollowUpConversaUpdateToOneWithWhereWithoutLeadInput, FollowUpConversaUpdateWithoutLeadInput>, FollowUpConversaUncheckedUpdateWithoutLeadInput>
   }
 
   export type LeadCreateNestedOneWithoutNotasInternasInput = {
@@ -46348,6 +51101,12 @@ export namespace Prisma {
     connect?: NoCodeFlowWhereUniqueInput | NoCodeFlowWhereUniqueInput[]
   }
 
+  export type FollowUpBotCreateNestedOneWithoutDepartamentoInput = {
+    create?: XOR<FollowUpBotCreateWithoutDepartamentoInput, FollowUpBotUncheckedCreateWithoutDepartamentoInput>
+    connectOrCreate?: FollowUpBotCreateOrConnectWithoutDepartamentoInput
+    connect?: FollowUpBotWhereUniqueInput
+  }
+
   export type AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput = {
     create?: XOR<AtendenteDepartamentoCreateWithoutDepartamentoInput, AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput> | AtendenteDepartamentoCreateWithoutDepartamentoInput[] | AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput[]
     connectOrCreate?: AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput | AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput[]
@@ -46367,6 +51126,12 @@ export namespace Prisma {
     connectOrCreate?: NoCodeFlowCreateOrConnectWithoutDepartamentoInput | NoCodeFlowCreateOrConnectWithoutDepartamentoInput[]
     createMany?: NoCodeFlowCreateManyDepartamentoInputEnvelope
     connect?: NoCodeFlowWhereUniqueInput | NoCodeFlowWhereUniqueInput[]
+  }
+
+  export type FollowUpBotUncheckedCreateNestedOneWithoutDepartamentoInput = {
+    create?: XOR<FollowUpBotCreateWithoutDepartamentoInput, FollowUpBotUncheckedCreateWithoutDepartamentoInput>
+    connectOrCreate?: FollowUpBotCreateOrConnectWithoutDepartamentoInput
+    connect?: FollowUpBotWhereUniqueInput
   }
 
   export type AtendenteDepartamentoUpdateManyWithoutDepartamentoNestedInput = {
@@ -46411,6 +51176,16 @@ export namespace Prisma {
     deleteMany?: NoCodeFlowScalarWhereInput | NoCodeFlowScalarWhereInput[]
   }
 
+  export type FollowUpBotUpdateOneWithoutDepartamentoNestedInput = {
+    create?: XOR<FollowUpBotCreateWithoutDepartamentoInput, FollowUpBotUncheckedCreateWithoutDepartamentoInput>
+    connectOrCreate?: FollowUpBotCreateOrConnectWithoutDepartamentoInput
+    upsert?: FollowUpBotUpsertWithoutDepartamentoInput
+    disconnect?: FollowUpBotWhereInput | boolean
+    delete?: FollowUpBotWhereInput | boolean
+    connect?: FollowUpBotWhereUniqueInput
+    update?: XOR<XOR<FollowUpBotUpdateToOneWithWhereWithoutDepartamentoInput, FollowUpBotUpdateWithoutDepartamentoInput>, FollowUpBotUncheckedUpdateWithoutDepartamentoInput>
+  }
+
   export type AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput = {
     create?: XOR<AtendenteDepartamentoCreateWithoutDepartamentoInput, AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput> | AtendenteDepartamentoCreateWithoutDepartamentoInput[] | AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput[]
     connectOrCreate?: AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput | AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput[]
@@ -46451,6 +51226,16 @@ export namespace Prisma {
     update?: NoCodeFlowUpdateWithWhereUniqueWithoutDepartamentoInput | NoCodeFlowUpdateWithWhereUniqueWithoutDepartamentoInput[]
     updateMany?: NoCodeFlowUpdateManyWithWhereWithoutDepartamentoInput | NoCodeFlowUpdateManyWithWhereWithoutDepartamentoInput[]
     deleteMany?: NoCodeFlowScalarWhereInput | NoCodeFlowScalarWhereInput[]
+  }
+
+  export type FollowUpBotUncheckedUpdateOneWithoutDepartamentoNestedInput = {
+    create?: XOR<FollowUpBotCreateWithoutDepartamentoInput, FollowUpBotUncheckedCreateWithoutDepartamentoInput>
+    connectOrCreate?: FollowUpBotCreateOrConnectWithoutDepartamentoInput
+    upsert?: FollowUpBotUpsertWithoutDepartamentoInput
+    disconnect?: FollowUpBotWhereInput | boolean
+    delete?: FollowUpBotWhereInput | boolean
+    connect?: FollowUpBotWhereUniqueInput
+    update?: XOR<XOR<FollowUpBotUpdateToOneWithWhereWithoutDepartamentoInput, FollowUpBotUpdateWithoutDepartamentoInput>, FollowUpBotUncheckedUpdateWithoutDepartamentoInput>
   }
 
   export type UserCreateNestedOneWithoutAtendenteInput = {
@@ -46637,6 +51422,148 @@ export namespace Prisma {
     upsert?: LeadUpsertWithoutTransferenciasInput
     connect?: LeadWhereUniqueInput
     update?: XOR<XOR<LeadUpdateToOneWithWhereWithoutTransferenciasInput, LeadUpdateWithoutTransferenciasInput>, LeadUncheckedUpdateWithoutTransferenciasInput>
+  }
+
+  export type DepartamentoCreateNestedOneWithoutFollowUpBotInput = {
+    create?: XOR<DepartamentoCreateWithoutFollowUpBotInput, DepartamentoUncheckedCreateWithoutFollowUpBotInput>
+    connectOrCreate?: DepartamentoCreateOrConnectWithoutFollowUpBotInput
+    connect?: DepartamentoWhereUniqueInput
+  }
+
+  export type FollowUpTemplateCreateNestedManyWithoutBotInput = {
+    create?: XOR<FollowUpTemplateCreateWithoutBotInput, FollowUpTemplateUncheckedCreateWithoutBotInput> | FollowUpTemplateCreateWithoutBotInput[] | FollowUpTemplateUncheckedCreateWithoutBotInput[]
+    connectOrCreate?: FollowUpTemplateCreateOrConnectWithoutBotInput | FollowUpTemplateCreateOrConnectWithoutBotInput[]
+    createMany?: FollowUpTemplateCreateManyBotInputEnvelope
+    connect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+  }
+
+  export type FollowUpTemplateUncheckedCreateNestedManyWithoutBotInput = {
+    create?: XOR<FollowUpTemplateCreateWithoutBotInput, FollowUpTemplateUncheckedCreateWithoutBotInput> | FollowUpTemplateCreateWithoutBotInput[] | FollowUpTemplateUncheckedCreateWithoutBotInput[]
+    connectOrCreate?: FollowUpTemplateCreateOrConnectWithoutBotInput | FollowUpTemplateCreateOrConnectWithoutBotInput[]
+    createMany?: FollowUpTemplateCreateManyBotInputEnvelope
+    connect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+  }
+
+  export type DepartamentoUpdateOneRequiredWithoutFollowUpBotNestedInput = {
+    create?: XOR<DepartamentoCreateWithoutFollowUpBotInput, DepartamentoUncheckedCreateWithoutFollowUpBotInput>
+    connectOrCreate?: DepartamentoCreateOrConnectWithoutFollowUpBotInput
+    upsert?: DepartamentoUpsertWithoutFollowUpBotInput
+    connect?: DepartamentoWhereUniqueInput
+    update?: XOR<XOR<DepartamentoUpdateToOneWithWhereWithoutFollowUpBotInput, DepartamentoUpdateWithoutFollowUpBotInput>, DepartamentoUncheckedUpdateWithoutFollowUpBotInput>
+  }
+
+  export type FollowUpTemplateUpdateManyWithoutBotNestedInput = {
+    create?: XOR<FollowUpTemplateCreateWithoutBotInput, FollowUpTemplateUncheckedCreateWithoutBotInput> | FollowUpTemplateCreateWithoutBotInput[] | FollowUpTemplateUncheckedCreateWithoutBotInput[]
+    connectOrCreate?: FollowUpTemplateCreateOrConnectWithoutBotInput | FollowUpTemplateCreateOrConnectWithoutBotInput[]
+    upsert?: FollowUpTemplateUpsertWithWhereUniqueWithoutBotInput | FollowUpTemplateUpsertWithWhereUniqueWithoutBotInput[]
+    createMany?: FollowUpTemplateCreateManyBotInputEnvelope
+    set?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    disconnect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    delete?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    connect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    update?: FollowUpTemplateUpdateWithWhereUniqueWithoutBotInput | FollowUpTemplateUpdateWithWhereUniqueWithoutBotInput[]
+    updateMany?: FollowUpTemplateUpdateManyWithWhereWithoutBotInput | FollowUpTemplateUpdateManyWithWhereWithoutBotInput[]
+    deleteMany?: FollowUpTemplateScalarWhereInput | FollowUpTemplateScalarWhereInput[]
+  }
+
+  export type FollowUpTemplateUncheckedUpdateManyWithoutBotNestedInput = {
+    create?: XOR<FollowUpTemplateCreateWithoutBotInput, FollowUpTemplateUncheckedCreateWithoutBotInput> | FollowUpTemplateCreateWithoutBotInput[] | FollowUpTemplateUncheckedCreateWithoutBotInput[]
+    connectOrCreate?: FollowUpTemplateCreateOrConnectWithoutBotInput | FollowUpTemplateCreateOrConnectWithoutBotInput[]
+    upsert?: FollowUpTemplateUpsertWithWhereUniqueWithoutBotInput | FollowUpTemplateUpsertWithWhereUniqueWithoutBotInput[]
+    createMany?: FollowUpTemplateCreateManyBotInputEnvelope
+    set?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    disconnect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    delete?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    connect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    update?: FollowUpTemplateUpdateWithWhereUniqueWithoutBotInput | FollowUpTemplateUpdateWithWhereUniqueWithoutBotInput[]
+    updateMany?: FollowUpTemplateUpdateManyWithWhereWithoutBotInput | FollowUpTemplateUpdateManyWithWhereWithoutBotInput[]
+    deleteMany?: FollowUpTemplateScalarWhereInput | FollowUpTemplateScalarWhereInput[]
+  }
+
+  export type FollowUpBotCreateNestedOneWithoutTemplatesInput = {
+    create?: XOR<FollowUpBotCreateWithoutTemplatesInput, FollowUpBotUncheckedCreateWithoutTemplatesInput>
+    connectOrCreate?: FollowUpBotCreateOrConnectWithoutTemplatesInput
+    connect?: FollowUpBotWhereUniqueInput
+  }
+
+  export type FollowUpConversaCreateNestedManyWithoutTemplateInput = {
+    create?: XOR<FollowUpConversaCreateWithoutTemplateInput, FollowUpConversaUncheckedCreateWithoutTemplateInput> | FollowUpConversaCreateWithoutTemplateInput[] | FollowUpConversaUncheckedCreateWithoutTemplateInput[]
+    connectOrCreate?: FollowUpConversaCreateOrConnectWithoutTemplateInput | FollowUpConversaCreateOrConnectWithoutTemplateInput[]
+    createMany?: FollowUpConversaCreateManyTemplateInputEnvelope
+    connect?: FollowUpConversaWhereUniqueInput | FollowUpConversaWhereUniqueInput[]
+  }
+
+  export type FollowUpConversaUncheckedCreateNestedManyWithoutTemplateInput = {
+    create?: XOR<FollowUpConversaCreateWithoutTemplateInput, FollowUpConversaUncheckedCreateWithoutTemplateInput> | FollowUpConversaCreateWithoutTemplateInput[] | FollowUpConversaUncheckedCreateWithoutTemplateInput[]
+    connectOrCreate?: FollowUpConversaCreateOrConnectWithoutTemplateInput | FollowUpConversaCreateOrConnectWithoutTemplateInput[]
+    createMany?: FollowUpConversaCreateManyTemplateInputEnvelope
+    connect?: FollowUpConversaWhereUniqueInput | FollowUpConversaWhereUniqueInput[]
+  }
+
+  export type FollowUpBotUpdateOneRequiredWithoutTemplatesNestedInput = {
+    create?: XOR<FollowUpBotCreateWithoutTemplatesInput, FollowUpBotUncheckedCreateWithoutTemplatesInput>
+    connectOrCreate?: FollowUpBotCreateOrConnectWithoutTemplatesInput
+    upsert?: FollowUpBotUpsertWithoutTemplatesInput
+    connect?: FollowUpBotWhereUniqueInput
+    update?: XOR<XOR<FollowUpBotUpdateToOneWithWhereWithoutTemplatesInput, FollowUpBotUpdateWithoutTemplatesInput>, FollowUpBotUncheckedUpdateWithoutTemplatesInput>
+  }
+
+  export type FollowUpConversaUpdateManyWithoutTemplateNestedInput = {
+    create?: XOR<FollowUpConversaCreateWithoutTemplateInput, FollowUpConversaUncheckedCreateWithoutTemplateInput> | FollowUpConversaCreateWithoutTemplateInput[] | FollowUpConversaUncheckedCreateWithoutTemplateInput[]
+    connectOrCreate?: FollowUpConversaCreateOrConnectWithoutTemplateInput | FollowUpConversaCreateOrConnectWithoutTemplateInput[]
+    upsert?: FollowUpConversaUpsertWithWhereUniqueWithoutTemplateInput | FollowUpConversaUpsertWithWhereUniqueWithoutTemplateInput[]
+    createMany?: FollowUpConversaCreateManyTemplateInputEnvelope
+    set?: FollowUpConversaWhereUniqueInput | FollowUpConversaWhereUniqueInput[]
+    disconnect?: FollowUpConversaWhereUniqueInput | FollowUpConversaWhereUniqueInput[]
+    delete?: FollowUpConversaWhereUniqueInput | FollowUpConversaWhereUniqueInput[]
+    connect?: FollowUpConversaWhereUniqueInput | FollowUpConversaWhereUniqueInput[]
+    update?: FollowUpConversaUpdateWithWhereUniqueWithoutTemplateInput | FollowUpConversaUpdateWithWhereUniqueWithoutTemplateInput[]
+    updateMany?: FollowUpConversaUpdateManyWithWhereWithoutTemplateInput | FollowUpConversaUpdateManyWithWhereWithoutTemplateInput[]
+    deleteMany?: FollowUpConversaScalarWhereInput | FollowUpConversaScalarWhereInput[]
+  }
+
+  export type FollowUpConversaUncheckedUpdateManyWithoutTemplateNestedInput = {
+    create?: XOR<FollowUpConversaCreateWithoutTemplateInput, FollowUpConversaUncheckedCreateWithoutTemplateInput> | FollowUpConversaCreateWithoutTemplateInput[] | FollowUpConversaUncheckedCreateWithoutTemplateInput[]
+    connectOrCreate?: FollowUpConversaCreateOrConnectWithoutTemplateInput | FollowUpConversaCreateOrConnectWithoutTemplateInput[]
+    upsert?: FollowUpConversaUpsertWithWhereUniqueWithoutTemplateInput | FollowUpConversaUpsertWithWhereUniqueWithoutTemplateInput[]
+    createMany?: FollowUpConversaCreateManyTemplateInputEnvelope
+    set?: FollowUpConversaWhereUniqueInput | FollowUpConversaWhereUniqueInput[]
+    disconnect?: FollowUpConversaWhereUniqueInput | FollowUpConversaWhereUniqueInput[]
+    delete?: FollowUpConversaWhereUniqueInput | FollowUpConversaWhereUniqueInput[]
+    connect?: FollowUpConversaWhereUniqueInput | FollowUpConversaWhereUniqueInput[]
+    update?: FollowUpConversaUpdateWithWhereUniqueWithoutTemplateInput | FollowUpConversaUpdateWithWhereUniqueWithoutTemplateInput[]
+    updateMany?: FollowUpConversaUpdateManyWithWhereWithoutTemplateInput | FollowUpConversaUpdateManyWithWhereWithoutTemplateInput[]
+    deleteMany?: FollowUpConversaScalarWhereInput | FollowUpConversaScalarWhereInput[]
+  }
+
+  export type LeadCreateNestedOneWithoutFollowUpConversaInput = {
+    create?: XOR<LeadCreateWithoutFollowUpConversaInput, LeadUncheckedCreateWithoutFollowUpConversaInput>
+    connectOrCreate?: LeadCreateOrConnectWithoutFollowUpConversaInput
+    connect?: LeadWhereUniqueInput
+  }
+
+  export type FollowUpTemplateCreateNestedOneWithoutConversasInput = {
+    create?: XOR<FollowUpTemplateCreateWithoutConversasInput, FollowUpTemplateUncheckedCreateWithoutConversasInput>
+    connectOrCreate?: FollowUpTemplateCreateOrConnectWithoutConversasInput
+    connect?: FollowUpTemplateWhereUniqueInput
+  }
+
+  export type LeadUpdateOneRequiredWithoutFollowUpConversaNestedInput = {
+    create?: XOR<LeadCreateWithoutFollowUpConversaInput, LeadUncheckedCreateWithoutFollowUpConversaInput>
+    connectOrCreate?: LeadCreateOrConnectWithoutFollowUpConversaInput
+    upsert?: LeadUpsertWithoutFollowUpConversaInput
+    connect?: LeadWhereUniqueInput
+    update?: XOR<XOR<LeadUpdateToOneWithWhereWithoutFollowUpConversaInput, LeadUpdateWithoutFollowUpConversaInput>, LeadUncheckedUpdateWithoutFollowUpConversaInput>
+  }
+
+  export type FollowUpTemplateUpdateOneWithoutConversasNestedInput = {
+    create?: XOR<FollowUpTemplateCreateWithoutConversasInput, FollowUpTemplateUncheckedCreateWithoutConversasInput>
+    connectOrCreate?: FollowUpTemplateCreateOrConnectWithoutConversasInput
+    upsert?: FollowUpTemplateUpsertWithoutConversasInput
+    disconnect?: FollowUpTemplateWhereInput | boolean
+    delete?: FollowUpTemplateWhereInput | boolean
+    connect?: FollowUpTemplateWhereUniqueInput
+    update?: XOR<XOR<FollowUpTemplateUpdateToOneWithWhereWithoutConversasInput, FollowUpTemplateUpdateWithoutConversasInput>, FollowUpTemplateUncheckedUpdateWithoutConversasInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -47256,6 +52183,31 @@ export namespace Prisma {
     create: XOR<BotConversaCreateWithoutLeadInput, BotConversaUncheckedCreateWithoutLeadInput>
   }
 
+  export type FollowUpConversaCreateWithoutLeadInput = {
+    desativado?: boolean
+    enviados?: number
+    ultimoEnvioEm?: Date | string | null
+    ultimoTemplateId?: string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    template?: FollowUpTemplateCreateNestedOneWithoutConversasInput
+  }
+
+  export type FollowUpConversaUncheckedCreateWithoutLeadInput = {
+    desativado?: boolean
+    templateId?: string | null
+    enviados?: number
+    ultimoEnvioEm?: Date | string | null
+    ultimoTemplateId?: string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type FollowUpConversaCreateOrConnectWithoutLeadInput = {
+    where: FollowUpConversaWhereUniqueInput
+    create: XOR<FollowUpConversaCreateWithoutLeadInput, FollowUpConversaUncheckedCreateWithoutLeadInput>
+  }
+
   export type CampaignUpsertWithoutLeadsInput = {
     update: XOR<CampaignUpdateWithoutLeadsInput, CampaignUncheckedUpdateWithoutLeadsInput>
     create: XOR<CampaignCreateWithoutLeadsInput, CampaignUncheckedCreateWithoutLeadsInput>
@@ -47522,6 +52474,37 @@ export namespace Prisma {
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type FollowUpConversaUpsertWithoutLeadInput = {
+    update: XOR<FollowUpConversaUpdateWithoutLeadInput, FollowUpConversaUncheckedUpdateWithoutLeadInput>
+    create: XOR<FollowUpConversaCreateWithoutLeadInput, FollowUpConversaUncheckedCreateWithoutLeadInput>
+    where?: FollowUpConversaWhereInput
+  }
+
+  export type FollowUpConversaUpdateToOneWithWhereWithoutLeadInput = {
+    where?: FollowUpConversaWhereInput
+    data: XOR<FollowUpConversaUpdateWithoutLeadInput, FollowUpConversaUncheckedUpdateWithoutLeadInput>
+  }
+
+  export type FollowUpConversaUpdateWithoutLeadInput = {
+    desativado?: BoolFieldUpdateOperationsInput | boolean
+    enviados?: IntFieldUpdateOperationsInput | number
+    ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ultimoTemplateId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    template?: FollowUpTemplateUpdateOneWithoutConversasNestedInput
+  }
+
+  export type FollowUpConversaUncheckedUpdateWithoutLeadInput = {
+    desativado?: BoolFieldUpdateOperationsInput | boolean
+    templateId?: NullableStringFieldUpdateOperationsInput | string | null
+    enviados?: IntFieldUpdateOperationsInput | number
+    ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ultimoTemplateId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type LeadCreateWithoutNotasInternasInput = {
     id?: string
     workspaceId: string
@@ -47545,6 +52528,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutNotasInternasInput = {
@@ -47570,6 +52554,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutNotasInternasInput = {
@@ -47611,6 +52596,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutNotasInternasInput = {
@@ -47636,6 +52622,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
   export type CampaignMessageCreateWithoutCampanhaInput = {
@@ -47687,6 +52674,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutCampanhaInput = {
@@ -47712,6 +52700,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutCampanhaInput = {
@@ -47906,6 +52895,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutCampanhasInput = {
@@ -47931,6 +52921,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutCampanhasInput = {
@@ -48023,6 +53014,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutCampanhasInput = {
@@ -48048,6 +53040,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
   export type CampaignUpsertWithoutLeadCampaignsInput = {
@@ -48284,6 +53277,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutMensagensAgendadasInput = {
@@ -48309,6 +53303,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutMensagensAgendadasInput = {
@@ -48350,6 +53345,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutMensagensAgendadasInput = {
@@ -48375,6 +53371,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadCreateWithoutEventosInput = {
@@ -48400,6 +53397,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutEventosInput = {
@@ -48425,6 +53423,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutEventosInput = {
@@ -48538,6 +53537,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutEventosInput = {
@@ -48563,6 +53563,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
   export type CampaignUpsertWithoutEventosInput = {
@@ -48658,6 +53659,7 @@ export namespace Prisma {
     atualizadoEm?: Date | string
     atendentes?: AtendenteDepartamentoCreateNestedManyWithoutDepartamentoInput
     atendimentos?: LeadAtendimentoCreateNestedManyWithoutDepartamentoInput
+    followUpBot?: FollowUpBotCreateNestedOneWithoutDepartamentoInput
   }
 
   export type DepartamentoUncheckedCreateWithoutBotsInput = {
@@ -48670,6 +53672,7 @@ export namespace Prisma {
     atualizadoEm?: Date | string
     atendentes?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput
     atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutDepartamentoInput
+    followUpBot?: FollowUpBotUncheckedCreateNestedOneWithoutDepartamentoInput
   }
 
   export type DepartamentoCreateOrConnectWithoutBotsInput = {
@@ -48774,6 +53777,7 @@ export namespace Prisma {
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atendentes?: AtendenteDepartamentoUpdateManyWithoutDepartamentoNestedInput
     atendimentos?: LeadAtendimentoUpdateManyWithoutDepartamentoNestedInput
+    followUpBot?: FollowUpBotUpdateOneWithoutDepartamentoNestedInput
   }
 
   export type DepartamentoUncheckedUpdateWithoutBotsInput = {
@@ -48786,6 +53790,7 @@ export namespace Prisma {
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atendentes?: AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput
     atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoNestedInput
+    followUpBot?: FollowUpBotUncheckedUpdateOneWithoutDepartamentoNestedInput
   }
 
   export type NoCodeExecutionUpsertWithWhereUniqueWithoutFlowInput = {
@@ -48879,6 +53884,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
+    followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutBotConversaInput = {
@@ -48904,6 +53910,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
+    followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutBotConversaInput = {
@@ -48988,6 +53995,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutBotConversaInput = {
@@ -49013,6 +54021,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
   export type NoCodeFlowUpsertWithoutConversasBotInput = {
@@ -49296,6 +54305,47 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type FollowUpBotCreateWithoutDepartamentoInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    ativo?: boolean
+    ativadoEm?: Date | string | null
+    minutosSemResposta?: number
+    maxFollowUps?: number
+    modoTemplate?: string
+    templateFixoId?: string | null
+    janelaAtiva?: boolean
+    janelaInicio?: number
+    janelaFim?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    templates?: FollowUpTemplateCreateNestedManyWithoutBotInput
+  }
+
+  export type FollowUpBotUncheckedCreateWithoutDepartamentoInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    ativo?: boolean
+    ativadoEm?: Date | string | null
+    minutosSemResposta?: number
+    maxFollowUps?: number
+    modoTemplate?: string
+    templateFixoId?: string | null
+    janelaAtiva?: boolean
+    janelaInicio?: number
+    janelaFim?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    templates?: FollowUpTemplateUncheckedCreateNestedManyWithoutBotInput
+  }
+
+  export type FollowUpBotCreateOrConnectWithoutDepartamentoInput = {
+    where: FollowUpBotWhereUniqueInput
+    create: XOR<FollowUpBotCreateWithoutDepartamentoInput, FollowUpBotUncheckedCreateWithoutDepartamentoInput>
+  }
+
   export type AtendenteDepartamentoUpsertWithWhereUniqueWithoutDepartamentoInput = {
     where: AtendenteDepartamentoWhereUniqueInput
     update: XOR<AtendenteDepartamentoUpdateWithoutDepartamentoInput, AtendenteDepartamentoUncheckedUpdateWithoutDepartamentoInput>
@@ -49381,6 +54431,53 @@ export namespace Prisma {
     edges?: JsonFilter<"NoCodeFlow">
     criadoEm?: DateTimeFilter<"NoCodeFlow"> | Date | string
     atualizadoEm?: DateTimeFilter<"NoCodeFlow"> | Date | string
+  }
+
+  export type FollowUpBotUpsertWithoutDepartamentoInput = {
+    update: XOR<FollowUpBotUpdateWithoutDepartamentoInput, FollowUpBotUncheckedUpdateWithoutDepartamentoInput>
+    create: XOR<FollowUpBotCreateWithoutDepartamentoInput, FollowUpBotUncheckedCreateWithoutDepartamentoInput>
+    where?: FollowUpBotWhereInput
+  }
+
+  export type FollowUpBotUpdateToOneWithWhereWithoutDepartamentoInput = {
+    where?: FollowUpBotWhereInput
+    data: XOR<FollowUpBotUpdateWithoutDepartamentoInput, FollowUpBotUncheckedUpdateWithoutDepartamentoInput>
+  }
+
+  export type FollowUpBotUpdateWithoutDepartamentoInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ativadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    minutosSemResposta?: IntFieldUpdateOperationsInput | number
+    maxFollowUps?: IntFieldUpdateOperationsInput | number
+    modoTemplate?: StringFieldUpdateOperationsInput | string
+    templateFixoId?: NullableStringFieldUpdateOperationsInput | string | null
+    janelaAtiva?: BoolFieldUpdateOperationsInput | boolean
+    janelaInicio?: IntFieldUpdateOperationsInput | number
+    janelaFim?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    templates?: FollowUpTemplateUpdateManyWithoutBotNestedInput
+  }
+
+  export type FollowUpBotUncheckedUpdateWithoutDepartamentoInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ativadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    minutosSemResposta?: IntFieldUpdateOperationsInput | number
+    maxFollowUps?: IntFieldUpdateOperationsInput | number
+    modoTemplate?: StringFieldUpdateOperationsInput | string
+    templateFixoId?: NullableStringFieldUpdateOperationsInput | string | null
+    janelaAtiva?: BoolFieldUpdateOperationsInput | boolean
+    janelaInicio?: IntFieldUpdateOperationsInput | number
+    janelaFim?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    templates?: FollowUpTemplateUncheckedUpdateManyWithoutBotNestedInput
   }
 
   export type UserCreateWithoutAtendenteInput = {
@@ -49568,6 +54665,7 @@ export namespace Prisma {
     atualizadoEm?: Date | string
     atendimentos?: LeadAtendimentoCreateNestedManyWithoutDepartamentoInput
     bots?: NoCodeFlowCreateNestedManyWithoutDepartamentoInput
+    followUpBot?: FollowUpBotCreateNestedOneWithoutDepartamentoInput
   }
 
   export type DepartamentoUncheckedCreateWithoutAtendentesInput = {
@@ -49580,6 +54678,7 @@ export namespace Prisma {
     atualizadoEm?: Date | string
     atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutDepartamentoInput
     bots?: NoCodeFlowUncheckedCreateNestedManyWithoutDepartamentoInput
+    followUpBot?: FollowUpBotUncheckedCreateNestedOneWithoutDepartamentoInput
   }
 
   export type DepartamentoCreateOrConnectWithoutAtendentesInput = {
@@ -49637,6 +54736,7 @@ export namespace Prisma {
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atendimentos?: LeadAtendimentoUpdateManyWithoutDepartamentoNestedInput
     bots?: NoCodeFlowUpdateManyWithoutDepartamentoNestedInput
+    followUpBot?: FollowUpBotUpdateOneWithoutDepartamentoNestedInput
   }
 
   export type DepartamentoUncheckedUpdateWithoutAtendentesInput = {
@@ -49649,6 +54749,7 @@ export namespace Prisma {
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoNestedInput
     bots?: NoCodeFlowUncheckedUpdateManyWithoutDepartamentoNestedInput
+    followUpBot?: FollowUpBotUncheckedUpdateOneWithoutDepartamentoNestedInput
   }
 
   export type LeadCreateWithoutAtendimentoInput = {
@@ -49674,6 +54775,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutAtendimentoInput = {
@@ -49699,6 +54801,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutAtendimentoInput = {
@@ -49716,6 +54819,7 @@ export namespace Prisma {
     atualizadoEm?: Date | string
     atendentes?: AtendenteDepartamentoCreateNestedManyWithoutDepartamentoInput
     bots?: NoCodeFlowCreateNestedManyWithoutDepartamentoInput
+    followUpBot?: FollowUpBotCreateNestedOneWithoutDepartamentoInput
   }
 
   export type DepartamentoUncheckedCreateWithoutAtendimentosInput = {
@@ -49728,6 +54832,7 @@ export namespace Prisma {
     atualizadoEm?: Date | string
     atendentes?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput
     bots?: NoCodeFlowUncheckedCreateNestedManyWithoutDepartamentoInput
+    followUpBot?: FollowUpBotUncheckedCreateNestedOneWithoutDepartamentoInput
   }
 
   export type DepartamentoCreateOrConnectWithoutAtendimentosInput = {
@@ -49792,6 +54897,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutAtendimentoInput = {
@@ -49817,6 +54923,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
   export type DepartamentoUpsertWithoutAtendimentosInput = {
@@ -49840,6 +54947,7 @@ export namespace Prisma {
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atendentes?: AtendenteDepartamentoUpdateManyWithoutDepartamentoNestedInput
     bots?: NoCodeFlowUpdateManyWithoutDepartamentoNestedInput
+    followUpBot?: FollowUpBotUpdateOneWithoutDepartamentoNestedInput
   }
 
   export type DepartamentoUncheckedUpdateWithoutAtendimentosInput = {
@@ -49852,6 +54960,7 @@ export namespace Prisma {
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atendentes?: AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput
     bots?: NoCodeFlowUncheckedUpdateManyWithoutDepartamentoNestedInput
+    followUpBot?: FollowUpBotUncheckedUpdateOneWithoutDepartamentoNestedInput
   }
 
   export type AtendenteUpsertWithoutAtendimentosInput = {
@@ -49906,6 +55015,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
   }
 
   export type LeadUncheckedCreateWithoutTransferenciasInput = {
@@ -49931,6 +55041,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
   }
 
   export type LeadCreateOrConnectWithoutTransferenciasInput = {
@@ -49972,6 +55083,7 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutTransferenciasInput = {
@@ -49997,6 +55109,458 @@ export namespace Prisma {
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
+  }
+
+  export type DepartamentoCreateWithoutFollowUpBotInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendentes?: AtendenteDepartamentoCreateNestedManyWithoutDepartamentoInput
+    atendimentos?: LeadAtendimentoCreateNestedManyWithoutDepartamentoInput
+    bots?: NoCodeFlowCreateNestedManyWithoutDepartamentoInput
+  }
+
+  export type DepartamentoUncheckedCreateWithoutFollowUpBotInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendentes?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput
+    atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutDepartamentoInput
+    bots?: NoCodeFlowUncheckedCreateNestedManyWithoutDepartamentoInput
+  }
+
+  export type DepartamentoCreateOrConnectWithoutFollowUpBotInput = {
+    where: DepartamentoWhereUniqueInput
+    create: XOR<DepartamentoCreateWithoutFollowUpBotInput, DepartamentoUncheckedCreateWithoutFollowUpBotInput>
+  }
+
+  export type FollowUpTemplateCreateWithoutBotInput = {
+    id?: string
+    nome: string
+    texto: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    conversas?: FollowUpConversaCreateNestedManyWithoutTemplateInput
+  }
+
+  export type FollowUpTemplateUncheckedCreateWithoutBotInput = {
+    id?: string
+    nome: string
+    texto: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    conversas?: FollowUpConversaUncheckedCreateNestedManyWithoutTemplateInput
+  }
+
+  export type FollowUpTemplateCreateOrConnectWithoutBotInput = {
+    where: FollowUpTemplateWhereUniqueInput
+    create: XOR<FollowUpTemplateCreateWithoutBotInput, FollowUpTemplateUncheckedCreateWithoutBotInput>
+  }
+
+  export type FollowUpTemplateCreateManyBotInputEnvelope = {
+    data: FollowUpTemplateCreateManyBotInput | FollowUpTemplateCreateManyBotInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DepartamentoUpsertWithoutFollowUpBotInput = {
+    update: XOR<DepartamentoUpdateWithoutFollowUpBotInput, DepartamentoUncheckedUpdateWithoutFollowUpBotInput>
+    create: XOR<DepartamentoCreateWithoutFollowUpBotInput, DepartamentoUncheckedCreateWithoutFollowUpBotInput>
+    where?: DepartamentoWhereInput
+  }
+
+  export type DepartamentoUpdateToOneWithWhereWithoutFollowUpBotInput = {
+    where?: DepartamentoWhereInput
+    data: XOR<DepartamentoUpdateWithoutFollowUpBotInput, DepartamentoUncheckedUpdateWithoutFollowUpBotInput>
+  }
+
+  export type DepartamentoUpdateWithoutFollowUpBotInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendentes?: AtendenteDepartamentoUpdateManyWithoutDepartamentoNestedInput
+    atendimentos?: LeadAtendimentoUpdateManyWithoutDepartamentoNestedInput
+    bots?: NoCodeFlowUpdateManyWithoutDepartamentoNestedInput
+  }
+
+  export type DepartamentoUncheckedUpdateWithoutFollowUpBotInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendentes?: AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput
+    atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoNestedInput
+    bots?: NoCodeFlowUncheckedUpdateManyWithoutDepartamentoNestedInput
+  }
+
+  export type FollowUpTemplateUpsertWithWhereUniqueWithoutBotInput = {
+    where: FollowUpTemplateWhereUniqueInput
+    update: XOR<FollowUpTemplateUpdateWithoutBotInput, FollowUpTemplateUncheckedUpdateWithoutBotInput>
+    create: XOR<FollowUpTemplateCreateWithoutBotInput, FollowUpTemplateUncheckedCreateWithoutBotInput>
+  }
+
+  export type FollowUpTemplateUpdateWithWhereUniqueWithoutBotInput = {
+    where: FollowUpTemplateWhereUniqueInput
+    data: XOR<FollowUpTemplateUpdateWithoutBotInput, FollowUpTemplateUncheckedUpdateWithoutBotInput>
+  }
+
+  export type FollowUpTemplateUpdateManyWithWhereWithoutBotInput = {
+    where: FollowUpTemplateScalarWhereInput
+    data: XOR<FollowUpTemplateUpdateManyMutationInput, FollowUpTemplateUncheckedUpdateManyWithoutBotInput>
+  }
+
+  export type FollowUpTemplateScalarWhereInput = {
+    AND?: FollowUpTemplateScalarWhereInput | FollowUpTemplateScalarWhereInput[]
+    OR?: FollowUpTemplateScalarWhereInput[]
+    NOT?: FollowUpTemplateScalarWhereInput | FollowUpTemplateScalarWhereInput[]
+    id?: StringFilter<"FollowUpTemplate"> | string
+    botId?: StringFilter<"FollowUpTemplate"> | string
+    nome?: StringFilter<"FollowUpTemplate"> | string
+    texto?: StringFilter<"FollowUpTemplate"> | string
+    ativo?: BoolFilter<"FollowUpTemplate"> | boolean
+    criadoEm?: DateTimeFilter<"FollowUpTemplate"> | Date | string
+    atualizadoEm?: DateTimeFilter<"FollowUpTemplate"> | Date | string
+  }
+
+  export type FollowUpBotCreateWithoutTemplatesInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    ativo?: boolean
+    ativadoEm?: Date | string | null
+    minutosSemResposta?: number
+    maxFollowUps?: number
+    modoTemplate?: string
+    templateFixoId?: string | null
+    janelaAtiva?: boolean
+    janelaInicio?: number
+    janelaFim?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    departamento: DepartamentoCreateNestedOneWithoutFollowUpBotInput
+  }
+
+  export type FollowUpBotUncheckedCreateWithoutTemplatesInput = {
+    id?: string
+    workspaceId: string
+    departamentoId: string
+    nome: string
+    ativo?: boolean
+    ativadoEm?: Date | string | null
+    minutosSemResposta?: number
+    maxFollowUps?: number
+    modoTemplate?: string
+    templateFixoId?: string | null
+    janelaAtiva?: boolean
+    janelaInicio?: number
+    janelaFim?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type FollowUpBotCreateOrConnectWithoutTemplatesInput = {
+    where: FollowUpBotWhereUniqueInput
+    create: XOR<FollowUpBotCreateWithoutTemplatesInput, FollowUpBotUncheckedCreateWithoutTemplatesInput>
+  }
+
+  export type FollowUpConversaCreateWithoutTemplateInput = {
+    desativado?: boolean
+    enviados?: number
+    ultimoEnvioEm?: Date | string | null
+    ultimoTemplateId?: string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    lead: LeadCreateNestedOneWithoutFollowUpConversaInput
+  }
+
+  export type FollowUpConversaUncheckedCreateWithoutTemplateInput = {
+    leadId: string
+    desativado?: boolean
+    enviados?: number
+    ultimoEnvioEm?: Date | string | null
+    ultimoTemplateId?: string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type FollowUpConversaCreateOrConnectWithoutTemplateInput = {
+    where: FollowUpConversaWhereUniqueInput
+    create: XOR<FollowUpConversaCreateWithoutTemplateInput, FollowUpConversaUncheckedCreateWithoutTemplateInput>
+  }
+
+  export type FollowUpConversaCreateManyTemplateInputEnvelope = {
+    data: FollowUpConversaCreateManyTemplateInput | FollowUpConversaCreateManyTemplateInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type FollowUpBotUpsertWithoutTemplatesInput = {
+    update: XOR<FollowUpBotUpdateWithoutTemplatesInput, FollowUpBotUncheckedUpdateWithoutTemplatesInput>
+    create: XOR<FollowUpBotCreateWithoutTemplatesInput, FollowUpBotUncheckedCreateWithoutTemplatesInput>
+    where?: FollowUpBotWhereInput
+  }
+
+  export type FollowUpBotUpdateToOneWithWhereWithoutTemplatesInput = {
+    where?: FollowUpBotWhereInput
+    data: XOR<FollowUpBotUpdateWithoutTemplatesInput, FollowUpBotUncheckedUpdateWithoutTemplatesInput>
+  }
+
+  export type FollowUpBotUpdateWithoutTemplatesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ativadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    minutosSemResposta?: IntFieldUpdateOperationsInput | number
+    maxFollowUps?: IntFieldUpdateOperationsInput | number
+    modoTemplate?: StringFieldUpdateOperationsInput | string
+    templateFixoId?: NullableStringFieldUpdateOperationsInput | string | null
+    janelaAtiva?: BoolFieldUpdateOperationsInput | boolean
+    janelaInicio?: IntFieldUpdateOperationsInput | number
+    janelaFim?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    departamento?: DepartamentoUpdateOneRequiredWithoutFollowUpBotNestedInput
+  }
+
+  export type FollowUpBotUncheckedUpdateWithoutTemplatesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    departamentoId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ativadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    minutosSemResposta?: IntFieldUpdateOperationsInput | number
+    maxFollowUps?: IntFieldUpdateOperationsInput | number
+    modoTemplate?: StringFieldUpdateOperationsInput | string
+    templateFixoId?: NullableStringFieldUpdateOperationsInput | string | null
+    janelaAtiva?: BoolFieldUpdateOperationsInput | boolean
+    janelaInicio?: IntFieldUpdateOperationsInput | number
+    janelaFim?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpConversaUpsertWithWhereUniqueWithoutTemplateInput = {
+    where: FollowUpConversaWhereUniqueInput
+    update: XOR<FollowUpConversaUpdateWithoutTemplateInput, FollowUpConversaUncheckedUpdateWithoutTemplateInput>
+    create: XOR<FollowUpConversaCreateWithoutTemplateInput, FollowUpConversaUncheckedCreateWithoutTemplateInput>
+  }
+
+  export type FollowUpConversaUpdateWithWhereUniqueWithoutTemplateInput = {
+    where: FollowUpConversaWhereUniqueInput
+    data: XOR<FollowUpConversaUpdateWithoutTemplateInput, FollowUpConversaUncheckedUpdateWithoutTemplateInput>
+  }
+
+  export type FollowUpConversaUpdateManyWithWhereWithoutTemplateInput = {
+    where: FollowUpConversaScalarWhereInput
+    data: XOR<FollowUpConversaUpdateManyMutationInput, FollowUpConversaUncheckedUpdateManyWithoutTemplateInput>
+  }
+
+  export type FollowUpConversaScalarWhereInput = {
+    AND?: FollowUpConversaScalarWhereInput | FollowUpConversaScalarWhereInput[]
+    OR?: FollowUpConversaScalarWhereInput[]
+    NOT?: FollowUpConversaScalarWhereInput | FollowUpConversaScalarWhereInput[]
+    leadId?: StringFilter<"FollowUpConversa"> | string
+    desativado?: BoolFilter<"FollowUpConversa"> | boolean
+    templateId?: StringNullableFilter<"FollowUpConversa"> | string | null
+    enviados?: IntFilter<"FollowUpConversa"> | number
+    ultimoEnvioEm?: DateTimeNullableFilter<"FollowUpConversa"> | Date | string | null
+    ultimoTemplateId?: StringNullableFilter<"FollowUpConversa"> | string | null
+    criadoEm?: DateTimeFilter<"FollowUpConversa"> | Date | string
+    atualizadoEm?: DateTimeFilter<"FollowUpConversa"> | Date | string
+  }
+
+  export type LeadCreateWithoutFollowUpConversaInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    telefone: string
+    produto: string
+    marca: string
+    persona: string
+    regiao: string
+    status?: $Enums.LeadStatus
+    notas?: string | null
+    negocio?: string | null
+    atividade?: string | null
+    entradaCampanhaEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    campanha?: CampaignCreateNestedOneWithoutLeadsInput
+    campanhas?: LeadCampaignCreateNestedManyWithoutLeadInput
+    eventos?: TimelineEventCreateNestedManyWithoutLeadInput
+    mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
+    notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaCreateNestedOneWithoutLeadInput
+  }
+
+  export type LeadUncheckedCreateWithoutFollowUpConversaInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    telefone: string
+    produto: string
+    marca: string
+    persona: string
+    regiao: string
+    status?: $Enums.LeadStatus
+    notas?: string | null
+    negocio?: string | null
+    atividade?: string | null
+    campanhaId?: string | null
+    entradaCampanhaEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    campanhas?: LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
+    eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
+    mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
+    notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
+  }
+
+  export type LeadCreateOrConnectWithoutFollowUpConversaInput = {
+    where: LeadWhereUniqueInput
+    create: XOR<LeadCreateWithoutFollowUpConversaInput, LeadUncheckedCreateWithoutFollowUpConversaInput>
+  }
+
+  export type FollowUpTemplateCreateWithoutConversasInput = {
+    id?: string
+    nome: string
+    texto: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    bot: FollowUpBotCreateNestedOneWithoutTemplatesInput
+  }
+
+  export type FollowUpTemplateUncheckedCreateWithoutConversasInput = {
+    id?: string
+    botId: string
+    nome: string
+    texto: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type FollowUpTemplateCreateOrConnectWithoutConversasInput = {
+    where: FollowUpTemplateWhereUniqueInput
+    create: XOR<FollowUpTemplateCreateWithoutConversasInput, FollowUpTemplateUncheckedCreateWithoutConversasInput>
+  }
+
+  export type LeadUpsertWithoutFollowUpConversaInput = {
+    update: XOR<LeadUpdateWithoutFollowUpConversaInput, LeadUncheckedUpdateWithoutFollowUpConversaInput>
+    create: XOR<LeadCreateWithoutFollowUpConversaInput, LeadUncheckedCreateWithoutFollowUpConversaInput>
+    where?: LeadWhereInput
+  }
+
+  export type LeadUpdateToOneWithWhereWithoutFollowUpConversaInput = {
+    where?: LeadWhereInput
+    data: XOR<LeadUpdateWithoutFollowUpConversaInput, LeadUncheckedUpdateWithoutFollowUpConversaInput>
+  }
+
+  export type LeadUpdateWithoutFollowUpConversaInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    produto?: StringFieldUpdateOperationsInput | string
+    marca?: StringFieldUpdateOperationsInput | string
+    persona?: StringFieldUpdateOperationsInput | string
+    regiao?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
+    notas?: NullableStringFieldUpdateOperationsInput | string | null
+    negocio?: NullableStringFieldUpdateOperationsInput | string | null
+    atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    campanha?: CampaignUpdateOneWithoutLeadsNestedInput
+    campanhas?: LeadCampaignUpdateManyWithoutLeadNestedInput
+    eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
+    mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
+    notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
+  }
+
+  export type LeadUncheckedUpdateWithoutFollowUpConversaInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    produto?: StringFieldUpdateOperationsInput | string
+    marca?: StringFieldUpdateOperationsInput | string
+    persona?: StringFieldUpdateOperationsInput | string
+    regiao?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
+    notas?: NullableStringFieldUpdateOperationsInput | string | null
+    negocio?: NullableStringFieldUpdateOperationsInput | string | null
+    atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
+    entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    campanhas?: LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
+    eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
+    mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
+    notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
+  }
+
+  export type FollowUpTemplateUpsertWithoutConversasInput = {
+    update: XOR<FollowUpTemplateUpdateWithoutConversasInput, FollowUpTemplateUncheckedUpdateWithoutConversasInput>
+    create: XOR<FollowUpTemplateCreateWithoutConversasInput, FollowUpTemplateUncheckedCreateWithoutConversasInput>
+    where?: FollowUpTemplateWhereInput
+  }
+
+  export type FollowUpTemplateUpdateToOneWithWhereWithoutConversasInput = {
+    where?: FollowUpTemplateWhereInput
+    data: XOR<FollowUpTemplateUpdateWithoutConversasInput, FollowUpTemplateUncheckedUpdateWithoutConversasInput>
+  }
+
+  export type FollowUpTemplateUpdateWithoutConversasInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    bot?: FollowUpBotUpdateOneRequiredWithoutTemplatesNestedInput
+  }
+
+  export type FollowUpTemplateUncheckedUpdateWithoutConversasInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    botId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LeadCampaignCreateManyLeadInput = {
@@ -50299,6 +55863,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateWithoutCampanhaInput = {
@@ -50324,6 +55889,7 @@ export namespace Prisma {
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
   export type LeadUncheckedUpdateManyWithoutCampanhaInput = {
@@ -50713,6 +56279,84 @@ export namespace Prisma {
     leadId?: StringFieldUpdateOperationsInput | string
     departamentoId?: NullableStringFieldUpdateOperationsInput | string | null
     transferidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpTemplateCreateManyBotInput = {
+    id?: string
+    nome: string
+    texto: string
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type FollowUpTemplateUpdateWithoutBotInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversas?: FollowUpConversaUpdateManyWithoutTemplateNestedInput
+  }
+
+  export type FollowUpTemplateUncheckedUpdateWithoutBotInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversas?: FollowUpConversaUncheckedUpdateManyWithoutTemplateNestedInput
+  }
+
+  export type FollowUpTemplateUncheckedUpdateManyWithoutBotInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpConversaCreateManyTemplateInput = {
+    leadId: string
+    desativado?: boolean
+    enviados?: number
+    ultimoEnvioEm?: Date | string | null
+    ultimoTemplateId?: string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type FollowUpConversaUpdateWithoutTemplateInput = {
+    desativado?: BoolFieldUpdateOperationsInput | boolean
+    enviados?: IntFieldUpdateOperationsInput | number
+    ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ultimoTemplateId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    lead?: LeadUpdateOneRequiredWithoutFollowUpConversaNestedInput
+  }
+
+  export type FollowUpConversaUncheckedUpdateWithoutTemplateInput = {
+    leadId?: StringFieldUpdateOperationsInput | string
+    desativado?: BoolFieldUpdateOperationsInput | boolean
+    enviados?: IntFieldUpdateOperationsInput | number
+    ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ultimoTemplateId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpConversaUncheckedUpdateManyWithoutTemplateInput = {
+    leadId?: StringFieldUpdateOperationsInput | string
+    desativado?: BoolFieldUpdateOperationsInput | boolean
+    enviados?: IntFieldUpdateOperationsInput | number
+    ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ultimoTemplateId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

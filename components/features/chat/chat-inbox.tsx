@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react"
 import { toast } from "sonner"
-import { ArrowLeft, ArrowRightLeft, Bot, Building2, CheckCheck, Download, FileText, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Mic, Paperclip, Search, Send, Smile, StickyNote, Trash2, UserCheck, UserRound, X } from "lucide-react"
+import { ArrowLeft, ArrowRightLeft, Bot, Building2, CheckCheck, Clock, Download, FileText, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Mic, Paperclip, Search, Send, Smile, StickyNote, Trash2, UserCheck, UserRound, X } from "lucide-react"
 
 import { alternarBotConversaAction, assumirConversaAction } from "@/app/actions/crm"
 import { createChatInternalNoteAction, loadChatMessagesAction, refreshChatInboxAction, sendChatAudioAction, sendChatFileAction } from "@/app/actions/chat"
@@ -17,6 +17,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { ChatExportMenu } from "@/components/features/chat/chat-export-menu"
+import { FollowUpChatDialog } from "@/components/features/chat/followup-chat-dialog"
 import { TransferirConversaDialog } from "@/components/features/crm/transferir-conversa-dialog"
 import { LeadAvatar } from "@/components/shared/lead-avatar"
 import { Badge } from "@/components/ui/badge"
@@ -135,6 +136,7 @@ export function ChatInbox({
   const [somenteRespostas, setSomenteRespostas] = useState(false)
   const [filtroAtendimento, setFiltroAtendimento] = useState(FILTRO_TODOS)
   const [transferirAberto, setTransferirAberto] = useState(false)
+  const [followUpAberto, setFollowUpAberto] = useState(false)
   const [modoEscolhido, setModoComposicao] = useState<"mensagem" | "nota" | "resposta">("mensagem")
   const [assumindo, setAssumindo] = useState(false)
   const [alterandoBot, setAlterandoBot] = useState(false)
@@ -947,6 +949,28 @@ export function ChatInbox({
                           <span className="hidden sm:inline">{conversaAtiva.bot.ativo ? "Pausar bot" : "Reativar bot"}</span>
                         </Button>
                       ) : null}
+                      {conversaAtiva.followUp && permissoes?.podeEnviar ? (
+                        <Button
+                          variant={conversaAtiva.followUp.botAtivo && !conversaAtiva.followUp.desativado ? "ghost" : "outline"}
+                          size="sm"
+                          className="rounded-full"
+                          title={
+                            !conversaAtiva.followUp.botAtivo
+                              ? "O bot de follow-up deste departamento está desligado."
+                              : conversaAtiva.followUp.desativado
+                                ? "Follow-up automático desligado neste chat."
+                                : conversaAtiva.followUp.templateManual
+                                  ? "Follow-up automático ligado, com template escolhido para este chat."
+                                  : "Follow-up automático ligado neste chat."
+                          }
+                          onClick={() => setFollowUpAberto(true)}
+                        >
+                          <Clock className="size-4" />
+                          <span className="hidden sm:inline">
+                            {conversaAtiva.followUp.botAtivo && !conversaAtiva.followUp.desativado ? "Follow-up" : "Follow-up off"}
+                          </span>
+                        </Button>
+                      ) : null}
                       {permissoes?.podeAssumir ? (
                         <Button size="sm" className="rounded-full" disabled={assumindo} onClick={() => void assumirConversaAtual()}>
                           <Hand className="size-4" />
@@ -1276,6 +1300,16 @@ export function ChatInbox({
           )}
         </section>
       </div>
+
+      {crm && conversaAtiva?.followUp ? (
+        <FollowUpChatDialog
+          open={followUpAberto}
+          onOpenChange={setFollowUpAberto}
+          leadId={conversaAtiva.id}
+          leadNome={conversaAtiva.nome}
+          aoAlterar={() => void aoTransferir()}
+        />
+      ) : null}
 
       {crm && conversaAtiva ? (
         <TransferirConversaDialog

@@ -48,6 +48,7 @@ const DIRETOS = new Set([
   "BackupConfig",
   "BackupExecucao",
   "Departamento",
+  "FollowUpBot",
   "User",
 ])
 
@@ -64,6 +65,8 @@ const FILHOS: Record<string, string> = {
   LeadAtendimento: "lead",
   AtendimentoTransferencia: "lead",
   BotConversa: "lead",
+  FollowUpTemplate: "bot",
+  FollowUpConversa: "lead",
 }
 
 /** Coluna de chave estrangeira → modelo apontado. */
@@ -75,6 +78,8 @@ const FK_MODELO: Record<string, string> = {
   departamentoId: "Departamento",
   atendenteId: "Atendente",
   userId: "User",
+  botId: "FollowUpBot",
+  templateId: "FollowUpTemplate",
 }
 
 /** Campo de relação (to-one) → modelo apontado, para `connect`. */
@@ -86,6 +91,8 @@ const RELACAO_MODELO: Record<string, string> = {
   departamento: "Departamento",
   atendente: "Atendente",
   user: "User",
+  bot: "FollowUpBot",
+  template: "FollowUpTemplate",
 }
 
 /** Campos de relação (inclusive listas): só neles se procura escrita aninhada. Json fica de fora de propósito. */
@@ -107,6 +114,10 @@ const CAMPOS_RELACIONAIS = new Set([
   "botConversa",
   "conversasBot",
   "bots",
+  "templates",
+  "conversas",
+  "followUpBot",
+  "followUpConversa",
 ])
 
 type Obj = Record<string, unknown>
