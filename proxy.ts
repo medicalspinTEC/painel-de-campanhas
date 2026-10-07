@@ -95,6 +95,6 @@ export const config = {
    * banco ou API_TOKEN), então continua exigindo login.
    */
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|api/backup/restaurar|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico|mp3)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|offline.html|api/backup/restaurar|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico|mp3)$).*)",
   ],
 }

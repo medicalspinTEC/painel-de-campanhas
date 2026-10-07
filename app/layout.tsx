@@ -5,6 +5,7 @@ import { cookies } from 'next/headers'
 import { ThemeProvider } from '@/components/theme-provider'
 import { TEMA_COOKIE, temaOuPadrao } from '@/lib/temas'
 import { Toaster } from '@/components/ui/sonner'
+import { PwaRegister } from '@/components/pwa-register'
 import './globals.css'
 
 const _geistSans = Geist({ subsets: ['latin'] })
@@ -15,6 +16,13 @@ export const metadata: Metadata = {
   description:
     'Painel para gestão de campanhas automáticas de follow-up no WhatsApp: leads, sequências de mensagens, eventos e relatórios.',
   generator: 'v0.app',
+  applicationName: 'Medical Spin',
+  appleWebApp: {
+    capable: true,
+    title: 'Medical Spin',
+    statusBarStyle: 'default',
+  },
+  formatDetection: { telephone: false },
   icons: {
     icon: [
       {
@@ -35,6 +43,9 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
   colorScheme: 'light dark',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: 'white' },
@@ -55,6 +66,7 @@ export default async function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {children}
           <Toaster position="top-right" />
+          <PwaRegister />
         </ThemeProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
