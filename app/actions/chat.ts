@@ -9,6 +9,14 @@ import { assertSecao } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
 import { addChatInternalNote, getChatInbox, getChatMessages, getChatsForExport } from "@/services/chat"
 import { CrmError, filtrarLeadsParaEnvio, pausarBotComNota } from "@/services/crm"
+import type { ChatTemplate } from "@/lib/chat-templates"
+import {
+  ChatTemplateError,
+  createChatTemplate,
+  deleteChatTemplate,
+  listChatTemplates,
+  updateChatTemplate,
+} from "@/services/chat-templates"
 import { configurarFollowUpChat, enviarFollowUpAgora, getFollowUpChat } from "@/services/followup"
 import { sendLeadAudio, sendLeadFile } from "@/services/leads"
 import { getCrmPluginAtivo } from "@/services/settings"
@@ -181,4 +189,54 @@ export async function sendFollowUpNowAction(leadId: string, templateId: string |
     await recordAppLog({ origem: "chat", mensagem: `Falha ao enviar follow-up manual ao lead id=${leadId}.`, detalhes: error })
     return { ok: false, message: "Não foi possível enviar o follow-up." }
   }
+}
+
+// ---------------------------------------------------------------------------
+// Templates de mensagem ("/nome" no campo de mensagem). Pessoais: cada usuário
+// vê e edita só os seus, até 10.
+// ---------------------------------------------------------------------------
+
+export type ChatTemplateResultado =
+  | { ok: true; message: string; templates: ChatTemplate[] }
+  | { ok: false; message: string }
+
+async function executarTemplate(
+  acao: (userId: string) => Promise<string>,
+  falhaPadrao: string,
+): Promise<ChatTemplateResultado> {
+  const usuario = await assertSecao("chat")
+  try {
+    const message = await acao(usuario.id)
+    return { ok: true, message, templates: await listChatTemplates(usuario.id) }
+  } catch (error) {
+    if (error instanceof ChatTemplateError) return { ok: false, message: error.message }
+    await recordAppLog({ origem: "chat", mensagem: "Falha ao salvar template de mensagem do chat.", detalhes: error })
+    return { ok: false, message: falhaPadrao }
+  }
+}
+
+export async function listChatTemplatesAction(): Promise<ChatTemplate[]> {
+  const usuario = await assertSecao("chat")
+  return listChatTemplates(usuario.id)
+}
+
+export async function createChatTemplateAction(nome: string, texto: string) {
+  return executarTemplate(async (userId) => {
+    const criado = await createChatTemplate(userId, nome, texto)
+    return `Template /${criado.nome} criado.`
+  }, "Não foi possível criar o template.")
+}
+
+export async function updateChatTemplateAction(id: string, nome: string, texto: string) {
+  return executarTemplate(async (userId) => {
+    const atualizado = await updateChatTemplate(userId, id, nome, texto)
+    return `Template /${atualizado.nome} atualizado.`
+  }, "Não foi possível atualizar o template.")
+}
+
+export async function deleteChatTemplateAction(id: string) {
+  return executarTemplate(async (userId) => {
+    await deleteChatTemplate(userId, id)
+    return "Template excluído."
+  }, "Não foi possível excluir o template.")
 }

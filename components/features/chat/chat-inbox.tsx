@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react"
 import { toast } from "sonner"
-import { ArrowLeft, ArrowRightLeft, Bot, Building2, CheckCheck, Clock, Download, FileText, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Mic, Paperclip, Search, Send, Smile, StickyNote, Trash2, UserCheck, UserRound, X } from "lucide-react"
+import { ArrowLeft, ArrowRightLeft, Bot, Building2, CheckCheck, Clock, Download, FileText, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Mic, Paperclip, Search, Send, Smile, StickyNote, Trash2, UserCheck, UserRound, X, Zap } from "lucide-react"
 
 import { alternarBotConversaAction, assumirConversaAction } from "@/app/actions/crm"
 import { createChatInternalNoteAction, loadChatMessagesAction, refreshChatInboxAction, sendChatAudioAction, sendChatFileAction } from "@/app/actions/chat"
@@ -17,6 +17,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { ChatExportMenu } from "@/components/features/chat/chat-export-menu"
+import { ChatTemplatesDialog } from "@/components/features/chat/chat-templates-dialog"
 import { FollowUpChatDialog } from "@/components/features/chat/followup-chat-dialog"
 import { TransferirConversaDialog } from "@/components/features/crm/transferir-conversa-dialog"
 import { LeadAvatar } from "@/components/shared/lead-avatar"
@@ -25,6 +26,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SelectField } from "@/components/shared/select-field"
 import { Textarea } from "@/components/ui/textarea"
+import { gatilhoDeTemplate, type ChatTemplate } from "@/lib/chat-templates"
 import { avaliarAtendimento } from "@/lib/crm-permissoes"
 import { formatRelative } from "@/lib/format"
 import { cn } from "@/lib/utils"
@@ -116,6 +118,7 @@ export function ChatInbox({
   nomeUsuario = "",
   identificarRemetenteInicial = false,
   crm = null,
+  templatesIniciais = [],
 }: {
   inicial: ChatInboxSnapshot
   instancias: InstanceOption[]
@@ -123,6 +126,8 @@ export function ChatInbox({
   identificarRemetenteInicial?: boolean
   /** Opções do plugin CRM. Nulo = plugin desativado, o chat segue sem transferência. */
   crm?: CrmChatOpcoes | null
+  /** Templates de mensagem do usuário ("/nome" no campo de mensagem). */
+  templatesIniciais?: ChatTemplate[]
 }) {
   const [identificarRemetente, setIdentificarRemetente] = useState(identificarRemetenteInicial)
   const [conversas, setConversas] = useState(inicial.conversas)
@@ -141,6 +146,10 @@ export function ChatInbox({
   const [assumindo, setAssumindo] = useState(false)
   const [alterandoBot, setAlterandoBot] = useState(false)
   const [texto, setTexto] = useState("")
+  const [templates, setTemplates] = useState(templatesIniciais)
+  const [templatesAberto, setTemplatesAberto] = useState(false)
+  const [indiceTemplate, setIndiceTemplate] = useState(0)
+  const [menuTemplateFechado, setMenuTemplateFechado] = useState(false)
   const [seletorEmojiAberto, setSeletorEmojiAberto] = useState(false)
   const [instancia, setInstancia] = useState(instancias[0]?.nome ?? "")
   const [enviando, setEnviando] = useState(false)
@@ -164,6 +173,12 @@ export function ChatInbox({
   const envioBloqueado = permissoes ? !permissoes.podeEnviar : false
   const modoComposicao = envioBloqueado && modoEscolhido === "mensagem" ? "nota" : modoEscolhido
   const limiteTexto = modoComposicao === "nota" ? LIMITE_NOTA_INTERNA : LIMITE_MENSAGEM
+
+  // Templates: ao digitar "/" (início da mensagem ou depois de espaço) abre o menu filtrado pelo que foi digitado.
+  const gatilhoTemplate = modoComposicao === "mensagem" && !gravando ? gatilhoDeTemplate(texto) : null
+  const sugestoesTemplate = gatilhoTemplate ? templates.filter((template) => template.nome.startsWith(gatilhoTemplate.consulta)) : []
+  const menuTemplateAberto = sugestoesTemplate.length > 0 && !menuTemplateFechado
+  const indiceTemplateAtivo = Math.min(indiceTemplate, Math.max(sugestoesTemplate.length - 1, 0))
   const idSelecionadoRef = useRef(conversaSelecionadaId)
   const areaMensagensRef = useRef<HTMLDivElement | null>(null)
   const pertoDoFimRef = useRef(true)
@@ -606,7 +621,38 @@ export function ChatInbox({
     toast.success(resultado.message)
   }
 
+  /** Troca o "/trecho" digitado pelo texto do template (fica no campo para revisar antes de enviar). */
+  function aplicarTemplate(template: ChatTemplate) {
+    if (!gatilhoTemplate) return
+    setTexto(`${texto.slice(0, gatilhoTemplate.inicio)}${template.texto}`.slice(0, limiteTexto))
+    setIndiceTemplate(0)
+    setMenuTemplateFechado(false)
+  }
+
   function tratarTecla(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (menuTemplateAberto) {
+      const total = sugestoesTemplate.length
+      if (event.key === "ArrowDown") {
+        event.preventDefault()
+        setIndiceTemplate((indiceTemplateAtivo + 1) % total)
+        return
+      }
+      if (event.key === "ArrowUp") {
+        event.preventDefault()
+        setIndiceTemplate((indiceTemplateAtivo - 1 + total) % total)
+        return
+      }
+      if ((event.key === "Enter" && !event.shiftKey) || event.key === "Tab") {
+        event.preventDefault()
+        aplicarTemplate(sugestoesTemplate[indiceTemplateAtivo])
+        return
+      }
+      if (event.key === "Escape") {
+        event.preventDefault()
+        setMenuTemplateFechado(true)
+        return
+      }
+    }
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault()
       void enviarMensagem()
@@ -1131,6 +1177,20 @@ export function ChatInbox({
                           </div>
                         </PopoverContent>
                       </Popover>
+                      {modoComposicao === "mensagem" ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="rounded-full"
+                          aria-label="Templates de mensagem"
+                          title="Templates de mensagem (no campo, digite /nome)"
+                          disabled={enviando}
+                          onClick={() => setTemplatesAberto(true)}
+                        >
+                          <Zap className="size-4" />
+                        </Button>
+                      ) : null}
                       <Button
                         type="button"
                         variant={modoComposicao === "nota" ? "secondary" : "ghost"}
@@ -1202,7 +1262,35 @@ export function ChatInbox({
                         />
                       ) : <span className="ml-auto text-[11px] text-muted-foreground">Crie uma instância em Instâncias para enviar</span>}
                     </div>
-                    <div className="flex items-end gap-2">
+                    <div className="relative flex items-end gap-2">
+                      {menuTemplateAberto ? (
+                        <div
+                          role="listbox"
+                          aria-label="Templates de mensagem"
+                          className="absolute bottom-full left-0 right-0 z-20 mb-2 max-h-56 overflow-y-auto rounded-xl border bg-popover p-1 text-popover-foreground shadow-md"
+                        >
+                          {sugestoesTemplate.map((template, indice) => (
+                            <button
+                              key={template.id}
+                              type="button"
+                              role="option"
+                              aria-selected={indice === indiceTemplateAtivo}
+                              onMouseDown={(event) => {
+                                event.preventDefault()
+                                aplicarTemplate(template)
+                              }}
+                              onMouseEnter={() => setIndiceTemplate(indice)}
+                              className={cn(
+                                "flex w-full flex-col items-start gap-0.5 rounded-lg px-3 py-2 text-left",
+                                indice === indiceTemplateAtivo && "bg-accent text-accent-foreground",
+                              )}
+                            >
+                              <span className="font-mono text-sm font-medium">/{template.nome}</span>
+                              <span className="line-clamp-1 w-full text-xs text-muted-foreground">{template.texto}</span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
                       {gravando ? (
                         <div className="flex min-h-14 flex-1 items-center gap-3 rounded-2xl border border-input bg-muted/50 px-5 dark:bg-muted/40" role="status" aria-live="polite">
                           <span className="size-2.5 shrink-0 animate-pulse rounded-full bg-red-500" aria-hidden="true" />
@@ -1242,7 +1330,11 @@ export function ChatInbox({
                         ) : null}
                         <Textarea
                           value={texto}
-                          onChange={(event) => setTexto(event.target.value)}
+                          onChange={(event) => {
+                            setTexto(event.target.value)
+                            setIndiceTemplate(0)
+                            setMenuTemplateFechado(false)
+                          }}
                           onKeyDown={tratarTecla}
                           maxLength={limiteTexto}
                           placeholder={modoComposicao === "nota" ? "Escreva uma nota interna..." : modoComposicao === "resposta" ? "Registre o que o lead respondeu..." : `Escreva uma mensagem para ${conversaAtiva.nome}...`}
@@ -1281,7 +1373,7 @@ export function ChatInbox({
                       )}
                     </div>
                     <div className="mt-2 flex justify-between gap-3 px-2 text-[11px] text-muted-foreground">
-                      <span>{modoComposicao === "mensagem" && identificarRemetente && nomeUsuario ? `Enviando como ${nomeUsuario} · ` : ""}{gravando ? "Toque em enviar para mandar o áudio ou na lixeira para descartar" : <>Enter para {modoComposicao === "nota" ? "salvar nota" : modoComposicao === "resposta" ? "registrar resposta" : "enviar"} · Shift+Enter para nova linha</>}</span>
+                      <span>{modoComposicao === "mensagem" && identificarRemetente && nomeUsuario ? `Enviando como ${nomeUsuario} · ` : ""}{gravando ? "Toque em enviar para mandar o áudio ou na lixeira para descartar" : <>Enter para {modoComposicao === "nota" ? "salvar nota" : modoComposicao === "resposta" ? "registrar resposta" : "enviar"} · Shift+Enter para nova linha{modoComposicao === "mensagem" ? " · / para templates" : ""}</>}</span>
                       {gravando ? null : <span className="shrink-0 tabular-nums">{texto.length}/{limiteTexto}</span>}
                     </div>
                   </div>
@@ -1322,6 +1414,13 @@ export function ChatInbox({
           onTransferido={() => void aoTransferir()}
         />
       ) : null}
+
+      <ChatTemplatesDialog
+        open={templatesAberto}
+        onOpenChange={setTemplatesAberto}
+        templates={templates}
+        onTemplatesChange={setTemplates}
+      />
     </div>
   )
 }

@@ -749,6 +749,9 @@ model User {
   /// Plugin CRM: perfil de atendente deste usuário (opcional).
   atendente Atendente?
 
+  /// Chat: templates de mensagem pessoais (atalho "/nome"), até 10 por usuário.
+  chatTemplates ChatTemplate[]
+
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
@@ -889,6 +892,24 @@ model FollowUpBot {
   templates FollowUpTemplate[]
 
   @@index([workspaceId])
+}
+
+/// Chat: template de mensagem pessoal. No campo de mensagem, digitar "/nome" insere o
+/// texto do template. Cada usuário tem até 10 (limite checado em `services/chat-templates.ts`).
+/// O texto aceita as mesmas variáveis do chat (ex.: `{{primeiro_nome}}`), resolvidas no envio.
+model ChatTemplate {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Nome do atalho, sem a barra: minúsculo, letras/números/hífen/sublinhado.
+  nome  String
+  texto String
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@unique([userId, nome])
 }
 
 /// Mensagem-modelo do bot de follow-up. Aceita as mesmas variáveis do chat (ex.: `{{primeiro_nome}}`).
