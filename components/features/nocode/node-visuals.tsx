@@ -3,6 +3,7 @@ import {
   Building2,
   GitBranch,
   ListOrdered,
+  Megaphone,
   MessageCircle,
   MessageSquareReply,
   Phone,
@@ -31,6 +32,7 @@ export const ICONES: Record<NodeDef["icone"], LucideIcon> = {
   ListOrdered,
   Building2,
   UserCheck,
+  Megaphone,
   Puzzle,
 }
 
@@ -62,6 +64,8 @@ export function resumoDoNo(no: FlowNode): string {
     }
     case "transferir_atendente":
       return cfg.modo === "especifico" ? "Atendente específico" : "Distribuir entre atendentes"
+    case "enviar_lead_campanha":
+      return String(cfg.campanhaNome ?? "").trim() || (cfg.campanhaId ? "Campanha escolhida" : "(escolha a campanha)")
     case "transferir_departamento":
       return String(cfg.departamento ?? "").trim() || "(escolha o departamento)"
     default:

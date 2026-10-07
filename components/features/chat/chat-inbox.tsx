@@ -19,6 +19,7 @@ import {
 import { ChatExportMenu } from "@/components/features/chat/chat-export-menu"
 import { ChatTemplatesDialog } from "@/components/features/chat/chat-templates-dialog"
 import { FollowUpChatDialog } from "@/components/features/chat/followup-chat-dialog"
+import { EnviarCampanhaDialog } from "@/components/features/crm/enviar-campanha-dialog"
 import { TransferirConversaDialog } from "@/components/features/crm/transferir-conversa-dialog"
 import { LeadAvatar } from "@/components/shared/lead-avatar"
 import { Badge } from "@/components/ui/badge"
@@ -141,6 +142,7 @@ export function ChatInbox({
   const [somenteRespostas, setSomenteRespostas] = useState(false)
   const [filtroAtendimento, setFiltroAtendimento] = useState(FILTRO_TODOS)
   const [transferirAberto, setTransferirAberto] = useState(false)
+  const [campanhaAberta, setCampanhaAberta] = useState(false)
   const [followUpAberto, setFollowUpAberto] = useState(false)
   const [modoEscolhido, setModoComposicao] = useState<"mensagem" | "nota" | "resposta">("mensagem")
   const [assumindo, setAssumindo] = useState(false)
@@ -1023,6 +1025,18 @@ export function ChatInbox({
                           <span className="hidden sm:inline">{assumindo ? "Assumindo..." : "Assumir conversa"}</span>
                         </Button>
                       ) : null}
+                      {permissoes?.podeEnviar ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="rounded-full"
+                          aria-label="Enviar para campanha"
+                          title="Enviar para campanha"
+                          onClick={() => setCampanhaAberta(true)}
+                        >
+                          <Megaphone className="size-4" />
+                        </Button>
+                      ) : null}
                       {permissoes?.podeTransferir ? (
                         <Button
                           variant="ghost"
@@ -1400,6 +1414,18 @@ export function ChatInbox({
           leadId={conversaAtiva.id}
           leadNome={conversaAtiva.nome}
           aoAlterar={() => void aoTransferir()}
+        />
+      ) : null}
+
+      {crm && conversaAtiva ? (
+        <EnviarCampanhaDialog
+          open={campanhaAberta}
+          onOpenChange={setCampanhaAberta}
+          leadId={conversaAtiva.id}
+          leadNome={conversaAtiva.nome}
+          campanhas={crm.campanhas}
+          campanhasDoLead={conversaAtiva.campanhasNomes}
+          onEnviado={() => void aoTransferir()}
         />
       ) : null}
 

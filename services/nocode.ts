@@ -25,7 +25,8 @@ import {
 } from "@/services/nocode-webhook-execucoes"
 import { configurarWebhookEvolution, sendWhatsAppText } from "@/services/evolution"
 import { processarRespostaLead, telefonesBatem } from "@/services/lead-response"
-import { transferirConversaPorBot, transferirParaAtendentePorBot } from "@/services/crm"
+import { CrmError, transferirConversaPorBot, transferirParaAtendentePorBot } from "@/services/crm"
+import { enviarLeadParaCampanha } from "@/services/lead-campanha"
 import { mensagemPluginDesativado, type PluginKey } from "@/lib/plugins"
 import { exigirPlugin, getPluginsAtivos } from "@/services/settings"
 
@@ -578,6 +579,35 @@ async function executarBloco(no: FlowNode, ctx: Contexto, simulacao: boolean): P
         saida: "main",
         vars: { atendente: resultado.atendente, ...(resultado.departamento ? { departamento: { nome: resultado.departamento } } : {}) },
         resumo: { atendente: resultado.atendente.nome },
+      }
+    }
+
+    case "enviar_lead_campanha": {
+      const campanhaId = String(cfg.campanhaId ?? "").trim()
+      if (!campanhaId) throw new Error("Escolha a campanha do envio.")
+      const leadId = String(resolverCampo(texto("leadId") || "{{lead.id}}", ctx) ?? "").trim()
+      const mensagemIndividual = renderizar(texto("mensagemIndividual"), ctx).trim()
+      if (simulacao) {
+        return { saida: "main", status: "simulado", resumo: { leadId: leadId || null, campanhaId, mensagemIndividual: mensagemIndividual || null } }
+      }
+      if (!leadId) return { saida: "nao_enviado", resumo: { motivo: "Nenhum lead para enviar (lead não encontrado)." } }
+      const bot = botDe(ctx)
+      try {
+        const r = await enviarLeadParaCampanha({
+          leadId,
+          campanhaId,
+          mensagemIndividual,
+          autor: bot ? `o bot “${bot.flowNome}”` : "um fluxo No Code",
+        })
+        return {
+          saida: "main",
+          vars: { campanha: { id: campanhaId, nome: r.campanhaNome, status: r.campanhaStatus } },
+          resumo: { lead: r.leadNome, campanha: r.campanhaNome, aguardaAtivacao: r.aguardaAtivacao },
+        }
+      } catch (error) {
+        // Regra de negócio (já está na campanha, encerrada…): o fluxo decide o que fazer pela saída.
+        if (error instanceof CrmError) return { saida: "nao_enviado", resumo: { motivo: error.message } }
+        throw error
       }
     }
 

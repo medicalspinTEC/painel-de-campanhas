@@ -3,6 +3,7 @@ import { normalizarSecoes, podeAcessar, podeGerenciarNivel, type SecaoKey, type 
 import { avaliarAtendimento, type ContextoAtendimento } from "@/lib/crm-permissoes"
 import { createUser, deleteUser, updateUser, type Ator } from "@/services/users"
 import { pausarBot, reativarBot } from "@/services/bot-estado"
+import { listCampanhasAbertas, type CampanhaAberta } from "@/services/campaigns"
 import { exigirPlugin, getCrmPluginAtivo } from "@/services/settings"
 import { emitWebhookEvent } from "@/services/webhooks"
 
@@ -85,6 +86,8 @@ export type CrmChatOpcoes = {
   meuAtendenteId: string | null
   /** Contexto de permissão do usuário logado (mesmas regras aplicadas no servidor). */
   contexto: ContextoAtendimento
+  /** Campanhas não encerradas, para "Enviar para campanha" no chat. */
+  campanhas: CampanhaAberta[]
 }
 
 const LIMITE_NOME = 60
@@ -391,7 +394,7 @@ export async function getCrmData(ator: Pick<Ator, "id" | "role">): Promise<CrmDa
 
 /** Departamentos e atendentes ATIVOS, que podem receber uma transferência. */
 export async function getCrmChatOpcoes(usuarioId: string, admin = false): Promise<CrmChatOpcoes> {
-  const [departamentos, atendentes, meu] = await Promise.all([
+  const [departamentos, atendentes, meu, campanhas] = await Promise.all([
     prisma.departamento.findMany({ where: { ativo: true }, orderBy: { nome: "asc" }, select: { id: true, nome: true } }),
     prisma.atendente.findMany({
       where: { ativo: true, user: { ativo: true } },
@@ -406,10 +409,12 @@ export async function getCrmChatOpcoes(usuarioId: string, admin = false): Promis
       where: { userId: usuarioId },
       select: { id: true, ativo: true, departamentos: { select: { departamentoId: true } } },
     }),
+    listCampanhasAbertas(),
   ])
 
   return {
     departamentos,
+    campanhas,
     atendentes: atendentes.map((a) => ({
       id: a.id,
       nome: a.user.nome,

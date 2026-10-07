@@ -56,6 +56,7 @@ const VARIAVEIS_BOT = [
   "lead.status",
   "departamento.nome",
 ]
+const VARIAVEIS_CAMPANHA = ["campanha.id", "campanha.nome", "campanha.status"]
 const VARIAVEIS_MENU = ["opcao.numero", "opcao.texto"]
 const VARIAVEIS_LEAD = ["lead.encontrado", "lead.id", "lead.nome", "lead.status", "lead.temCampanha", "lead.campanhasIds"]
 
@@ -64,9 +65,12 @@ export function FlowEditor({
   execucoesIniciais,
   totalExecucoes,
   atendentes = [],
+  campanhas = [],
 }: {
   /** Atendentes ativos do CRM (para o bloco "Transferir para atendente"). */
   atendentes?: { id: string; nome: string }[]
+  /** Campanhas não encerradas (para o bloco "Enviar lead para campanha"). */
+  campanhas?: { id: string; nome: string; status: string }[]
   fluxo: FlowRow
   execucoesIniciais: ExecutionRow[]
   totalExecucoes: number
@@ -96,11 +100,12 @@ export function FlowEditor({
   const noSelecionado = selecao?.tipo === "no" ? nodes.find((n) => n.id === selecao.id) : undefined
 
   const variaveis = useMemo(() => {
-    if (bot) return nodes.some((n) => n.type === "menu") ? [...VARIAVEIS_BOT, ...VARIAVEIS_MENU] : VARIAVEIS_BOT
+    const campanha = nodes.some((n) => n.type === "enviar_lead_campanha") ? VARIAVEIS_CAMPANHA : []
+    if (bot) return [...VARIAVEIS_BOT, ...(nodes.some((n) => n.type === "menu") ? VARIAVEIS_MENU : []), ...campanha]
     const lista = [...VARIAVEIS_WEBHOOK]
     if (nodes.some((n) => n.type === "extrair_telefone")) lista.push("telefone")
     if (nodes.some((n) => n.type === "buscar_lead")) lista.push(...VARIAVEIS_LEAD)
-    return lista
+    return [...lista, ...campanha]
   }, [nodes, bot])
 
   // Avisa antes de sair com alterações não salvas.
@@ -383,6 +388,7 @@ export function FlowEditor({
                 flowId={fluxo.id}
                 variaveis={variaveis}
                 atendentes={atendentes}
+                campanhas={campanhas}
                 onNome={(valor) =>
                   setNodes((atual) => atual.map((n) => (n.id === noSelecionado.id ? { ...n, name: valor } : n)))
                 }

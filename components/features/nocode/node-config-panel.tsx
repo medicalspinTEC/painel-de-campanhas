@@ -27,6 +27,7 @@ export function NodeConfigPanel({
   flowId,
   variaveis,
   atendentes = [],
+  campanhas = [],
   onNome,
   onConfig,
   onExcluir,
@@ -36,6 +37,8 @@ export function NodeConfigPanel({
   variaveis: string[]
   /** Atendentes ativos do CRM, para o campo "atendente". */
   atendentes?: { id: string; nome: string }[]
+  /** Campanhas não encerradas, para o campo "campanha". */
+  campanhas?: { id: string; nome: string; status: string }[]
   onNome: (nome: string) => void
   onConfig: (patch: NodeConfig) => void
   onExcluir: () => void
@@ -121,6 +124,21 @@ export function NodeConfigPanel({
                 onValueChange={(v) => onConfig({ [campo.key]: v })}
                 opcoes={atendentes.map((a) => ({ value: a.id, label: a.nome }))}
               />
+            ) : null}
+            {campo.kind === "campanha" ? (
+              <SelectField
+                id={id}
+                value={String(valor ?? "")}
+                placeholder="Escolha a campanha"
+                onValueChange={(v) => onConfig({ [campo.key]: v, campanhaNome: campanhas.find((c) => c.id === v)?.nome ?? "" })}
+                opcoes={campanhas.map((c) => ({ value: c.id, label: c.status === "ativa" ? c.nome : `${c.nome} · ${c.status}` }))}
+              />
+            ) : null}
+            {campo.kind === "campanha" && campanhas.length === 0 ? (
+              <FieldDescription>Nenhuma campanha aberta. Crie uma em Campanhas.</FieldDescription>
+            ) : null}
+            {campo.kind === "campanha" && valor && !campanhas.some((c) => c.id === valor) ? (
+              <FieldDescription>A campanha escolhida não está mais disponível (encerrada ou excluída). Escolha outra.</FieldDescription>
             ) : null}
             {campo.kind === "atendente" && atendentes.length === 0 ? (
               <FieldDescription>Nenhum atendente ativo. Cadastre em CRM → Atendentes.</FieldDescription>

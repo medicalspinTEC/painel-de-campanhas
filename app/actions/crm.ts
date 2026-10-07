@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache"
 import { PluginDesativadoError } from "@/lib/plugins"
 import { assertPoder, assertSecao, ForbiddenError } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
+import { enviarLeadParaCampanhaPeloChat } from "@/services/lead-campanha"
 import { ativarBotDoCrm, criarBotDoCrm, excluirBotDoCrm } from "@/services/bots"
 import {
   alternarBotConversa,
@@ -195,6 +196,42 @@ export async function transferirConversaAction(leadId: string, input: Transferen
     }
   } catch (error) {
     return falha(error, "Não foi possível transferir a conversa.")
+  }
+}
+
+/**
+ * Envia o lead da conversa para uma campanha, direto do chat. Disponível para quem acessa o
+ * Chat e só com os plugins Chat e CRM ativos; segue as regras de atendimento da conversa.
+ */
+export async function enviarLeadParaCampanhaAction(
+  leadId: string,
+  campanhaId: string,
+  mensagemIndividual?: string | null,
+): Promise<CrmActionResult> {
+  try {
+    const usuario = await assertSecao("chat")
+    const [chatAtivo, crmAtivo] = await Promise.all([getChatPluginAtivo(), getCrmPluginAtivo()])
+    if (!chatAtivo || !crmAtivo) throw new CrmError("Enviar para campanha exige os plugins Chat e CRM ativos.")
+
+    const id = String(leadId ?? "").trim()
+    if (!id) throw new CrmError("Selecione uma conversa.")
+
+    const r = await enviarLeadParaCampanhaPeloChat(id, String(campanhaId ?? ""), mensagemIndividual, {
+      id: usuario.id,
+      nome: usuario.nome,
+      role: usuario.role,
+    })
+    revalidatePath("/chat")
+    revalidatePath("/leads")
+    revalidatePath("/campanhas")
+    return {
+      ok: true,
+      message: r.aguardaAtivacao
+        ? `${r.leadNome} entrou na campanha “${r.campanhaNome}”, que está ${r.campanhaStatus}: as mensagens só saem quando ela for ativada.`
+        : `${r.leadNome} foi enviado para a campanha “${r.campanhaNome}”.`,
+    }
+  } catch (error) {
+    return falha(error, "Não foi possível enviar o lead para a campanha.")
   }
 }
 

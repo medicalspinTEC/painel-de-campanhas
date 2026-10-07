@@ -22,6 +22,8 @@ export type NodeType =
   | "menu"
   | "transferir_departamento"
   | "transferir_atendente"
+  // Vincula o lead a uma campanha (ação do app, não depende de plugin).
+  | "enviar_lead_campanha"
   // Lógica: segue por "Verdadeiro" ou "Falso" conforme o plugin escolhido esteja ativo.
   | "plugin_ativo"
 
@@ -69,7 +71,7 @@ export interface NodeField {
   key: string
   label: string
   /** "atendente": lista de atendentes ativos cadastrados no CRM (o valor guardado é o id). */
-  kind: "text" | "textarea" | "select" | "switch" | "number" | "atendente"
+  kind: "text" | "textarea" | "select" | "switch" | "number" | "atendente" | "campanha"
   /** Só mostra o campo quando outro campo do bloco tem este valor. */
   mostrarSe?: { key: string; value: string }
   placeholder?: string
@@ -96,6 +98,7 @@ export interface NodeDef {
     | "ListOrdered"
     | "Building2"
     | "UserCheck"
+    | "Megaphone"
     | "Puzzle"
   /** Classes de cor do ícone (Tailwind). */
   cor: string
@@ -412,6 +415,38 @@ export const NODE_CATALOG: Record<NodeType, NodeDef> = {
     ],
     padrao: { departamento: "", pausarBot: false },
   },
+  enviar_lead_campanha: {
+    type: "enviar_lead_campanha",
+    label: "Enviar lead para campanha",
+    descricao:
+      "Coloca o lead numa campanha. Com a campanha ativa, a mensagem inicial sai em seguida; se o lead já estiver nela (ou ela estiver encerrada), segue por “Não enviado”.",
+    categoria: "Ação",
+    icone: "Megaphone",
+    cor: "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400",
+    temEntrada: true,
+    saidas: [
+      { id: "main", label: "Enviado" },
+      { id: "nao_enviado", label: "Não enviado" },
+    ],
+    campos: [
+      { key: "campanhaId", label: "Campanha", kind: "campanha" },
+      {
+        key: "leadId",
+        label: "Lead",
+        kind: "text",
+        placeholder: "{{lead.id}}",
+        help: "Id do lead. Num bot, {{lead.id}} é o lead da conversa; num fluxo de webhook, use antes o bloco “Buscar lead pelo telefone”.",
+      },
+      {
+        key: "mensagemIndividual",
+        label: "Mensagem individual",
+        kind: "textarea",
+        placeholder: "Olá, {{lead.nome}}! …",
+        help: "Só para campanhas do tipo individual (obrigatória nelas). Aceita variáveis {{...}}.",
+      },
+    ],
+    padrao: { campanhaId: "", campanhaNome: "", leadId: "{{lead.id}}", mensagemIndividual: "" },
+  },
   ignorar: {
     type: "ignorar",
     label: "Encerrar (ignorar)",
@@ -557,6 +592,9 @@ export function validarGrafo(
   for (const no of nodes) {
     if (no.type === "transferir_atendente" && no.config?.modo === "especifico" && !String(no.config?.atendenteId ?? "").trim()) {
       return `Escolha o atendente do bloco “${no.name}”.`
+    }
+    if (no.type === "enviar_lead_campanha" && !String(no.config?.campanhaId ?? "").trim()) {
+      return `Escolha a campanha do bloco “${no.name}”.`
     }
     if (no.type === "plugin_ativo" && !PLUGINS_VERIFICAVEIS.includes(no.config?.plugin as PluginKey)) {
       return `Escolha o plugin do bloco “${no.name}”.`

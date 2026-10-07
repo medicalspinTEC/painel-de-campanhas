@@ -289,6 +289,27 @@ export async function listCampaignsForSearch(limit = 40): Promise<CampaignSearch
   return campanhas.map((c) => ({ id: c.id, nome: c.nome, totalLeads: c._count.leadCampaigns }))
 }
 
+/** Campanha que ainda aceita novos leads (qualquer uma que não esteja encerrada). */
+export interface CampanhaAberta {
+  id: string
+  nome: string
+  status: Exclude<CampaignStatus, "encerrada">
+  tipo: CampaignTipo
+}
+
+/**
+ * Campanhas para onde um lead pode ser enviado (chat e bloco do No Code): todas as não
+ * encerradas, em ordem alfabética. Sem contagens nem joins — é só uma lista de escolha.
+ */
+export async function listCampanhasAbertas(): Promise<CampanhaAberta[]> {
+  const campanhas = await prisma.campaign.findMany({
+    where: { status: { not: "encerrada" } },
+    select: { id: true, nome: true, status: true, tipo: true },
+    orderBy: { nome: "asc" },
+  })
+  return campanhas.map((c) => ({ id: c.id, nome: c.nome, status: c.status as CampanhaAberta["status"], tipo: c.tipo }))
+}
+
 export async function getCampaign(id: string): Promise<CampaignWithStats | null> {
   await encerrarCampanhasExpiradas()
   const campanha = await prisma.campaign.findUnique({ where: { id }, include: campaignInclude })
