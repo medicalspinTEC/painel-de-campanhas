@@ -130,6 +130,7 @@ const LEITORES: Record<string, Leitor> = {
     tamanho: 1000,
   },
   FollowUpBot: porId(prisma.followUpBot),
+  AgenteIA: porId(prisma.agenteIA, { omitir: [...COLUNAS_SECRETAS.AgenteIA] }),
   FollowUpTemplate: porId(prisma.followUpTemplate),
   FollowUpConversa: {
     // A chave primária é o próprio leadId (como em BotConversa).

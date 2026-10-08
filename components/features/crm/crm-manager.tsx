@@ -15,6 +15,7 @@ export function CrmManager({
   usuarioAtualId,
   ehRoot,
   podeEditarNoCode,
+  podeAbrirAgentes,
 }: {
   dados: CrmData
   /** Bots de follow-up (um por departamento). */
@@ -25,6 +26,8 @@ export function CrmManager({
   ehRoot: boolean
   /** Seção No Code liberada e plugin ativo: só então o link do editor dos bots aparece. */
   podeEditarNoCode: boolean
+  /** Seção Agentes de IA liberada para o usuário (atalho para criar/editar agentes). */
+  podeAbrirAgentes: boolean
 }) {
   return (
     <Tabs defaultValue="departamentos">
@@ -46,6 +49,10 @@ export function CrmManager({
           followUpBots={followUpBots}
           chatAtivo={chatAtivo}
           podeEditarNoCode={podeEditarNoCode}
+          agentesIaAtivo={dados.agentesIaAtivo}
+          agentesIa={dados.agentesIa}
+          agenteIaEntradaId={dados.agenteIaEntradaId}
+          podeAbrirAgentes={podeAbrirAgentes}
         />
       </TabsContent>
       <TabsContent value="atendentes">

@@ -5,6 +5,7 @@ import { Bot, Building2, Pencil, Plus, Power, PowerOff, Trash2 } from "lucide-re
 import { toast } from "sonner"
 
 import { deleteDepartamentoAction, setDepartamentoAtivoAction } from "@/app/actions/crm"
+import { AgenteIaVinculo } from "@/components/features/crm/agente-ia-vinculo"
 import { BotsLista } from "@/components/features/crm/bots-lista"
 import { FollowUpBotCard } from "@/components/features/crm/followup-bot-card"
 import { DepartamentoFormDialog } from "@/components/features/crm/departamento-form-dialog"
@@ -23,7 +24,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
-import type { BotItem, DepartamentoItem } from "@/services/crm"
+import type { AgenteIaOpcao, BotItem, DepartamentoItem } from "@/services/crm"
 import type { FollowUpBotItem } from "@/services/followup"
 
 export function DepartamentosPanel({
@@ -32,12 +33,20 @@ export function DepartamentosPanel({
   followUpBots,
   chatAtivo,
   podeEditarNoCode,
+  agentesIaAtivo,
+  agentesIa,
+  agenteIaEntradaId,
+  podeAbrirAgentes,
 }: {
   departamentos: DepartamentoItem[]
   botsEntrada: BotItem[]
   followUpBots: FollowUpBotItem[]
   chatAtivo: boolean
   podeEditarNoCode: boolean
+  agentesIaAtivo: boolean
+  agentesIa: AgenteIaOpcao[]
+  agenteIaEntradaId: string | null
+  podeAbrirAgentes: boolean
 }) {
   const [dialogAberto, setDialogAberto] = useState(false)
   const [emEdicao, setEmEdicao] = useState<DepartamentoItem | null>(null)
@@ -89,6 +98,11 @@ export function DepartamentosPanel({
         </CardHeader>
         <CardContent>
           <BotsLista bots={botsEntrada} departamentoId={null} rotuloEscopo="de entrada" podeEditarNoCode={podeEditarNoCode} />
+          {agentesIaAtivo ? (
+            <div className="mt-4 border-t pt-3">
+              <AgenteIaVinculo agentes={agentesIa} agenteId={agenteIaEntradaId} departamentoId={null} podeAbrirAgentes={podeAbrirAgentes} />
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 
@@ -172,6 +186,16 @@ export function DepartamentosPanel({
                       podeEditarNoCode={podeEditarNoCode}
                     />
                   </div>
+                  {agentesIaAtivo ? (
+                    <div className="border-t pt-3">
+                      <AgenteIaVinculo
+                        agentes={agentesIa}
+                        agenteId={departamento.agenteIaId}
+                        departamentoId={departamento.id}
+                        podeAbrirAgentes={podeAbrirAgentes}
+                      />
+                    </div>
+                  ) : null}
                   <div className="border-t pt-3">
                     <FollowUpBotCard
                       departamentoId={departamento.id}

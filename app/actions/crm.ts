@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 
 import { PluginDesativadoError } from "@/lib/plugins"
 import { assertPoder, assertSecao, ForbiddenError } from "@/lib/session"
+import { AgenteIaError, definirAgenteDeEntrada, vincularAgenteAoDepartamento } from "@/services/agentes-ia"
 import { recordAppLog } from "@/services/app-logs"
 import { enviarLeadParaCampanhaPeloChat } from "@/services/lead-campanha"
 import { ativarBotDoCrm, criarBotDoCrm, excluirBotDoCrm } from "@/services/bots"
@@ -42,6 +43,7 @@ export type CrmActionResult = { ok: boolean; message: string }
 function falha(error: unknown, contexto: string): CrmActionResult {
   if (
     error instanceof CrmError ||
+    error instanceof AgenteIaError ||
     error instanceof UserError ||
     error instanceof ForbiddenError ||
     error instanceof PluginDesativadoError
@@ -102,6 +104,30 @@ export async function setDepartamentoAtivoAction(id: string, ativo: boolean): Pr
   }
   revalidarCrm()
   return { ok: true, message: ativo ? "Departamento ativado." : "Departamento inativado." }
+}
+
+/** Vincula (ou, com `null`, desvincula) o agente de IA que atende um departamento. */
+export async function setDepartamentoAgenteIaAction(departamentoId: string, agenteId: string | null): Promise<CrmActionResult> {
+  try {
+    await exigirGestaoCrm()
+    await vincularAgenteAoDepartamento(departamentoId, agenteId)
+  } catch (error) {
+    return falha(error, "Não foi possível vincular o agente de IA ao departamento.")
+  }
+  revalidarCrm()
+  return { ok: true, message: agenteId ? "Agente de IA vinculado ao departamento." : "Agente de IA removido do departamento." }
+}
+
+/** Define (ou, com `null`, remove) o agente de IA de entrada. */
+export async function setAgenteIaEntradaAction(agenteId: string | null): Promise<CrmActionResult> {
+  try {
+    await exigirGestaoCrm()
+    await definirAgenteDeEntrada(agenteId)
+  } catch (error) {
+    return falha(error, "Não foi possível definir o agente de IA de entrada.")
+  }
+  revalidarCrm()
+  return { ok: true, message: agenteId ? "Agente de IA de entrada definido." : "Agente de IA de entrada removido." }
 }
 
 export async function deleteDepartamentoAction(id: string): Promise<CrmActionResult> {

@@ -50,8 +50,8 @@ export const SECOES_BACKUP: SecaoBackup[] = [
   {
     chave: "crm",
     nome: "CRM",
-    descricao: "Departamentos, atendentes, conversas atribuídas, histórico de transferências e estado dos bots nas conversas e os bots de follow-up (templates e ajustes por conversa).",
-    tabelas: ["Departamento", "Atendente", "AtendenteDepartamento", "LeadAtendimento", "AtendimentoTransferencia", "BotConversa", "FollowUpBot", "FollowUpTemplate", "FollowUpConversa"],
+    descricao: "Departamentos, atendentes, conversas atribuídas, histórico de transferências e estado dos bots nas conversas, os bots de follow-up (templates e ajustes por conversa) e os agentes de IA (sem a chave de API).",
+    tabelas: ["Departamento", "Atendente", "AtendenteDepartamento", "LeadAtendimento", "AtendimentoTransferencia", "BotConversa", "FollowUpBot", "FollowUpTemplate", "FollowUpConversa", "AgenteIA"],
   },
   {
     chave: "nocode",
@@ -117,6 +117,7 @@ export const COLUNAS_SECRETAS: Readonly<Record<string, readonly string[]>> = {
   User: ["senhaHash"],
   Webhook: ["secret"],
   NoCodeFlow: ["execWebhookSegredo"],
+  AgenteIA: ["apiKey"],
 }
 
 /** Mantém só chaves conhecidas, sem repetição e na ordem do catálogo. */

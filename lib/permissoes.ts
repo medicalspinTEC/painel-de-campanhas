@@ -48,6 +48,7 @@ export const SECOES = [
   { key: "chat", label: "Chat", url: "/chat", grupo: "Gestão" },
   { key: "assistente", label: "Assistente", url: "/assistente", grupo: "Gestão" },
   { key: "nocode", label: "No Code", url: "/nocode", grupo: "Gestão" },
+  { key: "agentes_ia", label: "Agentes de IA", url: "/agentes-ia", grupo: "Gestão" },
   { key: "campanhas", label: "Campanhas", url: "/campanhas", grupo: "Gestão" },
   { key: "segmentacao", label: "Segmentação", url: "/segmentacao", grupo: "Gestão" },
   { key: "eventos", label: "Eventos", url: "/eventos", grupo: "Acompanhamento" },

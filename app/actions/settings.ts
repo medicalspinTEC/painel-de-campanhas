@@ -7,6 +7,7 @@ import {
   saveSettings,
   setAssistentePluginAtivo,
   setChatPluginAtivo,
+  setAgentesIaPluginAtivo,
   setCrmPluginAtivo,
   setKanbanPluginAtivo,
   setNocodePluginAtivo,
@@ -147,6 +148,28 @@ export async function setCrmPluginAtivoAction(ativo: boolean): Promise<SettingsA
   revalidatePath("/chat")
   revalidatePath("/", "layout")
   return { ok: true, message: ativo ? "Plugin CRM ativado." : "Plugin CRM desativado. Departamentos, atendentes, bots, transferências e eventos do CRM foram desligados.", ativo }
+}
+
+export async function setAgentesIaPluginAtivoAction(ativo: boolean): Promise<SettingsActionResult & { ativo?: boolean }> {
+  await assertSecao("integracoes")
+  if (typeof ativo !== "boolean") return { ok: false, message: "Estado inválido para o plugin." }
+
+  try {
+    await setAgentesIaPluginAtivo(ativo)
+  } catch (error) {
+    await recordAppLog({ origem: "settings", mensagem: "Falha ao atualizar o plugin Agentes de IA.", detalhes: error })
+    return { ok: false, message: "Não foi possível atualizar o plugin Agentes de IA. Aplique a migration mais recente." }
+  }
+
+  revalidatePath("/integracoes")
+  revalidatePath("/agentes-ia")
+  revalidatePath("/crm")
+  revalidatePath("/", "layout")
+  return {
+    ok: true,
+    message: ativo ? "Plugin Agentes de IA ativado." : "Plugin Agentes de IA desativado. Os agentes pararam de responder as conversas.",
+    ativo,
+  }
 }
 
 const LIMITE_NOME_MARCA = 40

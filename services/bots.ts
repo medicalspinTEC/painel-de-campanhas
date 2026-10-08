@@ -8,6 +8,7 @@ import { detalhesDaRespostaEmAudio, guardarAudioRecebido } from "@/services/audi
 import { extrairMensagem, localizarLeadPorTelefone, telefoneDoRemoteJid } from "@/services/lead-response"
 import { createBot, desativarBotsConcorrentes, executarFluxo, gravarExecucao, type ContextoBot } from "@/services/nocode"
 import { cadastrarLeadPorMensagem } from "@/services/leads"
+import { carregarAgenteDoEscopo, registrarFalhaDoAgente, responderComAgente, type AgenteCarregado } from "@/services/agentes-ia"
 import { exigirPlugin, getChatPluginAtivo, getPluginsAtivos } from "@/services/settings"
 
 /**
@@ -21,8 +22,11 @@ import { exigirPlugin, getChatPluginAtivo, getPluginsAtivos } from "@/services/s
  *   1. Bot pausado na conversa (um humano assumiu) → ninguém: o bot só volta quando alguém o
  *      reativa nessa conversa (`reativarBot`).
  *   2. Menu esperando a resposta do lead → o MESMO bot retoma dali e segue a opção escolhida.
- *   3. Conversa já num departamento → o bot ativo desse departamento (se houver).
- *   4. Conversa sem departamento → o bot de entrada ativo (triagem), se houver.
+ *   3. Plugin Agentes de IA: o agente de IA ativo do departamento da conversa (ou, sem
+ *      departamento, o agente de entrada) responde — e tem prioridade sobre o bot No Code do mesmo
+ *      escopo. O agente só conversa (não executa comandos).
+ *   4. Conversa já num departamento → o bot ativo desse departamento (se houver).
+ *   5. Conversa sem departamento → o bot de entrada ativo (triagem), se houver.
  *
  * É chamado pelo webhook do fluxo de resposta do sistema (ver app/api/nocode/webhook), depois
  * de o fluxo registrar a resposta. Nunca lança: erro de bot não pode derrubar o recebimento.
@@ -87,10 +91,34 @@ function mensagemDeLead(payload: unknown) {
   return { msg, telefone }
 }
 
-/** Bots exigem CRM (departamentos/atendentes) e No Code (onde o fluxo roda) ativos. */
+/**
+ * Quem pode responder: os bots No Code exigem CRM (departamentos/atendentes) e No Code (onde o
+ * fluxo roda); os agentes de IA exigem CRM e o plugin Agentes de IA.
+ */
+async function motoresDisponiveis(): Promise<{ nocode: boolean; ia: boolean }> {
+  const { crm, nocode, agentesIa } = await getPluginsAtivos()
+  return { nocode: crm && nocode, ia: crm && agentesIa }
+}
+
 async function botsDisponiveis(): Promise<boolean> {
-  const { crm, nocode } = await getPluginsAtivos()
-  return crm && nocode
+  const motores = await motoresDisponiveis()
+  return motores.nocode || motores.ia
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __agenteIaMensagens: Map<string, number> | undefined
+}
+
+/** A Evolution pode entregar o mesmo evento duas vezes: o agente não responde duas vezes à mesma mensagem. */
+function mensagemJaTratadaPeloAgente(messageId: string | null): boolean {
+  if (!messageId) return false
+  const vistas = (globalThis.__agenteIaMensagens ??= new Map())
+  const agora = Date.now()
+  for (const [id, quando] of vistas) if (agora - quando > 10 * 60 * 1000) vistas.delete(id)
+  if (vistas.has(messageId)) return true
+  vistas.set(messageId, agora)
+  return false
 }
 
 /** O lead está em alguma campanha agora (campanha principal ou vínculo em `LeadCampaign`)? */
@@ -241,11 +269,12 @@ async function atenderConversa({ lead, telefone, texto, payload }: Conversa): Pr
 
   const departamentoId = atendimento?.departamentoId ?? null
   const agora = Date.now()
+  const motores = await motoresDisponiveis()
 
   // 2. Menu esperando resposta: o mesmo bot retoma dali.
   let bot: BotCarregado | null = null
   let menu: FlowNode | null = null
-  if (estado?.flowId && estado.aguardandoNoId && agora - estado.ultimaInteracaoEm.getTime() <= EXPIRA_ESPERA_MS) {
+  if (motores.nocode && estado?.flowId && estado.aguardandoNoId && agora - estado.ultimaInteracaoEm.getTime() <= EXPIRA_ESPERA_MS) {
     const candidato = await carregarBot({ id: estado.flowId })
     const no = candidato?.nodes.find((n) => n.id === estado.aguardandoNoId && n.type === "menu") ?? null
     if (candidato && no) {
@@ -254,8 +283,18 @@ async function atenderConversa({ lead, telefone, texto, payload }: Conversa): Pr
     }
   }
 
-  // 3 e 4. Sessão nova: bot do departamento da conversa, ou o de entrada se ela não tem departamento.
+  // 3. Agente de IA do escopo (departamento da conversa ou entrada): responde no lugar do bot No Code.
+  if (!bot && motores.ia) {
+    const agente = await carregarAgenteDoEscopo(departamentoId)
+    if (agente) {
+      await atenderComAgente({ lead, telefone, texto, payload, departamentoNome: atendimento?.departamento?.nome ?? null }, agente)
+      return
+    }
+  }
+
+  // 4 e 5. Sessão nova: bot do departamento da conversa, ou o de entrada se ela não tem departamento.
   if (!bot) {
+    if (!motores.nocode) return
     bot = departamentoId ? await carregarBot({ departamentoId }) : await carregarBot({ botEntrada: true })
     if (!bot) return
     const horas = horasParaReiniciar(bot)
@@ -334,6 +373,30 @@ async function atenderConversa({ lead, telefone, texto, payload }: Conversa): Pr
   )
 
   await guardarEstado(lead.id, bot.id, resultado.espera?.nodeId ?? null, resultado.espera ? tentativas : 0)
+}
+
+/**
+ * Atendimento por agente de IA: registra a mensagem do lead no chat, deixa o agente responder e
+ * marca a conversa como atendida pelo bot (assim o chat mostra o estado e "assumir" pausa o agente).
+ * Falha do agente (chave inválida, limite da API…) só vai para o log: o lead não recebe erro.
+ */
+async function atenderComAgente(
+  { lead, telefone, texto, payload, departamentoNome }: Pick<Conversa, "lead" | "telefone" | "texto" | "payload"> & { departamentoNome: string | null },
+  agente: AgenteCarregado,
+): Promise<void> {
+  if (mensagemJaTratadaPeloAgente(extrairMensagem(payload).messageId)) return
+  await registrarMensagemDoLead(lead, texto, payload)
+  try {
+    await responderComAgente({ agente, lead, telefone, textoAtual: texto, departamentoNome })
+  } catch (error) {
+    await registrarFalhaDoAgente(agente.nome, lead.id, error)
+  }
+  const agora = new Date()
+  await prisma.botConversa.upsert({
+    where: { leadId: lead.id },
+    create: { leadId: lead.id, ultimaInteracaoEm: agora },
+    update: { flowId: null, aguardandoNoId: null, tentativas: 0, ultimaInteracaoEm: agora },
+  })
 }
 
 /** Guarda em que ponto o bot parou. Não mexe em `botAtivo`: pausar/reativar é decisão de uma pessoa. */

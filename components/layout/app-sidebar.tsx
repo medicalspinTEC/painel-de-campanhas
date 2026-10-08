@@ -17,6 +17,7 @@ import {
   Settings,
   ShieldCheck,
   Smartphone,
+  Sparkles,
   UserCog,
   Target,
   TriangleAlert,
@@ -52,6 +53,7 @@ const navPrincipal = [
   { title: "Kanban", url: "/kanban", icon: SquareKanban },
   { title: "Chat", url: "/chat", icon: MessagesSquare },
   { title: "Assistente", url: "/assistente", icon: Bot }, 
+  { title: "Agentes de IA", url: "/agentes-ia", icon: Sparkles },
   { title: "Campanhas", url: "/campanhas", icon: Megaphone },
   { title: "Segmentação", url: "/segmentacao", icon: Target },
 ]
@@ -78,6 +80,7 @@ interface AppSidebarProps {
   assistenteAtivo?: boolean
   nocodeAtivo?: boolean
   crmAtivo?: boolean
+  agentesIaAtivo?: boolean
   appNome?: string
   appLogo?: string | null
   /** URLs das seções que o usuário logado pode acessar (admin recebe todas). */
@@ -128,6 +131,7 @@ export function AppSidebar({
   assistenteAtivo = false,
   nocodeAtivo = false,
   crmAtivo = false,
+  agentesIaAtivo = false,
   appNome = "Medical Spin",
   appLogo = null,
   urlsPermitidas = [],
@@ -150,7 +154,8 @@ export function AppSidebar({
       visivel(item.url) &&
       (item.url !== "/chat" || chatAtivo) &&
       (item.url !== "/kanban" || kanbanAtivo) &&
-      (item.url !== "/assistente" || assistenteAtivo),
+      (item.url !== "/assistente" || assistenteAtivo) &&
+      (item.url !== "/agentes-ia" || agentesIaAtivo),
   )
   // O CRM (departamentos e atendentes) aparece para o Root e para admins com o poder "Gerenciar o CRM".
   const itensGestaoComCrm =

@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   getAssistentePluginAtivo,
   getChatPluginAtivo,
+  getAgentesIaPluginAtivo,
   getCrmPluginAtivo,
   getKanbanPluginAtivo,
   getNocodePluginAtivo,
@@ -46,7 +47,7 @@ x-ingest-token: <INGEST_TOKEN>
 
 export default async function IntegracoesPage() {
   await requireSecao("integracoes")
-  const [webhooks, tokenInicial, eventosIniciais, mcpStatus, chatAtivo, kanbanAtivo, assistenteAtivo, nocodeAtivo, crmAtivo] = await Promise.all([
+  const [webhooks, tokenInicial, eventosIniciais, mcpStatus, chatAtivo, kanbanAtivo, assistenteAtivo, nocodeAtivo, crmAtivo, agentesIaAtivo] = await Promise.all([
     listWebhooks(),
     getToken(),
     listEventos(50),
@@ -56,6 +57,7 @@ export default async function IntegracoesPage() {
     getAssistentePluginAtivo(),
     getNocodePluginAtivo(),
     getCrmPluginAtivo(),
+    getAgentesIaPluginAtivo(),
   ])
 
   return (
@@ -122,6 +124,7 @@ export default async function IntegracoesPage() {
             assistenteAtivoInicial={assistenteAtivo}
             nocodeAtivoInicial={nocodeAtivo}
             crmAtivoInicial={crmAtivo}
+            agentesIaAtivoInicial={agentesIaAtivo}
           />
         </TabsContent>
       </Tabs>

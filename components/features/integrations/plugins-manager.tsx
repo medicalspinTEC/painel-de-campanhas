@@ -2,10 +2,11 @@
 
 import { useState, useTransition, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronRight, ClipboardList, Columns3, Contact, MessageCircle, Puzzle, Workflow } from "lucide-react"
+import { ChevronRight, ClipboardList, Columns3, Contact, MessageCircle, Puzzle, Sparkles, Workflow } from "lucide-react"
 import { toast } from "sonner"
 
 import {
+  setAgentesIaPluginAtivoAction,
   setAssistentePluginAtivoAction,
   setChatPluginAtivoAction,
   setCrmPluginAtivoAction,
@@ -23,7 +24,7 @@ import {
 } from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
 
-type PluginId = "chat" | "kanban" | "assistente" | "nocode" | "crm"
+type PluginId = "chat" | "kanban" | "assistente" | "nocode" | "crm" | "agentesIa"
 
 function PluginCard({
   titulo,
@@ -77,12 +78,14 @@ export function PluginsManager({
   assistenteAtivoInicial,
   nocodeAtivoInicial,
   crmAtivoInicial,
+  agentesIaAtivoInicial,
 }: {
   chatAtivoInicial: boolean
   kanbanAtivoInicial: boolean
   assistenteAtivoInicial: boolean
   nocodeAtivoInicial: boolean
   crmAtivoInicial: boolean
+  agentesIaAtivoInicial: boolean
 }) {
   const router = useRouter()
   const [chatAtivo, setChatAtivo] = useState(chatAtivoInicial)
@@ -90,6 +93,7 @@ export function PluginsManager({
   const [assistenteAtivo, setAssistenteAtivo] = useState(assistenteAtivoInicial)
   const [nocodeAtivo, setNocodeAtivo] = useState(nocodeAtivoInicial)
   const [crmAtivo, setCrmAtivo] = useState(crmAtivoInicial)
+  const [agentesIaAtivo, setAgentesIaAtivo] = useState(agentesIaAtivoInicial)
   const [pending, startTransition] = useTransition()
   const [pluginSelecionado, setPluginSelecionado] = useState<PluginId | null>(null)
 
@@ -163,6 +167,20 @@ export function PluginsManager({
     })
   }
 
+  function alterarAgentesIa(ativo: boolean) {
+    startTransition(async () => {
+      const resultado = await setAgentesIaPluginAtivoAction(ativo)
+      if (!resultado.ok) {
+        toast.error(resultado.message)
+        return
+      }
+
+      setAgentesIaAtivo(ativo)
+      toast.success(resultado.message)
+      router.refresh()
+    })
+  }
+
   const detalhes: PluginDetails | null =
     pluginSelecionado === "chat"
       ? {
@@ -227,7 +245,20 @@ export function PluginsManager({
               acaoLabel: "Abrir CRM",
               acaoIcon: <Contact className="size-4" />,
             }
-        : null
+          : pluginSelecionado === "agentesIa"
+            ? {
+                id: "agentesIa",
+                titulo: "Agentes de IA",
+                descricao:
+                  "Agentes de atendimento com IA (Claude, Groq ou outra API compatível, via chave de API) que respondem as mensagens dos leads. Podem ser vinculados a um departamento ou ser o agente de entrada na aba CRM (exige o plugin CRM ativo). Por enquanto só respondem mensagens, sem executar comandos.",
+                ativo: agentesIaAtivo,
+                onChange: alterarAgentesIa,
+                icon: Sparkles,
+                href: "/agentes-ia",
+                acaoLabel: "Abrir Agentes de IA",
+                acaoIcon: <Sparkles className="size-4" />,
+              }
+            : null
 
   return (
     <div className="flex flex-col gap-4">
@@ -266,6 +297,12 @@ export function PluginsManager({
           ativo={crmAtivo}
           icon={Contact}
           onClick={() => setPluginSelecionado("crm")}
+        />
+        <PluginCard
+          titulo="Agentes de IA"
+          ativo={agentesIaAtivo}
+          icon={Sparkles}
+          onClick={() => setPluginSelecionado("agentesIa")}
         />
       </div>
 

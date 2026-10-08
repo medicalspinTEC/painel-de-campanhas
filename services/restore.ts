@@ -767,6 +767,9 @@ function montarAvisos(
   if (gravou("Webhook")) {
     avisos.push("Os webhooks de saída voltam sem o segredo de assinatura: informe o segredo de novo em Integrações.")
   }
+  if (gravou("AgenteIA")) {
+    avisos.push("Os agentes de IA voltam sem a chave de API (ela nunca entra no backup): informe a chave de novo em Agentes de IA.")
+  }
   if (gravou("NoCodeFlow")) {
     avisos.push("Os fluxos No Code voltam sem o segredo do webhook de execuções: informe-o de novo, se usava.")
   }

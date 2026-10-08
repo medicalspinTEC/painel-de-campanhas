@@ -71,6 +71,7 @@ export async function getPluginsAtivos(): Promise<PluginsAtivos> {
         assistentePluginAtivo: true,
         nocodePluginAtivo: true,
         crmPluginAtivo: true,
+        agentesIaPluginAtivo: true,
       },
     })
     if (!row) return { ...PLUGINS_TODOS_DESATIVADOS }
@@ -80,6 +81,7 @@ export async function getPluginsAtivos(): Promise<PluginsAtivos> {
       assistente: row.assistentePluginAtivo ?? false,
       nocode: row.nocodePluginAtivo ?? false,
       crm: row.crmPluginAtivo ?? false,
+      agentesIa: row.agentesIaPluginAtivo ?? false,
     }
   } catch (error) {
     if (typeof error === "object" && error !== null && "code" in error && error.code === "P2022") {
@@ -255,5 +257,27 @@ export async function setCrmPluginAtivo(ativo: boolean): Promise<void> {
     where: { workspaceId: await workspaceAtualId() },
     create: { crmPluginAtivo: ativo },
     update: { crmPluginAtivo: ativo },
+  })
+}
+
+export async function getAgentesIaPluginAtivo(): Promise<boolean> {
+  try {
+    const row = await prisma.settings.findUnique({
+      where: { workspaceId: await workspaceAtualId() },
+      select: { agentesIaPluginAtivo: true },
+    })
+    return row?.agentesIaPluginAtivo ?? false
+  } catch (error) {
+    // Coluna ainda não existe: a migration dos Agentes de IA não foi aplicada.
+    if (colunaAusente(error)) return false
+    throw error
+  }
+}
+
+export async function setAgentesIaPluginAtivo(ativo: boolean): Promise<void> {
+  await prisma.settings.upsert({
+    where: { workspaceId: await workspaceAtualId() },
+    create: { agentesIaPluginAtivo: ativo },
+    update: { agentesIaPluginAtivo: ativo },
   })
 }

@@ -225,6 +225,15 @@ export type FollowUpTemplate = $Result.DefaultSelection<Prisma.$FollowUpTemplate
  * Ajustes e andamento do follow-up numa conversa (no máximo uma linha por lead).
  */
 export type FollowUpConversa = $Result.DefaultSelection<Prisma.$FollowUpConversaPayload>
+/**
+ * Model AgenteIA
+ * Agente de IA de atendimento. Por enquanto só o provedor "claude" (API da Anthropic): o
+ * usuário informa a chave de API, escolhe o modelo e escreve o prompt. O agente só responde
+ * mensagens (não executa comandos). Pode atender um ou mais departamentos
+ * (`Departamento.agenteIaId`) e/ou ser o agente de ENTRADA (quem ainda não tem departamento);
+ * só um agente por instância é o de entrada (índice único parcial na migration).
+ */
+export type AgenteIA = $Result.DefaultSelection<Prisma.$AgenteIAPayload>
 
 /**
  * Enums
@@ -785,6 +794,16 @@ export class PrismaClient<
     * ```
     */
   get followUpConversa(): Prisma.FollowUpConversaDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.agenteIA`: Exposes CRUD operations for the **AgenteIA** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AgenteIAS
+    * const agenteIAS = await prisma.agenteIA.findMany()
+    * ```
+    */
+  get agenteIA(): Prisma.AgenteIADelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1259,7 +1278,8 @@ export namespace Prisma {
     FollowUpBot: 'FollowUpBot',
     ChatTemplate: 'ChatTemplate',
     FollowUpTemplate: 'FollowUpTemplate',
-    FollowUpConversa: 'FollowUpConversa'
+    FollowUpConversa: 'FollowUpConversa',
+    AgenteIA: 'AgenteIA'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1278,7 +1298,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "botConversa" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia" | "followUpBot" | "chatTemplate" | "followUpTemplate" | "followUpConversa"
+      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "botConversa" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia" | "followUpBot" | "chatTemplate" | "followUpTemplate" | "followUpConversa" | "agenteIA"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3798,6 +3818,80 @@ export namespace Prisma {
           }
         }
       }
+      AgenteIA: {
+        payload: Prisma.$AgenteIAPayload<ExtArgs>
+        fields: Prisma.AgenteIAFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AgenteIAFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgenteIAPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AgenteIAFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgenteIAPayload>
+          }
+          findFirst: {
+            args: Prisma.AgenteIAFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgenteIAPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AgenteIAFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgenteIAPayload>
+          }
+          findMany: {
+            args: Prisma.AgenteIAFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgenteIAPayload>[]
+          }
+          create: {
+            args: Prisma.AgenteIACreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgenteIAPayload>
+          }
+          createMany: {
+            args: Prisma.AgenteIACreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AgenteIACreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgenteIAPayload>[]
+          }
+          delete: {
+            args: Prisma.AgenteIADeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgenteIAPayload>
+          }
+          update: {
+            args: Prisma.AgenteIAUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgenteIAPayload>
+          }
+          deleteMany: {
+            args: Prisma.AgenteIADeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AgenteIAUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AgenteIAUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgenteIAPayload>[]
+          }
+          upsert: {
+            args: Prisma.AgenteIAUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgenteIAPayload>
+          }
+          aggregate: {
+            args: Prisma.AgenteIAAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAgenteIA>
+          }
+          groupBy: {
+            args: Prisma.AgenteIAGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AgenteIAGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AgenteIACountArgs<ExtArgs>
+            result: $Utils.Optional<AgenteIACountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3928,6 +4022,7 @@ export namespace Prisma {
     chatTemplate?: ChatTemplateOmit
     followUpTemplate?: FollowUpTemplateOmit
     followUpConversa?: FollowUpConversaOmit
+    agenteIA?: AgenteIAOmit
   }
 
   /* Types for Logging */
@@ -4378,6 +4473,37 @@ export namespace Prisma {
    */
   export type FollowUpTemplateCountOutputTypeCountConversasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: FollowUpConversaWhereInput
+  }
+
+
+  /**
+   * Count Type AgenteIACountOutputType
+   */
+
+  export type AgenteIACountOutputType = {
+    departamentos: number
+  }
+
+  export type AgenteIACountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    departamentos?: boolean | AgenteIACountOutputTypeCountDepartamentosArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * AgenteIACountOutputType without action
+   */
+  export type AgenteIACountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgenteIACountOutputType
+     */
+    select?: AgenteIACountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * AgenteIACountOutputType without action
+   */
+  export type AgenteIACountOutputTypeCountDepartamentosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DepartamentoWhereInput
   }
 
 
@@ -15847,6 +15973,7 @@ export namespace Prisma {
     assistentePluginAtivo: boolean | null
     nocodePluginAtivo: boolean | null
     crmPluginAtivo: boolean | null
+    agentesIaPluginAtivo: boolean | null
     temaApp: string | null
     appNome: string | null
     appLogo: string | null
@@ -15877,6 +16004,7 @@ export namespace Prisma {
     assistentePluginAtivo: boolean | null
     nocodePluginAtivo: boolean | null
     crmPluginAtivo: boolean | null
+    agentesIaPluginAtivo: boolean | null
     temaApp: string | null
     appNome: string | null
     appLogo: string | null
@@ -15907,6 +16035,7 @@ export namespace Prisma {
     assistentePluginAtivo: number
     nocodePluginAtivo: number
     crmPluginAtivo: number
+    agentesIaPluginAtivo: number
     temaApp: number
     appNome: number
     appLogo: number
@@ -15951,6 +16080,7 @@ export namespace Prisma {
     assistentePluginAtivo?: true
     nocodePluginAtivo?: true
     crmPluginAtivo?: true
+    agentesIaPluginAtivo?: true
     temaApp?: true
     appNome?: true
     appLogo?: true
@@ -15981,6 +16111,7 @@ export namespace Prisma {
     assistentePluginAtivo?: true
     nocodePluginAtivo?: true
     crmPluginAtivo?: true
+    agentesIaPluginAtivo?: true
     temaApp?: true
     appNome?: true
     appLogo?: true
@@ -16011,6 +16142,7 @@ export namespace Prisma {
     assistentePluginAtivo?: true
     nocodePluginAtivo?: true
     crmPluginAtivo?: true
+    agentesIaPluginAtivo?: true
     temaApp?: true
     appNome?: true
     appLogo?: true
@@ -16128,6 +16260,7 @@ export namespace Prisma {
     assistentePluginAtivo: boolean
     nocodePluginAtivo: boolean
     crmPluginAtivo: boolean
+    agentesIaPluginAtivo: boolean
     temaApp: string
     appNome: string
     appLogo: string | null
@@ -16177,6 +16310,7 @@ export namespace Prisma {
     assistentePluginAtivo?: boolean
     nocodePluginAtivo?: boolean
     crmPluginAtivo?: boolean
+    agentesIaPluginAtivo?: boolean
     temaApp?: boolean
     appNome?: boolean
     appLogo?: boolean
@@ -16207,6 +16341,7 @@ export namespace Prisma {
     assistentePluginAtivo?: boolean
     nocodePluginAtivo?: boolean
     crmPluginAtivo?: boolean
+    agentesIaPluginAtivo?: boolean
     temaApp?: boolean
     appNome?: boolean
     appLogo?: boolean
@@ -16237,6 +16372,7 @@ export namespace Prisma {
     assistentePluginAtivo?: boolean
     nocodePluginAtivo?: boolean
     crmPluginAtivo?: boolean
+    agentesIaPluginAtivo?: boolean
     temaApp?: boolean
     appNome?: boolean
     appLogo?: boolean
@@ -16267,6 +16403,7 @@ export namespace Prisma {
     assistentePluginAtivo?: boolean
     nocodePluginAtivo?: boolean
     crmPluginAtivo?: boolean
+    agentesIaPluginAtivo?: boolean
     temaApp?: boolean
     appNome?: boolean
     appLogo?: boolean
@@ -16276,7 +16413,7 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type SettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "chatPluginAtivo" | "kanbanPluginAtivo" | "assistentePluginAtivo" | "nocodePluginAtivo" | "crmPluginAtivo" | "temaApp" | "appNome" | "appLogo" | "corPrincipal" | "corSecundaria" | "corTerciaria" | "atualizadoEm", ExtArgs["result"]["settings"]>
+  export type SettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "remetente" | "numero" | "assinatura" | "fuso" | "janelaInicio" | "janelaFim" | "limiteDiario" | "maxEnviosPorPeriodo" | "periodoEsperaValor" | "periodoEsperaUnidade" | "respeitarJanela" | "pausarNoFimDeSemana" | "notificarFalhas" | "chatPluginAtivo" | "kanbanPluginAtivo" | "assistentePluginAtivo" | "nocodePluginAtivo" | "crmPluginAtivo" | "agentesIaPluginAtivo" | "temaApp" | "appNome" | "appLogo" | "corPrincipal" | "corSecundaria" | "corTerciaria" | "atualizadoEm", ExtArgs["result"]["settings"]>
 
   export type $SettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Settings"
@@ -16314,6 +16451,7 @@ export namespace Prisma {
       assistentePluginAtivo: boolean
       nocodePluginAtivo: boolean
       crmPluginAtivo: boolean
+      agentesIaPluginAtivo: boolean
       /**
        * Tema pronto do painel (ver lib/temas.ts). Vale para o modo claro e o escuro.
        */
@@ -16776,6 +16914,7 @@ export namespace Prisma {
     readonly assistentePluginAtivo: FieldRef<"Settings", 'Boolean'>
     readonly nocodePluginAtivo: FieldRef<"Settings", 'Boolean'>
     readonly crmPluginAtivo: FieldRef<"Settings", 'Boolean'>
+    readonly agentesIaPluginAtivo: FieldRef<"Settings", 'Boolean'>
     readonly temaApp: FieldRef<"Settings", 'String'>
     readonly appNome: FieldRef<"Settings", 'String'>
     readonly appLogo: FieldRef<"Settings", 'String'>
@@ -32811,6 +32950,7 @@ export namespace Prisma {
     ativo: boolean | null
     criadoEm: Date | null
     atualizadoEm: Date | null
+    agenteIaId: string | null
   }
 
   export type DepartamentoMaxAggregateOutputType = {
@@ -32821,6 +32961,7 @@ export namespace Prisma {
     ativo: boolean | null
     criadoEm: Date | null
     atualizadoEm: Date | null
+    agenteIaId: string | null
   }
 
   export type DepartamentoCountAggregateOutputType = {
@@ -32831,6 +32972,7 @@ export namespace Prisma {
     ativo: number
     criadoEm: number
     atualizadoEm: number
+    agenteIaId: number
     _all: number
   }
 
@@ -32843,6 +32985,7 @@ export namespace Prisma {
     ativo?: true
     criadoEm?: true
     atualizadoEm?: true
+    agenteIaId?: true
   }
 
   export type DepartamentoMaxAggregateInputType = {
@@ -32853,6 +32996,7 @@ export namespace Prisma {
     ativo?: true
     criadoEm?: true
     atualizadoEm?: true
+    agenteIaId?: true
   }
 
   export type DepartamentoCountAggregateInputType = {
@@ -32863,6 +33007,7 @@ export namespace Prisma {
     ativo?: true
     criadoEm?: true
     atualizadoEm?: true
+    agenteIaId?: true
     _all?: true
   }
 
@@ -32946,6 +33091,7 @@ export namespace Prisma {
     ativo: boolean
     criadoEm: Date
     atualizadoEm: Date
+    agenteIaId: string | null
     _count: DepartamentoCountAggregateOutputType | null
     _min: DepartamentoMinAggregateOutputType | null
     _max: DepartamentoMaxAggregateOutputType | null
@@ -32973,10 +33119,12 @@ export namespace Prisma {
     ativo?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
+    agenteIaId?: boolean
     atendentes?: boolean | Departamento$atendentesArgs<ExtArgs>
     atendimentos?: boolean | Departamento$atendimentosArgs<ExtArgs>
     bots?: boolean | Departamento$botsArgs<ExtArgs>
     followUpBot?: boolean | Departamento$followUpBotArgs<ExtArgs>
+    agenteIa?: boolean | Departamento$agenteIaArgs<ExtArgs>
     _count?: boolean | DepartamentoCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["departamento"]>
 
@@ -32988,6 +33136,8 @@ export namespace Prisma {
     ativo?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
+    agenteIaId?: boolean
+    agenteIa?: boolean | Departamento$agenteIaArgs<ExtArgs>
   }, ExtArgs["result"]["departamento"]>
 
   export type DepartamentoSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -32998,6 +33148,8 @@ export namespace Prisma {
     ativo?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
+    agenteIaId?: boolean
+    agenteIa?: boolean | Departamento$agenteIaArgs<ExtArgs>
   }, ExtArgs["result"]["departamento"]>
 
   export type DepartamentoSelectScalar = {
@@ -33008,18 +33160,24 @@ export namespace Prisma {
     ativo?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
+    agenteIaId?: boolean
   }
 
-  export type DepartamentoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "descricao" | "ativo" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["departamento"]>
+  export type DepartamentoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "descricao" | "ativo" | "criadoEm" | "atualizadoEm" | "agenteIaId", ExtArgs["result"]["departamento"]>
   export type DepartamentoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     atendentes?: boolean | Departamento$atendentesArgs<ExtArgs>
     atendimentos?: boolean | Departamento$atendimentosArgs<ExtArgs>
     bots?: boolean | Departamento$botsArgs<ExtArgs>
     followUpBot?: boolean | Departamento$followUpBotArgs<ExtArgs>
+    agenteIa?: boolean | Departamento$agenteIaArgs<ExtArgs>
     _count?: boolean | DepartamentoCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type DepartamentoIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type DepartamentoIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type DepartamentoIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    agenteIa?: boolean | Departamento$agenteIaArgs<ExtArgs>
+  }
+  export type DepartamentoIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    agenteIa?: boolean | Departamento$agenteIaArgs<ExtArgs>
+  }
 
   export type $DepartamentoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Departamento"
@@ -33034,6 +33192,7 @@ export namespace Prisma {
        * Bot especialista em follow-up deste departamento (no máximo um).
        */
       followUpBot: Prisma.$FollowUpBotPayload<ExtArgs> | null
+      agenteIa: Prisma.$AgenteIAPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -33046,6 +33205,10 @@ export namespace Prisma {
       ativo: boolean
       criadoEm: Date
       atualizadoEm: Date
+      /**
+       * Plugin Agentes de IA: agente que responde as conversas deste departamento (opcional).
+       */
+      agenteIaId: string | null
     }, ExtArgs["result"]["departamento"]>
     composites: {}
   }
@@ -33444,6 +33607,7 @@ export namespace Prisma {
     atendimentos<T extends Departamento$atendimentosArgs<ExtArgs> = {}>(args?: Subset<T, Departamento$atendimentosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     bots<T extends Departamento$botsArgs<ExtArgs> = {}>(args?: Subset<T, Departamento$botsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NoCodeFlowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     followUpBot<T extends Departamento$followUpBotArgs<ExtArgs> = {}>(args?: Subset<T, Departamento$followUpBotArgs<ExtArgs>>): Prisma__FollowUpBotClient<$Result.GetResult<Prisma.$FollowUpBotPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    agenteIa<T extends Departamento$agenteIaArgs<ExtArgs> = {}>(args?: Subset<T, Departamento$agenteIaArgs<ExtArgs>>): Prisma__AgenteIAClient<$Result.GetResult<Prisma.$AgenteIAPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -33480,6 +33644,7 @@ export namespace Prisma {
     readonly ativo: FieldRef<"Departamento", 'Boolean'>
     readonly criadoEm: FieldRef<"Departamento", 'DateTime'>
     readonly atualizadoEm: FieldRef<"Departamento", 'DateTime'>
+    readonly agenteIaId: FieldRef<"Departamento", 'String'>
   }
     
 
@@ -33729,6 +33894,10 @@ export namespace Prisma {
      */
     data: DepartamentoCreateManyInput | DepartamentoCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartamentoIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -33799,6 +33968,10 @@ export namespace Prisma {
      * Limit how many Departamentos to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartamentoIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -33956,6 +34129,25 @@ export namespace Prisma {
      */
     include?: FollowUpBotInclude<ExtArgs> | null
     where?: FollowUpBotWhereInput
+  }
+
+  /**
+   * Departamento.agenteIa
+   */
+  export type Departamento$agenteIaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgenteIA
+     */
+    select?: AgenteIASelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgenteIA
+     */
+    omit?: AgenteIAOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgenteIAInclude<ExtArgs> | null
+    where?: AgenteIAWhereInput
   }
 
   /**
@@ -42970,6 +43162,1189 @@ export namespace Prisma {
 
 
   /**
+   * Model AgenteIA
+   */
+
+  export type AggregateAgenteIA = {
+    _count: AgenteIACountAggregateOutputType | null
+    _min: AgenteIAMinAggregateOutputType | null
+    _max: AgenteIAMaxAggregateOutputType | null
+  }
+
+  export type AgenteIAMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    nome: string | null
+    ativo: boolean | null
+    provedor: string | null
+    baseUrl: string | null
+    modelo: string | null
+    apiKey: string | null
+    prompt: string | null
+    entrada: boolean | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type AgenteIAMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    nome: string | null
+    ativo: boolean | null
+    provedor: string | null
+    baseUrl: string | null
+    modelo: string | null
+    apiKey: string | null
+    prompt: string | null
+    entrada: boolean | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type AgenteIACountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    nome: number
+    ativo: number
+    provedor: number
+    baseUrl: number
+    modelo: number
+    apiKey: number
+    prompt: number
+    entrada: number
+    criadoEm: number
+    atualizadoEm: number
+    _all: number
+  }
+
+
+  export type AgenteIAMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    nome?: true
+    ativo?: true
+    provedor?: true
+    baseUrl?: true
+    modelo?: true
+    apiKey?: true
+    prompt?: true
+    entrada?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type AgenteIAMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    nome?: true
+    ativo?: true
+    provedor?: true
+    baseUrl?: true
+    modelo?: true
+    apiKey?: true
+    prompt?: true
+    entrada?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type AgenteIACountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    nome?: true
+    ativo?: true
+    provedor?: true
+    baseUrl?: true
+    modelo?: true
+    apiKey?: true
+    prompt?: true
+    entrada?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    _all?: true
+  }
+
+  export type AgenteIAAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AgenteIA to aggregate.
+     */
+    where?: AgenteIAWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgenteIAS to fetch.
+     */
+    orderBy?: AgenteIAOrderByWithRelationInput | AgenteIAOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AgenteIAWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgenteIAS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgenteIAS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AgenteIAS
+    **/
+    _count?: true | AgenteIACountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AgenteIAMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AgenteIAMaxAggregateInputType
+  }
+
+  export type GetAgenteIAAggregateType<T extends AgenteIAAggregateArgs> = {
+        [P in keyof T & keyof AggregateAgenteIA]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAgenteIA[P]>
+      : GetScalarType<T[P], AggregateAgenteIA[P]>
+  }
+
+
+
+
+  export type AgenteIAGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgenteIAWhereInput
+    orderBy?: AgenteIAOrderByWithAggregationInput | AgenteIAOrderByWithAggregationInput[]
+    by: AgenteIAScalarFieldEnum[] | AgenteIAScalarFieldEnum
+    having?: AgenteIAScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AgenteIACountAggregateInputType | true
+    _min?: AgenteIAMinAggregateInputType
+    _max?: AgenteIAMaxAggregateInputType
+  }
+
+  export type AgenteIAGroupByOutputType = {
+    id: string
+    workspaceId: string
+    nome: string
+    ativo: boolean
+    provedor: string
+    baseUrl: string | null
+    modelo: string
+    apiKey: string
+    prompt: string
+    entrada: boolean
+    criadoEm: Date
+    atualizadoEm: Date
+    _count: AgenteIACountAggregateOutputType | null
+    _min: AgenteIAMinAggregateOutputType | null
+    _max: AgenteIAMaxAggregateOutputType | null
+  }
+
+  type GetAgenteIAGroupByPayload<T extends AgenteIAGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AgenteIAGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AgenteIAGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AgenteIAGroupByOutputType[P]>
+            : GetScalarType<T[P], AgenteIAGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AgenteIASelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    nome?: boolean
+    ativo?: boolean
+    provedor?: boolean
+    baseUrl?: boolean
+    modelo?: boolean
+    apiKey?: boolean
+    prompt?: boolean
+    entrada?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    departamentos?: boolean | AgenteIA$departamentosArgs<ExtArgs>
+    _count?: boolean | AgenteIACountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["agenteIA"]>
+
+  export type AgenteIASelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    nome?: boolean
+    ativo?: boolean
+    provedor?: boolean
+    baseUrl?: boolean
+    modelo?: boolean
+    apiKey?: boolean
+    prompt?: boolean
+    entrada?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }, ExtArgs["result"]["agenteIA"]>
+
+  export type AgenteIASelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    nome?: boolean
+    ativo?: boolean
+    provedor?: boolean
+    baseUrl?: boolean
+    modelo?: boolean
+    apiKey?: boolean
+    prompt?: boolean
+    entrada?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }, ExtArgs["result"]["agenteIA"]>
+
+  export type AgenteIASelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    nome?: boolean
+    ativo?: boolean
+    provedor?: boolean
+    baseUrl?: boolean
+    modelo?: boolean
+    apiKey?: boolean
+    prompt?: boolean
+    entrada?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }
+
+  export type AgenteIAOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "ativo" | "provedor" | "baseUrl" | "modelo" | "apiKey" | "prompt" | "entrada" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["agenteIA"]>
+  export type AgenteIAInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    departamentos?: boolean | AgenteIA$departamentosArgs<ExtArgs>
+    _count?: boolean | AgenteIACountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type AgenteIAIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type AgenteIAIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $AgenteIAPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AgenteIA"
+    objects: {
+      departamentos: Prisma.$DepartamentoPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
+      nome: string
+      ativo: boolean
+      /**
+       * Provedor de IA: "claude" (Anthropic), "groq" ou "compativel" (qualquer API compatível com a
+       * da OpenAI, usando `baseUrl`).
+       */
+      provedor: string
+      /**
+       * Endereço base da API (só para "compativel"; Groq e Claude usam o endereço padrão).
+       */
+      baseUrl: string | null
+      /**
+       * Id do modelo (ex.: "claude-sonnet-5-5").
+       */
+      modelo: string
+      /**
+       * Chave de API CRIPTOGRAFADA (AES-256-GCM, ver `lib/segredo.ts`). Nunca vai para o backup.
+       */
+      apiKey: string
+      /**
+       * Instruções do agente de atendimento (system prompt).
+       */
+      prompt: string
+      /**
+       * Agente de entrada (triagem): atende quem ainda não está em nenhum departamento.
+       */
+      entrada: boolean
+      criadoEm: Date
+      atualizadoEm: Date
+    }, ExtArgs["result"]["agenteIA"]>
+    composites: {}
+  }
+
+  type AgenteIAGetPayload<S extends boolean | null | undefined | AgenteIADefaultArgs> = $Result.GetResult<Prisma.$AgenteIAPayload, S>
+
+  type AgenteIACountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AgenteIAFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AgenteIACountAggregateInputType | true
+    }
+
+  export interface AgenteIADelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AgenteIA'], meta: { name: 'AgenteIA' } }
+    /**
+     * Find zero or one AgenteIA that matches the filter.
+     * @param {AgenteIAFindUniqueArgs} args - Arguments to find a AgenteIA
+     * @example
+     * // Get one AgenteIA
+     * const agenteIA = await prisma.agenteIA.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AgenteIAFindUniqueArgs>(args: SelectSubset<T, AgenteIAFindUniqueArgs<ExtArgs>>): Prisma__AgenteIAClient<$Result.GetResult<Prisma.$AgenteIAPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AgenteIA that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AgenteIAFindUniqueOrThrowArgs} args - Arguments to find a AgenteIA
+     * @example
+     * // Get one AgenteIA
+     * const agenteIA = await prisma.agenteIA.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AgenteIAFindUniqueOrThrowArgs>(args: SelectSubset<T, AgenteIAFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AgenteIAClient<$Result.GetResult<Prisma.$AgenteIAPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AgenteIA that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgenteIAFindFirstArgs} args - Arguments to find a AgenteIA
+     * @example
+     * // Get one AgenteIA
+     * const agenteIA = await prisma.agenteIA.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AgenteIAFindFirstArgs>(args?: SelectSubset<T, AgenteIAFindFirstArgs<ExtArgs>>): Prisma__AgenteIAClient<$Result.GetResult<Prisma.$AgenteIAPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AgenteIA that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgenteIAFindFirstOrThrowArgs} args - Arguments to find a AgenteIA
+     * @example
+     * // Get one AgenteIA
+     * const agenteIA = await prisma.agenteIA.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AgenteIAFindFirstOrThrowArgs>(args?: SelectSubset<T, AgenteIAFindFirstOrThrowArgs<ExtArgs>>): Prisma__AgenteIAClient<$Result.GetResult<Prisma.$AgenteIAPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AgenteIAS that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgenteIAFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AgenteIAS
+     * const agenteIAS = await prisma.agenteIA.findMany()
+     * 
+     * // Get first 10 AgenteIAS
+     * const agenteIAS = await prisma.agenteIA.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const agenteIAWithIdOnly = await prisma.agenteIA.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AgenteIAFindManyArgs>(args?: SelectSubset<T, AgenteIAFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgenteIAPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AgenteIA.
+     * @param {AgenteIACreateArgs} args - Arguments to create a AgenteIA.
+     * @example
+     * // Create one AgenteIA
+     * const AgenteIA = await prisma.agenteIA.create({
+     *   data: {
+     *     // ... data to create a AgenteIA
+     *   }
+     * })
+     * 
+     */
+    create<T extends AgenteIACreateArgs>(args: SelectSubset<T, AgenteIACreateArgs<ExtArgs>>): Prisma__AgenteIAClient<$Result.GetResult<Prisma.$AgenteIAPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AgenteIAS.
+     * @param {AgenteIACreateManyArgs} args - Arguments to create many AgenteIAS.
+     * @example
+     * // Create many AgenteIAS
+     * const agenteIA = await prisma.agenteIA.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AgenteIACreateManyArgs>(args?: SelectSubset<T, AgenteIACreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AgenteIAS and returns the data saved in the database.
+     * @param {AgenteIACreateManyAndReturnArgs} args - Arguments to create many AgenteIAS.
+     * @example
+     * // Create many AgenteIAS
+     * const agenteIA = await prisma.agenteIA.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AgenteIAS and only return the `id`
+     * const agenteIAWithIdOnly = await prisma.agenteIA.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AgenteIACreateManyAndReturnArgs>(args?: SelectSubset<T, AgenteIACreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgenteIAPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AgenteIA.
+     * @param {AgenteIADeleteArgs} args - Arguments to delete one AgenteIA.
+     * @example
+     * // Delete one AgenteIA
+     * const AgenteIA = await prisma.agenteIA.delete({
+     *   where: {
+     *     // ... filter to delete one AgenteIA
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AgenteIADeleteArgs>(args: SelectSubset<T, AgenteIADeleteArgs<ExtArgs>>): Prisma__AgenteIAClient<$Result.GetResult<Prisma.$AgenteIAPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AgenteIA.
+     * @param {AgenteIAUpdateArgs} args - Arguments to update one AgenteIA.
+     * @example
+     * // Update one AgenteIA
+     * const agenteIA = await prisma.agenteIA.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AgenteIAUpdateArgs>(args: SelectSubset<T, AgenteIAUpdateArgs<ExtArgs>>): Prisma__AgenteIAClient<$Result.GetResult<Prisma.$AgenteIAPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AgenteIAS.
+     * @param {AgenteIADeleteManyArgs} args - Arguments to filter AgenteIAS to delete.
+     * @example
+     * // Delete a few AgenteIAS
+     * const { count } = await prisma.agenteIA.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AgenteIADeleteManyArgs>(args?: SelectSubset<T, AgenteIADeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AgenteIAS.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgenteIAUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AgenteIAS
+     * const agenteIA = await prisma.agenteIA.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AgenteIAUpdateManyArgs>(args: SelectSubset<T, AgenteIAUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AgenteIAS and returns the data updated in the database.
+     * @param {AgenteIAUpdateManyAndReturnArgs} args - Arguments to update many AgenteIAS.
+     * @example
+     * // Update many AgenteIAS
+     * const agenteIA = await prisma.agenteIA.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AgenteIAS and only return the `id`
+     * const agenteIAWithIdOnly = await prisma.agenteIA.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AgenteIAUpdateManyAndReturnArgs>(args: SelectSubset<T, AgenteIAUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgenteIAPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AgenteIA.
+     * @param {AgenteIAUpsertArgs} args - Arguments to update or create a AgenteIA.
+     * @example
+     * // Update or create a AgenteIA
+     * const agenteIA = await prisma.agenteIA.upsert({
+     *   create: {
+     *     // ... data to create a AgenteIA
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AgenteIA we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AgenteIAUpsertArgs>(args: SelectSubset<T, AgenteIAUpsertArgs<ExtArgs>>): Prisma__AgenteIAClient<$Result.GetResult<Prisma.$AgenteIAPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AgenteIAS.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgenteIACountArgs} args - Arguments to filter AgenteIAS to count.
+     * @example
+     * // Count the number of AgenteIAS
+     * const count = await prisma.agenteIA.count({
+     *   where: {
+     *     // ... the filter for the AgenteIAS we want to count
+     *   }
+     * })
+    **/
+    count<T extends AgenteIACountArgs>(
+      args?: Subset<T, AgenteIACountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AgenteIACountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AgenteIA.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgenteIAAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AgenteIAAggregateArgs>(args: Subset<T, AgenteIAAggregateArgs>): Prisma.PrismaPromise<GetAgenteIAAggregateType<T>>
+
+    /**
+     * Group by AgenteIA.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgenteIAGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AgenteIAGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AgenteIAGroupByArgs['orderBy'] }
+        : { orderBy?: AgenteIAGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AgenteIAGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAgenteIAGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AgenteIA model
+   */
+  readonly fields: AgenteIAFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AgenteIA.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AgenteIAClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    departamentos<T extends AgenteIA$departamentosArgs<ExtArgs> = {}>(args?: Subset<T, AgenteIA$departamentosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DepartamentoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AgenteIA model
+   */
+  interface AgenteIAFieldRefs {
+    readonly id: FieldRef<"AgenteIA", 'String'>
+    readonly workspaceId: FieldRef<"AgenteIA", 'String'>
+    readonly nome: FieldRef<"AgenteIA", 'String'>
+    readonly ativo: FieldRef<"AgenteIA", 'Boolean'>
+    readonly provedor: FieldRef<"AgenteIA", 'String'>
+    readonly baseUrl: FieldRef<"AgenteIA", 'String'>
+    readonly modelo: FieldRef<"AgenteIA", 'String'>
+    readonly apiKey: FieldRef<"AgenteIA", 'String'>
+    readonly prompt: FieldRef<"AgenteIA", 'String'>
+    readonly entrada: FieldRef<"AgenteIA", 'Boolean'>
+    readonly criadoEm: FieldRef<"AgenteIA", 'DateTime'>
+    readonly atualizadoEm: FieldRef<"AgenteIA", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AgenteIA findUnique
+   */
+  export type AgenteIAFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgenteIA
+     */
+    select?: AgenteIASelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgenteIA
+     */
+    omit?: AgenteIAOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgenteIAInclude<ExtArgs> | null
+    /**
+     * Filter, which AgenteIA to fetch.
+     */
+    where: AgenteIAWhereUniqueInput
+  }
+
+  /**
+   * AgenteIA findUniqueOrThrow
+   */
+  export type AgenteIAFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgenteIA
+     */
+    select?: AgenteIASelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgenteIA
+     */
+    omit?: AgenteIAOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgenteIAInclude<ExtArgs> | null
+    /**
+     * Filter, which AgenteIA to fetch.
+     */
+    where: AgenteIAWhereUniqueInput
+  }
+
+  /**
+   * AgenteIA findFirst
+   */
+  export type AgenteIAFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgenteIA
+     */
+    select?: AgenteIASelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgenteIA
+     */
+    omit?: AgenteIAOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgenteIAInclude<ExtArgs> | null
+    /**
+     * Filter, which AgenteIA to fetch.
+     */
+    where?: AgenteIAWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgenteIAS to fetch.
+     */
+    orderBy?: AgenteIAOrderByWithRelationInput | AgenteIAOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AgenteIAS.
+     */
+    cursor?: AgenteIAWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgenteIAS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgenteIAS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AgenteIAS.
+     */
+    distinct?: AgenteIAScalarFieldEnum | AgenteIAScalarFieldEnum[]
+  }
+
+  /**
+   * AgenteIA findFirstOrThrow
+   */
+  export type AgenteIAFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgenteIA
+     */
+    select?: AgenteIASelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgenteIA
+     */
+    omit?: AgenteIAOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgenteIAInclude<ExtArgs> | null
+    /**
+     * Filter, which AgenteIA to fetch.
+     */
+    where?: AgenteIAWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgenteIAS to fetch.
+     */
+    orderBy?: AgenteIAOrderByWithRelationInput | AgenteIAOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AgenteIAS.
+     */
+    cursor?: AgenteIAWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgenteIAS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgenteIAS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AgenteIAS.
+     */
+    distinct?: AgenteIAScalarFieldEnum | AgenteIAScalarFieldEnum[]
+  }
+
+  /**
+   * AgenteIA findMany
+   */
+  export type AgenteIAFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgenteIA
+     */
+    select?: AgenteIASelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgenteIA
+     */
+    omit?: AgenteIAOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgenteIAInclude<ExtArgs> | null
+    /**
+     * Filter, which AgenteIAS to fetch.
+     */
+    where?: AgenteIAWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgenteIAS to fetch.
+     */
+    orderBy?: AgenteIAOrderByWithRelationInput | AgenteIAOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AgenteIAS.
+     */
+    cursor?: AgenteIAWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgenteIAS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgenteIAS.
+     */
+    skip?: number
+    distinct?: AgenteIAScalarFieldEnum | AgenteIAScalarFieldEnum[]
+  }
+
+  /**
+   * AgenteIA create
+   */
+  export type AgenteIACreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgenteIA
+     */
+    select?: AgenteIASelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgenteIA
+     */
+    omit?: AgenteIAOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgenteIAInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AgenteIA.
+     */
+    data: XOR<AgenteIACreateInput, AgenteIAUncheckedCreateInput>
+  }
+
+  /**
+   * AgenteIA createMany
+   */
+  export type AgenteIACreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AgenteIAS.
+     */
+    data: AgenteIACreateManyInput | AgenteIACreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AgenteIA createManyAndReturn
+   */
+  export type AgenteIACreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgenteIA
+     */
+    select?: AgenteIASelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgenteIA
+     */
+    omit?: AgenteIAOmit<ExtArgs> | null
+    /**
+     * The data used to create many AgenteIAS.
+     */
+    data: AgenteIACreateManyInput | AgenteIACreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AgenteIA update
+   */
+  export type AgenteIAUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgenteIA
+     */
+    select?: AgenteIASelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgenteIA
+     */
+    omit?: AgenteIAOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgenteIAInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AgenteIA.
+     */
+    data: XOR<AgenteIAUpdateInput, AgenteIAUncheckedUpdateInput>
+    /**
+     * Choose, which AgenteIA to update.
+     */
+    where: AgenteIAWhereUniqueInput
+  }
+
+  /**
+   * AgenteIA updateMany
+   */
+  export type AgenteIAUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AgenteIAS.
+     */
+    data: XOR<AgenteIAUpdateManyMutationInput, AgenteIAUncheckedUpdateManyInput>
+    /**
+     * Filter which AgenteIAS to update
+     */
+    where?: AgenteIAWhereInput
+    /**
+     * Limit how many AgenteIAS to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AgenteIA updateManyAndReturn
+   */
+  export type AgenteIAUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgenteIA
+     */
+    select?: AgenteIASelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgenteIA
+     */
+    omit?: AgenteIAOmit<ExtArgs> | null
+    /**
+     * The data used to update AgenteIAS.
+     */
+    data: XOR<AgenteIAUpdateManyMutationInput, AgenteIAUncheckedUpdateManyInput>
+    /**
+     * Filter which AgenteIAS to update
+     */
+    where?: AgenteIAWhereInput
+    /**
+     * Limit how many AgenteIAS to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AgenteIA upsert
+   */
+  export type AgenteIAUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgenteIA
+     */
+    select?: AgenteIASelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgenteIA
+     */
+    omit?: AgenteIAOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgenteIAInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AgenteIA to update in case it exists.
+     */
+    where: AgenteIAWhereUniqueInput
+    /**
+     * In case the AgenteIA found by the `where` argument doesn't exist, create a new AgenteIA with this data.
+     */
+    create: XOR<AgenteIACreateInput, AgenteIAUncheckedCreateInput>
+    /**
+     * In case the AgenteIA was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AgenteIAUpdateInput, AgenteIAUncheckedUpdateInput>
+  }
+
+  /**
+   * AgenteIA delete
+   */
+  export type AgenteIADeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgenteIA
+     */
+    select?: AgenteIASelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgenteIA
+     */
+    omit?: AgenteIAOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgenteIAInclude<ExtArgs> | null
+    /**
+     * Filter which AgenteIA to delete.
+     */
+    where: AgenteIAWhereUniqueInput
+  }
+
+  /**
+   * AgenteIA deleteMany
+   */
+  export type AgenteIADeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AgenteIAS to delete
+     */
+    where?: AgenteIAWhereInput
+    /**
+     * Limit how many AgenteIAS to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AgenteIA.departamentos
+   */
+  export type AgenteIA$departamentosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Departamento
+     */
+    select?: DepartamentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Departamento
+     */
+    omit?: DepartamentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartamentoInclude<ExtArgs> | null
+    where?: DepartamentoWhereInput
+    orderBy?: DepartamentoOrderByWithRelationInput | DepartamentoOrderByWithRelationInput[]
+    cursor?: DepartamentoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DepartamentoScalarFieldEnum | DepartamentoScalarFieldEnum[]
+  }
+
+  /**
+   * AgenteIA without action
+   */
+  export type AgenteIADefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgenteIA
+     */
+    select?: AgenteIASelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgenteIA
+     */
+    omit?: AgenteIAOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgenteIAInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -43158,6 +44533,7 @@ export namespace Prisma {
     assistentePluginAtivo: 'assistentePluginAtivo',
     nocodePluginAtivo: 'nocodePluginAtivo',
     crmPluginAtivo: 'crmPluginAtivo',
+    agentesIaPluginAtivo: 'agentesIaPluginAtivo',
     temaApp: 'temaApp',
     appNome: 'appNome',
     appLogo: 'appLogo',
@@ -43399,7 +44775,8 @@ export namespace Prisma {
     descricao: 'descricao',
     ativo: 'ativo',
     criadoEm: 'criadoEm',
-    atualizadoEm: 'atualizadoEm'
+    atualizadoEm: 'atualizadoEm',
+    agenteIaId: 'agenteIaId'
   };
 
   export type DepartamentoScalarFieldEnum = (typeof DepartamentoScalarFieldEnum)[keyof typeof DepartamentoScalarFieldEnum]
@@ -43507,6 +44884,24 @@ export namespace Prisma {
   };
 
   export type FollowUpConversaScalarFieldEnum = (typeof FollowUpConversaScalarFieldEnum)[keyof typeof FollowUpConversaScalarFieldEnum]
+
+
+  export const AgenteIAScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    nome: 'nome',
+    ativo: 'ativo',
+    provedor: 'provedor',
+    baseUrl: 'baseUrl',
+    modelo: 'modelo',
+    apiKey: 'apiKey',
+    prompt: 'prompt',
+    entrada: 'entrada',
+    criadoEm: 'criadoEm',
+    atualizadoEm: 'atualizadoEm'
+  };
+
+  export type AgenteIAScalarFieldEnum = (typeof AgenteIAScalarFieldEnum)[keyof typeof AgenteIAScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -44576,6 +45971,7 @@ export namespace Prisma {
     assistentePluginAtivo?: BoolFilter<"Settings"> | boolean
     nocodePluginAtivo?: BoolFilter<"Settings"> | boolean
     crmPluginAtivo?: BoolFilter<"Settings"> | boolean
+    agentesIaPluginAtivo?: BoolFilter<"Settings"> | boolean
     temaApp?: StringFilter<"Settings"> | string
     appNome?: StringFilter<"Settings"> | string
     appLogo?: StringNullableFilter<"Settings"> | string | null
@@ -44606,6 +46002,7 @@ export namespace Prisma {
     assistentePluginAtivo?: SortOrder
     nocodePluginAtivo?: SortOrder
     crmPluginAtivo?: SortOrder
+    agentesIaPluginAtivo?: SortOrder
     temaApp?: SortOrder
     appNome?: SortOrder
     appLogo?: SortOrderInput | SortOrder
@@ -44639,6 +46036,7 @@ export namespace Prisma {
     assistentePluginAtivo?: BoolFilter<"Settings"> | boolean
     nocodePluginAtivo?: BoolFilter<"Settings"> | boolean
     crmPluginAtivo?: BoolFilter<"Settings"> | boolean
+    agentesIaPluginAtivo?: BoolFilter<"Settings"> | boolean
     temaApp?: StringFilter<"Settings"> | string
     appNome?: StringFilter<"Settings"> | string
     appLogo?: StringNullableFilter<"Settings"> | string | null
@@ -44669,6 +46067,7 @@ export namespace Prisma {
     assistentePluginAtivo?: SortOrder
     nocodePluginAtivo?: SortOrder
     crmPluginAtivo?: SortOrder
+    agentesIaPluginAtivo?: SortOrder
     temaApp?: SortOrder
     appNome?: SortOrder
     appLogo?: SortOrderInput | SortOrder
@@ -44707,6 +46106,7 @@ export namespace Prisma {
     assistentePluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
     nocodePluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
     crmPluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
+    agentesIaPluginAtivo?: BoolWithAggregatesFilter<"Settings"> | boolean
     temaApp?: StringWithAggregatesFilter<"Settings"> | string
     appNome?: StringWithAggregatesFilter<"Settings"> | string
     appLogo?: StringNullableWithAggregatesFilter<"Settings"> | string | null
@@ -45838,10 +47238,12 @@ export namespace Prisma {
     ativo?: BoolFilter<"Departamento"> | boolean
     criadoEm?: DateTimeFilter<"Departamento"> | Date | string
     atualizadoEm?: DateTimeFilter<"Departamento"> | Date | string
+    agenteIaId?: StringNullableFilter<"Departamento"> | string | null
     atendentes?: AtendenteDepartamentoListRelationFilter
     atendimentos?: LeadAtendimentoListRelationFilter
     bots?: NoCodeFlowListRelationFilter
     followUpBot?: XOR<FollowUpBotNullableScalarRelationFilter, FollowUpBotWhereInput> | null
+    agenteIa?: XOR<AgenteIANullableScalarRelationFilter, AgenteIAWhereInput> | null
   }
 
   export type DepartamentoOrderByWithRelationInput = {
@@ -45852,10 +47254,12 @@ export namespace Prisma {
     ativo?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
+    agenteIaId?: SortOrderInput | SortOrder
     atendentes?: AtendenteDepartamentoOrderByRelationAggregateInput
     atendimentos?: LeadAtendimentoOrderByRelationAggregateInput
     bots?: NoCodeFlowOrderByRelationAggregateInput
     followUpBot?: FollowUpBotOrderByWithRelationInput
+    agenteIa?: AgenteIAOrderByWithRelationInput
   }
 
   export type DepartamentoWhereUniqueInput = Prisma.AtLeast<{
@@ -45870,10 +47274,12 @@ export namespace Prisma {
     ativo?: BoolFilter<"Departamento"> | boolean
     criadoEm?: DateTimeFilter<"Departamento"> | Date | string
     atualizadoEm?: DateTimeFilter<"Departamento"> | Date | string
+    agenteIaId?: StringNullableFilter<"Departamento"> | string | null
     atendentes?: AtendenteDepartamentoListRelationFilter
     atendimentos?: LeadAtendimentoListRelationFilter
     bots?: NoCodeFlowListRelationFilter
     followUpBot?: XOR<FollowUpBotNullableScalarRelationFilter, FollowUpBotWhereInput> | null
+    agenteIa?: XOR<AgenteIANullableScalarRelationFilter, AgenteIAWhereInput> | null
   }, "id" | "workspaceId_nome">
 
   export type DepartamentoOrderByWithAggregationInput = {
@@ -45884,6 +47290,7 @@ export namespace Prisma {
     ativo?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
+    agenteIaId?: SortOrderInput | SortOrder
     _count?: DepartamentoCountOrderByAggregateInput
     _max?: DepartamentoMaxOrderByAggregateInput
     _min?: DepartamentoMinOrderByAggregateInput
@@ -45900,6 +47307,7 @@ export namespace Prisma {
     ativo?: BoolWithAggregatesFilter<"Departamento"> | boolean
     criadoEm?: DateTimeWithAggregatesFilter<"Departamento"> | Date | string
     atualizadoEm?: DateTimeWithAggregatesFilter<"Departamento"> | Date | string
+    agenteIaId?: StringNullableWithAggregatesFilter<"Departamento"> | string | null
   }
 
   export type AtendenteWhereInput = {
@@ -46450,6 +47858,96 @@ export namespace Prisma {
     ultimoTemplateId?: StringNullableWithAggregatesFilter<"FollowUpConversa"> | string | null
     criadoEm?: DateTimeWithAggregatesFilter<"FollowUpConversa"> | Date | string
     atualizadoEm?: DateTimeWithAggregatesFilter<"FollowUpConversa"> | Date | string
+  }
+
+  export type AgenteIAWhereInput = {
+    AND?: AgenteIAWhereInput | AgenteIAWhereInput[]
+    OR?: AgenteIAWhereInput[]
+    NOT?: AgenteIAWhereInput | AgenteIAWhereInput[]
+    id?: StringFilter<"AgenteIA"> | string
+    workspaceId?: StringFilter<"AgenteIA"> | string
+    nome?: StringFilter<"AgenteIA"> | string
+    ativo?: BoolFilter<"AgenteIA"> | boolean
+    provedor?: StringFilter<"AgenteIA"> | string
+    baseUrl?: StringNullableFilter<"AgenteIA"> | string | null
+    modelo?: StringFilter<"AgenteIA"> | string
+    apiKey?: StringFilter<"AgenteIA"> | string
+    prompt?: StringFilter<"AgenteIA"> | string
+    entrada?: BoolFilter<"AgenteIA"> | boolean
+    criadoEm?: DateTimeFilter<"AgenteIA"> | Date | string
+    atualizadoEm?: DateTimeFilter<"AgenteIA"> | Date | string
+    departamentos?: DepartamentoListRelationFilter
+  }
+
+  export type AgenteIAOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    ativo?: SortOrder
+    provedor?: SortOrder
+    baseUrl?: SortOrderInput | SortOrder
+    modelo?: SortOrder
+    apiKey?: SortOrder
+    prompt?: SortOrder
+    entrada?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    departamentos?: DepartamentoOrderByRelationAggregateInput
+  }
+
+  export type AgenteIAWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AgenteIAWhereInput | AgenteIAWhereInput[]
+    OR?: AgenteIAWhereInput[]
+    NOT?: AgenteIAWhereInput | AgenteIAWhereInput[]
+    workspaceId?: StringFilter<"AgenteIA"> | string
+    nome?: StringFilter<"AgenteIA"> | string
+    ativo?: BoolFilter<"AgenteIA"> | boolean
+    provedor?: StringFilter<"AgenteIA"> | string
+    baseUrl?: StringNullableFilter<"AgenteIA"> | string | null
+    modelo?: StringFilter<"AgenteIA"> | string
+    apiKey?: StringFilter<"AgenteIA"> | string
+    prompt?: StringFilter<"AgenteIA"> | string
+    entrada?: BoolFilter<"AgenteIA"> | boolean
+    criadoEm?: DateTimeFilter<"AgenteIA"> | Date | string
+    atualizadoEm?: DateTimeFilter<"AgenteIA"> | Date | string
+    departamentos?: DepartamentoListRelationFilter
+  }, "id">
+
+  export type AgenteIAOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    ativo?: SortOrder
+    provedor?: SortOrder
+    baseUrl?: SortOrderInput | SortOrder
+    modelo?: SortOrder
+    apiKey?: SortOrder
+    prompt?: SortOrder
+    entrada?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    _count?: AgenteIACountOrderByAggregateInput
+    _max?: AgenteIAMaxOrderByAggregateInput
+    _min?: AgenteIAMinOrderByAggregateInput
+  }
+
+  export type AgenteIAScalarWhereWithAggregatesInput = {
+    AND?: AgenteIAScalarWhereWithAggregatesInput | AgenteIAScalarWhereWithAggregatesInput[]
+    OR?: AgenteIAScalarWhereWithAggregatesInput[]
+    NOT?: AgenteIAScalarWhereWithAggregatesInput | AgenteIAScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AgenteIA"> | string
+    workspaceId?: StringWithAggregatesFilter<"AgenteIA"> | string
+    nome?: StringWithAggregatesFilter<"AgenteIA"> | string
+    ativo?: BoolWithAggregatesFilter<"AgenteIA"> | boolean
+    provedor?: StringWithAggregatesFilter<"AgenteIA"> | string
+    baseUrl?: StringNullableWithAggregatesFilter<"AgenteIA"> | string | null
+    modelo?: StringWithAggregatesFilter<"AgenteIA"> | string
+    apiKey?: StringWithAggregatesFilter<"AgenteIA"> | string
+    prompt?: StringWithAggregatesFilter<"AgenteIA"> | string
+    entrada?: BoolWithAggregatesFilter<"AgenteIA"> | boolean
+    criadoEm?: DateTimeWithAggregatesFilter<"AgenteIA"> | Date | string
+    atualizadoEm?: DateTimeWithAggregatesFilter<"AgenteIA"> | Date | string
   }
 
   export type LeadCreateInput = {
@@ -47385,6 +48883,7 @@ export namespace Prisma {
     assistentePluginAtivo?: boolean
     nocodePluginAtivo?: boolean
     crmPluginAtivo?: boolean
+    agentesIaPluginAtivo?: boolean
     temaApp?: string
     appNome?: string
     appLogo?: string | null
@@ -47415,6 +48914,7 @@ export namespace Prisma {
     assistentePluginAtivo?: boolean
     nocodePluginAtivo?: boolean
     crmPluginAtivo?: boolean
+    agentesIaPluginAtivo?: boolean
     temaApp?: string
     appNome?: string
     appLogo?: string | null
@@ -47445,6 +48945,7 @@ export namespace Prisma {
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     nocodePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     crmPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    agentesIaPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     appNome?: StringFieldUpdateOperationsInput | string
     appLogo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47475,6 +48976,7 @@ export namespace Prisma {
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     nocodePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     crmPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    agentesIaPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     appNome?: StringFieldUpdateOperationsInput | string
     appLogo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47505,6 +49007,7 @@ export namespace Prisma {
     assistentePluginAtivo?: boolean
     nocodePluginAtivo?: boolean
     crmPluginAtivo?: boolean
+    agentesIaPluginAtivo?: boolean
     temaApp?: string
     appNome?: string
     appLogo?: string | null
@@ -47535,6 +49038,7 @@ export namespace Prisma {
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     nocodePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     crmPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    agentesIaPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     appNome?: StringFieldUpdateOperationsInput | string
     appLogo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47565,6 +49069,7 @@ export namespace Prisma {
     assistentePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     nocodePluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     crmPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
+    agentesIaPluginAtivo?: BoolFieldUpdateOperationsInput | boolean
     temaApp?: StringFieldUpdateOperationsInput | string
     appNome?: StringFieldUpdateOperationsInput | string
     appLogo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -48855,6 +50360,7 @@ export namespace Prisma {
     atendimentos?: LeadAtendimentoCreateNestedManyWithoutDepartamentoInput
     bots?: NoCodeFlowCreateNestedManyWithoutDepartamentoInput
     followUpBot?: FollowUpBotCreateNestedOneWithoutDepartamentoInput
+    agenteIa?: AgenteIACreateNestedOneWithoutDepartamentosInput
   }
 
   export type DepartamentoUncheckedCreateInput = {
@@ -48865,6 +50371,7 @@ export namespace Prisma {
     ativo?: boolean
     criadoEm?: Date | string
     atualizadoEm?: Date | string
+    agenteIaId?: string | null
     atendentes?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput
     atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutDepartamentoInput
     bots?: NoCodeFlowUncheckedCreateNestedManyWithoutDepartamentoInput
@@ -48883,6 +50390,7 @@ export namespace Prisma {
     atendimentos?: LeadAtendimentoUpdateManyWithoutDepartamentoNestedInput
     bots?: NoCodeFlowUpdateManyWithoutDepartamentoNestedInput
     followUpBot?: FollowUpBotUpdateOneWithoutDepartamentoNestedInput
+    agenteIa?: AgenteIAUpdateOneWithoutDepartamentosNestedInput
   }
 
   export type DepartamentoUncheckedUpdateInput = {
@@ -48893,6 +50401,7 @@ export namespace Prisma {
     ativo?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    agenteIaId?: NullableStringFieldUpdateOperationsInput | string | null
     atendentes?: AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput
     atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoNestedInput
     bots?: NoCodeFlowUncheckedUpdateManyWithoutDepartamentoNestedInput
@@ -48907,6 +50416,7 @@ export namespace Prisma {
     ativo?: boolean
     criadoEm?: Date | string
     atualizadoEm?: Date | string
+    agenteIaId?: string | null
   }
 
   export type DepartamentoUpdateManyMutationInput = {
@@ -48927,6 +50437,7 @@ export namespace Prisma {
     ativo?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    agenteIaId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type AtendenteCreateInput = {
@@ -49490,6 +51001,115 @@ export namespace Prisma {
     enviados?: IntFieldUpdateOperationsInput | number
     ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ultimoTemplateId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgenteIACreateInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    ativo?: boolean
+    provedor?: string
+    baseUrl?: string | null
+    modelo: string
+    apiKey?: string
+    prompt: string
+    entrada?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    departamentos?: DepartamentoCreateNestedManyWithoutAgenteIaInput
+  }
+
+  export type AgenteIAUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    ativo?: boolean
+    provedor?: string
+    baseUrl?: string | null
+    modelo: string
+    apiKey?: string
+    prompt: string
+    entrada?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    departamentos?: DepartamentoUncheckedCreateNestedManyWithoutAgenteIaInput
+  }
+
+  export type AgenteIAUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    provedor?: StringFieldUpdateOperationsInput | string
+    baseUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    modelo?: StringFieldUpdateOperationsInput | string
+    apiKey?: StringFieldUpdateOperationsInput | string
+    prompt?: StringFieldUpdateOperationsInput | string
+    entrada?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    departamentos?: DepartamentoUpdateManyWithoutAgenteIaNestedInput
+  }
+
+  export type AgenteIAUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    provedor?: StringFieldUpdateOperationsInput | string
+    baseUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    modelo?: StringFieldUpdateOperationsInput | string
+    apiKey?: StringFieldUpdateOperationsInput | string
+    prompt?: StringFieldUpdateOperationsInput | string
+    entrada?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    departamentos?: DepartamentoUncheckedUpdateManyWithoutAgenteIaNestedInput
+  }
+
+  export type AgenteIACreateManyInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    ativo?: boolean
+    provedor?: string
+    baseUrl?: string | null
+    modelo: string
+    apiKey?: string
+    prompt: string
+    entrada?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type AgenteIAUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    provedor?: StringFieldUpdateOperationsInput | string
+    baseUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    modelo?: StringFieldUpdateOperationsInput | string
+    apiKey?: StringFieldUpdateOperationsInput | string
+    prompt?: StringFieldUpdateOperationsInput | string
+    entrada?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgenteIAUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    provedor?: StringFieldUpdateOperationsInput | string
+    baseUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    modelo?: StringFieldUpdateOperationsInput | string
+    apiKey?: StringFieldUpdateOperationsInput | string
+    prompt?: StringFieldUpdateOperationsInput | string
+    entrada?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -50287,6 +51907,7 @@ export namespace Prisma {
     assistentePluginAtivo?: SortOrder
     nocodePluginAtivo?: SortOrder
     crmPluginAtivo?: SortOrder
+    agentesIaPluginAtivo?: SortOrder
     temaApp?: SortOrder
     appNome?: SortOrder
     appLogo?: SortOrder
@@ -50323,6 +51944,7 @@ export namespace Prisma {
     assistentePluginAtivo?: SortOrder
     nocodePluginAtivo?: SortOrder
     crmPluginAtivo?: SortOrder
+    agentesIaPluginAtivo?: SortOrder
     temaApp?: SortOrder
     appNome?: SortOrder
     appLogo?: SortOrder
@@ -50353,6 +51975,7 @@ export namespace Prisma {
     assistentePluginAtivo?: SortOrder
     nocodePluginAtivo?: SortOrder
     crmPluginAtivo?: SortOrder
+    agentesIaPluginAtivo?: SortOrder
     temaApp?: SortOrder
     appNome?: SortOrder
     appLogo?: SortOrder
@@ -51198,6 +52821,11 @@ export namespace Prisma {
     isNot?: FollowUpBotWhereInput | null
   }
 
+  export type AgenteIANullableScalarRelationFilter = {
+    is?: AgenteIAWhereInput | null
+    isNot?: AgenteIAWhereInput | null
+  }
+
   export type AtendenteDepartamentoOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -51223,6 +52851,7 @@ export namespace Prisma {
     ativo?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
+    agenteIaId?: SortOrder
   }
 
   export type DepartamentoMaxOrderByAggregateInput = {
@@ -51233,6 +52862,7 @@ export namespace Prisma {
     ativo?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
+    agenteIaId?: SortOrder
   }
 
   export type DepartamentoMinOrderByAggregateInput = {
@@ -51243,6 +52873,7 @@ export namespace Prisma {
     ativo?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
+    agenteIaId?: SortOrder
   }
 
   export type UserScalarRelationFilter = {
@@ -51560,6 +53191,61 @@ export namespace Prisma {
 
   export type FollowUpConversaSumOrderByAggregateInput = {
     enviados?: SortOrder
+  }
+
+  export type DepartamentoListRelationFilter = {
+    every?: DepartamentoWhereInput
+    some?: DepartamentoWhereInput
+    none?: DepartamentoWhereInput
+  }
+
+  export type DepartamentoOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AgenteIACountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    ativo?: SortOrder
+    provedor?: SortOrder
+    baseUrl?: SortOrder
+    modelo?: SortOrder
+    apiKey?: SortOrder
+    prompt?: SortOrder
+    entrada?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type AgenteIAMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    ativo?: SortOrder
+    provedor?: SortOrder
+    baseUrl?: SortOrder
+    modelo?: SortOrder
+    apiKey?: SortOrder
+    prompt?: SortOrder
+    entrada?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type AgenteIAMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    ativo?: SortOrder
+    provedor?: SortOrder
+    baseUrl?: SortOrder
+    modelo?: SortOrder
+    apiKey?: SortOrder
+    prompt?: SortOrder
+    entrada?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
   }
 
   export type CampaignCreateNestedOneWithoutLeadsInput = {
@@ -52564,6 +54250,12 @@ export namespace Prisma {
     connect?: FollowUpBotWhereUniqueInput
   }
 
+  export type AgenteIACreateNestedOneWithoutDepartamentosInput = {
+    create?: XOR<AgenteIACreateWithoutDepartamentosInput, AgenteIAUncheckedCreateWithoutDepartamentosInput>
+    connectOrCreate?: AgenteIACreateOrConnectWithoutDepartamentosInput
+    connect?: AgenteIAWhereUniqueInput
+  }
+
   export type AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput = {
     create?: XOR<AtendenteDepartamentoCreateWithoutDepartamentoInput, AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput> | AtendenteDepartamentoCreateWithoutDepartamentoInput[] | AtendenteDepartamentoUncheckedCreateWithoutDepartamentoInput[]
     connectOrCreate?: AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput | AtendenteDepartamentoCreateOrConnectWithoutDepartamentoInput[]
@@ -52641,6 +54333,16 @@ export namespace Prisma {
     delete?: FollowUpBotWhereInput | boolean
     connect?: FollowUpBotWhereUniqueInput
     update?: XOR<XOR<FollowUpBotUpdateToOneWithWhereWithoutDepartamentoInput, FollowUpBotUpdateWithoutDepartamentoInput>, FollowUpBotUncheckedUpdateWithoutDepartamentoInput>
+  }
+
+  export type AgenteIAUpdateOneWithoutDepartamentosNestedInput = {
+    create?: XOR<AgenteIACreateWithoutDepartamentosInput, AgenteIAUncheckedCreateWithoutDepartamentosInput>
+    connectOrCreate?: AgenteIACreateOrConnectWithoutDepartamentosInput
+    upsert?: AgenteIAUpsertWithoutDepartamentosInput
+    disconnect?: AgenteIAWhereInput | boolean
+    delete?: AgenteIAWhereInput | boolean
+    connect?: AgenteIAWhereUniqueInput
+    update?: XOR<XOR<AgenteIAUpdateToOneWithWhereWithoutDepartamentosInput, AgenteIAUpdateWithoutDepartamentosInput>, AgenteIAUncheckedUpdateWithoutDepartamentosInput>
   }
 
   export type AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput = {
@@ -53035,6 +54737,48 @@ export namespace Prisma {
     delete?: FollowUpTemplateWhereInput | boolean
     connect?: FollowUpTemplateWhereUniqueInput
     update?: XOR<XOR<FollowUpTemplateUpdateToOneWithWhereWithoutConversasInput, FollowUpTemplateUpdateWithoutConversasInput>, FollowUpTemplateUncheckedUpdateWithoutConversasInput>
+  }
+
+  export type DepartamentoCreateNestedManyWithoutAgenteIaInput = {
+    create?: XOR<DepartamentoCreateWithoutAgenteIaInput, DepartamentoUncheckedCreateWithoutAgenteIaInput> | DepartamentoCreateWithoutAgenteIaInput[] | DepartamentoUncheckedCreateWithoutAgenteIaInput[]
+    connectOrCreate?: DepartamentoCreateOrConnectWithoutAgenteIaInput | DepartamentoCreateOrConnectWithoutAgenteIaInput[]
+    createMany?: DepartamentoCreateManyAgenteIaInputEnvelope
+    connect?: DepartamentoWhereUniqueInput | DepartamentoWhereUniqueInput[]
+  }
+
+  export type DepartamentoUncheckedCreateNestedManyWithoutAgenteIaInput = {
+    create?: XOR<DepartamentoCreateWithoutAgenteIaInput, DepartamentoUncheckedCreateWithoutAgenteIaInput> | DepartamentoCreateWithoutAgenteIaInput[] | DepartamentoUncheckedCreateWithoutAgenteIaInput[]
+    connectOrCreate?: DepartamentoCreateOrConnectWithoutAgenteIaInput | DepartamentoCreateOrConnectWithoutAgenteIaInput[]
+    createMany?: DepartamentoCreateManyAgenteIaInputEnvelope
+    connect?: DepartamentoWhereUniqueInput | DepartamentoWhereUniqueInput[]
+  }
+
+  export type DepartamentoUpdateManyWithoutAgenteIaNestedInput = {
+    create?: XOR<DepartamentoCreateWithoutAgenteIaInput, DepartamentoUncheckedCreateWithoutAgenteIaInput> | DepartamentoCreateWithoutAgenteIaInput[] | DepartamentoUncheckedCreateWithoutAgenteIaInput[]
+    connectOrCreate?: DepartamentoCreateOrConnectWithoutAgenteIaInput | DepartamentoCreateOrConnectWithoutAgenteIaInput[]
+    upsert?: DepartamentoUpsertWithWhereUniqueWithoutAgenteIaInput | DepartamentoUpsertWithWhereUniqueWithoutAgenteIaInput[]
+    createMany?: DepartamentoCreateManyAgenteIaInputEnvelope
+    set?: DepartamentoWhereUniqueInput | DepartamentoWhereUniqueInput[]
+    disconnect?: DepartamentoWhereUniqueInput | DepartamentoWhereUniqueInput[]
+    delete?: DepartamentoWhereUniqueInput | DepartamentoWhereUniqueInput[]
+    connect?: DepartamentoWhereUniqueInput | DepartamentoWhereUniqueInput[]
+    update?: DepartamentoUpdateWithWhereUniqueWithoutAgenteIaInput | DepartamentoUpdateWithWhereUniqueWithoutAgenteIaInput[]
+    updateMany?: DepartamentoUpdateManyWithWhereWithoutAgenteIaInput | DepartamentoUpdateManyWithWhereWithoutAgenteIaInput[]
+    deleteMany?: DepartamentoScalarWhereInput | DepartamentoScalarWhereInput[]
+  }
+
+  export type DepartamentoUncheckedUpdateManyWithoutAgenteIaNestedInput = {
+    create?: XOR<DepartamentoCreateWithoutAgenteIaInput, DepartamentoUncheckedCreateWithoutAgenteIaInput> | DepartamentoCreateWithoutAgenteIaInput[] | DepartamentoUncheckedCreateWithoutAgenteIaInput[]
+    connectOrCreate?: DepartamentoCreateOrConnectWithoutAgenteIaInput | DepartamentoCreateOrConnectWithoutAgenteIaInput[]
+    upsert?: DepartamentoUpsertWithWhereUniqueWithoutAgenteIaInput | DepartamentoUpsertWithWhereUniqueWithoutAgenteIaInput[]
+    createMany?: DepartamentoCreateManyAgenteIaInputEnvelope
+    set?: DepartamentoWhereUniqueInput | DepartamentoWhereUniqueInput[]
+    disconnect?: DepartamentoWhereUniqueInput | DepartamentoWhereUniqueInput[]
+    delete?: DepartamentoWhereUniqueInput | DepartamentoWhereUniqueInput[]
+    connect?: DepartamentoWhereUniqueInput | DepartamentoWhereUniqueInput[]
+    update?: DepartamentoUpdateWithWhereUniqueWithoutAgenteIaInput | DepartamentoUpdateWithWhereUniqueWithoutAgenteIaInput[]
+    updateMany?: DepartamentoUpdateManyWithWhereWithoutAgenteIaInput | DepartamentoUpdateManyWithWhereWithoutAgenteIaInput[]
+    deleteMany?: DepartamentoScalarWhereInput | DepartamentoScalarWhereInput[]
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -55131,6 +56875,7 @@ export namespace Prisma {
     atendentes?: AtendenteDepartamentoCreateNestedManyWithoutDepartamentoInput
     atendimentos?: LeadAtendimentoCreateNestedManyWithoutDepartamentoInput
     followUpBot?: FollowUpBotCreateNestedOneWithoutDepartamentoInput
+    agenteIa?: AgenteIACreateNestedOneWithoutDepartamentosInput
   }
 
   export type DepartamentoUncheckedCreateWithoutBotsInput = {
@@ -55141,6 +56886,7 @@ export namespace Prisma {
     ativo?: boolean
     criadoEm?: Date | string
     atualizadoEm?: Date | string
+    agenteIaId?: string | null
     atendentes?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput
     atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutDepartamentoInput
     followUpBot?: FollowUpBotUncheckedCreateNestedOneWithoutDepartamentoInput
@@ -55249,6 +56995,7 @@ export namespace Prisma {
     atendentes?: AtendenteDepartamentoUpdateManyWithoutDepartamentoNestedInput
     atendimentos?: LeadAtendimentoUpdateManyWithoutDepartamentoNestedInput
     followUpBot?: FollowUpBotUpdateOneWithoutDepartamentoNestedInput
+    agenteIa?: AgenteIAUpdateOneWithoutDepartamentosNestedInput
   }
 
   export type DepartamentoUncheckedUpdateWithoutBotsInput = {
@@ -55259,6 +57006,7 @@ export namespace Prisma {
     ativo?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    agenteIaId?: NullableStringFieldUpdateOperationsInput | string | null
     atendentes?: AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput
     atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoNestedInput
     followUpBot?: FollowUpBotUncheckedUpdateOneWithoutDepartamentoNestedInput
@@ -55871,6 +57619,41 @@ export namespace Prisma {
     create: XOR<FollowUpBotCreateWithoutDepartamentoInput, FollowUpBotUncheckedCreateWithoutDepartamentoInput>
   }
 
+  export type AgenteIACreateWithoutDepartamentosInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    ativo?: boolean
+    provedor?: string
+    baseUrl?: string | null
+    modelo: string
+    apiKey?: string
+    prompt: string
+    entrada?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type AgenteIAUncheckedCreateWithoutDepartamentosInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    ativo?: boolean
+    provedor?: string
+    baseUrl?: string | null
+    modelo: string
+    apiKey?: string
+    prompt: string
+    entrada?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type AgenteIACreateOrConnectWithoutDepartamentosInput = {
+    where: AgenteIAWhereUniqueInput
+    create: XOR<AgenteIACreateWithoutDepartamentosInput, AgenteIAUncheckedCreateWithoutDepartamentosInput>
+  }
+
   export type AtendenteDepartamentoUpsertWithWhereUniqueWithoutDepartamentoInput = {
     where: AtendenteDepartamentoWhereUniqueInput
     update: XOR<AtendenteDepartamentoUpdateWithoutDepartamentoInput, AtendenteDepartamentoUncheckedUpdateWithoutDepartamentoInput>
@@ -56003,6 +57786,47 @@ export namespace Prisma {
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     templates?: FollowUpTemplateUncheckedUpdateManyWithoutBotNestedInput
+  }
+
+  export type AgenteIAUpsertWithoutDepartamentosInput = {
+    update: XOR<AgenteIAUpdateWithoutDepartamentosInput, AgenteIAUncheckedUpdateWithoutDepartamentosInput>
+    create: XOR<AgenteIACreateWithoutDepartamentosInput, AgenteIAUncheckedCreateWithoutDepartamentosInput>
+    where?: AgenteIAWhereInput
+  }
+
+  export type AgenteIAUpdateToOneWithWhereWithoutDepartamentosInput = {
+    where?: AgenteIAWhereInput
+    data: XOR<AgenteIAUpdateWithoutDepartamentosInput, AgenteIAUncheckedUpdateWithoutDepartamentosInput>
+  }
+
+  export type AgenteIAUpdateWithoutDepartamentosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    provedor?: StringFieldUpdateOperationsInput | string
+    baseUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    modelo?: StringFieldUpdateOperationsInput | string
+    apiKey?: StringFieldUpdateOperationsInput | string
+    prompt?: StringFieldUpdateOperationsInput | string
+    entrada?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgenteIAUncheckedUpdateWithoutDepartamentosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    provedor?: StringFieldUpdateOperationsInput | string
+    baseUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    modelo?: StringFieldUpdateOperationsInput | string
+    apiKey?: StringFieldUpdateOperationsInput | string
+    prompt?: StringFieldUpdateOperationsInput | string
+    entrada?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserCreateWithoutAtendenteInput = {
@@ -56195,6 +58019,7 @@ export namespace Prisma {
     atendimentos?: LeadAtendimentoCreateNestedManyWithoutDepartamentoInput
     bots?: NoCodeFlowCreateNestedManyWithoutDepartamentoInput
     followUpBot?: FollowUpBotCreateNestedOneWithoutDepartamentoInput
+    agenteIa?: AgenteIACreateNestedOneWithoutDepartamentosInput
   }
 
   export type DepartamentoUncheckedCreateWithoutAtendentesInput = {
@@ -56205,6 +58030,7 @@ export namespace Prisma {
     ativo?: boolean
     criadoEm?: Date | string
     atualizadoEm?: Date | string
+    agenteIaId?: string | null
     atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutDepartamentoInput
     bots?: NoCodeFlowUncheckedCreateNestedManyWithoutDepartamentoInput
     followUpBot?: FollowUpBotUncheckedCreateNestedOneWithoutDepartamentoInput
@@ -56266,6 +58092,7 @@ export namespace Prisma {
     atendimentos?: LeadAtendimentoUpdateManyWithoutDepartamentoNestedInput
     bots?: NoCodeFlowUpdateManyWithoutDepartamentoNestedInput
     followUpBot?: FollowUpBotUpdateOneWithoutDepartamentoNestedInput
+    agenteIa?: AgenteIAUpdateOneWithoutDepartamentosNestedInput
   }
 
   export type DepartamentoUncheckedUpdateWithoutAtendentesInput = {
@@ -56276,6 +58103,7 @@ export namespace Prisma {
     ativo?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    agenteIaId?: NullableStringFieldUpdateOperationsInput | string | null
     atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoNestedInput
     bots?: NoCodeFlowUncheckedUpdateManyWithoutDepartamentoNestedInput
     followUpBot?: FollowUpBotUncheckedUpdateOneWithoutDepartamentoNestedInput
@@ -56349,6 +58177,7 @@ export namespace Prisma {
     atendentes?: AtendenteDepartamentoCreateNestedManyWithoutDepartamentoInput
     bots?: NoCodeFlowCreateNestedManyWithoutDepartamentoInput
     followUpBot?: FollowUpBotCreateNestedOneWithoutDepartamentoInput
+    agenteIa?: AgenteIACreateNestedOneWithoutDepartamentosInput
   }
 
   export type DepartamentoUncheckedCreateWithoutAtendimentosInput = {
@@ -56359,6 +58188,7 @@ export namespace Prisma {
     ativo?: boolean
     criadoEm?: Date | string
     atualizadoEm?: Date | string
+    agenteIaId?: string | null
     atendentes?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput
     bots?: NoCodeFlowUncheckedCreateNestedManyWithoutDepartamentoInput
     followUpBot?: FollowUpBotUncheckedCreateNestedOneWithoutDepartamentoInput
@@ -56477,6 +58307,7 @@ export namespace Prisma {
     atendentes?: AtendenteDepartamentoUpdateManyWithoutDepartamentoNestedInput
     bots?: NoCodeFlowUpdateManyWithoutDepartamentoNestedInput
     followUpBot?: FollowUpBotUpdateOneWithoutDepartamentoNestedInput
+    agenteIa?: AgenteIAUpdateOneWithoutDepartamentosNestedInput
   }
 
   export type DepartamentoUncheckedUpdateWithoutAtendimentosInput = {
@@ -56487,6 +58318,7 @@ export namespace Prisma {
     ativo?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    agenteIaId?: NullableStringFieldUpdateOperationsInput | string | null
     atendentes?: AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput
     bots?: NoCodeFlowUncheckedUpdateManyWithoutDepartamentoNestedInput
     followUpBot?: FollowUpBotUncheckedUpdateOneWithoutDepartamentoNestedInput
@@ -56652,6 +58484,7 @@ export namespace Prisma {
     atendentes?: AtendenteDepartamentoCreateNestedManyWithoutDepartamentoInput
     atendimentos?: LeadAtendimentoCreateNestedManyWithoutDepartamentoInput
     bots?: NoCodeFlowCreateNestedManyWithoutDepartamentoInput
+    agenteIa?: AgenteIACreateNestedOneWithoutDepartamentosInput
   }
 
   export type DepartamentoUncheckedCreateWithoutFollowUpBotInput = {
@@ -56662,6 +58495,7 @@ export namespace Prisma {
     ativo?: boolean
     criadoEm?: Date | string
     atualizadoEm?: Date | string
+    agenteIaId?: string | null
     atendentes?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput
     atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutDepartamentoInput
     bots?: NoCodeFlowUncheckedCreateNestedManyWithoutDepartamentoInput
@@ -56724,6 +58558,7 @@ export namespace Prisma {
     atendentes?: AtendenteDepartamentoUpdateManyWithoutDepartamentoNestedInput
     atendimentos?: LeadAtendimentoUpdateManyWithoutDepartamentoNestedInput
     bots?: NoCodeFlowUpdateManyWithoutDepartamentoNestedInput
+    agenteIa?: AgenteIAUpdateOneWithoutDepartamentosNestedInput
   }
 
   export type DepartamentoUncheckedUpdateWithoutFollowUpBotInput = {
@@ -56734,6 +58569,7 @@ export namespace Prisma {
     ativo?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    agenteIaId?: NullableStringFieldUpdateOperationsInput | string | null
     atendentes?: AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput
     atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoNestedInput
     bots?: NoCodeFlowUncheckedUpdateManyWithoutDepartamentoNestedInput
@@ -57174,6 +59010,74 @@ export namespace Prisma {
     ativo?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DepartamentoCreateWithoutAgenteIaInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendentes?: AtendenteDepartamentoCreateNestedManyWithoutDepartamentoInput
+    atendimentos?: LeadAtendimentoCreateNestedManyWithoutDepartamentoInput
+    bots?: NoCodeFlowCreateNestedManyWithoutDepartamentoInput
+    followUpBot?: FollowUpBotCreateNestedOneWithoutDepartamentoInput
+  }
+
+  export type DepartamentoUncheckedCreateWithoutAgenteIaInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendentes?: AtendenteDepartamentoUncheckedCreateNestedManyWithoutDepartamentoInput
+    atendimentos?: LeadAtendimentoUncheckedCreateNestedManyWithoutDepartamentoInput
+    bots?: NoCodeFlowUncheckedCreateNestedManyWithoutDepartamentoInput
+    followUpBot?: FollowUpBotUncheckedCreateNestedOneWithoutDepartamentoInput
+  }
+
+  export type DepartamentoCreateOrConnectWithoutAgenteIaInput = {
+    where: DepartamentoWhereUniqueInput
+    create: XOR<DepartamentoCreateWithoutAgenteIaInput, DepartamentoUncheckedCreateWithoutAgenteIaInput>
+  }
+
+  export type DepartamentoCreateManyAgenteIaInputEnvelope = {
+    data: DepartamentoCreateManyAgenteIaInput | DepartamentoCreateManyAgenteIaInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DepartamentoUpsertWithWhereUniqueWithoutAgenteIaInput = {
+    where: DepartamentoWhereUniqueInput
+    update: XOR<DepartamentoUpdateWithoutAgenteIaInput, DepartamentoUncheckedUpdateWithoutAgenteIaInput>
+    create: XOR<DepartamentoCreateWithoutAgenteIaInput, DepartamentoUncheckedCreateWithoutAgenteIaInput>
+  }
+
+  export type DepartamentoUpdateWithWhereUniqueWithoutAgenteIaInput = {
+    where: DepartamentoWhereUniqueInput
+    data: XOR<DepartamentoUpdateWithoutAgenteIaInput, DepartamentoUncheckedUpdateWithoutAgenteIaInput>
+  }
+
+  export type DepartamentoUpdateManyWithWhereWithoutAgenteIaInput = {
+    where: DepartamentoScalarWhereInput
+    data: XOR<DepartamentoUpdateManyMutationInput, DepartamentoUncheckedUpdateManyWithoutAgenteIaInput>
+  }
+
+  export type DepartamentoScalarWhereInput = {
+    AND?: DepartamentoScalarWhereInput | DepartamentoScalarWhereInput[]
+    OR?: DepartamentoScalarWhereInput[]
+    NOT?: DepartamentoScalarWhereInput | DepartamentoScalarWhereInput[]
+    id?: StringFilter<"Departamento"> | string
+    workspaceId?: StringFilter<"Departamento"> | string
+    nome?: StringFilter<"Departamento"> | string
+    descricao?: StringNullableFilter<"Departamento"> | string | null
+    ativo?: BoolFilter<"Departamento"> | boolean
+    criadoEm?: DateTimeFilter<"Departamento"> | Date | string
+    atualizadoEm?: DateTimeFilter<"Departamento"> | Date | string
+    agenteIaId?: StringNullableFilter<"Departamento"> | string | null
   }
 
   export type LeadCampaignCreateManyLeadInput = {
@@ -58000,6 +59904,54 @@ export namespace Prisma {
     enviados?: IntFieldUpdateOperationsInput | number
     ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ultimoTemplateId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DepartamentoCreateManyAgenteIaInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type DepartamentoUpdateWithoutAgenteIaInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendentes?: AtendenteDepartamentoUpdateManyWithoutDepartamentoNestedInput
+    atendimentos?: LeadAtendimentoUpdateManyWithoutDepartamentoNestedInput
+    bots?: NoCodeFlowUpdateManyWithoutDepartamentoNestedInput
+    followUpBot?: FollowUpBotUpdateOneWithoutDepartamentoNestedInput
+  }
+
+  export type DepartamentoUncheckedUpdateWithoutAgenteIaInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendentes?: AtendenteDepartamentoUncheckedUpdateManyWithoutDepartamentoNestedInput
+    atendimentos?: LeadAtendimentoUncheckedUpdateManyWithoutDepartamentoNestedInput
+    bots?: NoCodeFlowUncheckedUpdateManyWithoutDepartamentoNestedInput
+    followUpBot?: FollowUpBotUncheckedUpdateOneWithoutDepartamentoNestedInput
+  }
+
+  export type DepartamentoUncheckedUpdateManyWithoutAgenteIaInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }

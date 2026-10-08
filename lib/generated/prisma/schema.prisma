@@ -381,6 +381,7 @@ model Settings {
   assistentePluginAtivo Boolean @default(false)
   nocodePluginAtivo     Boolean @default(false)
   crmPluginAtivo        Boolean @default(false)
+  agentesIaPluginAtivo  Boolean @default(false)
   /// Tema pronto do painel (ver lib/temas.ts). Vale para o modo claro e o escuro.
   temaApp               String  @default("esmeralda")
   /// Nome exibido no topo da sidebar (o subtítulo com a versão é fixo).
@@ -784,9 +785,13 @@ model Departamento {
   bots         NoCodeFlow[]
   /// Bot especialista em follow-up deste departamento (no máximo um).
   followUpBot  FollowUpBot?
+  /// Plugin Agentes de IA: agente que responde as conversas deste departamento (opcional).
+  agenteIaId   String?
+  agenteIa     AgenteIA?               @relation(fields: [agenteIaId], references: [id], onDelete: SetNull)
 
   @@unique([workspaceId, nome])
   @@index([ativo, nome])
+  @@index([agenteIaId])
 }
 
 /// Atendente = um `User` (admin ou padrão) com perfil no CRM. O login, a senha e
@@ -950,4 +955,42 @@ model FollowUpConversa {
   atualizadoEm DateTime @updatedAt
 
   @@index([templateId])
+}
+
+// ---------------------------------------------------------------------------
+// Plugin Agentes de IA: agentes de atendimento que respondem o chat (só mensagens).
+// ---------------------------------------------------------------------------
+
+/// Agente de IA de atendimento. Por enquanto só o provedor "claude" (API da Anthropic): o
+/// usuário informa a chave de API, escolhe o modelo e escreve o prompt. O agente só responde
+/// mensagens (não executa comandos). Pode atender um ou mais departamentos
+/// (`Departamento.agenteIaId`) e/ou ser o agente de ENTRADA (quem ainda não tem departamento);
+/// só um agente por instância é o de entrada (índice único parcial na migration).
+model AgenteIA {
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
+  nome        String
+  ativo       Boolean @default(false)
+  /// Provedor de IA: "claude" (Anthropic), "groq" ou "compativel" (qualquer API compatível com a
+  /// da OpenAI, usando `baseUrl`).
+  provedor    String  @default("claude")
+  /// Endereço base da API (só para "compativel"; Groq e Claude usam o endereço padrão).
+  baseUrl     String?
+  /// Id do modelo (ex.: "claude-sonnet-5-5").
+  modelo      String
+  /// Chave de API CRIPTOGRAFADA (AES-256-GCM, ver `lib/segredo.ts`). Nunca vai para o backup.
+  apiKey      String  @default("")
+  /// Instruções do agente de atendimento (system prompt).
+  prompt      String
+  /// Agente de entrada (triagem): atende quem ainda não está em nenhum departamento.
+  entrada     Boolean @default(false)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  departamentos Departamento[]
+
+  @@index([workspaceId])
 }

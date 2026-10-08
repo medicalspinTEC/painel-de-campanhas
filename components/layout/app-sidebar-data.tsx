@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
 import {
+  getAgentesIaPluginAtivo,
   getAppMarca,
   getAssistentePluginAtivo,
   getChatPluginAtivo,
@@ -68,7 +69,7 @@ async function getEvolutionInstanceStatus() {
 }
 
 export async function AppSidebarData() {
-  const [status, chatAtivo, kanbanAtivo, assistenteAtivo, marca, nocodeAtivo, crmAtivo, usuario] = await Promise.all([
+  const [status, chatAtivo, kanbanAtivo, assistenteAtivo, marca, nocodeAtivo, crmAtivo, agentesIaAtivo, usuario] = await Promise.all([
     getEvolutionInstanceStatus(),
     getChatPluginAtivo(),
     getKanbanPluginAtivo(),
@@ -76,6 +77,7 @@ export async function AppSidebarData() {
     getAppMarca(),
     getNocodePluginAtivo(),
     getCrmPluginAtivo(),
+    getAgentesIaPluginAtivo(),
     getCurrentUser(),
   ])
 
@@ -91,6 +93,7 @@ export async function AppSidebarData() {
       assistenteAtivo={assistenteAtivo}
       nocodeAtivo={nocodeAtivo}
       crmAtivo={crmAtivo}
+      agentesIaAtivo={agentesIaAtivo}
       appNome={marca.nome}
       appLogo={marca.logo}
       urlsPermitidas={urlsPermitidas}

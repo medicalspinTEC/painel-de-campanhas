@@ -4,7 +4,7 @@ import { avaliarAtendimento, type ContextoAtendimento } from "@/lib/crm-permisso
 import { createUser, deleteUser, updateUser, type Ator } from "@/services/users"
 import { pausarBot, reativarBot } from "@/services/bot-estado"
 import { listCampanhasAbertas, type CampanhaAberta } from "@/services/campaigns"
-import { exigirPlugin, getCrmPluginAtivo } from "@/services/settings"
+import { exigirPlugin, getAgentesIaPluginAtivo, getCrmPluginAtivo } from "@/services/settings"
 import { emitWebhookEvent } from "@/services/webhooks"
 
 /**
@@ -40,7 +40,12 @@ export type DepartamentoItem = {
   totalConversas: number
   /** Bots que atendem as conversas deste departamento enquanto não houver humano. */
   bots: BotItem[]
+  /** Plugin Agentes de IA: agente que responde as conversas deste departamento (nulo = nenhum). */
+  agenteIaId: string | null
 }
+
+/** Agente de IA que pode ser vinculado a um departamento ou à entrada (aba CRM). */
+export type AgenteIaOpcao = { id: string; nome: string; ativo: boolean }
 
 export type AtendenteItem = {
   id: string
@@ -67,6 +72,11 @@ export type CrmData = {
   atendentes: AtendenteItem[]
   /** Usuários ativos que ainda não são atendentes (para vincular um existente). */
   usuariosDisponiveis: UsuarioDisponivel[]
+  /** Plugin Agentes de IA ativo: mostra os seletores de agente. */
+  agentesIaAtivo: boolean
+  agentesIa: AgenteIaOpcao[]
+  /** Agente de IA de entrada (nulo = nenhum). */
+  agenteIaEntradaId: string | null
 }
 
 /** Quem é o responsável por uma conversa do chat. */
@@ -315,10 +325,11 @@ export async function deleteAtendente(id: string, ator: Ator, excluirUsuario: bo
 // ---------------------------------------------------------------------------
 
 export async function getCrmData(ator: Pick<Ator, "id" | "role">): Promise<CrmData> {
-  const [departamentos, atendentes, conversasPorDepartamento, conversasPorAtendente, usuarios, bots] = await Promise.all([
+  const agentesIaAtivo = await getAgentesIaPluginAtivo()
+  const [departamentos, atendentes, conversasPorDepartamento, conversasPorAtendente, usuarios, bots, agentesIa] = await Promise.all([
     prisma.departamento.findMany({
       orderBy: [{ ativo: "desc" }, { nome: "asc" }],
-      select: { id: true, nome: true, descricao: true, ativo: true, _count: { select: { atendentes: true } } },
+      select: { id: true, nome: true, descricao: true, ativo: true, agenteIaId: true, _count: { select: { atendentes: true } } },
     }),
     prisma.atendente.findMany({
       orderBy: [{ ativo: "desc" }, { user: { nome: "asc" } }],
@@ -343,6 +354,9 @@ export async function getCrmData(ator: Pick<Ator, "id" | "role">): Promise<CrmDa
       orderBy: [{ ativo: "desc" }, { nome: "asc" }],
       select: { id: true, nome: true, ativo: true, botEntrada: true, departamentoId: true, nodes: true },
     }),
+    agentesIaAtivo
+      ? prisma.agenteIA.findMany({ orderBy: [{ ativo: "desc" }, { nome: "asc" }], select: { id: true, nome: true, ativo: true, entrada: true } })
+      : Promise.resolve([]),
   ])
 
   const paraBotItem = (b: (typeof bots)[number]): BotItem => ({
@@ -371,6 +385,7 @@ export async function getCrmData(ator: Pick<Ator, "id" | "role">): Promise<CrmDa
       totalAtendentes: d._count.atendentes,
       totalConversas: porDepartamento.get(d.id) ?? 0,
       bots: bots.filter((b) => b.departamentoId === d.id).map(paraBotItem),
+      agenteIaId: d.agenteIaId,
     })),
     atendentes: atendentes.map((a) => ({
       id: a.id,
@@ -385,6 +400,9 @@ export async function getCrmData(ator: Pick<Ator, "id" | "role">): Promise<CrmDa
       acessaChat: podeAcessar({ role: a.user.role, secoes: a.user.secoes }, "chat"),
     })),
     usuariosDisponiveis: usuarios,
+    agentesIaAtivo,
+    agentesIa: agentesIa.map((a) => ({ id: a.id, nome: a.nome, ativo: a.ativo })),
+    agenteIaEntradaId: agentesIa.find((a) => a.entrada)?.id ?? null,
   }
 }
 

@@ -49,6 +49,7 @@ const DIRETOS = new Set([
   "BackupExecucao",
   "Departamento",
   "FollowUpBot",
+  "AgenteIA",
   "User",
 ])
 
@@ -81,6 +82,7 @@ const FK_MODELO: Record<string, string> = {
   userId: "User",
   botId: "FollowUpBot",
   templateId: "FollowUpTemplate",
+  agenteIaId: "AgenteIA",
 }
 
 /** Campo de relação (to-one) → modelo apontado, para `connect`. */
@@ -94,6 +96,7 @@ const RELACAO_MODELO: Record<string, string> = {
   user: "User",
   bot: "FollowUpBot",
   template: "FollowUpTemplate",
+  agenteIa: "AgenteIA",
 }
 
 /** Campos de relação (inclusive listas): só neles se procura escrita aninhada. Json fica de fora de propósito. */

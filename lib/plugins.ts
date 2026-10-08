@@ -11,7 +11,7 @@
  */
 import type { SecaoKey } from "@/lib/permissoes"
 
-export type PluginKey = "chat" | "kanban" | "assistente" | "nocode" | "crm"
+export type PluginKey = "chat" | "kanban" | "assistente" | "nocode" | "crm" | "agentesIa"
 
 export type PluginsAtivos = Record<PluginKey, boolean>
 
@@ -21,6 +21,7 @@ export const PLUGIN_NOME: Record<PluginKey, string> = {
   assistente: "Assistente",
   nocode: "No Code",
   crm: "CRM",
+  agentesIa: "Agentes de IA",
 }
 
 /** Seções do painel que só existem com o plugin ativo. */
@@ -29,6 +30,7 @@ export const SECAO_PLUGIN: Partial<Record<SecaoKey, PluginKey>> = {
   kanban: "kanban",
   assistente: "assistente",
   nocode: "nocode",
+  agentes_ia: "agentesIa",
 }
 
 export const PLUGINS_TODOS_DESATIVADOS: PluginsAtivos = {
@@ -37,6 +39,7 @@ export const PLUGINS_TODOS_DESATIVADOS: PluginsAtivos = {
   assistente: false,
   nocode: false,
   crm: false,
+  agentesIa: false,
 }
 
 export function mensagemPluginDesativado(plugin: PluginKey): string {

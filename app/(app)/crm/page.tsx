@@ -36,6 +36,7 @@ export default async function CrmPage() {
         usuarioAtualId={ator.id}
         ehRoot={ator.role === "root"}
         podeEditarNoCode={nocodeAtivo && podeAcessar(ator, "nocode")}
+        podeAbrirAgentes={podeAcessar(ator, "agentes_ia")}
       />
     </div>
   )
