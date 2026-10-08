@@ -337,6 +337,28 @@ export async function carregarAgenteDoEscopo(departamentoId: string | null): Pro
   return { id: linha.id, nome: linha.nome, provedor: infoDoProvedor(linha.provedor).key, baseUrl: linha.baseUrl, modelo: linha.modelo, prompt: linha.prompt, chave }
 }
 
+/**
+ * Agentes ativos (com chave) por escopo, para o chat mostrar qual agente atende cada conversa:
+ * o de entrada e o de cada departamento. É a mesma regra de `carregarAgenteDoEscopo`.
+ */
+export async function listarEscoposDosAgentes(): Promise<{
+  entrada: { nome: string } | null
+  porDepartamento: Map<string, { nome: string }>
+}> {
+  const [entrada, departamentos] = await Promise.all([
+    prisma.agenteIA.findFirst({ where: { entrada: true, ativo: true }, select: { nome: true, apiKey: true } }),
+    prisma.departamento.findMany({
+      where: { agenteIaId: { not: null }, agenteIa: { is: { ativo: true } } },
+      select: { id: true, agenteIa: { select: { nome: true, apiKey: true } } },
+    }),
+  ])
+  const porDepartamento = new Map<string, { nome: string }>()
+  for (const d of departamentos) {
+    if (d.agenteIa && descriptografar(d.agenteIa.apiKey)) porDepartamento.set(d.id, { nome: d.agenteIa.nome })
+  }
+  return { entrada: entrada && descriptografar(entrada.apiKey) ? { nome: entrada.nome } : null, porDepartamento }
+}
+
 const LIMITE_HISTORICO = 30
 const LIMITE_TEXTO_MENSAGEM = 2000
 const LIMITE_TEXTO_RESPOSTA = 3500

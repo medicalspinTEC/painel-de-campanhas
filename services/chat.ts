@@ -1,11 +1,12 @@
 import { arquivoExiste, lerLinhaDeArquivo, type ArquivoMeta } from "@/lib/arquivo-storage"
 import { audioExiste } from "@/lib/audio-storage"
+import { listarEscoposDosAgentes } from "@/services/agentes-ia"
 import { listBotsPorLead, type BotConversaInfo } from "@/services/bot-estado"
 import { listarResumoFollowUpPorLead, type FollowUpResumo } from "@/services/followup"
 import { prisma } from "@/lib/prisma"
 import { workspaceAtualId } from "@/lib/workspace-context"
 import { listAtendimentosPorLead, type ChatAtendimento } from "@/services/crm"
-import { getCrmPluginAtivo } from "@/services/settings"
+import { getAgentesIaPluginAtivo, getCrmPluginAtivo } from "@/services/settings"
 
 const TIPOS_DE_MENSAGEM = ["mensagem_enviada", "resposta"] as const
 const LIMITE_EVENTOS_RECENTES = 1000
@@ -52,6 +53,12 @@ export interface ChatConversation {
    * desativado). `ativo: false` = pausado porque um humano assumiu; só uma pessoa o reativa.
    */
   bot: BotConversaInfo | null
+  /**
+   * Plugin Agentes de IA: agente de IA que atende esta conversa (o do departamento ou, sem
+   * departamento, o de entrada). Nulo = nenhum (ou os plugins estão desativados). Liga/pausa por
+   * conversa usa o mesmo estado do bot (`bot`).
+   */
+  agenteIa: { nome: string } | null
   /**
    * Plugin CRM: o departamento da conversa tem bot de follow-up. Nulo = não tem (ou o plugin está
    * desativado).
@@ -225,7 +232,7 @@ export async function getChatInbox(
   // (antes era uma consulta depois da outra).
   const buscarJunto = conversaId && !opcoes.semMensagens ? conversaId : null
 
-  const [leads, ultimas, mensagensAdiantadas, atendimentos, bots, followUps] = await Promise.all([
+  const [leads, ultimas, mensagensAdiantadas, atendimentos, bots, followUps, agentesIa] = await Promise.all([
     prisma.lead.findMany({
       select: {
         id: true,
@@ -256,6 +263,9 @@ export async function getChatInbox(
     getCrmPluginAtivo()
       .then((ativo) => (ativo ? listarResumoFollowUpPorLead() : null))
       .catch(() => null),
+    Promise.all([getCrmPluginAtivo(), getAgentesIaPluginAtivo()])
+      .then(([crm, ia]) => (crm && ia ? listarEscoposDosAgentes() : null))
+      .catch(() => null),
   ])
 
   const conversas: ChatConversation[] = leads.map((lead) => {
@@ -276,6 +286,11 @@ export async function getChatInbox(
       ultimaMensagem,
       atendimento: atendimentos?.get(lead.id) ?? null,
       bot: bots?.get(lead.id) ?? null,
+      agenteIa: agentesIa
+        ? ((atendimentos?.get(lead.id)?.departamentoId
+            ? agentesIa.porDepartamento.get(atendimentos.get(lead.id)!.departamentoId!)
+            : agentesIa.entrada) ?? null)
+        : null,
       followUp: followUps?.get(lead.id) ?? null,
     }
   })

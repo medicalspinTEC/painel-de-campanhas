@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react"
 import { toast } from "sonner"
-import { ArrowLeft, ArrowRightLeft, Bot, Building2, CheckCheck, Clock, Download, FileText, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Mic, Paperclip, Search, Send, Smile, StickyNote, Trash2, UserCheck, UserRound, X, Zap } from "lucide-react"
+import { ArrowLeft, ArrowRightLeft, Bot, Building2, CheckCheck, Clock, Download, FileText, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Mic, Paperclip, Search, Send, Smile, Sparkles, StickyNote, Trash2, UserCheck, UserRound, X, Zap } from "lucide-react"
 
 import { alternarBotConversaAction, assumirConversaAction } from "@/app/actions/crm"
 import { createChatInternalNoteAction, loadChatMessagesAction, refreshChatInboxAction, sendChatAudioAction, sendChatFileAction } from "@/app/actions/chat"
@@ -173,6 +173,19 @@ export function ChatInbox({
   // Plugin CRM: quem pode responder, assumir e transferir esta conversa (notas são sempre livres).
   const permissoes = crm && conversaAtiva ? avaliarAtendimento(conversaAtiva.atendimento, crm.contexto) : null
   const envioBloqueado = permissoes ? !permissoes.podeEnviar : false
+  // Estado do bot / agente de IA nesta conversa. Sem registro ainda, o agente vale como ligado,
+  // exceto quando a conversa já está com um atendente (o motor o pausa na primeira mensagem).
+  const estadoDoBot = conversaAtiva
+    ? (conversaAtiva.bot ??
+      (conversaAtiva.agenteIa
+        ? {
+            ativo: !conversaAtiva.atendimento?.atendenteId,
+            motivo: conversaAtiva.atendimento?.atendenteId ? "A conversa já está com um atendente." : null,
+            aguardando: false,
+          }
+        : null))
+    : null
+  const rotuloDoBot = conversaAtiva?.agenteIa ? `O agente de IA “${conversaAtiva.agenteIa.nome}”` : "O bot"
   const modoComposicao = envioBloqueado && modoEscolhido === "mensagem" ? "nota" : modoEscolhido
   const limiteTexto = modoComposicao === "nota" ? LIMITE_NOTA_INTERNA : LIMITE_MENSAGEM
 
@@ -980,21 +993,23 @@ export function ChatInbox({
                           ) : null}
                         </div>
                       ) : null}
-                      {conversaAtiva.bot && permissoes?.podeEnviar ? (
+                      {estadoDoBot && permissoes?.podeEnviar ? (
                         <Button
-                          variant={conversaAtiva.bot.ativo ? "ghost" : "outline"}
+                          variant={estadoDoBot.ativo ? "ghost" : "outline"}
                           size="sm"
                           className="rounded-full"
                           disabled={alterandoBot}
                           title={
-                            conversaAtiva.bot.ativo
-                              ? "O bot responde esta conversa. Clique para pausá-lo."
-                              : `${conversaAtiva.bot.motivo ?? "Bot pausado nesta conversa."} Clique para reativá-lo.`
+                            estadoDoBot.ativo
+                              ? `${rotuloDoBot} responde esta conversa. Clique para pausar.`
+                              : `${estadoDoBot.motivo ?? `${rotuloDoBot} pausado nesta conversa.`} Clique para reativar.`
                           }
-                          onClick={() => void alternarBotAtual(!conversaAtiva.bot!.ativo)}
+                          onClick={() => void alternarBotAtual(!estadoDoBot.ativo)}
                         >
-                          <Bot className="size-4" />
-                          <span className="hidden sm:inline">{conversaAtiva.bot.ativo ? "Pausar bot" : "Reativar bot"}</span>
+                          {conversaAtiva.agenteIa ? <Sparkles className="size-4" /> : <Bot className="size-4" />}
+                          <span className="hidden sm:inline">
+                            {estadoDoBot.ativo ? "Pausar" : "Reativar"} {conversaAtiva.agenteIa ? "agente de IA" : "bot"}
+                          </span>
                         </Button>
                       ) : null}
                       {conversaAtiva.followUp && permissoes?.podeEnviar ? (

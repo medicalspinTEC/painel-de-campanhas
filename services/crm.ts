@@ -809,7 +809,7 @@ export async function alternarBotConversa(
 
   if (ativo) {
     await reativarBot(leadId)
-    await prisma.chatInternalNote.create({ data: { leadId, texto: `Bot reativado nesta conversa por ${executor.nome}.` } })
+    await prisma.chatInternalNote.create({ data: { leadId, texto: `Bot/agente de IA reativado nesta conversa por ${executor.nome}.` } })
   } else {
     await pausarBotComNota(leadId, `Pausado por ${executor.nome}.`)
   }

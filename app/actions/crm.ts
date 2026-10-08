@@ -339,7 +339,7 @@ export async function alternarBotConversaAction(leadId: string, ativo: boolean):
     if (typeof ativo !== "boolean" || !String(leadId ?? "").trim()) return { ok: false, message: "Pedido inválido." }
     await alternarBotConversa(leadId, ativo, usuario)
     revalidatePath("/chat")
-    return { ok: true, message: ativo ? "Bot reativado nesta conversa." : "Bot pausado nesta conversa." }
+    return { ok: true, message: ativo ? "Atendimento automático reativado nesta conversa." : "Atendimento automático pausado nesta conversa." }
   } catch (error) {
     return falha(error, "Não foi possível alterar o bot da conversa.")
   }
