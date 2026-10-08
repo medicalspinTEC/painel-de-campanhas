@@ -5,12 +5,16 @@ import { assertSecao } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
 import {
   abrirConversaDireta,
+  adicionarMembrosGrupoInterno,
   ChatInternoError,
   criarGrupoInterno,
   enviarMensagemInterna,
+  excluirGrupoInterno,
   getInternoSnapshot,
   listarMensagensInternas as listarMensagensInterna,
   marcarConversaLida,
+  removerMembroGrupoInterno,
+  renomearGrupoInterno,
   sairDoGrupoInterno,
 } from "@/services/chat-interno"
 
@@ -81,6 +85,54 @@ export async function sairDoGrupoInternoAction(conversaId: string) {
     },
     "Não foi possível sair do grupo.",
     `Falha ao sair do grupo interno id=${conversaId}`,
+  )
+}
+
+export async function renomearGrupoInternoAction(conversaId: string, nome: string) {
+  const usuario = await assertSecao("chat")
+  return executar(
+    async () => {
+      await renomearGrupoInterno(usuario.id, conversaId, String(nome ?? ""))
+      return {}
+    },
+    "Não foi possível renomear o grupo.",
+    `Falha ao renomear grupo interno id=${conversaId}`,
+  )
+}
+
+export async function adicionarMembrosGrupoInternoAction(conversaId: string, membrosIds: string[]) {
+  const usuario = await assertSecao("chat")
+  return executar(
+    async () => {
+      await adicionarMembrosGrupoInterno(usuario.id, conversaId, Array.isArray(membrosIds) ? membrosIds.map(String) : [])
+      return {}
+    },
+    "Não foi possível adicionar as pessoas.",
+    `Falha ao adicionar membros ao grupo interno id=${conversaId}`,
+  )
+}
+
+export async function removerMembroGrupoInternoAction(conversaId: string, membroId: string) {
+  const usuario = await assertSecao("chat")
+  return executar(
+    async () => {
+      await removerMembroGrupoInterno(usuario.id, conversaId, String(membroId ?? ""))
+      return {}
+    },
+    "Não foi possível remover a pessoa do grupo.",
+    `Falha ao remover membro do grupo interno id=${conversaId}`,
+  )
+}
+
+export async function excluirGrupoInternoAction(conversaId: string) {
+  const usuario = await assertSecao("chat")
+  return executar(
+    async () => {
+      await excluirGrupoInterno(usuario.id, conversaId)
+      return {}
+    },
+    "Não foi possível excluir o grupo.",
+    `Falha ao excluir grupo interno id=${conversaId}`,
   )
 }
 

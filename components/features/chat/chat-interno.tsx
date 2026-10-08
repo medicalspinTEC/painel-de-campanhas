@@ -2,17 +2,22 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from "react"
 import { toast } from "sonner"
-import { ArrowLeft, CheckCheck, Download, FileText, ImageIcon, LogOut, MessageCircle, Paperclip, Plus, Search, Send, Users, X } from "lucide-react"
+import { ArrowLeft, CheckCheck, Download, FileText, ImageIcon, LogOut, MessageCircle, Paperclip, Pencil, Plus, Search, Send, Settings, Trash2, UserMinus, UserPlus, Users, X } from "lucide-react"
 
 import {
   abrirConversaInternaAction,
+  adicionarMembrosGrupoInternoAction,
   criarGrupoInternoAction,
   enviarMensagemInternaAction,
+  excluirGrupoInternoAction,
   loadChatInternoMensagensAction,
   refreshChatInternoAction,
+  removerMembroGrupoInternoAction,
+  renomearGrupoInternoAction,
   sairDoGrupoInternoAction,
 } from "@/app/actions/chat-interno"
 import { ChatAbas } from "@/components/features/chat/chat-abas"
+import { useChatAbas } from "@/components/features/chat/chat-shell"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -91,6 +96,7 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
   const [arquivo, setArquivo] = useState<File | null>(null)
   const [enviando, setEnviando] = useState(false)
   const [novaAberta, setNovaAberta] = useState(false)
+  const [configAberta, setConfigAberta] = useState(false)
   // Anexos que acabaram de ser baixados por mim (o servidor registra o fim do download).
   const [baixados, setBaixados] = useState<Set<string>>(new Set())
 
@@ -108,6 +114,13 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
 
   const conversaAtiva = conversas.find((c) => c.id === selecionadaId) ?? null
   const totalNaoLidas = conversas.reduce((soma, c) => soma + c.naoLidas, 0)
+
+  // O selo da aba "Equipe" (também visível na aba Leads) acompanha o total de não lidas daqui.
+  const abas = useChatAbas()
+  const definirNaoLidasEquipe = abas?.definirNaoLidasEquipe
+  useEffect(() => {
+    definirNaoLidasEquipe?.(totalNaoLidas)
+  }, [definirNaoLidasEquipe, totalNaoLidas])
 
   const conversasVisiveis = useMemo(() => {
     const termo = busca.trim().toLowerCase()
@@ -160,7 +173,15 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
           const snapshot = await refreshChatInternoAction(alvo, true)
           if (!ativo) return
           aplicar(snapshot, false)
-          if (alvo && selecionadaRef.current === alvo) {
+          // Removido do grupo (ou grupo excluído) enquanto a conversa estava aberta: volta para a lista.
+          if (alvo && selecionadaRef.current === alvo && !snapshot.conversas.some((c) => c.id === alvo)) {
+            selecionadaRef.current = null
+            setSelecionadaId(null)
+            setMensagens([])
+            setConfigAberta(false)
+            cacheRef.current.delete(alvo)
+            toast.info("Esta conversa não está mais disponível para você.")
+          } else if (alvo && selecionadaRef.current === alvo) {
             const conversa = snapshot.conversas.find((c) => c.id === alvo)
             const ultimaTela = mensagensRef.current[mensagensRef.current.length - 1]?.data
             if (conversa?.ultimaMensagem && conversa.ultimaMensagem.data !== ultimaTela) {
@@ -319,6 +340,22 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
     toast.success("Você saiu do grupo.")
   }
 
+  /** Recarrega a lista (nome, membros, permissões) depois de uma alteração no grupo. */
+  async function atualizarLista() {
+    try {
+      aplicar(await refreshChatInternoAction(selecionadaRef.current, true), false)
+    } catch {
+      // A lista se atualiza na próxima rodada.
+    }
+  }
+
+  function aoExcluirGrupo(conversaId: string) {
+    setConfigAberta(false)
+    cacheRef.current.delete(conversaId)
+    voltarParaLista()
+    setConversas((atual) => atual.filter((c) => c.id !== conversaId))
+  }
+
   async function aoCriada(conversaId: string) {
     setNovaAberta(false)
     try {
@@ -331,7 +368,7 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
 
   return (
     <div className="flex h-[calc(100svh-6.5rem)] min-h-176 flex-col gap-3 lg:min-h-144">
-      <ChatAbas ativa="equipe" naoLidasEquipe={totalNaoLidas} />
+      <ChatAbas />
 
       <div className="relative grid min-h-0 flex-1 grid-cols-1 grid-rows-1 overflow-hidden rounded-lg border bg-card shadow-sm lg:grid-cols-[340px_minmax(0,1fr)]">
         {/* Lista de conversas */}
@@ -419,9 +456,14 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
                 </p>
               </div>
               {conversaAtiva.tipo === "grupo" ? (
-                <Button variant="ghost" size="icon" className="rounded-full" aria-label="Sair do grupo" title="Sair do grupo" onClick={() => void sairDoGrupo()}>
-                  <LogOut className="size-4" />
-                </Button>
+                <>
+                  <Button variant="ghost" size="icon" className="rounded-full" aria-label="Configurações do grupo" title="Configurações do grupo" onClick={() => setConfigAberta(true)}>
+                    <Settings className="size-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="rounded-full" aria-label="Sair do grupo" title="Sair do grupo" onClick={() => void sairDoGrupo()}>
+                    <LogOut className="size-4" />
+                  </Button>
+                </>
               ) : null}
             </header>
 
@@ -561,6 +603,23 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
       </div>
 
       <NovaConversaDialog open={novaAberta} onOpenChange={setNovaAberta} contatos={contatos} onCriada={aoCriada} />
+      {conversaAtiva?.tipo === "grupo" ? (
+        <GrupoConfigDialog
+          key={conversaAtiva.id}
+          open={configAberta}
+          onOpenChange={setConfigAberta}
+          grupo={conversaAtiva}
+          contatos={contatos}
+          usuarioId={usuarioId}
+          onAlterado={atualizarLista}
+          onExcluido={() => aoExcluirGrupo(conversaAtiva.id)}
+          onSaiu={() => {
+            setConfigAberta(false)
+            voltarParaLista()
+            setConversas((atual) => atual.filter((c) => c.id !== conversaAtiva.id))
+          }}
+        />
+      ) : null}
     </div>
   )
 }
@@ -673,6 +732,212 @@ function NovaConversaDialog({
             {pendente ? "Criando..." : `Criar grupo${marcados.size ? ` (${marcados.size + 1} pessoas)` : ""}`}
           </Button>
         ) : null}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function GrupoConfigDialog({
+  open,
+  onOpenChange,
+  grupo,
+  contatos,
+  usuarioId,
+  onAlterado,
+  onExcluido,
+  onSaiu,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  grupo: InternoConversaDto
+  contatos: InternoContato[]
+  usuarioId: string
+  onAlterado: () => void | Promise<void>
+  onExcluido: () => void
+  onSaiu: () => void
+}) {
+  const [nome, setNome] = useState(grupo.nome)
+  const [busca, setBusca] = useState("")
+  const [marcados, setMarcados] = useState<Set<string>>(new Set())
+  const [pendente, setPendente] = useState(false)
+  const admin = grupo.podeAdministrar
+
+  // Ao reabrir, volta ao nome atual do grupo.
+  useEffect(() => {
+    if (open) {
+      setNome(grupo.nome)
+      setBusca("")
+      setMarcados(new Set())
+    }
+  }, [open, grupo.nome])
+
+  const idsNoGrupo = useMemo(() => new Set(grupo.participantes.map((p) => p.id)), [grupo.participantes])
+  const disponiveis = useMemo(() => {
+    const termo = busca.trim().toLowerCase()
+    return contatos.filter((c) => !idsNoGrupo.has(c.id) && (!termo || c.nome.toLowerCase().includes(termo) || c.username.includes(termo)))
+  }, [busca, contatos, idsNoGrupo])
+
+  async function rodar(acao: () => Promise<{ ok: boolean; message?: string }>, sucesso: string, aoOk?: () => void) {
+    setPendente(true)
+    try {
+      const resultado = await acao()
+      if (!resultado.ok) return toast.error(resultado.message ?? "Não foi possível concluir.")
+      toast.success(sucesso)
+      if (aoOk) aoOk()
+      else await onAlterado()
+    } catch {
+      toast.error("Não foi possível concluir. Verifique a conexão e tente de novo.")
+    } finally {
+      setPendente(false)
+    }
+  }
+
+  function alternar(id: string) {
+    setMarcados((atual) => {
+      const proximo = new Set(atual)
+      if (proximo.has(id)) proximo.delete(id)
+      else proximo.add(id)
+      return proximo
+    })
+  }
+
+  const nomeAlterado = nome.trim() !== grupo.nome && nome.trim().length > 0
+
+  return (
+    <Dialog open={open} onOpenChange={(proximo) => (pendente ? undefined : onOpenChange(proximo))}>
+      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Configurações do grupo</DialogTitle>
+          <DialogDescription>
+            {admin ? "Altere o nome, gerencie as pessoas ou exclua o grupo." : "Só quem criou o grupo pode alterá-lo. Você pode ver quem participa e sair."}
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Nome */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium" htmlFor="grupo-nome">Nome do grupo</label>
+          <div className="flex gap-2">
+            <Input id="grupo-nome" value={nome} onChange={(event) => setNome(event.target.value)} maxLength={60} disabled={!admin || pendente} />
+            {admin ? (
+              <Button
+                type="button"
+                disabled={pendente || !nomeAlterado}
+                onClick={() => void rodar(() => renomearGrupoInternoAction(grupo.id, nome), "Nome do grupo alterado.")}
+              >
+                <Pencil className="size-4" />Salvar
+              </Button>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Participantes */}
+        <div className="flex flex-col gap-1.5">
+          <p className="text-sm font-medium">Participantes ({grupo.participantes.length})</p>
+          <div className="max-h-52 overflow-y-auto rounded-lg border">
+            {grupo.participantes.map((pessoa) => (
+              <div key={pessoa.id} className="flex items-center gap-3 px-3 py-2">
+                <AvatarNome nome={pessoa.nome} className="size-8" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">{pessoa.id === usuarioId ? `${pessoa.nome} (você)` : pessoa.nome}</span>
+                  <span className="block truncate text-xs text-muted-foreground">@{pessoa.username}</span>
+                </span>
+                {admin && pessoa.id !== usuarioId ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 rounded-full text-destructive hover:text-destructive"
+                    aria-label={`Remover ${pessoa.nome} do grupo`}
+                    title="Remover do grupo"
+                    disabled={pendente}
+                    onClick={() => {
+                      if (!window.confirm(`Remover ${pessoa.nome} do grupo?`)) return
+                      void rodar(() => removerMembroGrupoInternoAction(grupo.id, pessoa.id), `${pessoa.nome} foi removido(a) do grupo.`)
+                    }}
+                  >
+                    <UserMinus className="size-4" />
+                  </Button>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Adicionar */}
+        {admin ? (
+          <div className="flex flex-col gap-1.5">
+            <p className="text-sm font-medium">Adicionar pessoas</p>
+            {contatos.some((c) => !idsNoGrupo.has(c.id)) ? (
+              <>
+                <Input value={busca} onChange={(event) => setBusca(event.target.value)} placeholder="Buscar pessoa..." aria-label="Buscar pessoa para adicionar" />
+                <div className="max-h-40 overflow-y-auto rounded-lg border">
+                  {disponiveis.length ? (
+                    disponiveis.map((contato) => (
+                      <label key={contato.id} className="flex cursor-pointer items-center gap-3 px-3 py-2 hover:bg-muted/60">
+                        <Checkbox checked={marcados.has(contato.id)} onCheckedChange={() => alternar(contato.id)} aria-label={contato.nome} />
+                        <AvatarNome nome={contato.nome} className="size-8" />
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-medium">{contato.nome}</span>
+                          <span className="block truncate text-xs text-muted-foreground">@{contato.username}</span>
+                        </span>
+                      </label>
+                    ))
+                  ) : (
+                    <p className="px-3 py-4 text-center text-sm text-muted-foreground">Ninguém encontrado.</p>
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={pendente || marcados.size === 0}
+                  onClick={() =>
+                    void rodar(
+                      () => adicionarMembrosGrupoInternoAction(grupo.id, [...marcados]),
+                      marcados.size === 1 ? "Pessoa adicionada ao grupo." : "Pessoas adicionadas ao grupo.",
+                      async () => {
+                        setMarcados(new Set())
+                        await onAlterado()
+                      },
+                    )
+                  }
+                >
+                  <UserPlus className="size-4" />
+                  {marcados.size ? `Adicionar (${marcados.size})` : "Adicionar"}
+                </Button>
+              </>
+            ) : (
+              <p className="rounded-lg border px-3 py-4 text-center text-sm text-muted-foreground">Todos os usuários com acesso ao chat já estão no grupo.</p>
+            )}
+          </div>
+        ) : null}
+
+        {/* Zona de risco */}
+        <div className="flex flex-col gap-2 border-t pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={pendente}
+            onClick={() => {
+              if (!window.confirm(`Sair do grupo "${grupo.nome}"?`)) return
+              void rodar(() => sairDoGrupoInternoAction(grupo.id), "Você saiu do grupo.", onSaiu)
+            }}
+          >
+            <LogOut className="size-4" />Sair do grupo
+          </Button>
+          {admin ? (
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={pendente}
+              onClick={() => {
+                if (!window.confirm(`Excluir o grupo "${grupo.nome}" para todos? As mensagens e os arquivos pendentes serão apagados e isso não pode ser desfeito.`)) return
+                void rodar(() => excluirGrupoInternoAction(grupo.id), "Grupo excluído.", onExcluido)
+              }}
+            >
+              <Trash2 className="size-4" />Excluir grupo
+            </Button>
+          ) : null}
+        </div>
       </DialogContent>
     </Dialog>
   )
