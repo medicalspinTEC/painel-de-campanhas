@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react"
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react"
 import { toast } from "sonner"
 import { ArrowLeft, ArrowRightLeft, Bot, Building2, CheckCheck, Clock, Download, FileText, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Mic, Paperclip, Search, Send, Smile, Sparkles, StickyNote, Trash2, UserCheck, UserRound, X, Zap } from "lucide-react"
 
@@ -120,6 +120,7 @@ export function ChatInbox({
   identificarRemetenteInicial = false,
   crm = null,
   templatesIniciais = [],
+  topo = null,
 }: {
   inicial: ChatInboxSnapshot
   instancias: InstanceOption[]
@@ -129,6 +130,8 @@ export function ChatInbox({
   crm?: CrmChatOpcoes | null
   /** Templates de mensagem do usuário ("/nome" no campo de mensagem). */
   templatesIniciais?: ChatTemplate[]
+  /** Faixa acima do painel (abas Leads/Equipe). */
+  topo?: ReactNode
 }) {
   const [identificarRemetente, setIdentificarRemetente] = useState(identificarRemetenteInicial)
   const [conversas, setConversas] = useState(inicial.conversas)
@@ -745,7 +748,8 @@ export function ChatInbox({
   }
 
   return (
-    <div className="flex h-[calc(100svh-6.5rem)] min-h-176 flex-col gap-3 lg:min-h-144">      
+    <div className="flex h-[calc(100svh-6.5rem)] min-h-176 flex-col gap-3 lg:min-h-144">
+      {topo}
 
       <div
         ref={painelRef}

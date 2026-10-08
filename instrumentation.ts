@@ -109,6 +109,10 @@ export async function register() {
       const { limparArquivosExpirados } = await import("@/lib/arquivo-storage")
       const arquivos = await limparArquivosExpirados()
       if (arquivos.removidos) console.log("[v0] limpeza de arquivos recebidos:", arquivos)
+      // Anexos do chat interno (equipe) que ninguém baixou.
+      const { limparAnexosInternosExpirados } = await import("@/lib/interno-storage")
+      const internos = await limparAnexosInternosExpirados()
+      if (internos.removidos) console.log("[v0] limpeza de anexos do chat interno:", internos)
       ultimoErroAudios = ""
       if (resultado.removidos) console.log("[v0] limpeza de áudios do chat:", resultado)
     } catch (error) {

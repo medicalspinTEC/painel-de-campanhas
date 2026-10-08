@@ -753,6 +753,10 @@ model User {
   /// Chat: templates de mensagem pessoais (atalho "/nome"), até 10 por usuário.
   chatTemplates ChatTemplate[]
 
+  /// Chat interno (equipe): conversas de que participa e mensagens que escreveu.
+  internoParticipacoes InternoParticipante[]
+  internoMensagens     InternoMensagem[]
+
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
@@ -997,4 +1001,74 @@ model AgenteIA {
   departamentos Departamento[]
 
   @@index([workspaceId])
+}
+
+// ---------------------------------------------------------------------------
+// Plugin Chat: chat interno entre os usuários do painel (não passa pelo WhatsApp).
+// ---------------------------------------------------------------------------
+
+/// Conversa interna: direta (2 pessoas) ou em grupo. Mensagens de texto ficam no banco;
+/// imagens/arquivos NÃO: ficam numa pasta do servidor e são apagados quando baixados
+/// (ver `lib/interno-storage.ts`). Aqui só os metadados do anexo.
+model InternoConversa {
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
+  /// "direta" ou "grupo".
+  tipo        String   @default("direta")
+  /// Nome do grupo (conversas diretas não têm).
+  nome        String?
+  /// Conversa direta: chave única "<idMenor>:<idMaior>" para não duplicar o par.
+  chaveDireta String?
+  criadoPorId String?
+
+  criadoEm        DateTime @default(now())
+  /// Data da última mensagem (ordena a lista).
+  ultimaMensagemEm DateTime @default(now())
+
+  participantes InternoParticipante[]
+  mensagens     InternoMensagem[]
+
+  @@unique([workspaceId, chaveDireta])
+  @@index([workspaceId, ultimaMensagemEm])
+}
+
+model InternoParticipante {
+  conversaId String
+  conversa   InternoConversa @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Tudo o que for posterior a isto conta como não lido.
+  ultimaLeituraEm DateTime @default(now())
+  entrouEm        DateTime @default(now())
+
+  @@id([conversaId, userId])
+  @@index([userId])
+}
+
+model InternoMensagem {
+  id         String          @id @default(cuid())
+  conversaId String
+  conversa   InternoConversa @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+  autorId    String
+  autor      User            @relation(fields: [autorId], references: [id], onDelete: Cascade)
+
+  /// Texto (ou legenda do anexo).
+  texto String @default("")
+
+  /// Anexo (opcional): só metadados; o conteúdo fica em disco até alguém baixar.
+  anexoId      String?
+  anexoTipo    String?
+  anexoMime    String?
+  anexoTamanho Int?
+  anexoNome    String?
+  /// Quem já baixou o anexo. Quando todos (menos o autor) baixam, o arquivo é apagado.
+  baixadoPor   String[] @default([])
+
+  criadoEm DateTime @default(now())
+
+  @@index([conversaId, criadoEm])
+  @@index([anexoId])
 }

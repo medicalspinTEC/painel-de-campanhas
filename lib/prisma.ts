@@ -51,6 +51,7 @@ const DIRETOS = new Set([
   "FollowUpBot",
   "AgenteIA",
   "User",
+  "InternoConversa",
 ])
 
 /** Tabelas filhas: nome da relação que leva a uma tabela direta. */
@@ -69,6 +70,8 @@ const FILHOS: Record<string, string> = {
   BotConversa: "lead",
   FollowUpTemplate: "bot",
   FollowUpConversa: "lead",
+  InternoParticipante: "conversa",
+  InternoMensagem: "conversa",
 }
 
 /** Coluna de chave estrangeira → modelo apontado. */
@@ -83,6 +86,8 @@ const FK_MODELO: Record<string, string> = {
   botId: "FollowUpBot",
   templateId: "FollowUpTemplate",
   agenteIaId: "AgenteIA",
+  conversaId: "InternoConversa",
+  autorId: "User",
 }
 
 /** Campo de relação (to-one) → modelo apontado, para `connect`. */
@@ -97,6 +102,8 @@ const RELACAO_MODELO: Record<string, string> = {
   bot: "FollowUpBot",
   template: "FollowUpTemplate",
   agenteIa: "AgenteIA",
+  conversa: "InternoConversa",
+  autor: "User",
 }
 
 /** Campos de relação (inclusive listas): só neles se procura escrita aninhada. Json fica de fora de propósito. */
@@ -123,6 +130,9 @@ const CAMPOS_RELACIONAIS = new Set([
   "conversas",
   "followUpBot",
   "followUpConversa",
+  "participantes",
+  "internoParticipacoes",
+  "internoMensagens",
 ])
 
 type Obj = Record<string, unknown>

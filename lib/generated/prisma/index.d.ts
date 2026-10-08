@@ -234,6 +234,23 @@ export type FollowUpConversa = $Result.DefaultSelection<Prisma.$FollowUpConversa
  * só um agente por instância é o de entrada (índice único parcial na migration).
  */
 export type AgenteIA = $Result.DefaultSelection<Prisma.$AgenteIAPayload>
+/**
+ * Model InternoConversa
+ * Conversa interna: direta (2 pessoas) ou em grupo. Mensagens de texto ficam no banco;
+ * imagens/arquivos NÃO: ficam numa pasta do servidor e são apagados quando baixados
+ * (ver `lib/interno-storage.ts`). Aqui só os metadados do anexo.
+ */
+export type InternoConversa = $Result.DefaultSelection<Prisma.$InternoConversaPayload>
+/**
+ * Model InternoParticipante
+ * 
+ */
+export type InternoParticipante = $Result.DefaultSelection<Prisma.$InternoParticipantePayload>
+/**
+ * Model InternoMensagem
+ * 
+ */
+export type InternoMensagem = $Result.DefaultSelection<Prisma.$InternoMensagemPayload>
 
 /**
  * Enums
@@ -804,6 +821,36 @@ export class PrismaClient<
     * ```
     */
   get agenteIA(): Prisma.AgenteIADelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.internoConversa`: Exposes CRUD operations for the **InternoConversa** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more InternoConversas
+    * const internoConversas = await prisma.internoConversa.findMany()
+    * ```
+    */
+  get internoConversa(): Prisma.InternoConversaDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.internoParticipante`: Exposes CRUD operations for the **InternoParticipante** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more InternoParticipantes
+    * const internoParticipantes = await prisma.internoParticipante.findMany()
+    * ```
+    */
+  get internoParticipante(): Prisma.InternoParticipanteDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.internoMensagem`: Exposes CRUD operations for the **InternoMensagem** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more InternoMensagems
+    * const internoMensagems = await prisma.internoMensagem.findMany()
+    * ```
+    */
+  get internoMensagem(): Prisma.InternoMensagemDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1279,7 +1326,10 @@ export namespace Prisma {
     ChatTemplate: 'ChatTemplate',
     FollowUpTemplate: 'FollowUpTemplate',
     FollowUpConversa: 'FollowUpConversa',
-    AgenteIA: 'AgenteIA'
+    AgenteIA: 'AgenteIA',
+    InternoConversa: 'InternoConversa',
+    InternoParticipante: 'InternoParticipante',
+    InternoMensagem: 'InternoMensagem'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1298,7 +1348,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "botConversa" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia" | "followUpBot" | "chatTemplate" | "followUpTemplate" | "followUpConversa" | "agenteIA"
+      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "botConversa" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia" | "followUpBot" | "chatTemplate" | "followUpTemplate" | "followUpConversa" | "agenteIA" | "internoConversa" | "internoParticipante" | "internoMensagem"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3892,6 +3942,228 @@ export namespace Prisma {
           }
         }
       }
+      InternoConversa: {
+        payload: Prisma.$InternoConversaPayload<ExtArgs>
+        fields: Prisma.InternoConversaFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.InternoConversaFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoConversaPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.InternoConversaFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoConversaPayload>
+          }
+          findFirst: {
+            args: Prisma.InternoConversaFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoConversaPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.InternoConversaFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoConversaPayload>
+          }
+          findMany: {
+            args: Prisma.InternoConversaFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoConversaPayload>[]
+          }
+          create: {
+            args: Prisma.InternoConversaCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoConversaPayload>
+          }
+          createMany: {
+            args: Prisma.InternoConversaCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.InternoConversaCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoConversaPayload>[]
+          }
+          delete: {
+            args: Prisma.InternoConversaDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoConversaPayload>
+          }
+          update: {
+            args: Prisma.InternoConversaUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoConversaPayload>
+          }
+          deleteMany: {
+            args: Prisma.InternoConversaDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.InternoConversaUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.InternoConversaUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoConversaPayload>[]
+          }
+          upsert: {
+            args: Prisma.InternoConversaUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoConversaPayload>
+          }
+          aggregate: {
+            args: Prisma.InternoConversaAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateInternoConversa>
+          }
+          groupBy: {
+            args: Prisma.InternoConversaGroupByArgs<ExtArgs>
+            result: $Utils.Optional<InternoConversaGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.InternoConversaCountArgs<ExtArgs>
+            result: $Utils.Optional<InternoConversaCountAggregateOutputType> | number
+          }
+        }
+      }
+      InternoParticipante: {
+        payload: Prisma.$InternoParticipantePayload<ExtArgs>
+        fields: Prisma.InternoParticipanteFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.InternoParticipanteFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoParticipantePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.InternoParticipanteFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoParticipantePayload>
+          }
+          findFirst: {
+            args: Prisma.InternoParticipanteFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoParticipantePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.InternoParticipanteFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoParticipantePayload>
+          }
+          findMany: {
+            args: Prisma.InternoParticipanteFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoParticipantePayload>[]
+          }
+          create: {
+            args: Prisma.InternoParticipanteCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoParticipantePayload>
+          }
+          createMany: {
+            args: Prisma.InternoParticipanteCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.InternoParticipanteCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoParticipantePayload>[]
+          }
+          delete: {
+            args: Prisma.InternoParticipanteDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoParticipantePayload>
+          }
+          update: {
+            args: Prisma.InternoParticipanteUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoParticipantePayload>
+          }
+          deleteMany: {
+            args: Prisma.InternoParticipanteDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.InternoParticipanteUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.InternoParticipanteUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoParticipantePayload>[]
+          }
+          upsert: {
+            args: Prisma.InternoParticipanteUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoParticipantePayload>
+          }
+          aggregate: {
+            args: Prisma.InternoParticipanteAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateInternoParticipante>
+          }
+          groupBy: {
+            args: Prisma.InternoParticipanteGroupByArgs<ExtArgs>
+            result: $Utils.Optional<InternoParticipanteGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.InternoParticipanteCountArgs<ExtArgs>
+            result: $Utils.Optional<InternoParticipanteCountAggregateOutputType> | number
+          }
+        }
+      }
+      InternoMensagem: {
+        payload: Prisma.$InternoMensagemPayload<ExtArgs>
+        fields: Prisma.InternoMensagemFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.InternoMensagemFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoMensagemPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.InternoMensagemFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoMensagemPayload>
+          }
+          findFirst: {
+            args: Prisma.InternoMensagemFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoMensagemPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.InternoMensagemFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoMensagemPayload>
+          }
+          findMany: {
+            args: Prisma.InternoMensagemFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoMensagemPayload>[]
+          }
+          create: {
+            args: Prisma.InternoMensagemCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoMensagemPayload>
+          }
+          createMany: {
+            args: Prisma.InternoMensagemCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.InternoMensagemCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoMensagemPayload>[]
+          }
+          delete: {
+            args: Prisma.InternoMensagemDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoMensagemPayload>
+          }
+          update: {
+            args: Prisma.InternoMensagemUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoMensagemPayload>
+          }
+          deleteMany: {
+            args: Prisma.InternoMensagemDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.InternoMensagemUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.InternoMensagemUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoMensagemPayload>[]
+          }
+          upsert: {
+            args: Prisma.InternoMensagemUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InternoMensagemPayload>
+          }
+          aggregate: {
+            args: Prisma.InternoMensagemAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateInternoMensagem>
+          }
+          groupBy: {
+            args: Prisma.InternoMensagemGroupByArgs<ExtArgs>
+            result: $Utils.Optional<InternoMensagemGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.InternoMensagemCountArgs<ExtArgs>
+            result: $Utils.Optional<InternoMensagemCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -4023,6 +4295,9 @@ export namespace Prisma {
     followUpTemplate?: FollowUpTemplateOmit
     followUpConversa?: FollowUpConversaOmit
     agenteIA?: AgenteIAOmit
+    internoConversa?: InternoConversaOmit
+    internoParticipante?: InternoParticipanteOmit
+    internoMensagem?: InternoMensagemOmit
   }
 
   /* Types for Logging */
@@ -4300,10 +4575,14 @@ export namespace Prisma {
 
   export type UserCountOutputType = {
     chatTemplates: number
+    internoParticipacoes: number
+    internoMensagens: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     chatTemplates?: boolean | UserCountOutputTypeCountChatTemplatesArgs
+    internoParticipacoes?: boolean | UserCountOutputTypeCountInternoParticipacoesArgs
+    internoMensagens?: boolean | UserCountOutputTypeCountInternoMensagensArgs
   }
 
   // Custom InputTypes
@@ -4322,6 +4601,20 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountChatTemplatesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ChatTemplateWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountInternoParticipacoesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InternoParticipanteWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountInternoMensagensArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InternoMensagemWhereInput
   }
 
 
@@ -4504,6 +4797,46 @@ export namespace Prisma {
    */
   export type AgenteIACountOutputTypeCountDepartamentosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DepartamentoWhereInput
+  }
+
+
+  /**
+   * Count Type InternoConversaCountOutputType
+   */
+
+  export type InternoConversaCountOutputType = {
+    participantes: number
+    mensagens: number
+  }
+
+  export type InternoConversaCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    participantes?: boolean | InternoConversaCountOutputTypeCountParticipantesArgs
+    mensagens?: boolean | InternoConversaCountOutputTypeCountMensagensArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * InternoConversaCountOutputType without action
+   */
+  export type InternoConversaCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoConversaCountOutputType
+     */
+    select?: InternoConversaCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * InternoConversaCountOutputType without action
+   */
+  export type InternoConversaCountOutputTypeCountParticipantesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InternoParticipanteWhereInput
+  }
+
+  /**
+   * InternoConversaCountOutputType without action
+   */
+  export type InternoConversaCountOutputTypeCountMensagensArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InternoMensagemWhereInput
   }
 
 
@@ -31931,6 +32264,8 @@ export namespace Prisma {
     atualizadoEm?: boolean
     atendente?: boolean | User$atendenteArgs<ExtArgs>
     chatTemplates?: boolean | User$chatTemplatesArgs<ExtArgs>
+    internoParticipacoes?: boolean | User$internoParticipacoesArgs<ExtArgs>
+    internoMensagens?: boolean | User$internoMensagensArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -31986,6 +32321,8 @@ export namespace Prisma {
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     atendente?: boolean | User$atendenteArgs<ExtArgs>
     chatTemplates?: boolean | User$chatTemplatesArgs<ExtArgs>
+    internoParticipacoes?: boolean | User$internoParticipacoesArgs<ExtArgs>
+    internoMensagens?: boolean | User$internoMensagensArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -32002,6 +32339,11 @@ export namespace Prisma {
        * Chat: templates de mensagem pessoais (atalho "/nome"), até 10 por usuário.
        */
       chatTemplates: Prisma.$ChatTemplatePayload<ExtArgs>[]
+      /**
+       * Chat interno (equipe): conversas de que participa e mensagens que escreveu.
+       */
+      internoParticipacoes: Prisma.$InternoParticipantePayload<ExtArgs>[]
+      internoMensagens: Prisma.$InternoMensagemPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -32441,6 +32783,8 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     atendente<T extends User$atendenteArgs<ExtArgs> = {}>(args?: Subset<T, User$atendenteArgs<ExtArgs>>): Prisma__AtendenteClient<$Result.GetResult<Prisma.$AtendentePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     chatTemplates<T extends User$chatTemplatesArgs<ExtArgs> = {}>(args?: Subset<T, User$chatTemplatesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    internoParticipacoes<T extends User$internoParticipacoesArgs<ExtArgs> = {}>(args?: Subset<T, User$internoParticipacoesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InternoParticipantePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    internoMensagens<T extends User$internoMensagensArgs<ExtArgs> = {}>(args?: Subset<T, User$internoMensagensArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InternoMensagemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -32911,6 +33255,54 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ChatTemplateScalarFieldEnum | ChatTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * User.internoParticipacoes
+   */
+  export type User$internoParticipacoesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoParticipante
+     */
+    select?: InternoParticipanteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoParticipante
+     */
+    omit?: InternoParticipanteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoParticipanteInclude<ExtArgs> | null
+    where?: InternoParticipanteWhereInput
+    orderBy?: InternoParticipanteOrderByWithRelationInput | InternoParticipanteOrderByWithRelationInput[]
+    cursor?: InternoParticipanteWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: InternoParticipanteScalarFieldEnum | InternoParticipanteScalarFieldEnum[]
+  }
+
+  /**
+   * User.internoMensagens
+   */
+  export type User$internoMensagensArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoMensagem
+     */
+    select?: InternoMensagemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoMensagem
+     */
+    omit?: InternoMensagemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoMensagemInclude<ExtArgs> | null
+    where?: InternoMensagemWhereInput
+    orderBy?: InternoMensagemOrderByWithRelationInput | InternoMensagemOrderByWithRelationInput[]
+    cursor?: InternoMensagemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: InternoMensagemScalarFieldEnum | InternoMensagemScalarFieldEnum[]
   }
 
   /**
@@ -44397,6 +44789,3397 @@ export namespace Prisma {
 
 
   /**
+   * Model InternoConversa
+   */
+
+  export type AggregateInternoConversa = {
+    _count: InternoConversaCountAggregateOutputType | null
+    _min: InternoConversaMinAggregateOutputType | null
+    _max: InternoConversaMaxAggregateOutputType | null
+  }
+
+  export type InternoConversaMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    tipo: string | null
+    nome: string | null
+    chaveDireta: string | null
+    criadoPorId: string | null
+    criadoEm: Date | null
+    ultimaMensagemEm: Date | null
+  }
+
+  export type InternoConversaMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    tipo: string | null
+    nome: string | null
+    chaveDireta: string | null
+    criadoPorId: string | null
+    criadoEm: Date | null
+    ultimaMensagemEm: Date | null
+  }
+
+  export type InternoConversaCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    tipo: number
+    nome: number
+    chaveDireta: number
+    criadoPorId: number
+    criadoEm: number
+    ultimaMensagemEm: number
+    _all: number
+  }
+
+
+  export type InternoConversaMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    tipo?: true
+    nome?: true
+    chaveDireta?: true
+    criadoPorId?: true
+    criadoEm?: true
+    ultimaMensagemEm?: true
+  }
+
+  export type InternoConversaMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    tipo?: true
+    nome?: true
+    chaveDireta?: true
+    criadoPorId?: true
+    criadoEm?: true
+    ultimaMensagemEm?: true
+  }
+
+  export type InternoConversaCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    tipo?: true
+    nome?: true
+    chaveDireta?: true
+    criadoPorId?: true
+    criadoEm?: true
+    ultimaMensagemEm?: true
+    _all?: true
+  }
+
+  export type InternoConversaAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which InternoConversa to aggregate.
+     */
+    where?: InternoConversaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InternoConversas to fetch.
+     */
+    orderBy?: InternoConversaOrderByWithRelationInput | InternoConversaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: InternoConversaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InternoConversas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InternoConversas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned InternoConversas
+    **/
+    _count?: true | InternoConversaCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: InternoConversaMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: InternoConversaMaxAggregateInputType
+  }
+
+  export type GetInternoConversaAggregateType<T extends InternoConversaAggregateArgs> = {
+        [P in keyof T & keyof AggregateInternoConversa]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateInternoConversa[P]>
+      : GetScalarType<T[P], AggregateInternoConversa[P]>
+  }
+
+
+
+
+  export type InternoConversaGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InternoConversaWhereInput
+    orderBy?: InternoConversaOrderByWithAggregationInput | InternoConversaOrderByWithAggregationInput[]
+    by: InternoConversaScalarFieldEnum[] | InternoConversaScalarFieldEnum
+    having?: InternoConversaScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: InternoConversaCountAggregateInputType | true
+    _min?: InternoConversaMinAggregateInputType
+    _max?: InternoConversaMaxAggregateInputType
+  }
+
+  export type InternoConversaGroupByOutputType = {
+    id: string
+    workspaceId: string
+    tipo: string
+    nome: string | null
+    chaveDireta: string | null
+    criadoPorId: string | null
+    criadoEm: Date
+    ultimaMensagemEm: Date
+    _count: InternoConversaCountAggregateOutputType | null
+    _min: InternoConversaMinAggregateOutputType | null
+    _max: InternoConversaMaxAggregateOutputType | null
+  }
+
+  type GetInternoConversaGroupByPayload<T extends InternoConversaGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<InternoConversaGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof InternoConversaGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], InternoConversaGroupByOutputType[P]>
+            : GetScalarType<T[P], InternoConversaGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type InternoConversaSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    tipo?: boolean
+    nome?: boolean
+    chaveDireta?: boolean
+    criadoPorId?: boolean
+    criadoEm?: boolean
+    ultimaMensagemEm?: boolean
+    participantes?: boolean | InternoConversa$participantesArgs<ExtArgs>
+    mensagens?: boolean | InternoConversa$mensagensArgs<ExtArgs>
+    _count?: boolean | InternoConversaCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["internoConversa"]>
+
+  export type InternoConversaSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    tipo?: boolean
+    nome?: boolean
+    chaveDireta?: boolean
+    criadoPorId?: boolean
+    criadoEm?: boolean
+    ultimaMensagemEm?: boolean
+  }, ExtArgs["result"]["internoConversa"]>
+
+  export type InternoConversaSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    tipo?: boolean
+    nome?: boolean
+    chaveDireta?: boolean
+    criadoPorId?: boolean
+    criadoEm?: boolean
+    ultimaMensagemEm?: boolean
+  }, ExtArgs["result"]["internoConversa"]>
+
+  export type InternoConversaSelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    tipo?: boolean
+    nome?: boolean
+    chaveDireta?: boolean
+    criadoPorId?: boolean
+    criadoEm?: boolean
+    ultimaMensagemEm?: boolean
+  }
+
+  export type InternoConversaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "tipo" | "nome" | "chaveDireta" | "criadoPorId" | "criadoEm" | "ultimaMensagemEm", ExtArgs["result"]["internoConversa"]>
+  export type InternoConversaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    participantes?: boolean | InternoConversa$participantesArgs<ExtArgs>
+    mensagens?: boolean | InternoConversa$mensagensArgs<ExtArgs>
+    _count?: boolean | InternoConversaCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type InternoConversaIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type InternoConversaIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $InternoConversaPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "InternoConversa"
+    objects: {
+      participantes: Prisma.$InternoParticipantePayload<ExtArgs>[]
+      mensagens: Prisma.$InternoMensagemPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
+      /**
+       * "direta" ou "grupo".
+       */
+      tipo: string
+      /**
+       * Nome do grupo (conversas diretas não têm).
+       */
+      nome: string | null
+      /**
+       * Conversa direta: chave única "<idMenor>:<idMaior>" para não duplicar o par.
+       */
+      chaveDireta: string | null
+      criadoPorId: string | null
+      criadoEm: Date
+      /**
+       * Data da última mensagem (ordena a lista).
+       */
+      ultimaMensagemEm: Date
+    }, ExtArgs["result"]["internoConversa"]>
+    composites: {}
+  }
+
+  type InternoConversaGetPayload<S extends boolean | null | undefined | InternoConversaDefaultArgs> = $Result.GetResult<Prisma.$InternoConversaPayload, S>
+
+  type InternoConversaCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<InternoConversaFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: InternoConversaCountAggregateInputType | true
+    }
+
+  export interface InternoConversaDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['InternoConversa'], meta: { name: 'InternoConversa' } }
+    /**
+     * Find zero or one InternoConversa that matches the filter.
+     * @param {InternoConversaFindUniqueArgs} args - Arguments to find a InternoConversa
+     * @example
+     * // Get one InternoConversa
+     * const internoConversa = await prisma.internoConversa.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends InternoConversaFindUniqueArgs>(args: SelectSubset<T, InternoConversaFindUniqueArgs<ExtArgs>>): Prisma__InternoConversaClient<$Result.GetResult<Prisma.$InternoConversaPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one InternoConversa that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {InternoConversaFindUniqueOrThrowArgs} args - Arguments to find a InternoConversa
+     * @example
+     * // Get one InternoConversa
+     * const internoConversa = await prisma.internoConversa.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends InternoConversaFindUniqueOrThrowArgs>(args: SelectSubset<T, InternoConversaFindUniqueOrThrowArgs<ExtArgs>>): Prisma__InternoConversaClient<$Result.GetResult<Prisma.$InternoConversaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first InternoConversa that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoConversaFindFirstArgs} args - Arguments to find a InternoConversa
+     * @example
+     * // Get one InternoConversa
+     * const internoConversa = await prisma.internoConversa.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends InternoConversaFindFirstArgs>(args?: SelectSubset<T, InternoConversaFindFirstArgs<ExtArgs>>): Prisma__InternoConversaClient<$Result.GetResult<Prisma.$InternoConversaPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first InternoConversa that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoConversaFindFirstOrThrowArgs} args - Arguments to find a InternoConversa
+     * @example
+     * // Get one InternoConversa
+     * const internoConversa = await prisma.internoConversa.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends InternoConversaFindFirstOrThrowArgs>(args?: SelectSubset<T, InternoConversaFindFirstOrThrowArgs<ExtArgs>>): Prisma__InternoConversaClient<$Result.GetResult<Prisma.$InternoConversaPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more InternoConversas that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoConversaFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all InternoConversas
+     * const internoConversas = await prisma.internoConversa.findMany()
+     * 
+     * // Get first 10 InternoConversas
+     * const internoConversas = await prisma.internoConversa.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const internoConversaWithIdOnly = await prisma.internoConversa.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends InternoConversaFindManyArgs>(args?: SelectSubset<T, InternoConversaFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InternoConversaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a InternoConversa.
+     * @param {InternoConversaCreateArgs} args - Arguments to create a InternoConversa.
+     * @example
+     * // Create one InternoConversa
+     * const InternoConversa = await prisma.internoConversa.create({
+     *   data: {
+     *     // ... data to create a InternoConversa
+     *   }
+     * })
+     * 
+     */
+    create<T extends InternoConversaCreateArgs>(args: SelectSubset<T, InternoConversaCreateArgs<ExtArgs>>): Prisma__InternoConversaClient<$Result.GetResult<Prisma.$InternoConversaPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many InternoConversas.
+     * @param {InternoConversaCreateManyArgs} args - Arguments to create many InternoConversas.
+     * @example
+     * // Create many InternoConversas
+     * const internoConversa = await prisma.internoConversa.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends InternoConversaCreateManyArgs>(args?: SelectSubset<T, InternoConversaCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many InternoConversas and returns the data saved in the database.
+     * @param {InternoConversaCreateManyAndReturnArgs} args - Arguments to create many InternoConversas.
+     * @example
+     * // Create many InternoConversas
+     * const internoConversa = await prisma.internoConversa.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many InternoConversas and only return the `id`
+     * const internoConversaWithIdOnly = await prisma.internoConversa.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends InternoConversaCreateManyAndReturnArgs>(args?: SelectSubset<T, InternoConversaCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InternoConversaPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a InternoConversa.
+     * @param {InternoConversaDeleteArgs} args - Arguments to delete one InternoConversa.
+     * @example
+     * // Delete one InternoConversa
+     * const InternoConversa = await prisma.internoConversa.delete({
+     *   where: {
+     *     // ... filter to delete one InternoConversa
+     *   }
+     * })
+     * 
+     */
+    delete<T extends InternoConversaDeleteArgs>(args: SelectSubset<T, InternoConversaDeleteArgs<ExtArgs>>): Prisma__InternoConversaClient<$Result.GetResult<Prisma.$InternoConversaPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one InternoConversa.
+     * @param {InternoConversaUpdateArgs} args - Arguments to update one InternoConversa.
+     * @example
+     * // Update one InternoConversa
+     * const internoConversa = await prisma.internoConversa.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends InternoConversaUpdateArgs>(args: SelectSubset<T, InternoConversaUpdateArgs<ExtArgs>>): Prisma__InternoConversaClient<$Result.GetResult<Prisma.$InternoConversaPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more InternoConversas.
+     * @param {InternoConversaDeleteManyArgs} args - Arguments to filter InternoConversas to delete.
+     * @example
+     * // Delete a few InternoConversas
+     * const { count } = await prisma.internoConversa.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends InternoConversaDeleteManyArgs>(args?: SelectSubset<T, InternoConversaDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more InternoConversas.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoConversaUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many InternoConversas
+     * const internoConversa = await prisma.internoConversa.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends InternoConversaUpdateManyArgs>(args: SelectSubset<T, InternoConversaUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more InternoConversas and returns the data updated in the database.
+     * @param {InternoConversaUpdateManyAndReturnArgs} args - Arguments to update many InternoConversas.
+     * @example
+     * // Update many InternoConversas
+     * const internoConversa = await prisma.internoConversa.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more InternoConversas and only return the `id`
+     * const internoConversaWithIdOnly = await prisma.internoConversa.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends InternoConversaUpdateManyAndReturnArgs>(args: SelectSubset<T, InternoConversaUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InternoConversaPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one InternoConversa.
+     * @param {InternoConversaUpsertArgs} args - Arguments to update or create a InternoConversa.
+     * @example
+     * // Update or create a InternoConversa
+     * const internoConversa = await prisma.internoConversa.upsert({
+     *   create: {
+     *     // ... data to create a InternoConversa
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the InternoConversa we want to update
+     *   }
+     * })
+     */
+    upsert<T extends InternoConversaUpsertArgs>(args: SelectSubset<T, InternoConversaUpsertArgs<ExtArgs>>): Prisma__InternoConversaClient<$Result.GetResult<Prisma.$InternoConversaPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of InternoConversas.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoConversaCountArgs} args - Arguments to filter InternoConversas to count.
+     * @example
+     * // Count the number of InternoConversas
+     * const count = await prisma.internoConversa.count({
+     *   where: {
+     *     // ... the filter for the InternoConversas we want to count
+     *   }
+     * })
+    **/
+    count<T extends InternoConversaCountArgs>(
+      args?: Subset<T, InternoConversaCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], InternoConversaCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a InternoConversa.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoConversaAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends InternoConversaAggregateArgs>(args: Subset<T, InternoConversaAggregateArgs>): Prisma.PrismaPromise<GetInternoConversaAggregateType<T>>
+
+    /**
+     * Group by InternoConversa.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoConversaGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends InternoConversaGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: InternoConversaGroupByArgs['orderBy'] }
+        : { orderBy?: InternoConversaGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, InternoConversaGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetInternoConversaGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the InternoConversa model
+   */
+  readonly fields: InternoConversaFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for InternoConversa.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__InternoConversaClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    participantes<T extends InternoConversa$participantesArgs<ExtArgs> = {}>(args?: Subset<T, InternoConversa$participantesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InternoParticipantePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    mensagens<T extends InternoConversa$mensagensArgs<ExtArgs> = {}>(args?: Subset<T, InternoConversa$mensagensArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InternoMensagemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the InternoConversa model
+   */
+  interface InternoConversaFieldRefs {
+    readonly id: FieldRef<"InternoConversa", 'String'>
+    readonly workspaceId: FieldRef<"InternoConversa", 'String'>
+    readonly tipo: FieldRef<"InternoConversa", 'String'>
+    readonly nome: FieldRef<"InternoConversa", 'String'>
+    readonly chaveDireta: FieldRef<"InternoConversa", 'String'>
+    readonly criadoPorId: FieldRef<"InternoConversa", 'String'>
+    readonly criadoEm: FieldRef<"InternoConversa", 'DateTime'>
+    readonly ultimaMensagemEm: FieldRef<"InternoConversa", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * InternoConversa findUnique
+   */
+  export type InternoConversaFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoConversa
+     */
+    select?: InternoConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoConversa
+     */
+    omit?: InternoConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoConversaInclude<ExtArgs> | null
+    /**
+     * Filter, which InternoConversa to fetch.
+     */
+    where: InternoConversaWhereUniqueInput
+  }
+
+  /**
+   * InternoConversa findUniqueOrThrow
+   */
+  export type InternoConversaFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoConversa
+     */
+    select?: InternoConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoConversa
+     */
+    omit?: InternoConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoConversaInclude<ExtArgs> | null
+    /**
+     * Filter, which InternoConversa to fetch.
+     */
+    where: InternoConversaWhereUniqueInput
+  }
+
+  /**
+   * InternoConversa findFirst
+   */
+  export type InternoConversaFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoConversa
+     */
+    select?: InternoConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoConversa
+     */
+    omit?: InternoConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoConversaInclude<ExtArgs> | null
+    /**
+     * Filter, which InternoConversa to fetch.
+     */
+    where?: InternoConversaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InternoConversas to fetch.
+     */
+    orderBy?: InternoConversaOrderByWithRelationInput | InternoConversaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for InternoConversas.
+     */
+    cursor?: InternoConversaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InternoConversas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InternoConversas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of InternoConversas.
+     */
+    distinct?: InternoConversaScalarFieldEnum | InternoConversaScalarFieldEnum[]
+  }
+
+  /**
+   * InternoConversa findFirstOrThrow
+   */
+  export type InternoConversaFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoConversa
+     */
+    select?: InternoConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoConversa
+     */
+    omit?: InternoConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoConversaInclude<ExtArgs> | null
+    /**
+     * Filter, which InternoConversa to fetch.
+     */
+    where?: InternoConversaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InternoConversas to fetch.
+     */
+    orderBy?: InternoConversaOrderByWithRelationInput | InternoConversaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for InternoConversas.
+     */
+    cursor?: InternoConversaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InternoConversas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InternoConversas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of InternoConversas.
+     */
+    distinct?: InternoConversaScalarFieldEnum | InternoConversaScalarFieldEnum[]
+  }
+
+  /**
+   * InternoConversa findMany
+   */
+  export type InternoConversaFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoConversa
+     */
+    select?: InternoConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoConversa
+     */
+    omit?: InternoConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoConversaInclude<ExtArgs> | null
+    /**
+     * Filter, which InternoConversas to fetch.
+     */
+    where?: InternoConversaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InternoConversas to fetch.
+     */
+    orderBy?: InternoConversaOrderByWithRelationInput | InternoConversaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing InternoConversas.
+     */
+    cursor?: InternoConversaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InternoConversas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InternoConversas.
+     */
+    skip?: number
+    distinct?: InternoConversaScalarFieldEnum | InternoConversaScalarFieldEnum[]
+  }
+
+  /**
+   * InternoConversa create
+   */
+  export type InternoConversaCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoConversa
+     */
+    select?: InternoConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoConversa
+     */
+    omit?: InternoConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoConversaInclude<ExtArgs> | null
+    /**
+     * The data needed to create a InternoConversa.
+     */
+    data: XOR<InternoConversaCreateInput, InternoConversaUncheckedCreateInput>
+  }
+
+  /**
+   * InternoConversa createMany
+   */
+  export type InternoConversaCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many InternoConversas.
+     */
+    data: InternoConversaCreateManyInput | InternoConversaCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * InternoConversa createManyAndReturn
+   */
+  export type InternoConversaCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoConversa
+     */
+    select?: InternoConversaSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoConversa
+     */
+    omit?: InternoConversaOmit<ExtArgs> | null
+    /**
+     * The data used to create many InternoConversas.
+     */
+    data: InternoConversaCreateManyInput | InternoConversaCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * InternoConversa update
+   */
+  export type InternoConversaUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoConversa
+     */
+    select?: InternoConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoConversa
+     */
+    omit?: InternoConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoConversaInclude<ExtArgs> | null
+    /**
+     * The data needed to update a InternoConversa.
+     */
+    data: XOR<InternoConversaUpdateInput, InternoConversaUncheckedUpdateInput>
+    /**
+     * Choose, which InternoConversa to update.
+     */
+    where: InternoConversaWhereUniqueInput
+  }
+
+  /**
+   * InternoConversa updateMany
+   */
+  export type InternoConversaUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update InternoConversas.
+     */
+    data: XOR<InternoConversaUpdateManyMutationInput, InternoConversaUncheckedUpdateManyInput>
+    /**
+     * Filter which InternoConversas to update
+     */
+    where?: InternoConversaWhereInput
+    /**
+     * Limit how many InternoConversas to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * InternoConversa updateManyAndReturn
+   */
+  export type InternoConversaUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoConversa
+     */
+    select?: InternoConversaSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoConversa
+     */
+    omit?: InternoConversaOmit<ExtArgs> | null
+    /**
+     * The data used to update InternoConversas.
+     */
+    data: XOR<InternoConversaUpdateManyMutationInput, InternoConversaUncheckedUpdateManyInput>
+    /**
+     * Filter which InternoConversas to update
+     */
+    where?: InternoConversaWhereInput
+    /**
+     * Limit how many InternoConversas to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * InternoConversa upsert
+   */
+  export type InternoConversaUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoConversa
+     */
+    select?: InternoConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoConversa
+     */
+    omit?: InternoConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoConversaInclude<ExtArgs> | null
+    /**
+     * The filter to search for the InternoConversa to update in case it exists.
+     */
+    where: InternoConversaWhereUniqueInput
+    /**
+     * In case the InternoConversa found by the `where` argument doesn't exist, create a new InternoConversa with this data.
+     */
+    create: XOR<InternoConversaCreateInput, InternoConversaUncheckedCreateInput>
+    /**
+     * In case the InternoConversa was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<InternoConversaUpdateInput, InternoConversaUncheckedUpdateInput>
+  }
+
+  /**
+   * InternoConversa delete
+   */
+  export type InternoConversaDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoConversa
+     */
+    select?: InternoConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoConversa
+     */
+    omit?: InternoConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoConversaInclude<ExtArgs> | null
+    /**
+     * Filter which InternoConversa to delete.
+     */
+    where: InternoConversaWhereUniqueInput
+  }
+
+  /**
+   * InternoConversa deleteMany
+   */
+  export type InternoConversaDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which InternoConversas to delete
+     */
+    where?: InternoConversaWhereInput
+    /**
+     * Limit how many InternoConversas to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * InternoConversa.participantes
+   */
+  export type InternoConversa$participantesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoParticipante
+     */
+    select?: InternoParticipanteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoParticipante
+     */
+    omit?: InternoParticipanteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoParticipanteInclude<ExtArgs> | null
+    where?: InternoParticipanteWhereInput
+    orderBy?: InternoParticipanteOrderByWithRelationInput | InternoParticipanteOrderByWithRelationInput[]
+    cursor?: InternoParticipanteWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: InternoParticipanteScalarFieldEnum | InternoParticipanteScalarFieldEnum[]
+  }
+
+  /**
+   * InternoConversa.mensagens
+   */
+  export type InternoConversa$mensagensArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoMensagem
+     */
+    select?: InternoMensagemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoMensagem
+     */
+    omit?: InternoMensagemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoMensagemInclude<ExtArgs> | null
+    where?: InternoMensagemWhereInput
+    orderBy?: InternoMensagemOrderByWithRelationInput | InternoMensagemOrderByWithRelationInput[]
+    cursor?: InternoMensagemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: InternoMensagemScalarFieldEnum | InternoMensagemScalarFieldEnum[]
+  }
+
+  /**
+   * InternoConversa without action
+   */
+  export type InternoConversaDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoConversa
+     */
+    select?: InternoConversaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoConversa
+     */
+    omit?: InternoConversaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoConversaInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model InternoParticipante
+   */
+
+  export type AggregateInternoParticipante = {
+    _count: InternoParticipanteCountAggregateOutputType | null
+    _min: InternoParticipanteMinAggregateOutputType | null
+    _max: InternoParticipanteMaxAggregateOutputType | null
+  }
+
+  export type InternoParticipanteMinAggregateOutputType = {
+    conversaId: string | null
+    userId: string | null
+    ultimaLeituraEm: Date | null
+    entrouEm: Date | null
+  }
+
+  export type InternoParticipanteMaxAggregateOutputType = {
+    conversaId: string | null
+    userId: string | null
+    ultimaLeituraEm: Date | null
+    entrouEm: Date | null
+  }
+
+  export type InternoParticipanteCountAggregateOutputType = {
+    conversaId: number
+    userId: number
+    ultimaLeituraEm: number
+    entrouEm: number
+    _all: number
+  }
+
+
+  export type InternoParticipanteMinAggregateInputType = {
+    conversaId?: true
+    userId?: true
+    ultimaLeituraEm?: true
+    entrouEm?: true
+  }
+
+  export type InternoParticipanteMaxAggregateInputType = {
+    conversaId?: true
+    userId?: true
+    ultimaLeituraEm?: true
+    entrouEm?: true
+  }
+
+  export type InternoParticipanteCountAggregateInputType = {
+    conversaId?: true
+    userId?: true
+    ultimaLeituraEm?: true
+    entrouEm?: true
+    _all?: true
+  }
+
+  export type InternoParticipanteAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which InternoParticipante to aggregate.
+     */
+    where?: InternoParticipanteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InternoParticipantes to fetch.
+     */
+    orderBy?: InternoParticipanteOrderByWithRelationInput | InternoParticipanteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: InternoParticipanteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InternoParticipantes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InternoParticipantes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned InternoParticipantes
+    **/
+    _count?: true | InternoParticipanteCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: InternoParticipanteMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: InternoParticipanteMaxAggregateInputType
+  }
+
+  export type GetInternoParticipanteAggregateType<T extends InternoParticipanteAggregateArgs> = {
+        [P in keyof T & keyof AggregateInternoParticipante]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateInternoParticipante[P]>
+      : GetScalarType<T[P], AggregateInternoParticipante[P]>
+  }
+
+
+
+
+  export type InternoParticipanteGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InternoParticipanteWhereInput
+    orderBy?: InternoParticipanteOrderByWithAggregationInput | InternoParticipanteOrderByWithAggregationInput[]
+    by: InternoParticipanteScalarFieldEnum[] | InternoParticipanteScalarFieldEnum
+    having?: InternoParticipanteScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: InternoParticipanteCountAggregateInputType | true
+    _min?: InternoParticipanteMinAggregateInputType
+    _max?: InternoParticipanteMaxAggregateInputType
+  }
+
+  export type InternoParticipanteGroupByOutputType = {
+    conversaId: string
+    userId: string
+    ultimaLeituraEm: Date
+    entrouEm: Date
+    _count: InternoParticipanteCountAggregateOutputType | null
+    _min: InternoParticipanteMinAggregateOutputType | null
+    _max: InternoParticipanteMaxAggregateOutputType | null
+  }
+
+  type GetInternoParticipanteGroupByPayload<T extends InternoParticipanteGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<InternoParticipanteGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof InternoParticipanteGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], InternoParticipanteGroupByOutputType[P]>
+            : GetScalarType<T[P], InternoParticipanteGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type InternoParticipanteSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    conversaId?: boolean
+    userId?: boolean
+    ultimaLeituraEm?: boolean
+    entrouEm?: boolean
+    conversa?: boolean | InternoConversaDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["internoParticipante"]>
+
+  export type InternoParticipanteSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    conversaId?: boolean
+    userId?: boolean
+    ultimaLeituraEm?: boolean
+    entrouEm?: boolean
+    conversa?: boolean | InternoConversaDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["internoParticipante"]>
+
+  export type InternoParticipanteSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    conversaId?: boolean
+    userId?: boolean
+    ultimaLeituraEm?: boolean
+    entrouEm?: boolean
+    conversa?: boolean | InternoConversaDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["internoParticipante"]>
+
+  export type InternoParticipanteSelectScalar = {
+    conversaId?: boolean
+    userId?: boolean
+    ultimaLeituraEm?: boolean
+    entrouEm?: boolean
+  }
+
+  export type InternoParticipanteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"conversaId" | "userId" | "ultimaLeituraEm" | "entrouEm", ExtArgs["result"]["internoParticipante"]>
+  export type InternoParticipanteInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    conversa?: boolean | InternoConversaDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type InternoParticipanteIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    conversa?: boolean | InternoConversaDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type InternoParticipanteIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    conversa?: boolean | InternoConversaDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $InternoParticipantePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "InternoParticipante"
+    objects: {
+      conversa: Prisma.$InternoConversaPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      conversaId: string
+      userId: string
+      /**
+       * Tudo o que for posterior a isto conta como não lido.
+       */
+      ultimaLeituraEm: Date
+      entrouEm: Date
+    }, ExtArgs["result"]["internoParticipante"]>
+    composites: {}
+  }
+
+  type InternoParticipanteGetPayload<S extends boolean | null | undefined | InternoParticipanteDefaultArgs> = $Result.GetResult<Prisma.$InternoParticipantePayload, S>
+
+  type InternoParticipanteCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<InternoParticipanteFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: InternoParticipanteCountAggregateInputType | true
+    }
+
+  export interface InternoParticipanteDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['InternoParticipante'], meta: { name: 'InternoParticipante' } }
+    /**
+     * Find zero or one InternoParticipante that matches the filter.
+     * @param {InternoParticipanteFindUniqueArgs} args - Arguments to find a InternoParticipante
+     * @example
+     * // Get one InternoParticipante
+     * const internoParticipante = await prisma.internoParticipante.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends InternoParticipanteFindUniqueArgs>(args: SelectSubset<T, InternoParticipanteFindUniqueArgs<ExtArgs>>): Prisma__InternoParticipanteClient<$Result.GetResult<Prisma.$InternoParticipantePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one InternoParticipante that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {InternoParticipanteFindUniqueOrThrowArgs} args - Arguments to find a InternoParticipante
+     * @example
+     * // Get one InternoParticipante
+     * const internoParticipante = await prisma.internoParticipante.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends InternoParticipanteFindUniqueOrThrowArgs>(args: SelectSubset<T, InternoParticipanteFindUniqueOrThrowArgs<ExtArgs>>): Prisma__InternoParticipanteClient<$Result.GetResult<Prisma.$InternoParticipantePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first InternoParticipante that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoParticipanteFindFirstArgs} args - Arguments to find a InternoParticipante
+     * @example
+     * // Get one InternoParticipante
+     * const internoParticipante = await prisma.internoParticipante.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends InternoParticipanteFindFirstArgs>(args?: SelectSubset<T, InternoParticipanteFindFirstArgs<ExtArgs>>): Prisma__InternoParticipanteClient<$Result.GetResult<Prisma.$InternoParticipantePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first InternoParticipante that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoParticipanteFindFirstOrThrowArgs} args - Arguments to find a InternoParticipante
+     * @example
+     * // Get one InternoParticipante
+     * const internoParticipante = await prisma.internoParticipante.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends InternoParticipanteFindFirstOrThrowArgs>(args?: SelectSubset<T, InternoParticipanteFindFirstOrThrowArgs<ExtArgs>>): Prisma__InternoParticipanteClient<$Result.GetResult<Prisma.$InternoParticipantePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more InternoParticipantes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoParticipanteFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all InternoParticipantes
+     * const internoParticipantes = await prisma.internoParticipante.findMany()
+     * 
+     * // Get first 10 InternoParticipantes
+     * const internoParticipantes = await prisma.internoParticipante.findMany({ take: 10 })
+     * 
+     * // Only select the `conversaId`
+     * const internoParticipanteWithConversaIdOnly = await prisma.internoParticipante.findMany({ select: { conversaId: true } })
+     * 
+     */
+    findMany<T extends InternoParticipanteFindManyArgs>(args?: SelectSubset<T, InternoParticipanteFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InternoParticipantePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a InternoParticipante.
+     * @param {InternoParticipanteCreateArgs} args - Arguments to create a InternoParticipante.
+     * @example
+     * // Create one InternoParticipante
+     * const InternoParticipante = await prisma.internoParticipante.create({
+     *   data: {
+     *     // ... data to create a InternoParticipante
+     *   }
+     * })
+     * 
+     */
+    create<T extends InternoParticipanteCreateArgs>(args: SelectSubset<T, InternoParticipanteCreateArgs<ExtArgs>>): Prisma__InternoParticipanteClient<$Result.GetResult<Prisma.$InternoParticipantePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many InternoParticipantes.
+     * @param {InternoParticipanteCreateManyArgs} args - Arguments to create many InternoParticipantes.
+     * @example
+     * // Create many InternoParticipantes
+     * const internoParticipante = await prisma.internoParticipante.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends InternoParticipanteCreateManyArgs>(args?: SelectSubset<T, InternoParticipanteCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many InternoParticipantes and returns the data saved in the database.
+     * @param {InternoParticipanteCreateManyAndReturnArgs} args - Arguments to create many InternoParticipantes.
+     * @example
+     * // Create many InternoParticipantes
+     * const internoParticipante = await prisma.internoParticipante.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many InternoParticipantes and only return the `conversaId`
+     * const internoParticipanteWithConversaIdOnly = await prisma.internoParticipante.createManyAndReturn({
+     *   select: { conversaId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends InternoParticipanteCreateManyAndReturnArgs>(args?: SelectSubset<T, InternoParticipanteCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InternoParticipantePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a InternoParticipante.
+     * @param {InternoParticipanteDeleteArgs} args - Arguments to delete one InternoParticipante.
+     * @example
+     * // Delete one InternoParticipante
+     * const InternoParticipante = await prisma.internoParticipante.delete({
+     *   where: {
+     *     // ... filter to delete one InternoParticipante
+     *   }
+     * })
+     * 
+     */
+    delete<T extends InternoParticipanteDeleteArgs>(args: SelectSubset<T, InternoParticipanteDeleteArgs<ExtArgs>>): Prisma__InternoParticipanteClient<$Result.GetResult<Prisma.$InternoParticipantePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one InternoParticipante.
+     * @param {InternoParticipanteUpdateArgs} args - Arguments to update one InternoParticipante.
+     * @example
+     * // Update one InternoParticipante
+     * const internoParticipante = await prisma.internoParticipante.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends InternoParticipanteUpdateArgs>(args: SelectSubset<T, InternoParticipanteUpdateArgs<ExtArgs>>): Prisma__InternoParticipanteClient<$Result.GetResult<Prisma.$InternoParticipantePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more InternoParticipantes.
+     * @param {InternoParticipanteDeleteManyArgs} args - Arguments to filter InternoParticipantes to delete.
+     * @example
+     * // Delete a few InternoParticipantes
+     * const { count } = await prisma.internoParticipante.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends InternoParticipanteDeleteManyArgs>(args?: SelectSubset<T, InternoParticipanteDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more InternoParticipantes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoParticipanteUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many InternoParticipantes
+     * const internoParticipante = await prisma.internoParticipante.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends InternoParticipanteUpdateManyArgs>(args: SelectSubset<T, InternoParticipanteUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more InternoParticipantes and returns the data updated in the database.
+     * @param {InternoParticipanteUpdateManyAndReturnArgs} args - Arguments to update many InternoParticipantes.
+     * @example
+     * // Update many InternoParticipantes
+     * const internoParticipante = await prisma.internoParticipante.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more InternoParticipantes and only return the `conversaId`
+     * const internoParticipanteWithConversaIdOnly = await prisma.internoParticipante.updateManyAndReturn({
+     *   select: { conversaId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends InternoParticipanteUpdateManyAndReturnArgs>(args: SelectSubset<T, InternoParticipanteUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InternoParticipantePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one InternoParticipante.
+     * @param {InternoParticipanteUpsertArgs} args - Arguments to update or create a InternoParticipante.
+     * @example
+     * // Update or create a InternoParticipante
+     * const internoParticipante = await prisma.internoParticipante.upsert({
+     *   create: {
+     *     // ... data to create a InternoParticipante
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the InternoParticipante we want to update
+     *   }
+     * })
+     */
+    upsert<T extends InternoParticipanteUpsertArgs>(args: SelectSubset<T, InternoParticipanteUpsertArgs<ExtArgs>>): Prisma__InternoParticipanteClient<$Result.GetResult<Prisma.$InternoParticipantePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of InternoParticipantes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoParticipanteCountArgs} args - Arguments to filter InternoParticipantes to count.
+     * @example
+     * // Count the number of InternoParticipantes
+     * const count = await prisma.internoParticipante.count({
+     *   where: {
+     *     // ... the filter for the InternoParticipantes we want to count
+     *   }
+     * })
+    **/
+    count<T extends InternoParticipanteCountArgs>(
+      args?: Subset<T, InternoParticipanteCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], InternoParticipanteCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a InternoParticipante.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoParticipanteAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends InternoParticipanteAggregateArgs>(args: Subset<T, InternoParticipanteAggregateArgs>): Prisma.PrismaPromise<GetInternoParticipanteAggregateType<T>>
+
+    /**
+     * Group by InternoParticipante.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoParticipanteGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends InternoParticipanteGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: InternoParticipanteGroupByArgs['orderBy'] }
+        : { orderBy?: InternoParticipanteGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, InternoParticipanteGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetInternoParticipanteGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the InternoParticipante model
+   */
+  readonly fields: InternoParticipanteFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for InternoParticipante.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__InternoParticipanteClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    conversa<T extends InternoConversaDefaultArgs<ExtArgs> = {}>(args?: Subset<T, InternoConversaDefaultArgs<ExtArgs>>): Prisma__InternoConversaClient<$Result.GetResult<Prisma.$InternoConversaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the InternoParticipante model
+   */
+  interface InternoParticipanteFieldRefs {
+    readonly conversaId: FieldRef<"InternoParticipante", 'String'>
+    readonly userId: FieldRef<"InternoParticipante", 'String'>
+    readonly ultimaLeituraEm: FieldRef<"InternoParticipante", 'DateTime'>
+    readonly entrouEm: FieldRef<"InternoParticipante", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * InternoParticipante findUnique
+   */
+  export type InternoParticipanteFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoParticipante
+     */
+    select?: InternoParticipanteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoParticipante
+     */
+    omit?: InternoParticipanteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoParticipanteInclude<ExtArgs> | null
+    /**
+     * Filter, which InternoParticipante to fetch.
+     */
+    where: InternoParticipanteWhereUniqueInput
+  }
+
+  /**
+   * InternoParticipante findUniqueOrThrow
+   */
+  export type InternoParticipanteFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoParticipante
+     */
+    select?: InternoParticipanteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoParticipante
+     */
+    omit?: InternoParticipanteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoParticipanteInclude<ExtArgs> | null
+    /**
+     * Filter, which InternoParticipante to fetch.
+     */
+    where: InternoParticipanteWhereUniqueInput
+  }
+
+  /**
+   * InternoParticipante findFirst
+   */
+  export type InternoParticipanteFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoParticipante
+     */
+    select?: InternoParticipanteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoParticipante
+     */
+    omit?: InternoParticipanteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoParticipanteInclude<ExtArgs> | null
+    /**
+     * Filter, which InternoParticipante to fetch.
+     */
+    where?: InternoParticipanteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InternoParticipantes to fetch.
+     */
+    orderBy?: InternoParticipanteOrderByWithRelationInput | InternoParticipanteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for InternoParticipantes.
+     */
+    cursor?: InternoParticipanteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InternoParticipantes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InternoParticipantes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of InternoParticipantes.
+     */
+    distinct?: InternoParticipanteScalarFieldEnum | InternoParticipanteScalarFieldEnum[]
+  }
+
+  /**
+   * InternoParticipante findFirstOrThrow
+   */
+  export type InternoParticipanteFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoParticipante
+     */
+    select?: InternoParticipanteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoParticipante
+     */
+    omit?: InternoParticipanteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoParticipanteInclude<ExtArgs> | null
+    /**
+     * Filter, which InternoParticipante to fetch.
+     */
+    where?: InternoParticipanteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InternoParticipantes to fetch.
+     */
+    orderBy?: InternoParticipanteOrderByWithRelationInput | InternoParticipanteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for InternoParticipantes.
+     */
+    cursor?: InternoParticipanteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InternoParticipantes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InternoParticipantes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of InternoParticipantes.
+     */
+    distinct?: InternoParticipanteScalarFieldEnum | InternoParticipanteScalarFieldEnum[]
+  }
+
+  /**
+   * InternoParticipante findMany
+   */
+  export type InternoParticipanteFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoParticipante
+     */
+    select?: InternoParticipanteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoParticipante
+     */
+    omit?: InternoParticipanteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoParticipanteInclude<ExtArgs> | null
+    /**
+     * Filter, which InternoParticipantes to fetch.
+     */
+    where?: InternoParticipanteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InternoParticipantes to fetch.
+     */
+    orderBy?: InternoParticipanteOrderByWithRelationInput | InternoParticipanteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing InternoParticipantes.
+     */
+    cursor?: InternoParticipanteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InternoParticipantes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InternoParticipantes.
+     */
+    skip?: number
+    distinct?: InternoParticipanteScalarFieldEnum | InternoParticipanteScalarFieldEnum[]
+  }
+
+  /**
+   * InternoParticipante create
+   */
+  export type InternoParticipanteCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoParticipante
+     */
+    select?: InternoParticipanteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoParticipante
+     */
+    omit?: InternoParticipanteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoParticipanteInclude<ExtArgs> | null
+    /**
+     * The data needed to create a InternoParticipante.
+     */
+    data: XOR<InternoParticipanteCreateInput, InternoParticipanteUncheckedCreateInput>
+  }
+
+  /**
+   * InternoParticipante createMany
+   */
+  export type InternoParticipanteCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many InternoParticipantes.
+     */
+    data: InternoParticipanteCreateManyInput | InternoParticipanteCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * InternoParticipante createManyAndReturn
+   */
+  export type InternoParticipanteCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoParticipante
+     */
+    select?: InternoParticipanteSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoParticipante
+     */
+    omit?: InternoParticipanteOmit<ExtArgs> | null
+    /**
+     * The data used to create many InternoParticipantes.
+     */
+    data: InternoParticipanteCreateManyInput | InternoParticipanteCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoParticipanteIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * InternoParticipante update
+   */
+  export type InternoParticipanteUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoParticipante
+     */
+    select?: InternoParticipanteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoParticipante
+     */
+    omit?: InternoParticipanteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoParticipanteInclude<ExtArgs> | null
+    /**
+     * The data needed to update a InternoParticipante.
+     */
+    data: XOR<InternoParticipanteUpdateInput, InternoParticipanteUncheckedUpdateInput>
+    /**
+     * Choose, which InternoParticipante to update.
+     */
+    where: InternoParticipanteWhereUniqueInput
+  }
+
+  /**
+   * InternoParticipante updateMany
+   */
+  export type InternoParticipanteUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update InternoParticipantes.
+     */
+    data: XOR<InternoParticipanteUpdateManyMutationInput, InternoParticipanteUncheckedUpdateManyInput>
+    /**
+     * Filter which InternoParticipantes to update
+     */
+    where?: InternoParticipanteWhereInput
+    /**
+     * Limit how many InternoParticipantes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * InternoParticipante updateManyAndReturn
+   */
+  export type InternoParticipanteUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoParticipante
+     */
+    select?: InternoParticipanteSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoParticipante
+     */
+    omit?: InternoParticipanteOmit<ExtArgs> | null
+    /**
+     * The data used to update InternoParticipantes.
+     */
+    data: XOR<InternoParticipanteUpdateManyMutationInput, InternoParticipanteUncheckedUpdateManyInput>
+    /**
+     * Filter which InternoParticipantes to update
+     */
+    where?: InternoParticipanteWhereInput
+    /**
+     * Limit how many InternoParticipantes to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoParticipanteIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * InternoParticipante upsert
+   */
+  export type InternoParticipanteUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoParticipante
+     */
+    select?: InternoParticipanteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoParticipante
+     */
+    omit?: InternoParticipanteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoParticipanteInclude<ExtArgs> | null
+    /**
+     * The filter to search for the InternoParticipante to update in case it exists.
+     */
+    where: InternoParticipanteWhereUniqueInput
+    /**
+     * In case the InternoParticipante found by the `where` argument doesn't exist, create a new InternoParticipante with this data.
+     */
+    create: XOR<InternoParticipanteCreateInput, InternoParticipanteUncheckedCreateInput>
+    /**
+     * In case the InternoParticipante was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<InternoParticipanteUpdateInput, InternoParticipanteUncheckedUpdateInput>
+  }
+
+  /**
+   * InternoParticipante delete
+   */
+  export type InternoParticipanteDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoParticipante
+     */
+    select?: InternoParticipanteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoParticipante
+     */
+    omit?: InternoParticipanteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoParticipanteInclude<ExtArgs> | null
+    /**
+     * Filter which InternoParticipante to delete.
+     */
+    where: InternoParticipanteWhereUniqueInput
+  }
+
+  /**
+   * InternoParticipante deleteMany
+   */
+  export type InternoParticipanteDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which InternoParticipantes to delete
+     */
+    where?: InternoParticipanteWhereInput
+    /**
+     * Limit how many InternoParticipantes to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * InternoParticipante without action
+   */
+  export type InternoParticipanteDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoParticipante
+     */
+    select?: InternoParticipanteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoParticipante
+     */
+    omit?: InternoParticipanteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoParticipanteInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model InternoMensagem
+   */
+
+  export type AggregateInternoMensagem = {
+    _count: InternoMensagemCountAggregateOutputType | null
+    _avg: InternoMensagemAvgAggregateOutputType | null
+    _sum: InternoMensagemSumAggregateOutputType | null
+    _min: InternoMensagemMinAggregateOutputType | null
+    _max: InternoMensagemMaxAggregateOutputType | null
+  }
+
+  export type InternoMensagemAvgAggregateOutputType = {
+    anexoTamanho: number | null
+  }
+
+  export type InternoMensagemSumAggregateOutputType = {
+    anexoTamanho: number | null
+  }
+
+  export type InternoMensagemMinAggregateOutputType = {
+    id: string | null
+    conversaId: string | null
+    autorId: string | null
+    texto: string | null
+    anexoId: string | null
+    anexoTipo: string | null
+    anexoMime: string | null
+    anexoTamanho: number | null
+    anexoNome: string | null
+    criadoEm: Date | null
+  }
+
+  export type InternoMensagemMaxAggregateOutputType = {
+    id: string | null
+    conversaId: string | null
+    autorId: string | null
+    texto: string | null
+    anexoId: string | null
+    anexoTipo: string | null
+    anexoMime: string | null
+    anexoTamanho: number | null
+    anexoNome: string | null
+    criadoEm: Date | null
+  }
+
+  export type InternoMensagemCountAggregateOutputType = {
+    id: number
+    conversaId: number
+    autorId: number
+    texto: number
+    anexoId: number
+    anexoTipo: number
+    anexoMime: number
+    anexoTamanho: number
+    anexoNome: number
+    baixadoPor: number
+    criadoEm: number
+    _all: number
+  }
+
+
+  export type InternoMensagemAvgAggregateInputType = {
+    anexoTamanho?: true
+  }
+
+  export type InternoMensagemSumAggregateInputType = {
+    anexoTamanho?: true
+  }
+
+  export type InternoMensagemMinAggregateInputType = {
+    id?: true
+    conversaId?: true
+    autorId?: true
+    texto?: true
+    anexoId?: true
+    anexoTipo?: true
+    anexoMime?: true
+    anexoTamanho?: true
+    anexoNome?: true
+    criadoEm?: true
+  }
+
+  export type InternoMensagemMaxAggregateInputType = {
+    id?: true
+    conversaId?: true
+    autorId?: true
+    texto?: true
+    anexoId?: true
+    anexoTipo?: true
+    anexoMime?: true
+    anexoTamanho?: true
+    anexoNome?: true
+    criadoEm?: true
+  }
+
+  export type InternoMensagemCountAggregateInputType = {
+    id?: true
+    conversaId?: true
+    autorId?: true
+    texto?: true
+    anexoId?: true
+    anexoTipo?: true
+    anexoMime?: true
+    anexoTamanho?: true
+    anexoNome?: true
+    baixadoPor?: true
+    criadoEm?: true
+    _all?: true
+  }
+
+  export type InternoMensagemAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which InternoMensagem to aggregate.
+     */
+    where?: InternoMensagemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InternoMensagems to fetch.
+     */
+    orderBy?: InternoMensagemOrderByWithRelationInput | InternoMensagemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: InternoMensagemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InternoMensagems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InternoMensagems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned InternoMensagems
+    **/
+    _count?: true | InternoMensagemCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: InternoMensagemAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: InternoMensagemSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: InternoMensagemMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: InternoMensagemMaxAggregateInputType
+  }
+
+  export type GetInternoMensagemAggregateType<T extends InternoMensagemAggregateArgs> = {
+        [P in keyof T & keyof AggregateInternoMensagem]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateInternoMensagem[P]>
+      : GetScalarType<T[P], AggregateInternoMensagem[P]>
+  }
+
+
+
+
+  export type InternoMensagemGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InternoMensagemWhereInput
+    orderBy?: InternoMensagemOrderByWithAggregationInput | InternoMensagemOrderByWithAggregationInput[]
+    by: InternoMensagemScalarFieldEnum[] | InternoMensagemScalarFieldEnum
+    having?: InternoMensagemScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: InternoMensagemCountAggregateInputType | true
+    _avg?: InternoMensagemAvgAggregateInputType
+    _sum?: InternoMensagemSumAggregateInputType
+    _min?: InternoMensagemMinAggregateInputType
+    _max?: InternoMensagemMaxAggregateInputType
+  }
+
+  export type InternoMensagemGroupByOutputType = {
+    id: string
+    conversaId: string
+    autorId: string
+    texto: string
+    anexoId: string | null
+    anexoTipo: string | null
+    anexoMime: string | null
+    anexoTamanho: number | null
+    anexoNome: string | null
+    baixadoPor: string[]
+    criadoEm: Date
+    _count: InternoMensagemCountAggregateOutputType | null
+    _avg: InternoMensagemAvgAggregateOutputType | null
+    _sum: InternoMensagemSumAggregateOutputType | null
+    _min: InternoMensagemMinAggregateOutputType | null
+    _max: InternoMensagemMaxAggregateOutputType | null
+  }
+
+  type GetInternoMensagemGroupByPayload<T extends InternoMensagemGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<InternoMensagemGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof InternoMensagemGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], InternoMensagemGroupByOutputType[P]>
+            : GetScalarType<T[P], InternoMensagemGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type InternoMensagemSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    conversaId?: boolean
+    autorId?: boolean
+    texto?: boolean
+    anexoId?: boolean
+    anexoTipo?: boolean
+    anexoMime?: boolean
+    anexoTamanho?: boolean
+    anexoNome?: boolean
+    baixadoPor?: boolean
+    criadoEm?: boolean
+    conversa?: boolean | InternoConversaDefaultArgs<ExtArgs>
+    autor?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["internoMensagem"]>
+
+  export type InternoMensagemSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    conversaId?: boolean
+    autorId?: boolean
+    texto?: boolean
+    anexoId?: boolean
+    anexoTipo?: boolean
+    anexoMime?: boolean
+    anexoTamanho?: boolean
+    anexoNome?: boolean
+    baixadoPor?: boolean
+    criadoEm?: boolean
+    conversa?: boolean | InternoConversaDefaultArgs<ExtArgs>
+    autor?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["internoMensagem"]>
+
+  export type InternoMensagemSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    conversaId?: boolean
+    autorId?: boolean
+    texto?: boolean
+    anexoId?: boolean
+    anexoTipo?: boolean
+    anexoMime?: boolean
+    anexoTamanho?: boolean
+    anexoNome?: boolean
+    baixadoPor?: boolean
+    criadoEm?: boolean
+    conversa?: boolean | InternoConversaDefaultArgs<ExtArgs>
+    autor?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["internoMensagem"]>
+
+  export type InternoMensagemSelectScalar = {
+    id?: boolean
+    conversaId?: boolean
+    autorId?: boolean
+    texto?: boolean
+    anexoId?: boolean
+    anexoTipo?: boolean
+    anexoMime?: boolean
+    anexoTamanho?: boolean
+    anexoNome?: boolean
+    baixadoPor?: boolean
+    criadoEm?: boolean
+  }
+
+  export type InternoMensagemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversaId" | "autorId" | "texto" | "anexoId" | "anexoTipo" | "anexoMime" | "anexoTamanho" | "anexoNome" | "baixadoPor" | "criadoEm", ExtArgs["result"]["internoMensagem"]>
+  export type InternoMensagemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    conversa?: boolean | InternoConversaDefaultArgs<ExtArgs>
+    autor?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type InternoMensagemIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    conversa?: boolean | InternoConversaDefaultArgs<ExtArgs>
+    autor?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type InternoMensagemIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    conversa?: boolean | InternoConversaDefaultArgs<ExtArgs>
+    autor?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $InternoMensagemPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "InternoMensagem"
+    objects: {
+      conversa: Prisma.$InternoConversaPayload<ExtArgs>
+      autor: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      conversaId: string
+      autorId: string
+      /**
+       * Texto (ou legenda do anexo).
+       */
+      texto: string
+      /**
+       * Anexo (opcional): só metadados; o conteúdo fica em disco até alguém baixar.
+       */
+      anexoId: string | null
+      anexoTipo: string | null
+      anexoMime: string | null
+      anexoTamanho: number | null
+      anexoNome: string | null
+      /**
+       * Quem já baixou o anexo. Quando todos (menos o autor) baixam, o arquivo é apagado.
+       */
+      baixadoPor: string[]
+      criadoEm: Date
+    }, ExtArgs["result"]["internoMensagem"]>
+    composites: {}
+  }
+
+  type InternoMensagemGetPayload<S extends boolean | null | undefined | InternoMensagemDefaultArgs> = $Result.GetResult<Prisma.$InternoMensagemPayload, S>
+
+  type InternoMensagemCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<InternoMensagemFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: InternoMensagemCountAggregateInputType | true
+    }
+
+  export interface InternoMensagemDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['InternoMensagem'], meta: { name: 'InternoMensagem' } }
+    /**
+     * Find zero or one InternoMensagem that matches the filter.
+     * @param {InternoMensagemFindUniqueArgs} args - Arguments to find a InternoMensagem
+     * @example
+     * // Get one InternoMensagem
+     * const internoMensagem = await prisma.internoMensagem.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends InternoMensagemFindUniqueArgs>(args: SelectSubset<T, InternoMensagemFindUniqueArgs<ExtArgs>>): Prisma__InternoMensagemClient<$Result.GetResult<Prisma.$InternoMensagemPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one InternoMensagem that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {InternoMensagemFindUniqueOrThrowArgs} args - Arguments to find a InternoMensagem
+     * @example
+     * // Get one InternoMensagem
+     * const internoMensagem = await prisma.internoMensagem.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends InternoMensagemFindUniqueOrThrowArgs>(args: SelectSubset<T, InternoMensagemFindUniqueOrThrowArgs<ExtArgs>>): Prisma__InternoMensagemClient<$Result.GetResult<Prisma.$InternoMensagemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first InternoMensagem that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoMensagemFindFirstArgs} args - Arguments to find a InternoMensagem
+     * @example
+     * // Get one InternoMensagem
+     * const internoMensagem = await prisma.internoMensagem.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends InternoMensagemFindFirstArgs>(args?: SelectSubset<T, InternoMensagemFindFirstArgs<ExtArgs>>): Prisma__InternoMensagemClient<$Result.GetResult<Prisma.$InternoMensagemPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first InternoMensagem that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoMensagemFindFirstOrThrowArgs} args - Arguments to find a InternoMensagem
+     * @example
+     * // Get one InternoMensagem
+     * const internoMensagem = await prisma.internoMensagem.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends InternoMensagemFindFirstOrThrowArgs>(args?: SelectSubset<T, InternoMensagemFindFirstOrThrowArgs<ExtArgs>>): Prisma__InternoMensagemClient<$Result.GetResult<Prisma.$InternoMensagemPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more InternoMensagems that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoMensagemFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all InternoMensagems
+     * const internoMensagems = await prisma.internoMensagem.findMany()
+     * 
+     * // Get first 10 InternoMensagems
+     * const internoMensagems = await prisma.internoMensagem.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const internoMensagemWithIdOnly = await prisma.internoMensagem.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends InternoMensagemFindManyArgs>(args?: SelectSubset<T, InternoMensagemFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InternoMensagemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a InternoMensagem.
+     * @param {InternoMensagemCreateArgs} args - Arguments to create a InternoMensagem.
+     * @example
+     * // Create one InternoMensagem
+     * const InternoMensagem = await prisma.internoMensagem.create({
+     *   data: {
+     *     // ... data to create a InternoMensagem
+     *   }
+     * })
+     * 
+     */
+    create<T extends InternoMensagemCreateArgs>(args: SelectSubset<T, InternoMensagemCreateArgs<ExtArgs>>): Prisma__InternoMensagemClient<$Result.GetResult<Prisma.$InternoMensagemPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many InternoMensagems.
+     * @param {InternoMensagemCreateManyArgs} args - Arguments to create many InternoMensagems.
+     * @example
+     * // Create many InternoMensagems
+     * const internoMensagem = await prisma.internoMensagem.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends InternoMensagemCreateManyArgs>(args?: SelectSubset<T, InternoMensagemCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many InternoMensagems and returns the data saved in the database.
+     * @param {InternoMensagemCreateManyAndReturnArgs} args - Arguments to create many InternoMensagems.
+     * @example
+     * // Create many InternoMensagems
+     * const internoMensagem = await prisma.internoMensagem.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many InternoMensagems and only return the `id`
+     * const internoMensagemWithIdOnly = await prisma.internoMensagem.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends InternoMensagemCreateManyAndReturnArgs>(args?: SelectSubset<T, InternoMensagemCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InternoMensagemPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a InternoMensagem.
+     * @param {InternoMensagemDeleteArgs} args - Arguments to delete one InternoMensagem.
+     * @example
+     * // Delete one InternoMensagem
+     * const InternoMensagem = await prisma.internoMensagem.delete({
+     *   where: {
+     *     // ... filter to delete one InternoMensagem
+     *   }
+     * })
+     * 
+     */
+    delete<T extends InternoMensagemDeleteArgs>(args: SelectSubset<T, InternoMensagemDeleteArgs<ExtArgs>>): Prisma__InternoMensagemClient<$Result.GetResult<Prisma.$InternoMensagemPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one InternoMensagem.
+     * @param {InternoMensagemUpdateArgs} args - Arguments to update one InternoMensagem.
+     * @example
+     * // Update one InternoMensagem
+     * const internoMensagem = await prisma.internoMensagem.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends InternoMensagemUpdateArgs>(args: SelectSubset<T, InternoMensagemUpdateArgs<ExtArgs>>): Prisma__InternoMensagemClient<$Result.GetResult<Prisma.$InternoMensagemPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more InternoMensagems.
+     * @param {InternoMensagemDeleteManyArgs} args - Arguments to filter InternoMensagems to delete.
+     * @example
+     * // Delete a few InternoMensagems
+     * const { count } = await prisma.internoMensagem.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends InternoMensagemDeleteManyArgs>(args?: SelectSubset<T, InternoMensagemDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more InternoMensagems.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoMensagemUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many InternoMensagems
+     * const internoMensagem = await prisma.internoMensagem.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends InternoMensagemUpdateManyArgs>(args: SelectSubset<T, InternoMensagemUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more InternoMensagems and returns the data updated in the database.
+     * @param {InternoMensagemUpdateManyAndReturnArgs} args - Arguments to update many InternoMensagems.
+     * @example
+     * // Update many InternoMensagems
+     * const internoMensagem = await prisma.internoMensagem.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more InternoMensagems and only return the `id`
+     * const internoMensagemWithIdOnly = await prisma.internoMensagem.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends InternoMensagemUpdateManyAndReturnArgs>(args: SelectSubset<T, InternoMensagemUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InternoMensagemPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one InternoMensagem.
+     * @param {InternoMensagemUpsertArgs} args - Arguments to update or create a InternoMensagem.
+     * @example
+     * // Update or create a InternoMensagem
+     * const internoMensagem = await prisma.internoMensagem.upsert({
+     *   create: {
+     *     // ... data to create a InternoMensagem
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the InternoMensagem we want to update
+     *   }
+     * })
+     */
+    upsert<T extends InternoMensagemUpsertArgs>(args: SelectSubset<T, InternoMensagemUpsertArgs<ExtArgs>>): Prisma__InternoMensagemClient<$Result.GetResult<Prisma.$InternoMensagemPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of InternoMensagems.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoMensagemCountArgs} args - Arguments to filter InternoMensagems to count.
+     * @example
+     * // Count the number of InternoMensagems
+     * const count = await prisma.internoMensagem.count({
+     *   where: {
+     *     // ... the filter for the InternoMensagems we want to count
+     *   }
+     * })
+    **/
+    count<T extends InternoMensagemCountArgs>(
+      args?: Subset<T, InternoMensagemCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], InternoMensagemCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a InternoMensagem.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoMensagemAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends InternoMensagemAggregateArgs>(args: Subset<T, InternoMensagemAggregateArgs>): Prisma.PrismaPromise<GetInternoMensagemAggregateType<T>>
+
+    /**
+     * Group by InternoMensagem.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InternoMensagemGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends InternoMensagemGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: InternoMensagemGroupByArgs['orderBy'] }
+        : { orderBy?: InternoMensagemGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, InternoMensagemGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetInternoMensagemGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the InternoMensagem model
+   */
+  readonly fields: InternoMensagemFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for InternoMensagem.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__InternoMensagemClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    conversa<T extends InternoConversaDefaultArgs<ExtArgs> = {}>(args?: Subset<T, InternoConversaDefaultArgs<ExtArgs>>): Prisma__InternoConversaClient<$Result.GetResult<Prisma.$InternoConversaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    autor<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the InternoMensagem model
+   */
+  interface InternoMensagemFieldRefs {
+    readonly id: FieldRef<"InternoMensagem", 'String'>
+    readonly conversaId: FieldRef<"InternoMensagem", 'String'>
+    readonly autorId: FieldRef<"InternoMensagem", 'String'>
+    readonly texto: FieldRef<"InternoMensagem", 'String'>
+    readonly anexoId: FieldRef<"InternoMensagem", 'String'>
+    readonly anexoTipo: FieldRef<"InternoMensagem", 'String'>
+    readonly anexoMime: FieldRef<"InternoMensagem", 'String'>
+    readonly anexoTamanho: FieldRef<"InternoMensagem", 'Int'>
+    readonly anexoNome: FieldRef<"InternoMensagem", 'String'>
+    readonly baixadoPor: FieldRef<"InternoMensagem", 'String[]'>
+    readonly criadoEm: FieldRef<"InternoMensagem", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * InternoMensagem findUnique
+   */
+  export type InternoMensagemFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoMensagem
+     */
+    select?: InternoMensagemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoMensagem
+     */
+    omit?: InternoMensagemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoMensagemInclude<ExtArgs> | null
+    /**
+     * Filter, which InternoMensagem to fetch.
+     */
+    where: InternoMensagemWhereUniqueInput
+  }
+
+  /**
+   * InternoMensagem findUniqueOrThrow
+   */
+  export type InternoMensagemFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoMensagem
+     */
+    select?: InternoMensagemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoMensagem
+     */
+    omit?: InternoMensagemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoMensagemInclude<ExtArgs> | null
+    /**
+     * Filter, which InternoMensagem to fetch.
+     */
+    where: InternoMensagemWhereUniqueInput
+  }
+
+  /**
+   * InternoMensagem findFirst
+   */
+  export type InternoMensagemFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoMensagem
+     */
+    select?: InternoMensagemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoMensagem
+     */
+    omit?: InternoMensagemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoMensagemInclude<ExtArgs> | null
+    /**
+     * Filter, which InternoMensagem to fetch.
+     */
+    where?: InternoMensagemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InternoMensagems to fetch.
+     */
+    orderBy?: InternoMensagemOrderByWithRelationInput | InternoMensagemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for InternoMensagems.
+     */
+    cursor?: InternoMensagemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InternoMensagems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InternoMensagems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of InternoMensagems.
+     */
+    distinct?: InternoMensagemScalarFieldEnum | InternoMensagemScalarFieldEnum[]
+  }
+
+  /**
+   * InternoMensagem findFirstOrThrow
+   */
+  export type InternoMensagemFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoMensagem
+     */
+    select?: InternoMensagemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoMensagem
+     */
+    omit?: InternoMensagemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoMensagemInclude<ExtArgs> | null
+    /**
+     * Filter, which InternoMensagem to fetch.
+     */
+    where?: InternoMensagemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InternoMensagems to fetch.
+     */
+    orderBy?: InternoMensagemOrderByWithRelationInput | InternoMensagemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for InternoMensagems.
+     */
+    cursor?: InternoMensagemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InternoMensagems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InternoMensagems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of InternoMensagems.
+     */
+    distinct?: InternoMensagemScalarFieldEnum | InternoMensagemScalarFieldEnum[]
+  }
+
+  /**
+   * InternoMensagem findMany
+   */
+  export type InternoMensagemFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoMensagem
+     */
+    select?: InternoMensagemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoMensagem
+     */
+    omit?: InternoMensagemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoMensagemInclude<ExtArgs> | null
+    /**
+     * Filter, which InternoMensagems to fetch.
+     */
+    where?: InternoMensagemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InternoMensagems to fetch.
+     */
+    orderBy?: InternoMensagemOrderByWithRelationInput | InternoMensagemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing InternoMensagems.
+     */
+    cursor?: InternoMensagemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InternoMensagems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InternoMensagems.
+     */
+    skip?: number
+    distinct?: InternoMensagemScalarFieldEnum | InternoMensagemScalarFieldEnum[]
+  }
+
+  /**
+   * InternoMensagem create
+   */
+  export type InternoMensagemCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoMensagem
+     */
+    select?: InternoMensagemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoMensagem
+     */
+    omit?: InternoMensagemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoMensagemInclude<ExtArgs> | null
+    /**
+     * The data needed to create a InternoMensagem.
+     */
+    data: XOR<InternoMensagemCreateInput, InternoMensagemUncheckedCreateInput>
+  }
+
+  /**
+   * InternoMensagem createMany
+   */
+  export type InternoMensagemCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many InternoMensagems.
+     */
+    data: InternoMensagemCreateManyInput | InternoMensagemCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * InternoMensagem createManyAndReturn
+   */
+  export type InternoMensagemCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoMensagem
+     */
+    select?: InternoMensagemSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoMensagem
+     */
+    omit?: InternoMensagemOmit<ExtArgs> | null
+    /**
+     * The data used to create many InternoMensagems.
+     */
+    data: InternoMensagemCreateManyInput | InternoMensagemCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoMensagemIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * InternoMensagem update
+   */
+  export type InternoMensagemUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoMensagem
+     */
+    select?: InternoMensagemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoMensagem
+     */
+    omit?: InternoMensagemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoMensagemInclude<ExtArgs> | null
+    /**
+     * The data needed to update a InternoMensagem.
+     */
+    data: XOR<InternoMensagemUpdateInput, InternoMensagemUncheckedUpdateInput>
+    /**
+     * Choose, which InternoMensagem to update.
+     */
+    where: InternoMensagemWhereUniqueInput
+  }
+
+  /**
+   * InternoMensagem updateMany
+   */
+  export type InternoMensagemUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update InternoMensagems.
+     */
+    data: XOR<InternoMensagemUpdateManyMutationInput, InternoMensagemUncheckedUpdateManyInput>
+    /**
+     * Filter which InternoMensagems to update
+     */
+    where?: InternoMensagemWhereInput
+    /**
+     * Limit how many InternoMensagems to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * InternoMensagem updateManyAndReturn
+   */
+  export type InternoMensagemUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoMensagem
+     */
+    select?: InternoMensagemSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoMensagem
+     */
+    omit?: InternoMensagemOmit<ExtArgs> | null
+    /**
+     * The data used to update InternoMensagems.
+     */
+    data: XOR<InternoMensagemUpdateManyMutationInput, InternoMensagemUncheckedUpdateManyInput>
+    /**
+     * Filter which InternoMensagems to update
+     */
+    where?: InternoMensagemWhereInput
+    /**
+     * Limit how many InternoMensagems to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoMensagemIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * InternoMensagem upsert
+   */
+  export type InternoMensagemUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoMensagem
+     */
+    select?: InternoMensagemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoMensagem
+     */
+    omit?: InternoMensagemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoMensagemInclude<ExtArgs> | null
+    /**
+     * The filter to search for the InternoMensagem to update in case it exists.
+     */
+    where: InternoMensagemWhereUniqueInput
+    /**
+     * In case the InternoMensagem found by the `where` argument doesn't exist, create a new InternoMensagem with this data.
+     */
+    create: XOR<InternoMensagemCreateInput, InternoMensagemUncheckedCreateInput>
+    /**
+     * In case the InternoMensagem was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<InternoMensagemUpdateInput, InternoMensagemUncheckedUpdateInput>
+  }
+
+  /**
+   * InternoMensagem delete
+   */
+  export type InternoMensagemDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoMensagem
+     */
+    select?: InternoMensagemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoMensagem
+     */
+    omit?: InternoMensagemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoMensagemInclude<ExtArgs> | null
+    /**
+     * Filter which InternoMensagem to delete.
+     */
+    where: InternoMensagemWhereUniqueInput
+  }
+
+  /**
+   * InternoMensagem deleteMany
+   */
+  export type InternoMensagemDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which InternoMensagems to delete
+     */
+    where?: InternoMensagemWhereInput
+    /**
+     * Limit how many InternoMensagems to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * InternoMensagem without action
+   */
+  export type InternoMensagemDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InternoMensagem
+     */
+    select?: InternoMensagemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InternoMensagem
+     */
+    omit?: InternoMensagemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InternoMensagemInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -44955,6 +48738,47 @@ export namespace Prisma {
   };
 
   export type AgenteIAScalarFieldEnum = (typeof AgenteIAScalarFieldEnum)[keyof typeof AgenteIAScalarFieldEnum]
+
+
+  export const InternoConversaScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    tipo: 'tipo',
+    nome: 'nome',
+    chaveDireta: 'chaveDireta',
+    criadoPorId: 'criadoPorId',
+    criadoEm: 'criadoEm',
+    ultimaMensagemEm: 'ultimaMensagemEm'
+  };
+
+  export type InternoConversaScalarFieldEnum = (typeof InternoConversaScalarFieldEnum)[keyof typeof InternoConversaScalarFieldEnum]
+
+
+  export const InternoParticipanteScalarFieldEnum: {
+    conversaId: 'conversaId',
+    userId: 'userId',
+    ultimaLeituraEm: 'ultimaLeituraEm',
+    entrouEm: 'entrouEm'
+  };
+
+  export type InternoParticipanteScalarFieldEnum = (typeof InternoParticipanteScalarFieldEnum)[keyof typeof InternoParticipanteScalarFieldEnum]
+
+
+  export const InternoMensagemScalarFieldEnum: {
+    id: 'id',
+    conversaId: 'conversaId',
+    autorId: 'autorId',
+    texto: 'texto',
+    anexoId: 'anexoId',
+    anexoTipo: 'anexoTipo',
+    anexoMime: 'anexoMime',
+    anexoTamanho: 'anexoTamanho',
+    anexoNome: 'anexoNome',
+    baixadoPor: 'baixadoPor',
+    criadoEm: 'criadoEm'
+  };
+
+  export type InternoMensagemScalarFieldEnum = (typeof InternoMensagemScalarFieldEnum)[keyof typeof InternoMensagemScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -47201,6 +51025,8 @@ export namespace Prisma {
     atualizadoEm?: DateTimeFilter<"User"> | Date | string
     atendente?: XOR<AtendenteNullableScalarRelationFilter, AtendenteWhereInput> | null
     chatTemplates?: ChatTemplateListRelationFilter
+    internoParticipacoes?: InternoParticipanteListRelationFilter
+    internoMensagens?: InternoMensagemListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -47219,6 +51045,8 @@ export namespace Prisma {
     atualizadoEm?: SortOrder
     atendente?: AtendenteOrderByWithRelationInput
     chatTemplates?: ChatTemplateOrderByRelationAggregateInput
+    internoParticipacoes?: InternoParticipanteOrderByRelationAggregateInput
+    internoMensagens?: InternoMensagemOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -47240,6 +51068,8 @@ export namespace Prisma {
     atualizadoEm?: DateTimeFilter<"User"> | Date | string
     atendente?: XOR<AtendenteNullableScalarRelationFilter, AtendenteWhereInput> | null
     chatTemplates?: ChatTemplateListRelationFilter
+    internoParticipacoes?: InternoParticipanteListRelationFilter
+    internoMensagens?: InternoMensagemListRelationFilter
   }, "id" | "username">
 
   export type UserOrderByWithAggregationInput = {
@@ -48008,6 +51838,224 @@ export namespace Prisma {
     reativarAposMinutos?: IntNullableWithAggregatesFilter<"AgenteIA"> | number | null
     criadoEm?: DateTimeWithAggregatesFilter<"AgenteIA"> | Date | string
     atualizadoEm?: DateTimeWithAggregatesFilter<"AgenteIA"> | Date | string
+  }
+
+  export type InternoConversaWhereInput = {
+    AND?: InternoConversaWhereInput | InternoConversaWhereInput[]
+    OR?: InternoConversaWhereInput[]
+    NOT?: InternoConversaWhereInput | InternoConversaWhereInput[]
+    id?: StringFilter<"InternoConversa"> | string
+    workspaceId?: StringFilter<"InternoConversa"> | string
+    tipo?: StringFilter<"InternoConversa"> | string
+    nome?: StringNullableFilter<"InternoConversa"> | string | null
+    chaveDireta?: StringNullableFilter<"InternoConversa"> | string | null
+    criadoPorId?: StringNullableFilter<"InternoConversa"> | string | null
+    criadoEm?: DateTimeFilter<"InternoConversa"> | Date | string
+    ultimaMensagemEm?: DateTimeFilter<"InternoConversa"> | Date | string
+    participantes?: InternoParticipanteListRelationFilter
+    mensagens?: InternoMensagemListRelationFilter
+  }
+
+  export type InternoConversaOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    tipo?: SortOrder
+    nome?: SortOrderInput | SortOrder
+    chaveDireta?: SortOrderInput | SortOrder
+    criadoPorId?: SortOrderInput | SortOrder
+    criadoEm?: SortOrder
+    ultimaMensagemEm?: SortOrder
+    participantes?: InternoParticipanteOrderByRelationAggregateInput
+    mensagens?: InternoMensagemOrderByRelationAggregateInput
+  }
+
+  export type InternoConversaWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    workspaceId_chaveDireta?: InternoConversaWorkspaceIdChaveDiretaCompoundUniqueInput
+    AND?: InternoConversaWhereInput | InternoConversaWhereInput[]
+    OR?: InternoConversaWhereInput[]
+    NOT?: InternoConversaWhereInput | InternoConversaWhereInput[]
+    workspaceId?: StringFilter<"InternoConversa"> | string
+    tipo?: StringFilter<"InternoConversa"> | string
+    nome?: StringNullableFilter<"InternoConversa"> | string | null
+    chaveDireta?: StringNullableFilter<"InternoConversa"> | string | null
+    criadoPorId?: StringNullableFilter<"InternoConversa"> | string | null
+    criadoEm?: DateTimeFilter<"InternoConversa"> | Date | string
+    ultimaMensagemEm?: DateTimeFilter<"InternoConversa"> | Date | string
+    participantes?: InternoParticipanteListRelationFilter
+    mensagens?: InternoMensagemListRelationFilter
+  }, "id" | "workspaceId_chaveDireta">
+
+  export type InternoConversaOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    tipo?: SortOrder
+    nome?: SortOrderInput | SortOrder
+    chaveDireta?: SortOrderInput | SortOrder
+    criadoPorId?: SortOrderInput | SortOrder
+    criadoEm?: SortOrder
+    ultimaMensagemEm?: SortOrder
+    _count?: InternoConversaCountOrderByAggregateInput
+    _max?: InternoConversaMaxOrderByAggregateInput
+    _min?: InternoConversaMinOrderByAggregateInput
+  }
+
+  export type InternoConversaScalarWhereWithAggregatesInput = {
+    AND?: InternoConversaScalarWhereWithAggregatesInput | InternoConversaScalarWhereWithAggregatesInput[]
+    OR?: InternoConversaScalarWhereWithAggregatesInput[]
+    NOT?: InternoConversaScalarWhereWithAggregatesInput | InternoConversaScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"InternoConversa"> | string
+    workspaceId?: StringWithAggregatesFilter<"InternoConversa"> | string
+    tipo?: StringWithAggregatesFilter<"InternoConversa"> | string
+    nome?: StringNullableWithAggregatesFilter<"InternoConversa"> | string | null
+    chaveDireta?: StringNullableWithAggregatesFilter<"InternoConversa"> | string | null
+    criadoPorId?: StringNullableWithAggregatesFilter<"InternoConversa"> | string | null
+    criadoEm?: DateTimeWithAggregatesFilter<"InternoConversa"> | Date | string
+    ultimaMensagemEm?: DateTimeWithAggregatesFilter<"InternoConversa"> | Date | string
+  }
+
+  export type InternoParticipanteWhereInput = {
+    AND?: InternoParticipanteWhereInput | InternoParticipanteWhereInput[]
+    OR?: InternoParticipanteWhereInput[]
+    NOT?: InternoParticipanteWhereInput | InternoParticipanteWhereInput[]
+    conversaId?: StringFilter<"InternoParticipante"> | string
+    userId?: StringFilter<"InternoParticipante"> | string
+    ultimaLeituraEm?: DateTimeFilter<"InternoParticipante"> | Date | string
+    entrouEm?: DateTimeFilter<"InternoParticipante"> | Date | string
+    conversa?: XOR<InternoConversaScalarRelationFilter, InternoConversaWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type InternoParticipanteOrderByWithRelationInput = {
+    conversaId?: SortOrder
+    userId?: SortOrder
+    ultimaLeituraEm?: SortOrder
+    entrouEm?: SortOrder
+    conversa?: InternoConversaOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type InternoParticipanteWhereUniqueInput = Prisma.AtLeast<{
+    conversaId_userId?: InternoParticipanteConversaIdUserIdCompoundUniqueInput
+    AND?: InternoParticipanteWhereInput | InternoParticipanteWhereInput[]
+    OR?: InternoParticipanteWhereInput[]
+    NOT?: InternoParticipanteWhereInput | InternoParticipanteWhereInput[]
+    conversaId?: StringFilter<"InternoParticipante"> | string
+    userId?: StringFilter<"InternoParticipante"> | string
+    ultimaLeituraEm?: DateTimeFilter<"InternoParticipante"> | Date | string
+    entrouEm?: DateTimeFilter<"InternoParticipante"> | Date | string
+    conversa?: XOR<InternoConversaScalarRelationFilter, InternoConversaWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "conversaId_userId">
+
+  export type InternoParticipanteOrderByWithAggregationInput = {
+    conversaId?: SortOrder
+    userId?: SortOrder
+    ultimaLeituraEm?: SortOrder
+    entrouEm?: SortOrder
+    _count?: InternoParticipanteCountOrderByAggregateInput
+    _max?: InternoParticipanteMaxOrderByAggregateInput
+    _min?: InternoParticipanteMinOrderByAggregateInput
+  }
+
+  export type InternoParticipanteScalarWhereWithAggregatesInput = {
+    AND?: InternoParticipanteScalarWhereWithAggregatesInput | InternoParticipanteScalarWhereWithAggregatesInput[]
+    OR?: InternoParticipanteScalarWhereWithAggregatesInput[]
+    NOT?: InternoParticipanteScalarWhereWithAggregatesInput | InternoParticipanteScalarWhereWithAggregatesInput[]
+    conversaId?: StringWithAggregatesFilter<"InternoParticipante"> | string
+    userId?: StringWithAggregatesFilter<"InternoParticipante"> | string
+    ultimaLeituraEm?: DateTimeWithAggregatesFilter<"InternoParticipante"> | Date | string
+    entrouEm?: DateTimeWithAggregatesFilter<"InternoParticipante"> | Date | string
+  }
+
+  export type InternoMensagemWhereInput = {
+    AND?: InternoMensagemWhereInput | InternoMensagemWhereInput[]
+    OR?: InternoMensagemWhereInput[]
+    NOT?: InternoMensagemWhereInput | InternoMensagemWhereInput[]
+    id?: StringFilter<"InternoMensagem"> | string
+    conversaId?: StringFilter<"InternoMensagem"> | string
+    autorId?: StringFilter<"InternoMensagem"> | string
+    texto?: StringFilter<"InternoMensagem"> | string
+    anexoId?: StringNullableFilter<"InternoMensagem"> | string | null
+    anexoTipo?: StringNullableFilter<"InternoMensagem"> | string | null
+    anexoMime?: StringNullableFilter<"InternoMensagem"> | string | null
+    anexoTamanho?: IntNullableFilter<"InternoMensagem"> | number | null
+    anexoNome?: StringNullableFilter<"InternoMensagem"> | string | null
+    baixadoPor?: StringNullableListFilter<"InternoMensagem">
+    criadoEm?: DateTimeFilter<"InternoMensagem"> | Date | string
+    conversa?: XOR<InternoConversaScalarRelationFilter, InternoConversaWhereInput>
+    autor?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type InternoMensagemOrderByWithRelationInput = {
+    id?: SortOrder
+    conversaId?: SortOrder
+    autorId?: SortOrder
+    texto?: SortOrder
+    anexoId?: SortOrderInput | SortOrder
+    anexoTipo?: SortOrderInput | SortOrder
+    anexoMime?: SortOrderInput | SortOrder
+    anexoTamanho?: SortOrderInput | SortOrder
+    anexoNome?: SortOrderInput | SortOrder
+    baixadoPor?: SortOrder
+    criadoEm?: SortOrder
+    conversa?: InternoConversaOrderByWithRelationInput
+    autor?: UserOrderByWithRelationInput
+  }
+
+  export type InternoMensagemWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: InternoMensagemWhereInput | InternoMensagemWhereInput[]
+    OR?: InternoMensagemWhereInput[]
+    NOT?: InternoMensagemWhereInput | InternoMensagemWhereInput[]
+    conversaId?: StringFilter<"InternoMensagem"> | string
+    autorId?: StringFilter<"InternoMensagem"> | string
+    texto?: StringFilter<"InternoMensagem"> | string
+    anexoId?: StringNullableFilter<"InternoMensagem"> | string | null
+    anexoTipo?: StringNullableFilter<"InternoMensagem"> | string | null
+    anexoMime?: StringNullableFilter<"InternoMensagem"> | string | null
+    anexoTamanho?: IntNullableFilter<"InternoMensagem"> | number | null
+    anexoNome?: StringNullableFilter<"InternoMensagem"> | string | null
+    baixadoPor?: StringNullableListFilter<"InternoMensagem">
+    criadoEm?: DateTimeFilter<"InternoMensagem"> | Date | string
+    conversa?: XOR<InternoConversaScalarRelationFilter, InternoConversaWhereInput>
+    autor?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type InternoMensagemOrderByWithAggregationInput = {
+    id?: SortOrder
+    conversaId?: SortOrder
+    autorId?: SortOrder
+    texto?: SortOrder
+    anexoId?: SortOrderInput | SortOrder
+    anexoTipo?: SortOrderInput | SortOrder
+    anexoMime?: SortOrderInput | SortOrder
+    anexoTamanho?: SortOrderInput | SortOrder
+    anexoNome?: SortOrderInput | SortOrder
+    baixadoPor?: SortOrder
+    criadoEm?: SortOrder
+    _count?: InternoMensagemCountOrderByAggregateInput
+    _avg?: InternoMensagemAvgOrderByAggregateInput
+    _max?: InternoMensagemMaxOrderByAggregateInput
+    _min?: InternoMensagemMinOrderByAggregateInput
+    _sum?: InternoMensagemSumOrderByAggregateInput
+  }
+
+  export type InternoMensagemScalarWhereWithAggregatesInput = {
+    AND?: InternoMensagemScalarWhereWithAggregatesInput | InternoMensagemScalarWhereWithAggregatesInput[]
+    OR?: InternoMensagemScalarWhereWithAggregatesInput[]
+    NOT?: InternoMensagemScalarWhereWithAggregatesInput | InternoMensagemScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"InternoMensagem"> | string
+    conversaId?: StringWithAggregatesFilter<"InternoMensagem"> | string
+    autorId?: StringWithAggregatesFilter<"InternoMensagem"> | string
+    texto?: StringWithAggregatesFilter<"InternoMensagem"> | string
+    anexoId?: StringNullableWithAggregatesFilter<"InternoMensagem"> | string | null
+    anexoTipo?: StringNullableWithAggregatesFilter<"InternoMensagem"> | string | null
+    anexoMime?: StringNullableWithAggregatesFilter<"InternoMensagem"> | string | null
+    anexoTamanho?: IntNullableWithAggregatesFilter<"InternoMensagem"> | number | null
+    anexoNome?: StringNullableWithAggregatesFilter<"InternoMensagem"> | string | null
+    baixadoPor?: StringNullableListFilter<"InternoMensagem">
+    criadoEm?: DateTimeWithAggregatesFilter<"InternoMensagem"> | Date | string
   }
 
   export type LeadCreateInput = {
@@ -50304,6 +54352,8 @@ export namespace Prisma {
     atualizadoEm?: Date | string
     atendente?: AtendenteCreateNestedOneWithoutUserInput
     chatTemplates?: ChatTemplateCreateNestedManyWithoutUserInput
+    internoParticipacoes?: InternoParticipanteCreateNestedManyWithoutUserInput
+    internoMensagens?: InternoMensagemCreateNestedManyWithoutAutorInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -50322,6 +54372,8 @@ export namespace Prisma {
     atualizadoEm?: Date | string
     atendente?: AtendenteUncheckedCreateNestedOneWithoutUserInput
     chatTemplates?: ChatTemplateUncheckedCreateNestedManyWithoutUserInput
+    internoParticipacoes?: InternoParticipanteUncheckedCreateNestedManyWithoutUserInput
+    internoMensagens?: InternoMensagemUncheckedCreateNestedManyWithoutAutorInput
   }
 
   export type UserUpdateInput = {
@@ -50340,6 +54392,8 @@ export namespace Prisma {
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atendente?: AtendenteUpdateOneWithoutUserNestedInput
     chatTemplates?: ChatTemplateUpdateManyWithoutUserNestedInput
+    internoParticipacoes?: InternoParticipanteUpdateManyWithoutUserNestedInput
+    internoMensagens?: InternoMensagemUpdateManyWithoutAutorNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -50358,6 +54412,8 @@ export namespace Prisma {
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atendente?: AtendenteUncheckedUpdateOneWithoutUserNestedInput
     chatTemplates?: ChatTemplateUncheckedUpdateManyWithoutUserNestedInput
+    internoParticipacoes?: InternoParticipanteUncheckedUpdateManyWithoutUserNestedInput
+    internoMensagens?: InternoMensagemUncheckedUpdateManyWithoutAutorNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -51179,6 +55235,234 @@ export namespace Prisma {
     reativarAposMinutos?: NullableIntFieldUpdateOperationsInput | number | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InternoConversaCreateInput = {
+    id?: string
+    workspaceId: string
+    tipo?: string
+    nome?: string | null
+    chaveDireta?: string | null
+    criadoPorId?: string | null
+    criadoEm?: Date | string
+    ultimaMensagemEm?: Date | string
+    participantes?: InternoParticipanteCreateNestedManyWithoutConversaInput
+    mensagens?: InternoMensagemCreateNestedManyWithoutConversaInput
+  }
+
+  export type InternoConversaUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    tipo?: string
+    nome?: string | null
+    chaveDireta?: string | null
+    criadoPorId?: string | null
+    criadoEm?: Date | string
+    ultimaMensagemEm?: Date | string
+    participantes?: InternoParticipanteUncheckedCreateNestedManyWithoutConversaInput
+    mensagens?: InternoMensagemUncheckedCreateNestedManyWithoutConversaInput
+  }
+
+  export type InternoConversaUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    tipo?: StringFieldUpdateOperationsInput | string
+    nome?: NullableStringFieldUpdateOperationsInput | string | null
+    chaveDireta?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoPorId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimaMensagemEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    participantes?: InternoParticipanteUpdateManyWithoutConversaNestedInput
+    mensagens?: InternoMensagemUpdateManyWithoutConversaNestedInput
+  }
+
+  export type InternoConversaUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    tipo?: StringFieldUpdateOperationsInput | string
+    nome?: NullableStringFieldUpdateOperationsInput | string | null
+    chaveDireta?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoPorId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimaMensagemEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    participantes?: InternoParticipanteUncheckedUpdateManyWithoutConversaNestedInput
+    mensagens?: InternoMensagemUncheckedUpdateManyWithoutConversaNestedInput
+  }
+
+  export type InternoConversaCreateManyInput = {
+    id?: string
+    workspaceId: string
+    tipo?: string
+    nome?: string | null
+    chaveDireta?: string | null
+    criadoPorId?: string | null
+    criadoEm?: Date | string
+    ultimaMensagemEm?: Date | string
+  }
+
+  export type InternoConversaUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    tipo?: StringFieldUpdateOperationsInput | string
+    nome?: NullableStringFieldUpdateOperationsInput | string | null
+    chaveDireta?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoPorId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimaMensagemEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InternoConversaUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    tipo?: StringFieldUpdateOperationsInput | string
+    nome?: NullableStringFieldUpdateOperationsInput | string | null
+    chaveDireta?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoPorId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimaMensagemEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InternoParticipanteCreateInput = {
+    ultimaLeituraEm?: Date | string
+    entrouEm?: Date | string
+    conversa: InternoConversaCreateNestedOneWithoutParticipantesInput
+    user: UserCreateNestedOneWithoutInternoParticipacoesInput
+  }
+
+  export type InternoParticipanteUncheckedCreateInput = {
+    conversaId: string
+    userId: string
+    ultimaLeituraEm?: Date | string
+    entrouEm?: Date | string
+  }
+
+  export type InternoParticipanteUpdateInput = {
+    ultimaLeituraEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    entrouEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversa?: InternoConversaUpdateOneRequiredWithoutParticipantesNestedInput
+    user?: UserUpdateOneRequiredWithoutInternoParticipacoesNestedInput
+  }
+
+  export type InternoParticipanteUncheckedUpdateInput = {
+    conversaId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    ultimaLeituraEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    entrouEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InternoParticipanteCreateManyInput = {
+    conversaId: string
+    userId: string
+    ultimaLeituraEm?: Date | string
+    entrouEm?: Date | string
+  }
+
+  export type InternoParticipanteUpdateManyMutationInput = {
+    ultimaLeituraEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    entrouEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InternoParticipanteUncheckedUpdateManyInput = {
+    conversaId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    ultimaLeituraEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    entrouEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InternoMensagemCreateInput = {
+    id?: string
+    texto?: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoTamanho?: number | null
+    anexoNome?: string | null
+    baixadoPor?: InternoMensagemCreatebaixadoPorInput | string[]
+    criadoEm?: Date | string
+    conversa: InternoConversaCreateNestedOneWithoutMensagensInput
+    autor: UserCreateNestedOneWithoutInternoMensagensInput
+  }
+
+  export type InternoMensagemUncheckedCreateInput = {
+    id?: string
+    conversaId: string
+    autorId: string
+    texto?: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoTamanho?: number | null
+    anexoNome?: string | null
+    baixadoPor?: InternoMensagemCreatebaixadoPorInput | string[]
+    criadoEm?: Date | string
+  }
+
+  export type InternoMensagemUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    baixadoPor?: InternoMensagemUpdatebaixadoPorInput | string[]
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversa?: InternoConversaUpdateOneRequiredWithoutMensagensNestedInput
+    autor?: UserUpdateOneRequiredWithoutInternoMensagensNestedInput
+  }
+
+  export type InternoMensagemUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conversaId?: StringFieldUpdateOperationsInput | string
+    autorId?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    baixadoPor?: InternoMensagemUpdatebaixadoPorInput | string[]
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InternoMensagemCreateManyInput = {
+    id?: string
+    conversaId: string
+    autorId: string
+    texto?: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoTamanho?: number | null
+    anexoNome?: string | null
+    baixadoPor?: InternoMensagemCreatebaixadoPorInput | string[]
+    criadoEm?: Date | string
+  }
+
+  export type InternoMensagemUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    baixadoPor?: InternoMensagemUpdatebaixadoPorInput | string[]
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InternoMensagemUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conversaId?: StringFieldUpdateOperationsInput | string
+    autorId?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    baixadoPor?: InternoMensagemUpdatebaixadoPorInput | string[]
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -52807,7 +57091,27 @@ export namespace Prisma {
     none?: ChatTemplateWhereInput
   }
 
+  export type InternoParticipanteListRelationFilter = {
+    every?: InternoParticipanteWhereInput
+    some?: InternoParticipanteWhereInput
+    none?: InternoParticipanteWhereInput
+  }
+
+  export type InternoMensagemListRelationFilter = {
+    every?: InternoMensagemWhereInput
+    some?: InternoMensagemWhereInput
+    none?: InternoMensagemWhereInput
+  }
+
   export type ChatTemplateOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type InternoParticipanteOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type InternoMensagemOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -53324,6 +57628,123 @@ export namespace Prisma {
 
   export type AgenteIASumOrderByAggregateInput = {
     reativarAposMinutos?: SortOrder
+  }
+
+  export type InternoConversaWorkspaceIdChaveDiretaCompoundUniqueInput = {
+    workspaceId: string
+    chaveDireta: string
+  }
+
+  export type InternoConversaCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    tipo?: SortOrder
+    nome?: SortOrder
+    chaveDireta?: SortOrder
+    criadoPorId?: SortOrder
+    criadoEm?: SortOrder
+    ultimaMensagemEm?: SortOrder
+  }
+
+  export type InternoConversaMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    tipo?: SortOrder
+    nome?: SortOrder
+    chaveDireta?: SortOrder
+    criadoPorId?: SortOrder
+    criadoEm?: SortOrder
+    ultimaMensagemEm?: SortOrder
+  }
+
+  export type InternoConversaMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    tipo?: SortOrder
+    nome?: SortOrder
+    chaveDireta?: SortOrder
+    criadoPorId?: SortOrder
+    criadoEm?: SortOrder
+    ultimaMensagemEm?: SortOrder
+  }
+
+  export type InternoConversaScalarRelationFilter = {
+    is?: InternoConversaWhereInput
+    isNot?: InternoConversaWhereInput
+  }
+
+  export type InternoParticipanteConversaIdUserIdCompoundUniqueInput = {
+    conversaId: string
+    userId: string
+  }
+
+  export type InternoParticipanteCountOrderByAggregateInput = {
+    conversaId?: SortOrder
+    userId?: SortOrder
+    ultimaLeituraEm?: SortOrder
+    entrouEm?: SortOrder
+  }
+
+  export type InternoParticipanteMaxOrderByAggregateInput = {
+    conversaId?: SortOrder
+    userId?: SortOrder
+    ultimaLeituraEm?: SortOrder
+    entrouEm?: SortOrder
+  }
+
+  export type InternoParticipanteMinOrderByAggregateInput = {
+    conversaId?: SortOrder
+    userId?: SortOrder
+    ultimaLeituraEm?: SortOrder
+    entrouEm?: SortOrder
+  }
+
+  export type InternoMensagemCountOrderByAggregateInput = {
+    id?: SortOrder
+    conversaId?: SortOrder
+    autorId?: SortOrder
+    texto?: SortOrder
+    anexoId?: SortOrder
+    anexoTipo?: SortOrder
+    anexoMime?: SortOrder
+    anexoTamanho?: SortOrder
+    anexoNome?: SortOrder
+    baixadoPor?: SortOrder
+    criadoEm?: SortOrder
+  }
+
+  export type InternoMensagemAvgOrderByAggregateInput = {
+    anexoTamanho?: SortOrder
+  }
+
+  export type InternoMensagemMaxOrderByAggregateInput = {
+    id?: SortOrder
+    conversaId?: SortOrder
+    autorId?: SortOrder
+    texto?: SortOrder
+    anexoId?: SortOrder
+    anexoTipo?: SortOrder
+    anexoMime?: SortOrder
+    anexoTamanho?: SortOrder
+    anexoNome?: SortOrder
+    criadoEm?: SortOrder
+  }
+
+  export type InternoMensagemMinOrderByAggregateInput = {
+    id?: SortOrder
+    conversaId?: SortOrder
+    autorId?: SortOrder
+    texto?: SortOrder
+    anexoId?: SortOrder
+    anexoTipo?: SortOrder
+    anexoMime?: SortOrder
+    anexoTamanho?: SortOrder
+    anexoNome?: SortOrder
+    criadoEm?: SortOrder
+  }
+
+  export type InternoMensagemSumOrderByAggregateInput = {
+    anexoTamanho?: SortOrder
   }
 
   export type CampaignCreateNestedOneWithoutLeadsInput = {
@@ -54226,6 +58647,20 @@ export namespace Prisma {
     connect?: ChatTemplateWhereUniqueInput | ChatTemplateWhereUniqueInput[]
   }
 
+  export type InternoParticipanteCreateNestedManyWithoutUserInput = {
+    create?: XOR<InternoParticipanteCreateWithoutUserInput, InternoParticipanteUncheckedCreateWithoutUserInput> | InternoParticipanteCreateWithoutUserInput[] | InternoParticipanteUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: InternoParticipanteCreateOrConnectWithoutUserInput | InternoParticipanteCreateOrConnectWithoutUserInput[]
+    createMany?: InternoParticipanteCreateManyUserInputEnvelope
+    connect?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+  }
+
+  export type InternoMensagemCreateNestedManyWithoutAutorInput = {
+    create?: XOR<InternoMensagemCreateWithoutAutorInput, InternoMensagemUncheckedCreateWithoutAutorInput> | InternoMensagemCreateWithoutAutorInput[] | InternoMensagemUncheckedCreateWithoutAutorInput[]
+    connectOrCreate?: InternoMensagemCreateOrConnectWithoutAutorInput | InternoMensagemCreateOrConnectWithoutAutorInput[]
+    createMany?: InternoMensagemCreateManyAutorInputEnvelope
+    connect?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+  }
+
   export type AtendenteUncheckedCreateNestedOneWithoutUserInput = {
     create?: XOR<AtendenteCreateWithoutUserInput, AtendenteUncheckedCreateWithoutUserInput>
     connectOrCreate?: AtendenteCreateOrConnectWithoutUserInput
@@ -54237,6 +58672,20 @@ export namespace Prisma {
     connectOrCreate?: ChatTemplateCreateOrConnectWithoutUserInput | ChatTemplateCreateOrConnectWithoutUserInput[]
     createMany?: ChatTemplateCreateManyUserInputEnvelope
     connect?: ChatTemplateWhereUniqueInput | ChatTemplateWhereUniqueInput[]
+  }
+
+  export type InternoParticipanteUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<InternoParticipanteCreateWithoutUserInput, InternoParticipanteUncheckedCreateWithoutUserInput> | InternoParticipanteCreateWithoutUserInput[] | InternoParticipanteUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: InternoParticipanteCreateOrConnectWithoutUserInput | InternoParticipanteCreateOrConnectWithoutUserInput[]
+    createMany?: InternoParticipanteCreateManyUserInputEnvelope
+    connect?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+  }
+
+  export type InternoMensagemUncheckedCreateNestedManyWithoutAutorInput = {
+    create?: XOR<InternoMensagemCreateWithoutAutorInput, InternoMensagemUncheckedCreateWithoutAutorInput> | InternoMensagemCreateWithoutAutorInput[] | InternoMensagemUncheckedCreateWithoutAutorInput[]
+    connectOrCreate?: InternoMensagemCreateOrConnectWithoutAutorInput | InternoMensagemCreateOrConnectWithoutAutorInput[]
+    createMany?: InternoMensagemCreateManyAutorInputEnvelope
+    connect?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
   }
 
   export type EnumUserRoleFieldUpdateOperationsInput = {
@@ -54277,6 +58726,34 @@ export namespace Prisma {
     deleteMany?: ChatTemplateScalarWhereInput | ChatTemplateScalarWhereInput[]
   }
 
+  export type InternoParticipanteUpdateManyWithoutUserNestedInput = {
+    create?: XOR<InternoParticipanteCreateWithoutUserInput, InternoParticipanteUncheckedCreateWithoutUserInput> | InternoParticipanteCreateWithoutUserInput[] | InternoParticipanteUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: InternoParticipanteCreateOrConnectWithoutUserInput | InternoParticipanteCreateOrConnectWithoutUserInput[]
+    upsert?: InternoParticipanteUpsertWithWhereUniqueWithoutUserInput | InternoParticipanteUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: InternoParticipanteCreateManyUserInputEnvelope
+    set?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+    disconnect?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+    delete?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+    connect?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+    update?: InternoParticipanteUpdateWithWhereUniqueWithoutUserInput | InternoParticipanteUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: InternoParticipanteUpdateManyWithWhereWithoutUserInput | InternoParticipanteUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: InternoParticipanteScalarWhereInput | InternoParticipanteScalarWhereInput[]
+  }
+
+  export type InternoMensagemUpdateManyWithoutAutorNestedInput = {
+    create?: XOR<InternoMensagemCreateWithoutAutorInput, InternoMensagemUncheckedCreateWithoutAutorInput> | InternoMensagemCreateWithoutAutorInput[] | InternoMensagemUncheckedCreateWithoutAutorInput[]
+    connectOrCreate?: InternoMensagemCreateOrConnectWithoutAutorInput | InternoMensagemCreateOrConnectWithoutAutorInput[]
+    upsert?: InternoMensagemUpsertWithWhereUniqueWithoutAutorInput | InternoMensagemUpsertWithWhereUniqueWithoutAutorInput[]
+    createMany?: InternoMensagemCreateManyAutorInputEnvelope
+    set?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+    disconnect?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+    delete?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+    connect?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+    update?: InternoMensagemUpdateWithWhereUniqueWithoutAutorInput | InternoMensagemUpdateWithWhereUniqueWithoutAutorInput[]
+    updateMany?: InternoMensagemUpdateManyWithWhereWithoutAutorInput | InternoMensagemUpdateManyWithWhereWithoutAutorInput[]
+    deleteMany?: InternoMensagemScalarWhereInput | InternoMensagemScalarWhereInput[]
+  }
+
   export type AtendenteUncheckedUpdateOneWithoutUserNestedInput = {
     create?: XOR<AtendenteCreateWithoutUserInput, AtendenteUncheckedCreateWithoutUserInput>
     connectOrCreate?: AtendenteCreateOrConnectWithoutUserInput
@@ -54299,6 +58776,34 @@ export namespace Prisma {
     update?: ChatTemplateUpdateWithWhereUniqueWithoutUserInput | ChatTemplateUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: ChatTemplateUpdateManyWithWhereWithoutUserInput | ChatTemplateUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: ChatTemplateScalarWhereInput | ChatTemplateScalarWhereInput[]
+  }
+
+  export type InternoParticipanteUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<InternoParticipanteCreateWithoutUserInput, InternoParticipanteUncheckedCreateWithoutUserInput> | InternoParticipanteCreateWithoutUserInput[] | InternoParticipanteUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: InternoParticipanteCreateOrConnectWithoutUserInput | InternoParticipanteCreateOrConnectWithoutUserInput[]
+    upsert?: InternoParticipanteUpsertWithWhereUniqueWithoutUserInput | InternoParticipanteUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: InternoParticipanteCreateManyUserInputEnvelope
+    set?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+    disconnect?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+    delete?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+    connect?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+    update?: InternoParticipanteUpdateWithWhereUniqueWithoutUserInput | InternoParticipanteUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: InternoParticipanteUpdateManyWithWhereWithoutUserInput | InternoParticipanteUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: InternoParticipanteScalarWhereInput | InternoParticipanteScalarWhereInput[]
+  }
+
+  export type InternoMensagemUncheckedUpdateManyWithoutAutorNestedInput = {
+    create?: XOR<InternoMensagemCreateWithoutAutorInput, InternoMensagemUncheckedCreateWithoutAutorInput> | InternoMensagemCreateWithoutAutorInput[] | InternoMensagemUncheckedCreateWithoutAutorInput[]
+    connectOrCreate?: InternoMensagemCreateOrConnectWithoutAutorInput | InternoMensagemCreateOrConnectWithoutAutorInput[]
+    upsert?: InternoMensagemUpsertWithWhereUniqueWithoutAutorInput | InternoMensagemUpsertWithWhereUniqueWithoutAutorInput[]
+    createMany?: InternoMensagemCreateManyAutorInputEnvelope
+    set?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+    disconnect?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+    delete?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+    connect?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+    update?: InternoMensagemUpdateWithWhereUniqueWithoutAutorInput | InternoMensagemUpdateWithWhereUniqueWithoutAutorInput[]
+    updateMany?: InternoMensagemUpdateManyWithWhereWithoutAutorInput | InternoMensagemUpdateManyWithWhereWithoutAutorInput[]
+    deleteMany?: InternoMensagemScalarWhereInput | InternoMensagemScalarWhereInput[]
   }
 
   export type AtendenteDepartamentoCreateNestedManyWithoutDepartamentoInput = {
@@ -54857,6 +59362,155 @@ export namespace Prisma {
     update?: DepartamentoUpdateWithWhereUniqueWithoutAgenteIaInput | DepartamentoUpdateWithWhereUniqueWithoutAgenteIaInput[]
     updateMany?: DepartamentoUpdateManyWithWhereWithoutAgenteIaInput | DepartamentoUpdateManyWithWhereWithoutAgenteIaInput[]
     deleteMany?: DepartamentoScalarWhereInput | DepartamentoScalarWhereInput[]
+  }
+
+  export type InternoParticipanteCreateNestedManyWithoutConversaInput = {
+    create?: XOR<InternoParticipanteCreateWithoutConversaInput, InternoParticipanteUncheckedCreateWithoutConversaInput> | InternoParticipanteCreateWithoutConversaInput[] | InternoParticipanteUncheckedCreateWithoutConversaInput[]
+    connectOrCreate?: InternoParticipanteCreateOrConnectWithoutConversaInput | InternoParticipanteCreateOrConnectWithoutConversaInput[]
+    createMany?: InternoParticipanteCreateManyConversaInputEnvelope
+    connect?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+  }
+
+  export type InternoMensagemCreateNestedManyWithoutConversaInput = {
+    create?: XOR<InternoMensagemCreateWithoutConversaInput, InternoMensagemUncheckedCreateWithoutConversaInput> | InternoMensagemCreateWithoutConversaInput[] | InternoMensagemUncheckedCreateWithoutConversaInput[]
+    connectOrCreate?: InternoMensagemCreateOrConnectWithoutConversaInput | InternoMensagemCreateOrConnectWithoutConversaInput[]
+    createMany?: InternoMensagemCreateManyConversaInputEnvelope
+    connect?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+  }
+
+  export type InternoParticipanteUncheckedCreateNestedManyWithoutConversaInput = {
+    create?: XOR<InternoParticipanteCreateWithoutConversaInput, InternoParticipanteUncheckedCreateWithoutConversaInput> | InternoParticipanteCreateWithoutConversaInput[] | InternoParticipanteUncheckedCreateWithoutConversaInput[]
+    connectOrCreate?: InternoParticipanteCreateOrConnectWithoutConversaInput | InternoParticipanteCreateOrConnectWithoutConversaInput[]
+    createMany?: InternoParticipanteCreateManyConversaInputEnvelope
+    connect?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+  }
+
+  export type InternoMensagemUncheckedCreateNestedManyWithoutConversaInput = {
+    create?: XOR<InternoMensagemCreateWithoutConversaInput, InternoMensagemUncheckedCreateWithoutConversaInput> | InternoMensagemCreateWithoutConversaInput[] | InternoMensagemUncheckedCreateWithoutConversaInput[]
+    connectOrCreate?: InternoMensagemCreateOrConnectWithoutConversaInput | InternoMensagemCreateOrConnectWithoutConversaInput[]
+    createMany?: InternoMensagemCreateManyConversaInputEnvelope
+    connect?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+  }
+
+  export type InternoParticipanteUpdateManyWithoutConversaNestedInput = {
+    create?: XOR<InternoParticipanteCreateWithoutConversaInput, InternoParticipanteUncheckedCreateWithoutConversaInput> | InternoParticipanteCreateWithoutConversaInput[] | InternoParticipanteUncheckedCreateWithoutConversaInput[]
+    connectOrCreate?: InternoParticipanteCreateOrConnectWithoutConversaInput | InternoParticipanteCreateOrConnectWithoutConversaInput[]
+    upsert?: InternoParticipanteUpsertWithWhereUniqueWithoutConversaInput | InternoParticipanteUpsertWithWhereUniqueWithoutConversaInput[]
+    createMany?: InternoParticipanteCreateManyConversaInputEnvelope
+    set?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+    disconnect?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+    delete?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+    connect?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+    update?: InternoParticipanteUpdateWithWhereUniqueWithoutConversaInput | InternoParticipanteUpdateWithWhereUniqueWithoutConversaInput[]
+    updateMany?: InternoParticipanteUpdateManyWithWhereWithoutConversaInput | InternoParticipanteUpdateManyWithWhereWithoutConversaInput[]
+    deleteMany?: InternoParticipanteScalarWhereInput | InternoParticipanteScalarWhereInput[]
+  }
+
+  export type InternoMensagemUpdateManyWithoutConversaNestedInput = {
+    create?: XOR<InternoMensagemCreateWithoutConversaInput, InternoMensagemUncheckedCreateWithoutConversaInput> | InternoMensagemCreateWithoutConversaInput[] | InternoMensagemUncheckedCreateWithoutConversaInput[]
+    connectOrCreate?: InternoMensagemCreateOrConnectWithoutConversaInput | InternoMensagemCreateOrConnectWithoutConversaInput[]
+    upsert?: InternoMensagemUpsertWithWhereUniqueWithoutConversaInput | InternoMensagemUpsertWithWhereUniqueWithoutConversaInput[]
+    createMany?: InternoMensagemCreateManyConversaInputEnvelope
+    set?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+    disconnect?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+    delete?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+    connect?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+    update?: InternoMensagemUpdateWithWhereUniqueWithoutConversaInput | InternoMensagemUpdateWithWhereUniqueWithoutConversaInput[]
+    updateMany?: InternoMensagemUpdateManyWithWhereWithoutConversaInput | InternoMensagemUpdateManyWithWhereWithoutConversaInput[]
+    deleteMany?: InternoMensagemScalarWhereInput | InternoMensagemScalarWhereInput[]
+  }
+
+  export type InternoParticipanteUncheckedUpdateManyWithoutConversaNestedInput = {
+    create?: XOR<InternoParticipanteCreateWithoutConversaInput, InternoParticipanteUncheckedCreateWithoutConversaInput> | InternoParticipanteCreateWithoutConversaInput[] | InternoParticipanteUncheckedCreateWithoutConversaInput[]
+    connectOrCreate?: InternoParticipanteCreateOrConnectWithoutConversaInput | InternoParticipanteCreateOrConnectWithoutConversaInput[]
+    upsert?: InternoParticipanteUpsertWithWhereUniqueWithoutConversaInput | InternoParticipanteUpsertWithWhereUniqueWithoutConversaInput[]
+    createMany?: InternoParticipanteCreateManyConversaInputEnvelope
+    set?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+    disconnect?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+    delete?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+    connect?: InternoParticipanteWhereUniqueInput | InternoParticipanteWhereUniqueInput[]
+    update?: InternoParticipanteUpdateWithWhereUniqueWithoutConversaInput | InternoParticipanteUpdateWithWhereUniqueWithoutConversaInput[]
+    updateMany?: InternoParticipanteUpdateManyWithWhereWithoutConversaInput | InternoParticipanteUpdateManyWithWhereWithoutConversaInput[]
+    deleteMany?: InternoParticipanteScalarWhereInput | InternoParticipanteScalarWhereInput[]
+  }
+
+  export type InternoMensagemUncheckedUpdateManyWithoutConversaNestedInput = {
+    create?: XOR<InternoMensagemCreateWithoutConversaInput, InternoMensagemUncheckedCreateWithoutConversaInput> | InternoMensagemCreateWithoutConversaInput[] | InternoMensagemUncheckedCreateWithoutConversaInput[]
+    connectOrCreate?: InternoMensagemCreateOrConnectWithoutConversaInput | InternoMensagemCreateOrConnectWithoutConversaInput[]
+    upsert?: InternoMensagemUpsertWithWhereUniqueWithoutConversaInput | InternoMensagemUpsertWithWhereUniqueWithoutConversaInput[]
+    createMany?: InternoMensagemCreateManyConversaInputEnvelope
+    set?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+    disconnect?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+    delete?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+    connect?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+    update?: InternoMensagemUpdateWithWhereUniqueWithoutConversaInput | InternoMensagemUpdateWithWhereUniqueWithoutConversaInput[]
+    updateMany?: InternoMensagemUpdateManyWithWhereWithoutConversaInput | InternoMensagemUpdateManyWithWhereWithoutConversaInput[]
+    deleteMany?: InternoMensagemScalarWhereInput | InternoMensagemScalarWhereInput[]
+  }
+
+  export type InternoConversaCreateNestedOneWithoutParticipantesInput = {
+    create?: XOR<InternoConversaCreateWithoutParticipantesInput, InternoConversaUncheckedCreateWithoutParticipantesInput>
+    connectOrCreate?: InternoConversaCreateOrConnectWithoutParticipantesInput
+    connect?: InternoConversaWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutInternoParticipacoesInput = {
+    create?: XOR<UserCreateWithoutInternoParticipacoesInput, UserUncheckedCreateWithoutInternoParticipacoesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutInternoParticipacoesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type InternoConversaUpdateOneRequiredWithoutParticipantesNestedInput = {
+    create?: XOR<InternoConversaCreateWithoutParticipantesInput, InternoConversaUncheckedCreateWithoutParticipantesInput>
+    connectOrCreate?: InternoConversaCreateOrConnectWithoutParticipantesInput
+    upsert?: InternoConversaUpsertWithoutParticipantesInput
+    connect?: InternoConversaWhereUniqueInput
+    update?: XOR<XOR<InternoConversaUpdateToOneWithWhereWithoutParticipantesInput, InternoConversaUpdateWithoutParticipantesInput>, InternoConversaUncheckedUpdateWithoutParticipantesInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutInternoParticipacoesNestedInput = {
+    create?: XOR<UserCreateWithoutInternoParticipacoesInput, UserUncheckedCreateWithoutInternoParticipacoesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutInternoParticipacoesInput
+    upsert?: UserUpsertWithoutInternoParticipacoesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutInternoParticipacoesInput, UserUpdateWithoutInternoParticipacoesInput>, UserUncheckedUpdateWithoutInternoParticipacoesInput>
+  }
+
+  export type InternoMensagemCreatebaixadoPorInput = {
+    set: string[]
+  }
+
+  export type InternoConversaCreateNestedOneWithoutMensagensInput = {
+    create?: XOR<InternoConversaCreateWithoutMensagensInput, InternoConversaUncheckedCreateWithoutMensagensInput>
+    connectOrCreate?: InternoConversaCreateOrConnectWithoutMensagensInput
+    connect?: InternoConversaWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutInternoMensagensInput = {
+    create?: XOR<UserCreateWithoutInternoMensagensInput, UserUncheckedCreateWithoutInternoMensagensInput>
+    connectOrCreate?: UserCreateOrConnectWithoutInternoMensagensInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type InternoMensagemUpdatebaixadoPorInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type InternoConversaUpdateOneRequiredWithoutMensagensNestedInput = {
+    create?: XOR<InternoConversaCreateWithoutMensagensInput, InternoConversaUncheckedCreateWithoutMensagensInput>
+    connectOrCreate?: InternoConversaCreateOrConnectWithoutMensagensInput
+    upsert?: InternoConversaUpsertWithoutMensagensInput
+    connect?: InternoConversaWhereUniqueInput
+    update?: XOR<XOR<InternoConversaUpdateToOneWithWhereWithoutMensagensInput, InternoConversaUpdateWithoutMensagensInput>, InternoConversaUncheckedUpdateWithoutMensagensInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutInternoMensagensNestedInput = {
+    create?: XOR<UserCreateWithoutInternoMensagensInput, UserUncheckedCreateWithoutInternoMensagensInput>
+    connectOrCreate?: UserCreateOrConnectWithoutInternoMensagensInput
+    upsert?: UserUpsertWithoutInternoMensagensInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutInternoMensagensInput, UserUpdateWithoutInternoMensagensInput>, UserUncheckedUpdateWithoutInternoMensagensInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -57511,6 +62165,64 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type InternoParticipanteCreateWithoutUserInput = {
+    ultimaLeituraEm?: Date | string
+    entrouEm?: Date | string
+    conversa: InternoConversaCreateNestedOneWithoutParticipantesInput
+  }
+
+  export type InternoParticipanteUncheckedCreateWithoutUserInput = {
+    conversaId: string
+    ultimaLeituraEm?: Date | string
+    entrouEm?: Date | string
+  }
+
+  export type InternoParticipanteCreateOrConnectWithoutUserInput = {
+    where: InternoParticipanteWhereUniqueInput
+    create: XOR<InternoParticipanteCreateWithoutUserInput, InternoParticipanteUncheckedCreateWithoutUserInput>
+  }
+
+  export type InternoParticipanteCreateManyUserInputEnvelope = {
+    data: InternoParticipanteCreateManyUserInput | InternoParticipanteCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type InternoMensagemCreateWithoutAutorInput = {
+    id?: string
+    texto?: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoTamanho?: number | null
+    anexoNome?: string | null
+    baixadoPor?: InternoMensagemCreatebaixadoPorInput | string[]
+    criadoEm?: Date | string
+    conversa: InternoConversaCreateNestedOneWithoutMensagensInput
+  }
+
+  export type InternoMensagemUncheckedCreateWithoutAutorInput = {
+    id?: string
+    conversaId: string
+    texto?: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoTamanho?: number | null
+    anexoNome?: string | null
+    baixadoPor?: InternoMensagemCreatebaixadoPorInput | string[]
+    criadoEm?: Date | string
+  }
+
+  export type InternoMensagemCreateOrConnectWithoutAutorInput = {
+    where: InternoMensagemWhereUniqueInput
+    create: XOR<InternoMensagemCreateWithoutAutorInput, InternoMensagemUncheckedCreateWithoutAutorInput>
+  }
+
+  export type InternoMensagemCreateManyAutorInputEnvelope = {
+    data: InternoMensagemCreateManyAutorInput | InternoMensagemCreateManyAutorInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AtendenteUpsertWithoutUserInput = {
     update: XOR<AtendenteUpdateWithoutUserInput, AtendenteUncheckedUpdateWithoutUserInput>
     create: XOR<AtendenteCreateWithoutUserInput, AtendenteUncheckedCreateWithoutUserInput>
@@ -57566,6 +62278,65 @@ export namespace Prisma {
     texto?: StringFilter<"ChatTemplate"> | string
     criadoEm?: DateTimeFilter<"ChatTemplate"> | Date | string
     atualizadoEm?: DateTimeFilter<"ChatTemplate"> | Date | string
+  }
+
+  export type InternoParticipanteUpsertWithWhereUniqueWithoutUserInput = {
+    where: InternoParticipanteWhereUniqueInput
+    update: XOR<InternoParticipanteUpdateWithoutUserInput, InternoParticipanteUncheckedUpdateWithoutUserInput>
+    create: XOR<InternoParticipanteCreateWithoutUserInput, InternoParticipanteUncheckedCreateWithoutUserInput>
+  }
+
+  export type InternoParticipanteUpdateWithWhereUniqueWithoutUserInput = {
+    where: InternoParticipanteWhereUniqueInput
+    data: XOR<InternoParticipanteUpdateWithoutUserInput, InternoParticipanteUncheckedUpdateWithoutUserInput>
+  }
+
+  export type InternoParticipanteUpdateManyWithWhereWithoutUserInput = {
+    where: InternoParticipanteScalarWhereInput
+    data: XOR<InternoParticipanteUpdateManyMutationInput, InternoParticipanteUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type InternoParticipanteScalarWhereInput = {
+    AND?: InternoParticipanteScalarWhereInput | InternoParticipanteScalarWhereInput[]
+    OR?: InternoParticipanteScalarWhereInput[]
+    NOT?: InternoParticipanteScalarWhereInput | InternoParticipanteScalarWhereInput[]
+    conversaId?: StringFilter<"InternoParticipante"> | string
+    userId?: StringFilter<"InternoParticipante"> | string
+    ultimaLeituraEm?: DateTimeFilter<"InternoParticipante"> | Date | string
+    entrouEm?: DateTimeFilter<"InternoParticipante"> | Date | string
+  }
+
+  export type InternoMensagemUpsertWithWhereUniqueWithoutAutorInput = {
+    where: InternoMensagemWhereUniqueInput
+    update: XOR<InternoMensagemUpdateWithoutAutorInput, InternoMensagemUncheckedUpdateWithoutAutorInput>
+    create: XOR<InternoMensagemCreateWithoutAutorInput, InternoMensagemUncheckedCreateWithoutAutorInput>
+  }
+
+  export type InternoMensagemUpdateWithWhereUniqueWithoutAutorInput = {
+    where: InternoMensagemWhereUniqueInput
+    data: XOR<InternoMensagemUpdateWithoutAutorInput, InternoMensagemUncheckedUpdateWithoutAutorInput>
+  }
+
+  export type InternoMensagemUpdateManyWithWhereWithoutAutorInput = {
+    where: InternoMensagemScalarWhereInput
+    data: XOR<InternoMensagemUpdateManyMutationInput, InternoMensagemUncheckedUpdateManyWithoutAutorInput>
+  }
+
+  export type InternoMensagemScalarWhereInput = {
+    AND?: InternoMensagemScalarWhereInput | InternoMensagemScalarWhereInput[]
+    OR?: InternoMensagemScalarWhereInput[]
+    NOT?: InternoMensagemScalarWhereInput | InternoMensagemScalarWhereInput[]
+    id?: StringFilter<"InternoMensagem"> | string
+    conversaId?: StringFilter<"InternoMensagem"> | string
+    autorId?: StringFilter<"InternoMensagem"> | string
+    texto?: StringFilter<"InternoMensagem"> | string
+    anexoId?: StringNullableFilter<"InternoMensagem"> | string | null
+    anexoTipo?: StringNullableFilter<"InternoMensagem"> | string | null
+    anexoMime?: StringNullableFilter<"InternoMensagem"> | string | null
+    anexoTamanho?: IntNullableFilter<"InternoMensagem"> | number | null
+    anexoNome?: StringNullableFilter<"InternoMensagem"> | string | null
+    baixadoPor?: StringNullableListFilter<"InternoMensagem">
+    criadoEm?: DateTimeFilter<"InternoMensagem"> | Date | string
   }
 
   export type AtendenteDepartamentoCreateWithoutDepartamentoInput = {
@@ -57926,6 +62697,8 @@ export namespace Prisma {
     criadoEm?: Date | string
     atualizadoEm?: Date | string
     chatTemplates?: ChatTemplateCreateNestedManyWithoutUserInput
+    internoParticipacoes?: InternoParticipanteCreateNestedManyWithoutUserInput
+    internoMensagens?: InternoMensagemCreateNestedManyWithoutAutorInput
   }
 
   export type UserUncheckedCreateWithoutAtendenteInput = {
@@ -57943,6 +62716,8 @@ export namespace Prisma {
     criadoEm?: Date | string
     atualizadoEm?: Date | string
     chatTemplates?: ChatTemplateUncheckedCreateNestedManyWithoutUserInput
+    internoParticipacoes?: InternoParticipanteUncheckedCreateNestedManyWithoutUserInput
+    internoMensagens?: InternoMensagemUncheckedCreateNestedManyWithoutAutorInput
   }
 
   export type UserCreateOrConnectWithoutAtendenteInput = {
@@ -58016,6 +62791,8 @@ export namespace Prisma {
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     chatTemplates?: ChatTemplateUpdateManyWithoutUserNestedInput
+    internoParticipacoes?: InternoParticipanteUpdateManyWithoutUserNestedInput
+    internoMensagens?: InternoMensagemUpdateManyWithoutAutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAtendenteInput = {
@@ -58033,6 +62810,8 @@ export namespace Prisma {
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     chatTemplates?: ChatTemplateUncheckedUpdateManyWithoutUserNestedInput
+    internoParticipacoes?: InternoParticipanteUncheckedUpdateManyWithoutUserNestedInput
+    internoMensagens?: InternoMensagemUncheckedUpdateManyWithoutAutorNestedInput
   }
 
   export type AtendenteDepartamentoUpsertWithWhereUniqueWithoutAtendenteInput = {
@@ -58701,6 +63480,8 @@ export namespace Prisma {
     criadoEm?: Date | string
     atualizadoEm?: Date | string
     atendente?: AtendenteCreateNestedOneWithoutUserInput
+    internoParticipacoes?: InternoParticipanteCreateNestedManyWithoutUserInput
+    internoMensagens?: InternoMensagemCreateNestedManyWithoutAutorInput
   }
 
   export type UserUncheckedCreateWithoutChatTemplatesInput = {
@@ -58718,6 +63499,8 @@ export namespace Prisma {
     criadoEm?: Date | string
     atualizadoEm?: Date | string
     atendente?: AtendenteUncheckedCreateNestedOneWithoutUserInput
+    internoParticipacoes?: InternoParticipanteUncheckedCreateNestedManyWithoutUserInput
+    internoMensagens?: InternoMensagemUncheckedCreateNestedManyWithoutAutorInput
   }
 
   export type UserCreateOrConnectWithoutChatTemplatesInput = {
@@ -58751,6 +63534,8 @@ export namespace Prisma {
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atendente?: AtendenteUpdateOneWithoutUserNestedInput
+    internoParticipacoes?: InternoParticipanteUpdateManyWithoutUserNestedInput
+    internoMensagens?: InternoMensagemUpdateManyWithoutAutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChatTemplatesInput = {
@@ -58768,6 +63553,8 @@ export namespace Prisma {
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atendente?: AtendenteUncheckedUpdateOneWithoutUserNestedInput
+    internoParticipacoes?: InternoParticipanteUncheckedUpdateManyWithoutUserNestedInput
+    internoMensagens?: InternoMensagemUncheckedUpdateManyWithoutAutorNestedInput
   }
 
   export type FollowUpBotCreateWithoutTemplatesInput = {
@@ -59160,6 +63947,408 @@ export namespace Prisma {
     criadoEm?: DateTimeFilter<"Departamento"> | Date | string
     atualizadoEm?: DateTimeFilter<"Departamento"> | Date | string
     agenteIaId?: StringNullableFilter<"Departamento"> | string | null
+  }
+
+  export type InternoParticipanteCreateWithoutConversaInput = {
+    ultimaLeituraEm?: Date | string
+    entrouEm?: Date | string
+    user: UserCreateNestedOneWithoutInternoParticipacoesInput
+  }
+
+  export type InternoParticipanteUncheckedCreateWithoutConversaInput = {
+    userId: string
+    ultimaLeituraEm?: Date | string
+    entrouEm?: Date | string
+  }
+
+  export type InternoParticipanteCreateOrConnectWithoutConversaInput = {
+    where: InternoParticipanteWhereUniqueInput
+    create: XOR<InternoParticipanteCreateWithoutConversaInput, InternoParticipanteUncheckedCreateWithoutConversaInput>
+  }
+
+  export type InternoParticipanteCreateManyConversaInputEnvelope = {
+    data: InternoParticipanteCreateManyConversaInput | InternoParticipanteCreateManyConversaInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type InternoMensagemCreateWithoutConversaInput = {
+    id?: string
+    texto?: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoTamanho?: number | null
+    anexoNome?: string | null
+    baixadoPor?: InternoMensagemCreatebaixadoPorInput | string[]
+    criadoEm?: Date | string
+    autor: UserCreateNestedOneWithoutInternoMensagensInput
+  }
+
+  export type InternoMensagemUncheckedCreateWithoutConversaInput = {
+    id?: string
+    autorId: string
+    texto?: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoTamanho?: number | null
+    anexoNome?: string | null
+    baixadoPor?: InternoMensagemCreatebaixadoPorInput | string[]
+    criadoEm?: Date | string
+  }
+
+  export type InternoMensagemCreateOrConnectWithoutConversaInput = {
+    where: InternoMensagemWhereUniqueInput
+    create: XOR<InternoMensagemCreateWithoutConversaInput, InternoMensagemUncheckedCreateWithoutConversaInput>
+  }
+
+  export type InternoMensagemCreateManyConversaInputEnvelope = {
+    data: InternoMensagemCreateManyConversaInput | InternoMensagemCreateManyConversaInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type InternoParticipanteUpsertWithWhereUniqueWithoutConversaInput = {
+    where: InternoParticipanteWhereUniqueInput
+    update: XOR<InternoParticipanteUpdateWithoutConversaInput, InternoParticipanteUncheckedUpdateWithoutConversaInput>
+    create: XOR<InternoParticipanteCreateWithoutConversaInput, InternoParticipanteUncheckedCreateWithoutConversaInput>
+  }
+
+  export type InternoParticipanteUpdateWithWhereUniqueWithoutConversaInput = {
+    where: InternoParticipanteWhereUniqueInput
+    data: XOR<InternoParticipanteUpdateWithoutConversaInput, InternoParticipanteUncheckedUpdateWithoutConversaInput>
+  }
+
+  export type InternoParticipanteUpdateManyWithWhereWithoutConversaInput = {
+    where: InternoParticipanteScalarWhereInput
+    data: XOR<InternoParticipanteUpdateManyMutationInput, InternoParticipanteUncheckedUpdateManyWithoutConversaInput>
+  }
+
+  export type InternoMensagemUpsertWithWhereUniqueWithoutConversaInput = {
+    where: InternoMensagemWhereUniqueInput
+    update: XOR<InternoMensagemUpdateWithoutConversaInput, InternoMensagemUncheckedUpdateWithoutConversaInput>
+    create: XOR<InternoMensagemCreateWithoutConversaInput, InternoMensagemUncheckedCreateWithoutConversaInput>
+  }
+
+  export type InternoMensagemUpdateWithWhereUniqueWithoutConversaInput = {
+    where: InternoMensagemWhereUniqueInput
+    data: XOR<InternoMensagemUpdateWithoutConversaInput, InternoMensagemUncheckedUpdateWithoutConversaInput>
+  }
+
+  export type InternoMensagemUpdateManyWithWhereWithoutConversaInput = {
+    where: InternoMensagemScalarWhereInput
+    data: XOR<InternoMensagemUpdateManyMutationInput, InternoMensagemUncheckedUpdateManyWithoutConversaInput>
+  }
+
+  export type InternoConversaCreateWithoutParticipantesInput = {
+    id?: string
+    workspaceId: string
+    tipo?: string
+    nome?: string | null
+    chaveDireta?: string | null
+    criadoPorId?: string | null
+    criadoEm?: Date | string
+    ultimaMensagemEm?: Date | string
+    mensagens?: InternoMensagemCreateNestedManyWithoutConversaInput
+  }
+
+  export type InternoConversaUncheckedCreateWithoutParticipantesInput = {
+    id?: string
+    workspaceId: string
+    tipo?: string
+    nome?: string | null
+    chaveDireta?: string | null
+    criadoPorId?: string | null
+    criadoEm?: Date | string
+    ultimaMensagemEm?: Date | string
+    mensagens?: InternoMensagemUncheckedCreateNestedManyWithoutConversaInput
+  }
+
+  export type InternoConversaCreateOrConnectWithoutParticipantesInput = {
+    where: InternoConversaWhereUniqueInput
+    create: XOR<InternoConversaCreateWithoutParticipantesInput, InternoConversaUncheckedCreateWithoutParticipantesInput>
+  }
+
+  export type UserCreateWithoutInternoParticipacoesInput = {
+    id?: string
+    workspaceId: string
+    username: string
+    nome: string
+    senhaHash: string
+    role?: $Enums.UserRole
+    secoes?: UserCreatesecoesInput | string[]
+    poderes?: UserCreatepoderesInput | string[]
+    ativo?: boolean
+    temaApp?: string
+    chatIdentificarRemetente?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendente?: AtendenteCreateNestedOneWithoutUserInput
+    chatTemplates?: ChatTemplateCreateNestedManyWithoutUserInput
+    internoMensagens?: InternoMensagemCreateNestedManyWithoutAutorInput
+  }
+
+  export type UserUncheckedCreateWithoutInternoParticipacoesInput = {
+    id?: string
+    workspaceId: string
+    username: string
+    nome: string
+    senhaHash: string
+    role?: $Enums.UserRole
+    secoes?: UserCreatesecoesInput | string[]
+    poderes?: UserCreatepoderesInput | string[]
+    ativo?: boolean
+    temaApp?: string
+    chatIdentificarRemetente?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendente?: AtendenteUncheckedCreateNestedOneWithoutUserInput
+    chatTemplates?: ChatTemplateUncheckedCreateNestedManyWithoutUserInput
+    internoMensagens?: InternoMensagemUncheckedCreateNestedManyWithoutAutorInput
+  }
+
+  export type UserCreateOrConnectWithoutInternoParticipacoesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutInternoParticipacoesInput, UserUncheckedCreateWithoutInternoParticipacoesInput>
+  }
+
+  export type InternoConversaUpsertWithoutParticipantesInput = {
+    update: XOR<InternoConversaUpdateWithoutParticipantesInput, InternoConversaUncheckedUpdateWithoutParticipantesInput>
+    create: XOR<InternoConversaCreateWithoutParticipantesInput, InternoConversaUncheckedCreateWithoutParticipantesInput>
+    where?: InternoConversaWhereInput
+  }
+
+  export type InternoConversaUpdateToOneWithWhereWithoutParticipantesInput = {
+    where?: InternoConversaWhereInput
+    data: XOR<InternoConversaUpdateWithoutParticipantesInput, InternoConversaUncheckedUpdateWithoutParticipantesInput>
+  }
+
+  export type InternoConversaUpdateWithoutParticipantesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    tipo?: StringFieldUpdateOperationsInput | string
+    nome?: NullableStringFieldUpdateOperationsInput | string | null
+    chaveDireta?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoPorId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimaMensagemEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    mensagens?: InternoMensagemUpdateManyWithoutConversaNestedInput
+  }
+
+  export type InternoConversaUncheckedUpdateWithoutParticipantesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    tipo?: StringFieldUpdateOperationsInput | string
+    nome?: NullableStringFieldUpdateOperationsInput | string | null
+    chaveDireta?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoPorId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimaMensagemEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    mensagens?: InternoMensagemUncheckedUpdateManyWithoutConversaNestedInput
+  }
+
+  export type UserUpsertWithoutInternoParticipacoesInput = {
+    update: XOR<UserUpdateWithoutInternoParticipacoesInput, UserUncheckedUpdateWithoutInternoParticipacoesInput>
+    create: XOR<UserCreateWithoutInternoParticipacoesInput, UserUncheckedCreateWithoutInternoParticipacoesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutInternoParticipacoesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutInternoParticipacoesInput, UserUncheckedUpdateWithoutInternoParticipacoesInput>
+  }
+
+  export type UserUpdateWithoutInternoParticipacoesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    senhaHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    secoes?: UserUpdatesecoesInput | string[]
+    poderes?: UserUpdatepoderesInput | string[]
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    temaApp?: StringFieldUpdateOperationsInput | string
+    chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendente?: AtendenteUpdateOneWithoutUserNestedInput
+    chatTemplates?: ChatTemplateUpdateManyWithoutUserNestedInput
+    internoMensagens?: InternoMensagemUpdateManyWithoutAutorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutInternoParticipacoesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    senhaHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    secoes?: UserUpdatesecoesInput | string[]
+    poderes?: UserUpdatepoderesInput | string[]
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    temaApp?: StringFieldUpdateOperationsInput | string
+    chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendente?: AtendenteUncheckedUpdateOneWithoutUserNestedInput
+    chatTemplates?: ChatTemplateUncheckedUpdateManyWithoutUserNestedInput
+    internoMensagens?: InternoMensagemUncheckedUpdateManyWithoutAutorNestedInput
+  }
+
+  export type InternoConversaCreateWithoutMensagensInput = {
+    id?: string
+    workspaceId: string
+    tipo?: string
+    nome?: string | null
+    chaveDireta?: string | null
+    criadoPorId?: string | null
+    criadoEm?: Date | string
+    ultimaMensagemEm?: Date | string
+    participantes?: InternoParticipanteCreateNestedManyWithoutConversaInput
+  }
+
+  export type InternoConversaUncheckedCreateWithoutMensagensInput = {
+    id?: string
+    workspaceId: string
+    tipo?: string
+    nome?: string | null
+    chaveDireta?: string | null
+    criadoPorId?: string | null
+    criadoEm?: Date | string
+    ultimaMensagemEm?: Date | string
+    participantes?: InternoParticipanteUncheckedCreateNestedManyWithoutConversaInput
+  }
+
+  export type InternoConversaCreateOrConnectWithoutMensagensInput = {
+    where: InternoConversaWhereUniqueInput
+    create: XOR<InternoConversaCreateWithoutMensagensInput, InternoConversaUncheckedCreateWithoutMensagensInput>
+  }
+
+  export type UserCreateWithoutInternoMensagensInput = {
+    id?: string
+    workspaceId: string
+    username: string
+    nome: string
+    senhaHash: string
+    role?: $Enums.UserRole
+    secoes?: UserCreatesecoesInput | string[]
+    poderes?: UserCreatepoderesInput | string[]
+    ativo?: boolean
+    temaApp?: string
+    chatIdentificarRemetente?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendente?: AtendenteCreateNestedOneWithoutUserInput
+    chatTemplates?: ChatTemplateCreateNestedManyWithoutUserInput
+    internoParticipacoes?: InternoParticipanteCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutInternoMensagensInput = {
+    id?: string
+    workspaceId: string
+    username: string
+    nome: string
+    senhaHash: string
+    role?: $Enums.UserRole
+    secoes?: UserCreatesecoesInput | string[]
+    poderes?: UserCreatepoderesInput | string[]
+    ativo?: boolean
+    temaApp?: string
+    chatIdentificarRemetente?: boolean
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    atendente?: AtendenteUncheckedCreateNestedOneWithoutUserInput
+    chatTemplates?: ChatTemplateUncheckedCreateNestedManyWithoutUserInput
+    internoParticipacoes?: InternoParticipanteUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutInternoMensagensInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutInternoMensagensInput, UserUncheckedCreateWithoutInternoMensagensInput>
+  }
+
+  export type InternoConversaUpsertWithoutMensagensInput = {
+    update: XOR<InternoConversaUpdateWithoutMensagensInput, InternoConversaUncheckedUpdateWithoutMensagensInput>
+    create: XOR<InternoConversaCreateWithoutMensagensInput, InternoConversaUncheckedCreateWithoutMensagensInput>
+    where?: InternoConversaWhereInput
+  }
+
+  export type InternoConversaUpdateToOneWithWhereWithoutMensagensInput = {
+    where?: InternoConversaWhereInput
+    data: XOR<InternoConversaUpdateWithoutMensagensInput, InternoConversaUncheckedUpdateWithoutMensagensInput>
+  }
+
+  export type InternoConversaUpdateWithoutMensagensInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    tipo?: StringFieldUpdateOperationsInput | string
+    nome?: NullableStringFieldUpdateOperationsInput | string | null
+    chaveDireta?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoPorId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimaMensagemEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    participantes?: InternoParticipanteUpdateManyWithoutConversaNestedInput
+  }
+
+  export type InternoConversaUncheckedUpdateWithoutMensagensInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    tipo?: StringFieldUpdateOperationsInput | string
+    nome?: NullableStringFieldUpdateOperationsInput | string | null
+    chaveDireta?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoPorId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimaMensagemEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    participantes?: InternoParticipanteUncheckedUpdateManyWithoutConversaNestedInput
+  }
+
+  export type UserUpsertWithoutInternoMensagensInput = {
+    update: XOR<UserUpdateWithoutInternoMensagensInput, UserUncheckedUpdateWithoutInternoMensagensInput>
+    create: XOR<UserCreateWithoutInternoMensagensInput, UserUncheckedCreateWithoutInternoMensagensInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutInternoMensagensInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutInternoMensagensInput, UserUncheckedUpdateWithoutInternoMensagensInput>
+  }
+
+  export type UserUpdateWithoutInternoMensagensInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    senhaHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    secoes?: UserUpdatesecoesInput | string[]
+    poderes?: UserUpdatepoderesInput | string[]
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    temaApp?: StringFieldUpdateOperationsInput | string
+    chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendente?: AtendenteUpdateOneWithoutUserNestedInput
+    chatTemplates?: ChatTemplateUpdateManyWithoutUserNestedInput
+    internoParticipacoes?: InternoParticipanteUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutInternoMensagensInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    senhaHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    secoes?: UserUpdatesecoesInput | string[]
+    poderes?: UserUpdatepoderesInput | string[]
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    temaApp?: StringFieldUpdateOperationsInput | string
+    chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atendente?: AtendenteUncheckedUpdateOneWithoutUserNestedInput
+    chatTemplates?: ChatTemplateUncheckedUpdateManyWithoutUserNestedInput
+    internoParticipacoes?: InternoParticipanteUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type LeadCampaignCreateManyLeadInput = {
@@ -59736,6 +64925,25 @@ export namespace Prisma {
     atualizadoEm?: Date | string
   }
 
+  export type InternoParticipanteCreateManyUserInput = {
+    conversaId: string
+    ultimaLeituraEm?: Date | string
+    entrouEm?: Date | string
+  }
+
+  export type InternoMensagemCreateManyAutorInput = {
+    id?: string
+    conversaId: string
+    texto?: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoTamanho?: number | null
+    anexoNome?: string | null
+    baixadoPor?: InternoMensagemCreatebaixadoPorInput | string[]
+    criadoEm?: Date | string
+  }
+
   export type ChatTemplateUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
@@ -59758,6 +64966,63 @@ export namespace Prisma {
     texto?: StringFieldUpdateOperationsInput | string
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InternoParticipanteUpdateWithoutUserInput = {
+    ultimaLeituraEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    entrouEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversa?: InternoConversaUpdateOneRequiredWithoutParticipantesNestedInput
+  }
+
+  export type InternoParticipanteUncheckedUpdateWithoutUserInput = {
+    conversaId?: StringFieldUpdateOperationsInput | string
+    ultimaLeituraEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    entrouEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InternoParticipanteUncheckedUpdateManyWithoutUserInput = {
+    conversaId?: StringFieldUpdateOperationsInput | string
+    ultimaLeituraEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    entrouEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InternoMensagemUpdateWithoutAutorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    baixadoPor?: InternoMensagemUpdatebaixadoPorInput | string[]
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversa?: InternoConversaUpdateOneRequiredWithoutMensagensNestedInput
+  }
+
+  export type InternoMensagemUncheckedUpdateWithoutAutorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conversaId?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    baixadoPor?: InternoMensagemUpdatebaixadoPorInput | string[]
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InternoMensagemUncheckedUpdateManyWithoutAutorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conversaId?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    baixadoPor?: InternoMensagemUpdatebaixadoPorInput | string[]
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AtendenteDepartamentoCreateManyDepartamentoInput = {
@@ -60036,6 +65301,82 @@ export namespace Prisma {
     ativo?: BoolFieldUpdateOperationsInput | boolean
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InternoParticipanteCreateManyConversaInput = {
+    userId: string
+    ultimaLeituraEm?: Date | string
+    entrouEm?: Date | string
+  }
+
+  export type InternoMensagemCreateManyConversaInput = {
+    id?: string
+    autorId: string
+    texto?: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoTamanho?: number | null
+    anexoNome?: string | null
+    baixadoPor?: InternoMensagemCreatebaixadoPorInput | string[]
+    criadoEm?: Date | string
+  }
+
+  export type InternoParticipanteUpdateWithoutConversaInput = {
+    ultimaLeituraEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    entrouEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutInternoParticipacoesNestedInput
+  }
+
+  export type InternoParticipanteUncheckedUpdateWithoutConversaInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    ultimaLeituraEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    entrouEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InternoParticipanteUncheckedUpdateManyWithoutConversaInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    ultimaLeituraEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    entrouEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InternoMensagemUpdateWithoutConversaInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    baixadoPor?: InternoMensagemUpdatebaixadoPorInput | string[]
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    autor?: UserUpdateOneRequiredWithoutInternoMensagensNestedInput
+  }
+
+  export type InternoMensagemUncheckedUpdateWithoutConversaInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    autorId?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    baixadoPor?: InternoMensagemUpdatebaixadoPorInput | string[]
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InternoMensagemUncheckedUpdateManyWithoutConversaInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    autorId?: StringFieldUpdateOperationsInput | string
+    texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    baixadoPor?: InternoMensagemUpdatebaixadoPorInput | string[]
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 
