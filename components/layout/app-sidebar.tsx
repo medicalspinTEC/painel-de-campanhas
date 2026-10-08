@@ -45,7 +45,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "@/components/shared/user-avatar"
 
 const navPrincipal = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -86,7 +86,7 @@ interface AppSidebarProps {
   /** URLs das seções que o usuário logado pode acessar (admin recebe todas). */
   urlsPermitidas?: string[]
   /** Usuário logado (nome, login e nível), exibido no rodapé. */
-  usuario?: { nome: string; username: string; role: UserRole; poderes: string[] } | null
+  usuario?: { id: string; nome: string; username: string; role: UserRole; poderes: string[]; fotoEm: number | null } | null
 }
 
 function getStatusMeta(state?: string) {
@@ -270,16 +270,13 @@ export function AppSidebar({
                 title="Minha conta"
                 render={
                   <Link href="/conta">
-                    <Avatar className="size-8 rounded-lg">
-                      <AvatarFallback className="rounded-lg text-xs">
-                        {usuario.nome
-                          .split(/\s+/)
-                          .filter(Boolean)
-                          .slice(0, 2)
-                          .map((parte) => parte[0]?.toUpperCase() ?? "")
-                          .join("") || "U"}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar
+                      userId={usuario.id}
+                      nome={usuario.nome}
+                      fotoEm={usuario.fotoEm}
+                      className="size-8 rounded-lg after:rounded-lg"
+                      fallbackClassName="rounded-lg text-xs"
+                    />
                     <div className="flex min-w-0 flex-col text-left leading-tight">
                       <span className="truncate text-sm font-medium">{usuario.nome}</span>
                       <span className="flex items-center gap-1 truncate text-xs text-muted-foreground">

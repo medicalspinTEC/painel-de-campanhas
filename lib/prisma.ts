@@ -64,6 +64,7 @@ const FILHOS: Record<string, string> = {
   NoCodeExecution: "flow",
   Atendente: "user",
   ChatTemplate: "user",
+  UserFoto: "user",
   AtendenteDepartamento: "departamento",
   LeadAtendimento: "lead",
   AtendimentoTransferencia: "lead",

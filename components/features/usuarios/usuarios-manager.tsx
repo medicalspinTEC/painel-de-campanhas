@@ -16,6 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { UserAvatar } from "@/components/shared/user-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -115,6 +116,8 @@ export function UsuariosManager({ usuarios, ator }: { usuarios: Usuario[]; ator:
                 const podeExcluir = !ehVoce && podeGerenciarNivel(ator, usuario.role) && temPoder(ator, "usuarios_excluir")
                 return (
                   <li key={usuario.id} className="flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex min-w-0 items-center gap-3">
+                    <UserAvatar userId={usuario.id} nome={usuario.nome} fotoEm={usuario.fotoEm} className="size-10 shrink-0" />
                     <div className="flex min-w-0 flex-col gap-1.5">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="truncate font-medium">{usuario.nome}</span>
@@ -149,6 +152,7 @@ export function UsuariosManager({ usuarios, ator }: { usuarios: Usuario[]; ator:
                             : `Pode controlar: ${rotuloPoderes(usuario.poderes)}.`}
                         </span>
                       ) : null}
+                    </div>
                     </div>
                     <div className="flex shrink-0 gap-2">
                       {podeEditar ? (

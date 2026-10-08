@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { alterarMinhaSenhaAction, saveMeuNomeAction, saveMeuTemaAction } from "@/app/actions/users"
+import { FotoPerfilCard } from "@/components/features/conta/foto-perfil-card"
 import { TemaPicker } from "@/components/features/settings/tema-picker"
 import { aplicarTemaNoDocumento } from "@/components/layout/app-theme-colors"
 import { Button } from "@/components/ui/button"
@@ -16,13 +17,17 @@ import { SENHA_MIN } from "@/lib/senha"
 import type { TemaApp } from "@/lib/temas"
 
 export function ContaForms({
+  userId,
   nome: nomeInicial,
   username,
   temaApp,
+  fotoEm,
 }: {
+  userId: string
   nome: string
   username: string
   temaApp: TemaApp
+  fotoEm: number | null
 }) {
   const router = useRouter()
   const [pendingNome, startNome] = useTransition()
@@ -81,6 +86,8 @@ export function ContaForms({
 
   return (
     <div className="flex flex-col gap-4">
+      <FotoPerfilCard userId={userId} nome={nomeInicial} fotoEm={fotoEm} />
+
       <Card>
         <CardHeader>
           <CardTitle>Perfil</CardTitle>

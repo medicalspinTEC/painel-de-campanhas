@@ -35,6 +35,8 @@ export interface InternoContato {
   id: string
   nome: string
   username: string
+  /** Foto de perfil (momento da troca, ms). Nulo = sem foto. */
+  fotoEm: number | null
 }
 
 export interface InternoAnexo {
@@ -87,7 +89,12 @@ export async function listarContatosInternos(userId: string): Promise<InternoCon
   const linhas = await prisma.user.findMany({ where: { ativo: true, id: { not: userId } }, orderBy: { nome: "asc" } })
   return linhas
     .filter((linha) => podeAcessar(toUsuario(linha), "chat"))
-    .map((linha) => ({ id: linha.id, nome: linha.nome, username: linha.username }))
+    .map((linha) => ({
+      id: linha.id,
+      nome: linha.nome,
+      username: linha.username,
+      fotoEm: linha.fotoAtualizadaEm ? linha.fotoAtualizadaEm.getTime() : null,
+    }))
 }
 
 async function participanteDe(userId: string, conversaId: string) {
@@ -188,7 +195,7 @@ export async function listarConversasInternas(userId: string): Promise<InternoCo
     include: {
       conversa: {
         include: {
-          participantes: { include: { user: { select: { id: true, nome: true, username: true } } } },
+          participantes: { include: { user: { select: { id: true, nome: true, username: true, fotoAtualizadaEm: true } } } },
         },
       },
     },
@@ -212,6 +219,7 @@ export async function listarConversasInternas(userId: string): Promise<InternoCo
         id: p.user.id,
         nome: p.user.nome,
         username: p.user.username,
+        fotoEm: p.user.fotoAtualizadaEm ? p.user.fotoAtualizadaEm.getTime() : null,
       }))
       const outro = participantes.find((p) => p.id !== userId)
       const tipo = conversa.tipo === "grupo" ? "grupo" : "direta"

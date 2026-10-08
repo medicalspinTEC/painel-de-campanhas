@@ -114,7 +114,8 @@ export const SECOES_PADRAO: string[] = SECOES_BACKUP.filter((s) => !s.pesada).ma
  * arquivo adulterado).
  */
 export const COLUNAS_SECRETAS: Readonly<Record<string, readonly string[]>> = {
-  User: ["senhaHash"],
+  // `fotoAtualizadaEm`: a foto (tabela UserFoto) não entra no backup; sem a coluna, o usuário restaurado fica sem foto.
+  User: ["senhaHash", "fotoAtualizadaEm"],
   Webhook: ["secret"],
   NoCodeFlow: ["execWebhookSegredo"],
   AgenteIA: ["apiKey"],

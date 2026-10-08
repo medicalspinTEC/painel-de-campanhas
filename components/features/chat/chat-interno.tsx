@@ -13,6 +13,7 @@ import {
   sairDoGrupoInternoAction,
 } from "@/app/actions/chat-interno"
 import { ChatAbas } from "@/components/features/chat/chat-abas"
+import { UserAvatar } from "@/components/shared/user-avatar"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -61,7 +62,31 @@ function tamanhoLegivel(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`
 }
 
-function AvatarNome({ nome, grupo = false, className }: { nome: string; grupo?: boolean; className?: string }) {
+function AvatarNome({
+  nome,
+  grupo = false,
+  className,
+  userId,
+  fotoEm,
+}: {
+  nome: string
+  grupo?: boolean
+  className?: string
+  /** Usuário da conversa direta / contato: mostra a foto de perfil quando houver. */
+  userId?: string
+  fotoEm?: number | null
+}) {
+  if (userId && !grupo) {
+    return (
+      <UserAvatar
+        userId={userId}
+        nome={nome}
+        fotoEm={fotoEm}
+        className={cn("size-10 shrink-0", className)}
+        fallbackClassName="bg-primary/15 text-sm font-semibold text-primary"
+      />
+    )
+  }
   return (
     <Avatar className={cn("size-10 shrink-0", className)}>
       <AvatarFallback className="bg-primary/15 text-sm font-semibold text-primary">
@@ -69,6 +94,11 @@ function AvatarNome({ nome, grupo = false, className }: { nome: string; grupo?: 
       </AvatarFallback>
     </Avatar>
   )
+}
+
+/** O outro participante de uma conversa direta (nulo em grupo). */
+function outroDaConversa(conversa: InternoConversaDto, usuarioId: string) {
+  return conversa.tipo === "grupo" ? undefined : conversa.participantes.find((p) => p.id !== usuarioId)
 }
 
 function previewLista(conversa: InternoConversaDto) {
@@ -366,7 +396,7 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
                   onClick={() => void selecionar(conversa.id)}
                   className={cn("flex w-full items-center gap-3.5 px-4 py-3 text-left transition-colors hover:bg-muted/60", selecionadaId === conversa.id && "bg-muted")}
                 >
-                  <AvatarNome nome={conversa.nome} grupo={conversa.tipo === "grupo"} />
+                  <AvatarNome nome={conversa.nome} grupo={conversa.tipo === "grupo"} userId={outroDaConversa(conversa, usuarioId)?.id} fotoEm={outroDaConversa(conversa, usuarioId)?.fotoEm} />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-baseline justify-between gap-2">
                       <span className="truncate text-[15px] font-medium">{conversa.nome}</span>
@@ -409,7 +439,7 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
               <Button variant="ghost" size="icon" className="rounded-full lg:hidden" aria-label="Voltar às conversas" onClick={voltarParaLista}>
                 <ArrowLeft className="size-5" />
               </Button>
-              <AvatarNome nome={conversaAtiva.nome} grupo={conversaAtiva.tipo === "grupo"} />
+              <AvatarNome nome={conversaAtiva.nome} grupo={conversaAtiva.tipo === "grupo"} userId={outroDaConversa(conversaAtiva, usuarioId)?.id} fotoEm={outroDaConversa(conversaAtiva, usuarioId)?.fotoEm} />
               <div className="min-w-0 flex-1">
                 <h3 className="truncate text-[15px] font-semibold leading-tight">{conversaAtiva.nome}</h3>
                 <p className="truncate text-xs text-muted-foreground">
@@ -653,12 +683,12 @@ function NovaConversaDialog({
               grupo ? (
                 <label key={contato.id} className="flex cursor-pointer items-center gap-3 px-3 py-2 hover:bg-muted/60">
                   <Checkbox checked={marcados.has(contato.id)} onCheckedChange={() => alternar(contato.id)} aria-label={contato.nome} />
-                  <AvatarNome nome={contato.nome} className="size-8" />
+                  <AvatarNome nome={contato.nome} userId={contato.id} fotoEm={contato.fotoEm} className="size-8" />
                   <span className="min-w-0"><span className="block truncate text-sm font-medium">{contato.nome}</span><span className="block truncate text-xs text-muted-foreground">@{contato.username}</span></span>
                 </label>
               ) : (
                 <button key={contato.id} type="button" disabled={pendente} onClick={() => void abrirDireta(contato.id)} className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-muted/60 disabled:opacity-60">
-                  <AvatarNome nome={contato.nome} className="size-8" />
+                  <AvatarNome nome={contato.nome} userId={contato.id} fotoEm={contato.fotoEm} className="size-8" />
                   <span className="min-w-0"><span className="block truncate text-sm font-medium">{contato.nome}</span><span className="block truncate text-xs text-muted-foreground">@{contato.username}</span></span>
                 </button>
               ),

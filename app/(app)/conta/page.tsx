@@ -15,7 +15,13 @@ export default async function ContaPage() {
         titulo="Minha conta"
         descricao="Preferências pessoais: o que você altera aqui vale só para o seu usuário."
       />
-      <ContaForms nome={usuario.nome} username={usuario.username} temaApp={usuario.temaApp} />
+      <ContaForms
+        userId={usuario.id}
+        nome={usuario.nome}
+        username={usuario.username}
+        temaApp={usuario.temaApp}
+        fotoEm={usuario.fotoEm}
+      />
     </div>
   )
 }

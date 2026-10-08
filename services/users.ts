@@ -28,6 +28,8 @@ export type Usuario = {
   ativo: boolean
   temaApp: TemaApp
   chatIdentificarRemetente: boolean
+  /** Quando a foto de perfil foi trocada (ms). Nulo = sem foto. Usado como versão na URL da imagem. */
+  fotoEm: number | null
   criadoEm: Date
   /** Instância (espaço de dados) do usuário. Admin tem a própria; padrão herda a de quem o criou. */
   workspaceId: string
@@ -52,6 +54,7 @@ type UserRow = {
   ativo: boolean
   temaApp: string
   chatIdentificarRemetente: boolean
+  fotoAtualizadaEm?: Date | null
   criadoEm: Date
   workspaceId: string
 }
@@ -67,6 +70,7 @@ export function toUsuario(row: UserRow): Usuario {
     ativo: row.ativo,
     temaApp: temaOuPadrao(row.temaApp),
     chatIdentificarRemetente: row.chatIdentificarRemetente,
+    fotoEm: row.fotoAtualizadaEm ? row.fotoAtualizadaEm.getTime() : null,
     criadoEm: row.criadoEm,
     workspaceId: row.workspaceId,
   }
@@ -352,6 +356,66 @@ export async function setUserTema(id: string, tema: TemaApp): Promise<void> {
 /** Preferência pessoal: liga/desliga o nome do remetente nas mensagens do chat. */
 export async function setUserChatIdentificar(id: string, ativo: boolean): Promise<void> {
   await prisma.user.update({ where: { id }, data: { chatIdentificarRemetente: ativo } })
+}
+
+// ---------------------------------------------------------------------------
+// Foto de perfil
+// ---------------------------------------------------------------------------
+
+/** Tamanho máximo da foto já reduzida (o navegador manda ~256 px, em geral < 60 KB). */
+export const FOTO_TAMANHO_MAXIMO = 1024 * 1024 // 1 MB
+
+/** Identifica a imagem pelos primeiros bytes (não confia no tipo informado pelo navegador). SVG fica de fora de propósito. */
+export function mimeDaFoto(dados: Buffer): "image/jpeg" | "image/png" | "image/webp" | null {
+  if (dados.length < 12) return null
+  if (dados[0] === 0xff && dados[1] === 0xd8 && dados[2] === 0xff) return "image/jpeg"
+  if (dados.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return "image/png"
+  if (dados.subarray(0, 4).toString("ascii") === "RIFF" && dados.subarray(8, 12).toString("ascii") === "WEBP") return "image/webp"
+  return null
+}
+
+/** Troca a foto do próprio usuário (o id vem sempre da sessão, nunca do formulário). */
+export async function setUserFoto(id: string, dados: Buffer): Promise<void> {
+  if (dados.length === 0) throw new UserError("Selecione uma imagem.")
+  if (dados.length > FOTO_TAMANHO_MAXIMO) throw new UserError("A foto é grande demais. Use uma imagem de até 1 MB.")
+  const mime = mimeDaFoto(dados)
+  if (!mime) throw new UserError("Formato não suportado. Use uma imagem JPG, PNG ou WebP.")
+  const agora = new Date()
+  const bytes = new Uint8Array(dados)
+  await prismaGlobal.$transaction([
+    prismaGlobal.userFoto.upsert({
+      where: { userId: id },
+      create: { userId: id, dados: bytes, mime, tamanho: dados.length, atualizadoEm: agora },
+      update: { dados: bytes, mime, tamanho: dados.length, atualizadoEm: agora },
+    }),
+    prismaGlobal.user.update({ where: { id }, data: { fotoAtualizadaEm: agora } }),
+  ])
+}
+
+export async function removerUserFoto(id: string): Promise<void> {
+  await prismaGlobal.$transaction([
+    prismaGlobal.userFoto.deleteMany({ where: { userId: id } }),
+    prismaGlobal.user.update({ where: { id }, data: { fotoAtualizadaEm: null } }),
+  ])
+}
+
+/**
+ * Foto de um usuário, para quem pode vê-la: colegas da mesma instância; o Root também vê a
+ * dos administradores (que vivem em outra instância) na tela de Usuários.
+ */
+export async function getUserFoto(
+  id: string,
+  ator: Pick<Ator, "role" | "workspaceId">,
+): Promise<{ dados: Buffer; mime: string; atualizadoEm: Date } | null> {
+  const row = await prismaGlobal.userFoto.findUnique({
+    where: { userId: id },
+    include: { user: { select: { workspaceId: true, role: true } } },
+  })
+  if (!row) return null
+  const mesmaInstancia = row.user.workspaceId === ator.workspaceId
+  const rootVendoAdmin = ator.role === "root" && row.user.role === "admin"
+  if (!mesmaInstancia && !rootVendoAdmin) return null
+  return { dados: Buffer.from(row.dados), mime: row.mime, atualizadoEm: row.atualizadoEm }
 }
 
 export async function setUserNome(id: string, nome: string): Promise<void> {

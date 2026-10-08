@@ -16,6 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { UserAvatar } from "@/components/shared/user-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -132,6 +133,8 @@ export function AtendentesPanel({
                     key={atendente.id}
                     className="flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between"
                   >
+                    <div className="flex min-w-0 items-center gap-3">
+                    <UserAvatar userId={atendente.userId} nome={atendente.nome} fotoEm={atendente.fotoEm} className="size-10 shrink-0" />
                     <div className="flex min-w-0 flex-col gap-1.5">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="truncate font-medium">{atendente.nome}</span>
@@ -169,6 +172,7 @@ export function AtendentesPanel({
                           : "Sem departamento."}{" "}
                         {atendente.totalConversas} {atendente.totalConversas === 1 ? "conversa" : "conversas"}.
                       </span>
+                    </div>
                     </div>
                     <div className="flex shrink-0 flex-wrap gap-2">
                       <Button variant="outline" size="sm" onClick={() => abrirEdicao(atendente)}>

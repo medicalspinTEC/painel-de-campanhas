@@ -57,6 +57,8 @@ export type AtendenteItem = {
   ativo: boolean
   /** Login ativo em Usuários. Inativo = não entra no painel. */
   usuarioAtivo: boolean
+  /** Foto de perfil do usuário (momento da troca, ms). Nulo = sem foto. */
+  fotoEm: number | null
   departamentoIds: string[]
   totalConversas: number
   /** Root sempre acessa; admin e usuário padrão precisam da seção Chat liberada para atender. */
@@ -337,7 +339,7 @@ export async function getCrmData(ator: Pick<Ator, "id" | "role">): Promise<CrmDa
         id: true,
         userId: true,
         ativo: true,
-        user: { select: { nome: true, username: true, role: true, secoes: true, ativo: true } },
+        user: { select: { nome: true, username: true, role: true, secoes: true, ativo: true, fotoAtualizadaEm: true } },
         departamentos: { select: { departamentoId: true } },
       },
     }),
@@ -395,6 +397,7 @@ export async function getCrmData(ator: Pick<Ator, "id" | "role">): Promise<CrmDa
       role: a.user.role,
       ativo: a.ativo,
       usuarioAtivo: a.user.ativo,
+      fotoEm: a.user.fotoAtualizadaEm ? a.user.fotoAtualizadaEm.getTime() : null,
       departamentoIds: a.departamentos.map((v) => v.departamentoId),
       totalConversas: porAtendente.get(a.id) ?? 0,
       acessaChat: podeAcessar({ role: a.user.role, secoes: a.user.secoes }, "chat"),

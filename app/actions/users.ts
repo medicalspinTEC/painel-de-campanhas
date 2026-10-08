@@ -10,7 +10,9 @@ import { recordAppLog } from "@/services/app-logs"
 import {
   createUser,
   deleteUser,
+  removerUserFoto,
   setUserChatIdentificar,
+  setUserFoto,
   setUserNome,
   setUserTema,
   trocarSenha,
@@ -118,4 +120,29 @@ export async function alterarMinhaSenhaAction(senhaAtual: string, novaSenha: str
     return falha(error, "Não foi possível alterar a senha.")
   }
   return { ok: true, message: "Senha alterada." }
+}
+
+/** Foto de perfil: o navegador envia a imagem já reduzida; o servidor confere tipo (pelos bytes) e tamanho. */
+export async function salvarMinhaFotoAction(formData: FormData): Promise<UserActionResult> {
+  try {
+    const usuario = await assertUsuario()
+    const arquivo = formData.get("foto")
+    if (!(arquivo instanceof File) || arquivo.size === 0) return { ok: false, message: "Selecione uma imagem." }
+    await setUserFoto(usuario.id, Buffer.from(await arquivo.arrayBuffer()))
+  } catch (error) {
+    return falha(error, "Não foi possível salvar a foto.")
+  }
+  revalidatePath("/", "layout")
+  return { ok: true, message: "Foto atualizada." }
+}
+
+export async function removerMinhaFotoAction(): Promise<UserActionResult> {
+  try {
+    const usuario = await assertUsuario()
+    await removerUserFoto(usuario.id)
+  } catch (error) {
+    return falha(error, "Não foi possível remover a foto.")
+  }
+  revalidatePath("/", "layout")
+  return { ok: true, message: "Foto removida." }
 }

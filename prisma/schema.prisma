@@ -751,6 +751,11 @@ model User {
   /// usuário chegam ao lead com o nome dele no início (ver `sendLeadMessageAction`).
   chatIdentificarRemetente Boolean @default(false)
 
+  /// Foto de perfil: quando foi trocada (nulo = sem foto). Serve de versão na URL da imagem
+  /// (cache do navegador) e evita carregar os bytes junto com o usuário a cada requisição.
+  fotoAtualizadaEm DateTime?
+  foto             UserFoto?
+
   /// Plugin CRM: perfil de atendente deste usuário (opcional).
   atendente Atendente?
 
@@ -766,6 +771,18 @@ model User {
 
   @@index([role])
   @@index([workspaceId])
+}
+
+/// Foto de perfil do usuário. Imagem pequena (já reduzida pelo navegador, ~256 px), por isso
+/// fica no banco: sobrevive a deploys e não depende de volume persistente. Tabela separada
+/// para os bytes nunca viajarem junto com `User` (que é lido a cada requisição).
+model UserFoto {
+  userId       String   @id
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dados        Bytes
+  mime         String
+  tamanho      Int
+  atualizadoEm DateTime @default(now()) @updatedAt
 }
 
 // ---------------------------------------------------------------------------
