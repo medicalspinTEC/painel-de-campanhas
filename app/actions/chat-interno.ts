@@ -35,13 +35,19 @@ export async function refreshChatInternoAction(conversaId?: string | null, semMe
   return getInternoSnapshot(usuario.id, conversaId, { semMensagens })
 }
 
-export async function loadChatInternoMensagensAction(conversaId: string) {
+/**
+ * Histórico paginado: sem `antes`, as mensagens mais recentes (e a conversa passa a contar como lida);
+ * com `antes`, a página anterior à mensagem mais antiga já carregada.
+ */
+export async function loadChatInternoMensagensAction(conversaId: string, antes?: string | null) {
   const usuario = await assertSecao("chat")
   return executar(
     async () => {
-      const mensagens = await listarMensagensInterna(usuario.id, conversaId)
-      await marcarConversaLida(usuario.id, conversaId)
-      return { mensagens }
+      const [pagina] = await Promise.all([
+        listarMensagensInterna(usuario.id, conversaId, { antes }),
+        antes ? Promise.resolve() : marcarConversaLida(usuario.id, conversaId),
+      ])
+      return pagina
     },
     "Não foi possível carregar a conversa.",
     `Falha ao carregar a conversa interna id=${conversaId}`,

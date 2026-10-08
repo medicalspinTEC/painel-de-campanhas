@@ -24,7 +24,8 @@ import { toUsuario } from "@/services/users"
  */
 
 export const LIMITE_TEXTO_INTERNO = 4096
-const LIMITE_MENSAGENS = 300
+/** Mensagens por página do histórico (as mais recentes primeiro; as anteriores carregam sob demanda). */
+export const PAGINA_MENSAGENS = 50
 const LIMITE_NOME_GRUPO = 60
 const MAX_PARTICIPANTES_GRUPO = 50
 
@@ -73,6 +74,8 @@ export interface InternoSnapshot {
   contatos: InternoContato[]
   conversaSelecionadaId: string | null
   mensagens: InternoMensagemDto[]
+  /** Há mensagens mais antigas que as retornadas. */
+  temMais: boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -247,10 +250,9 @@ type LinhaMensagem = {
   anexoTamanho: number | null
   anexoNome: string | null
   baixadoPor: string[]
-  autor: { nome: string }
 }
 
-function paraDto(linha: LinhaMensagem, userId: string): InternoMensagemDto {
+function paraDto(linha: LinhaMensagem, userId: string, nomes: Map<string, string>): InternoMensagemDto {
   const anexo: InternoAnexo | null =
     linha.anexoId && linha.anexoTipo
       ? {
@@ -266,23 +268,38 @@ function paraDto(linha: LinhaMensagem, userId: string): InternoMensagemDto {
   return {
     id: linha.id,
     autorId: linha.autorId,
-    autorNome: linha.autor.nome,
+    autorNome: nomes.get(linha.autorId) ?? "Ex-participante",
     texto: linha.texto,
     data: linha.criadoEm.toISOString(),
     anexo,
   }
 }
 
-/** Histórico da conversa (as últimas mensagens, da mais antiga para a mais nova). */
-export async function listarMensagensInternas(userId: string, conversaId: string): Promise<InternoMensagemDto[]> {
-  await exigirParticipante(userId, conversaId)
-  const linhas = await prisma.internoMensagem.findMany({
-    where: { conversaId },
-    orderBy: { criadoEm: "desc" },
-    take: LIMITE_MENSAGENS,
-    include: { autor: { select: { nome: true } } },
-  })
-  return linhas.reverse().map((linha) => paraDto(linha, userId))
+/**
+ * Uma página do histórico (da mais antiga para a mais nova). Sem `antes`, devolve as mais recentes;
+ * com `antes` (data ISO da mensagem mais antiga já carregada), devolve as anteriores a ela.
+ * A checagem de participação e a leitura das mensagens rodam em paralelo (uma ida ao banco só).
+ */
+export async function listarMensagensInternas(
+  userId: string,
+  conversaId: string,
+  opcoes: { antes?: string | null } = {},
+): Promise<{ mensagens: InternoMensagemDto[]; temMais: boolean }> {
+  const antes = opcoes.antes ? new Date(opcoes.antes) : null
+  const [participantes, linhas] = await Promise.all([
+    prisma.internoParticipante.findMany({ where: { conversaId }, select: { user: { select: { id: true, nome: true } } } }),
+    prisma.internoMensagem.findMany({
+      where: { conversaId, ...(antes && !Number.isNaN(antes.getTime()) ? { criadoEm: { lt: antes } } : {}) },
+      orderBy: { criadoEm: "desc" },
+      take: PAGINA_MENSAGENS + 1,
+    }),
+  ])
+  if (!participantes.some((p) => p.user.id === userId)) throw new ChatInternoError("Conversa não encontrada.")
+
+  const nomes = new Map<string, string>(participantes.map((p) => [p.user.id, p.user.nome] as [string, string]))
+  const temMais = linhas.length > PAGINA_MENSAGENS
+  const pagina = linhas.slice(0, PAGINA_MENSAGENS).reverse()
+  return { mensagens: pagina.map((linha) => paraDto(linha, userId, nomes)), temMais }
 }
 
 /** Marca a conversa como lida (tudo até agora). */
@@ -298,14 +315,16 @@ export async function getInternoSnapshot(
   const [conversas, contatos] = await Promise.all([listarConversasInternas(userId), listarContatosInternos(userId)])
   const selecionada = conversaId && conversas.some((c) => c.id === conversaId) ? conversaId : null
   let mensagens: InternoMensagemDto[] = []
+  let temMais = false
   if (selecionada && !opcoes.semMensagens) {
-    mensagens = await listarMensagensInternas(userId, selecionada)
-    // Quem está com a conversa aberta lê o que chega.
-    await marcarConversaLida(userId, selecionada)
+    // Quem está com a conversa aberta lê o que chega: marca como lida junto com a leitura.
+    const [pagina] = await Promise.all([listarMensagensInternas(userId, selecionada), marcarConversaLida(userId, selecionada)])
+    mensagens = pagina.mensagens
+    temMais = pagina.temMais
     const conversa = conversas.find((c) => c.id === selecionada)
     if (conversa) conversa.naoLidas = 0
   }
-  return { conversas, contatos, conversaSelecionadaId: selecionada, mensagens }
+  return { conversas, contatos, conversaSelecionadaId: selecionada, mensagens, temMais }
 }
 
 /** Total de mensagens não lidas em todas as conversas (para o selo da aba). */
@@ -350,7 +369,7 @@ export async function enviarMensagemInterna(
 
   try {
     const agora = new Date()
-    const [linha] = await Promise.all([
+    const [linha, autor] = await Promise.all([
       prisma.internoMensagem.create({
         data: {
           conversaId,
@@ -367,13 +386,13 @@ export async function enviarMensagemInterna(
               }
             : {}),
         },
-        include: { autor: { select: { nome: true } } },
       }),
+      prisma.user.findFirst({ where: { id: userId }, select: { nome: true } }),
       prisma.internoConversa.updateMany({ where: { id: conversaId }, data: { ultimaMensagemEm: agora } }),
       // Quem escreve já leu tudo até aqui.
       prisma.internoParticipante.updateMany({ where: { conversaId, userId }, data: { ultimaLeituraEm: agora } }),
     ])
-    return paraDto(linha, userId)
+    return paraDto(linha, userId, new Map([[userId, autor?.nome ?? "Você"]]))
   } catch (error) {
     // Não deixa um arquivo órfão no servidor se a gravação falhou.
     if (anexoId) await removerAnexoInterno(anexoId)

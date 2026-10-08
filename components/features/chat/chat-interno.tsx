@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react"
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from "react"
 import { toast } from "sonner"
 import { ArrowLeft, CheckCheck, Download, FileText, ImageIcon, LogOut, MessageCircle, Paperclip, Plus, Search, Send, Users, X } from "lucide-react"
 
@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import type { InternoContato, InternoConversaDto, InternoMensagemDto, InternoSnapshot } from "@/services/chat-interno"
 
-const INTERVALO_ATUALIZACAO = 4000
+const INTERVALO_ATUALIZACAO = 5000
 const LIMITE_TEXTO = 4096
 /** Igual ao limite do servidor (lib/interno-storage.ts). */
 const LIMITE_ARQUIVO_BYTES = 16 * 1024 * 1024
@@ -83,6 +83,9 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
   const [contatos, setContatos] = useState(inicial.contatos)
   const [selecionadaId, setSelecionadaId] = useState<string | null>(inicial.conversaSelecionadaId)
   const [mensagens, setMensagens] = useState<InternoMensagemDto[]>(inicial.mensagens)
+  const [temMais, setTemMais] = useState(inicial.temMais)
+  const [carregando, setCarregando] = useState(false)
+  const [carregandoMais, setCarregandoMais] = useState(false)
   const [busca, setBusca] = useState("")
   const [texto, setTexto] = useState("")
   const [arquivo, setArquivo] = useState<File | null>(null)
@@ -98,6 +101,10 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
   const conversaDoScrollRef = useRef<string | null>(null)
   const inputArquivoRef = useRef<HTMLInputElement | null>(null)
   const campoRef = useRef<HTMLTextAreaElement | null>(null)
+  // Última página vista de cada conversa: reabrir mostra na hora e atualiza por baixo.
+  const cacheRef = useRef(new Map<string, { mensagens: InternoMensagemDto[]; temMais: boolean }>())
+  const mensagensRef = useRef(mensagens)
+  const alturaAntesRef = useRef<number | null>(null)
 
   const conversaAtiva = conversas.find((c) => c.id === selecionadaId) ?? null
   const totalNaoLidas = conversas.reduce((soma, c) => soma + c.naoLidas, 0)
@@ -107,6 +114,31 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
     if (!termo) return conversas
     return conversas.filter((c) => c.nome.toLowerCase().includes(termo))
   }, [busca, conversas])
+
+  useEffect(() => {
+    mensagensRef.current = mensagens
+    if (selecionadaId && mensagens.length) cacheRef.current.set(selecionadaId, { mensagens, temMais })
+  }, [mensagens, temMais, selecionadaId])
+
+  // Ao carregar mensagens anteriores, mantém a posição de leitura (não pula para o topo).
+  useLayoutEffect(() => {
+    const area = areaRef.current
+    if (area && alturaAntesRef.current !== null) {
+      area.scrollTop = area.scrollHeight - alturaAntesRef.current
+      alturaAntesRef.current = null
+    }
+  }, [mensagens])
+
+  /** Junta a página mais recente (do servidor) ao que já está na tela, sem perder as mais antigas. */
+  const mesclarRecentes = useCallback((recentes: InternoMensagemDto[], haMais: boolean) => {
+    setMensagens((atual) => {
+      if (recentes.length === 0) return atual
+      const corte = recentes[0].data
+      const antigas = atual.filter((m) => m.data < corte)
+      return antigas.length ? [...antigas, ...recentes] : recentes
+    })
+    setTemMais((atual) => (mensagensRef.current.some((m) => m.data < recentes[0]?.data) ? atual : haMais))
+  }, [])
 
   const aplicar = useCallback((snapshot: InternoSnapshot, comMensagens: boolean) => {
     setConversas(snapshot.conversas)
@@ -124,9 +156,20 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
       if (document.visibilityState === "visible") {
         const alvo = selecionadaRef.current
         try {
-          const snapshot = await refreshChatInternoAction(alvo)
-          // Se o usuário trocou de conversa durante a consulta, descarta o histórico antigo.
-          if (ativo) aplicar(snapshot, selecionadaRef.current === alvo && Boolean(alvo))
+          // Só a lista (leve). O histórico só é buscado se a conversa aberta tiver novidade.
+          const snapshot = await refreshChatInternoAction(alvo, true)
+          if (!ativo) return
+          aplicar(snapshot, false)
+          if (alvo && selecionadaRef.current === alvo) {
+            const conversa = snapshot.conversas.find((c) => c.id === alvo)
+            const ultimaTela = mensagensRef.current[mensagensRef.current.length - 1]?.data
+            if (conversa?.ultimaMensagem && conversa.ultimaMensagem.data !== ultimaTela) {
+              const resposta = await loadChatInternoMensagensAction(alvo)
+              if (ativo && resposta.ok && selecionadaRef.current === alvo) mesclarRecentes(resposta.mensagens, resposta.temMais)
+            }
+            // A conversa aberta nunca fica com contador de não lidas.
+            setConversas((atual) => atual.map((c) => (c.id === alvo ? { ...c, naoLidas: 0 } : c)))
+          }
         } catch {
           // A próxima rodada tenta de novo.
         }
@@ -145,7 +188,7 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
       clearTimeout(timer)
       document.removeEventListener("visibilitychange", aoVoltar)
     }
-  }, [aplicar])
+  }, [aplicar, mesclarRecentes])
 
   // Rolagem: no fim ao abrir a conversa; acompanha mensagens novas só se a pessoa já estava no fim.
   useEffect(() => {
@@ -172,21 +215,50 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
   async function selecionar(id: string) {
     selecionadaRef.current = id
     setSelecionadaId(id)
-    setMensagens([])
     setTexto("")
     setArquivo(null)
     // Abrir a conversa zera o contador dela na hora.
     setConversas((atual) => atual.map((c) => (c.id === id ? { ...c, naoLidas: 0 } : c)))
+    // Já vista antes? Mostra o que tinha e atualiza por baixo. Senão, mostra o carregamento.
+    const guardada = cacheRef.current.get(id)
+    setMensagens(guardada?.mensagens ?? [])
+    setTemMais(guardada?.temMais ?? false)
+    setCarregando(!guardada)
     const resultado = await loadChatInternoMensagensAction(id)
     if (selecionadaRef.current !== id) return
-    if (resultado.ok) setMensagens(resultado.mensagens)
-    else toast.error(resultado.message)
+    setCarregando(false)
+    if (!resultado.ok) return toast.error(resultado.message)
+    if (guardada) mesclarRecentes(resultado.mensagens, resultado.temMais)
+    else {
+      setMensagens(resultado.mensagens)
+      setTemMais(resultado.temMais)
+    }
+  }
+
+  async function carregarAnteriores() {
+    if (!selecionadaId || carregandoMais || mensagens.length === 0) return
+    const id = selecionadaId
+    setCarregandoMais(true)
+    try {
+      const resultado = await loadChatInternoMensagensAction(id, mensagens[0].data)
+      if (selecionadaRef.current !== id) return
+      if (!resultado.ok) return toast.error(resultado.message)
+      alturaAntesRef.current = areaRef.current?.scrollHeight ?? null
+      setMensagens((atual) => {
+        const conhecidas = new Set(atual.map((m) => m.id))
+        return [...resultado.mensagens.filter((m) => !conhecidas.has(m.id)), ...atual]
+      })
+      setTemMais(resultado.temMais)
+    } finally {
+      setCarregandoMais(false)
+    }
   }
 
   function voltarParaLista() {
     selecionadaRef.current = null
     setSelecionadaId(null)
     setMensagens([])
+    setCarregando(false)
   }
 
   async function enviar() {
@@ -354,7 +426,18 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
             </header>
 
             <div ref={areaRef} onScroll={aoRolar} className="wa-wallpaper flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 py-6 sm:px-8 lg:px-12">
-              {mensagens.length ? (
+              {temMais && mensagens.length ? (
+                <Button type="button" variant="secondary" size="sm" className="mb-2 self-center rounded-full" disabled={carregandoMais} onClick={() => void carregarAnteriores()}>
+                  {carregandoMais ? "Carregando..." : "Ver mensagens anteriores"}
+                </Button>
+              ) : null}
+              {carregando && mensagens.length === 0 ? (
+                <div className="flex flex-1 flex-col gap-3" role="status" aria-label="Carregando mensagens">
+                  {[["self-start", "w-48"], ["self-end", "w-60"], ["self-start", "w-64"], ["self-end", "w-40"]].map(([lado, largura], i) => (
+                    <span key={i} className={cn("h-10 animate-pulse rounded-2xl bg-(--wa-pill)", lado, largura)} />
+                  ))}
+                </div>
+              ) : mensagens.length ? (
                 mensagens.map((mensagem, indice) => {
                   const anterior = mensagens[indice - 1]
                   const novoDia = !anterior || new Date(anterior.data).toDateString() !== new Date(mensagem.data).toDateString()
