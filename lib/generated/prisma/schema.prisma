@@ -970,22 +970,26 @@ model AgenteIA {
   id String @id @default(cuid())
 
   /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
-  workspaceId String
-  nome        String
-  ativo       Boolean @default(false)
+  workspaceId         String
+  nome                String
+  ativo               Boolean @default(false)
   /// Provedor de IA: "claude" (Anthropic), "groq" ou "compativel" (qualquer API compatível com a
   /// da OpenAI, usando `baseUrl`).
-  provedor    String  @default("claude")
+  provedor            String  @default("claude")
   /// Endereço base da API (só para "compativel"; Groq e Claude usam o endereço padrão).
-  baseUrl     String?
+  baseUrl             String?
   /// Id do modelo (ex.: "claude-sonnet-5-5").
-  modelo      String
+  modelo              String
   /// Chave de API CRIPTOGRAFADA (AES-256-GCM, ver `lib/segredo.ts`). Nunca vai para o backup.
-  apiKey      String  @default("")
+  apiKey              String  @default("")
   /// Instruções do agente de atendimento (system prompt).
-  prompt      String
+  prompt              String
   /// Agente de entrada (triagem): atende quem ainda não está em nenhum departamento.
-  entrada     Boolean @default(false)
+  entrada             Boolean @default(false)
+  /// Reativação automática (opcional): depois de tantos minutos sem atividade da equipe, o agente
+  /// volta a responder uma conversa que um humano assumiu. Nulo = desligada (o agente só volta
+  /// quando alguém o reativa no chat).
+  reativarAposMinutos Int?
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt

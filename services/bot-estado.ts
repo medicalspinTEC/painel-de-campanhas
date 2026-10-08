@@ -56,6 +56,18 @@ export async function reativarBot(leadId: string): Promise<void> {
   })
 }
 
+/**
+ * A pausa veio de um humano assumindo a conversa (assumir, transferir, enviar mensagem pelo chat)?
+ * Só essas pausas podem ser desfeitas pela reativação automática do agente de IA: pausa manual
+ * ("Pausado por …") e a de lead em campanha continuam valendo até uma pessoa reativar.
+ */
+export function pausaPorHumanoAssumir(motivo: string | null): boolean {
+  if (!motivo) return false
+  return ["Conversa assumida", "Mensagem enviada por", "Conversa transferida para", "A conversa já estava com um atendente"].some((prefixo) =>
+    motivo.startsWith(prefixo),
+  )
+}
+
 export async function getBotConversa(leadId: string) {
   return prisma.botConversa.findUnique({ where: { leadId } })
 }

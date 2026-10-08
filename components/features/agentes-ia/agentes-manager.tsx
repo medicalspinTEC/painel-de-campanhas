@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
-import { infoDoProvedor } from "@/lib/agentes-ia"
+import { descreverTempo, infoDoProvedor } from "@/lib/agentes-ia"
 import type { AgenteIaItem } from "@/services/agentes-ia"
 
 export function AgentesManager({
@@ -142,6 +142,9 @@ export function AgentesManager({
                         </span>
                         <div className="flex flex-wrap items-center gap-1.5">
                           {agente.entrada ? <Badge variant="outline">Agente de entrada</Badge> : null}
+                          {agente.reativarAposMinutos ? (
+                            <Badge variant="secondary">Reativa após {descreverTempo(agente.reativarAposMinutos)}</Badge>
+                          ) : null}
                           {agente.departamentos.map((d) => (
                             <Badge key={d.id} variant="outline">
                               {d.nome}

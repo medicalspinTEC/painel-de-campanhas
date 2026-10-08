@@ -1,6 +1,16 @@
-import { infoDoProvedor, LIMITE_NOME_AGENTE, LIMITE_PROMPT_AGENTE, PROVEDORES, type ProvedorIa } from "@/lib/agentes-ia"
+import {
+  infoDoProvedor,
+  LIMITE_NOME_AGENTE,
+  LIMITE_PROMPT_AGENTE,
+  PROVEDORES,
+  REATIVACAO_MAX_MINUTOS,
+  REATIVACAO_MIN_MINUTOS,
+  descreverTempo,
+  type ProvedorIa,
+} from "@/lib/agentes-ia"
 import { prisma } from "@/lib/prisma"
 import { criptografar, descriptografar, finalDaChave } from "@/lib/segredo"
+import { pausaPorHumanoAssumir, reativarBot } from "@/services/bot-estado"
 import { recordAppLog } from "@/services/app-logs"
 import { sendWhatsAppText } from "@/services/evolution"
 import { exigirPlugin } from "@/services/settings"
@@ -36,6 +46,8 @@ export type AgenteIaItem = {
   prompt: string
   /** É o agente de entrada (atende quem ainda não está em nenhum departamento). */
   entrada: boolean
+  /** Reativação automática depois de X minutos sem atividade da equipe. Nulo = desligada. */
+  reativarAposMinutos: number | null
   temChave: boolean
   /** Final da chave (`…a1b2`) para conferência. A chave inteira nunca sai do servidor. */
   chaveFinal: string | null
@@ -51,6 +63,8 @@ export type AgenteIaInput = {
   prompt: string
   /** Vazio na edição = mantém a chave já salva. */
   apiKey?: string | null
+  /** Reativação automática em minutos; nulo/ausente = desligada. */
+  reativarAposMinutos?: number | null
 }
 
 export type ModeloIa = { id: string; nome: string }
@@ -94,7 +108,15 @@ function validar(input: AgenteIaInput) {
   if (!modelo || modelo.length > 120) throw new AgenteIaError("Escolha o modelo do agente.")
   if (prompt.length < 10) throw new AgenteIaError("Escreva o prompt do agente (mínimo de 10 caracteres).")
   if (prompt.length > LIMITE_PROMPT_AGENTE) throw new AgenteIaError(`O prompt pode ter no máximo ${LIMITE_PROMPT_AGENTE} caracteres.`)
-  return { nome, modelo, prompt, provedor, baseUrl }
+  let reativarAposMinutos: number | null = null
+  if (input.reativarAposMinutos !== null && input.reativarAposMinutos !== undefined) {
+    const minutos = Number(input.reativarAposMinutos)
+    if (!Number.isInteger(minutos) || minutos < REATIVACAO_MIN_MINUTOS || minutos > REATIVACAO_MAX_MINUTOS) {
+      throw new AgenteIaError("O tempo de reativação automática deve ficar entre 1 minuto e 30 dias.")
+    }
+    reativarAposMinutos = minutos
+  }
+  return { nome, modelo, prompt, provedor, baseUrl, reativarAposMinutos }
 }
 
 function limparChave(valor: unknown): string {
@@ -117,6 +139,7 @@ export async function listarAgentes(): Promise<AgenteIaItem[]> {
       modelo: true,
       prompt: true,
       entrada: true,
+      reativarAposMinutos: true,
       apiKey: true,
       departamentos: { select: { id: true, nome: true }, orderBy: { nome: "asc" } },
     },
@@ -132,6 +155,7 @@ export async function listarAgentes(): Promise<AgenteIaItem[]> {
       modelo: a.modelo,
       prompt: a.prompt,
       entrada: a.entrada,
+      reativarAposMinutos: a.reativarAposMinutos,
       temChave: Boolean(chave),
       chaveFinal: finalDaChave(chave),
       departamentos: a.departamentos,
@@ -321,7 +345,7 @@ async function chamarModelo(input: { conexao: Conexao; modelo: string; system: s
 // Atendimento: quem responde e como
 // ---------------------------------------------------------------------------
 
-export type AgenteCarregado = { id: string; nome: string; provedor: ProvedorIa; baseUrl: string | null; modelo: string; prompt: string; chave: string }
+export type AgenteCarregado = { id: string; nome: string; reativarAposMinutos: number | null; provedor: ProvedorIa; baseUrl: string | null; modelo: string; prompt: string; chave: string }
 
 /**
  * Agente ativo (e com chave) que atende o escopo da conversa: o do departamento ou, sem
@@ -334,7 +358,7 @@ export async function carregarAgenteDoEscopo(departamentoId: string | null): Pro
   if (!linha || !linha.ativo) return null
   const chave = descriptografar(linha.apiKey)
   if (!chave) return null
-  return { id: linha.id, nome: linha.nome, provedor: infoDoProvedor(linha.provedor).key, baseUrl: linha.baseUrl, modelo: linha.modelo, prompt: linha.prompt, chave }
+  return { id: linha.id, nome: linha.nome, reativarAposMinutos: linha.reativarAposMinutos, provedor: infoDoProvedor(linha.provedor).key, baseUrl: linha.baseUrl, modelo: linha.modelo, prompt: linha.prompt, chave }
 }
 
 /**
@@ -357,6 +381,36 @@ export async function listarEscoposDosAgentes(): Promise<{
     if (d.agenteIa && descriptografar(d.agenteIa.apiKey)) porDepartamento.set(d.id, { nome: d.agenteIa.nome })
   }
   return { entrada: entrada && descriptografar(entrada.apiKey) ? { nome: entrada.nome } : null, porDepartamento }
+}
+
+/**
+ * Reativação automática: o agente do escopo volta a responder uma conversa pausada quando
+ *  - a opção está ligada nele,
+ *  - a pausa veio de um humano assumindo a conversa (não pausa manual nem lead de campanha), e
+ *  - já passou o tempo configurado desde a última atividade da equipe (a pausa ou a última
+ *    mensagem enviada pelo chat, a que for mais recente; disparos de campanha não contam).
+ * Não há agendador: a checagem acontece quando o lead manda a próxima mensagem.
+ * Devolve `true` quando reativou (o agente já pode responder).
+ */
+export async function reativarAgenteSeVencido(
+  agente: AgenteCarregado,
+  lead: { id: string },
+  estado: { pausadoEm: Date | null; pausadoMotivo: string | null },
+): Promise<boolean> {
+  if (!agente.reativarAposMinutos || !estado.pausadoEm || !pausaPorHumanoAssumir(estado.pausadoMotivo)) return false
+  const ultimaDaEquipe = await prisma.timelineEvent.findFirst({
+    where: { leadId: lead.id, tipo: "mensagem_enviada", campanhaId: null },
+    orderBy: { data: "desc" },
+    select: { data: true },
+  })
+  const referencia = Math.max(estado.pausadoEm.getTime(), ultimaDaEquipe?.data.getTime() ?? 0)
+  if (Date.now() - referencia < agente.reativarAposMinutos * 60_000) return false
+
+  await reativarBot(lead.id)
+  await prisma.chatInternalNote.create({
+    data: { leadId: lead.id, texto: `Agente de IA “${agente.nome}” reativado automaticamente após ${descreverTempo(agente.reativarAposMinutos)} sem atividade da equipe.` },
+  })
+  return true
 }
 
 const LIMITE_HISTORICO = 30

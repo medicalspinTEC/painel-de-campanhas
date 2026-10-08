@@ -43167,8 +43167,18 @@ export namespace Prisma {
 
   export type AggregateAgenteIA = {
     _count: AgenteIACountAggregateOutputType | null
+    _avg: AgenteIAAvgAggregateOutputType | null
+    _sum: AgenteIASumAggregateOutputType | null
     _min: AgenteIAMinAggregateOutputType | null
     _max: AgenteIAMaxAggregateOutputType | null
+  }
+
+  export type AgenteIAAvgAggregateOutputType = {
+    reativarAposMinutos: number | null
+  }
+
+  export type AgenteIASumAggregateOutputType = {
+    reativarAposMinutos: number | null
   }
 
   export type AgenteIAMinAggregateOutputType = {
@@ -43182,6 +43192,7 @@ export namespace Prisma {
     apiKey: string | null
     prompt: string | null
     entrada: boolean | null
+    reativarAposMinutos: number | null
     criadoEm: Date | null
     atualizadoEm: Date | null
   }
@@ -43197,6 +43208,7 @@ export namespace Prisma {
     apiKey: string | null
     prompt: string | null
     entrada: boolean | null
+    reativarAposMinutos: number | null
     criadoEm: Date | null
     atualizadoEm: Date | null
   }
@@ -43212,11 +43224,20 @@ export namespace Prisma {
     apiKey: number
     prompt: number
     entrada: number
+    reativarAposMinutos: number
     criadoEm: number
     atualizadoEm: number
     _all: number
   }
 
+
+  export type AgenteIAAvgAggregateInputType = {
+    reativarAposMinutos?: true
+  }
+
+  export type AgenteIASumAggregateInputType = {
+    reativarAposMinutos?: true
+  }
 
   export type AgenteIAMinAggregateInputType = {
     id?: true
@@ -43229,6 +43250,7 @@ export namespace Prisma {
     apiKey?: true
     prompt?: true
     entrada?: true
+    reativarAposMinutos?: true
     criadoEm?: true
     atualizadoEm?: true
   }
@@ -43244,6 +43266,7 @@ export namespace Prisma {
     apiKey?: true
     prompt?: true
     entrada?: true
+    reativarAposMinutos?: true
     criadoEm?: true
     atualizadoEm?: true
   }
@@ -43259,6 +43282,7 @@ export namespace Prisma {
     apiKey?: true
     prompt?: true
     entrada?: true
+    reativarAposMinutos?: true
     criadoEm?: true
     atualizadoEm?: true
     _all?: true
@@ -43302,6 +43326,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: AgenteIAAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AgenteIASumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: AgenteIAMinAggregateInputType
@@ -43332,6 +43368,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: AgenteIACountAggregateInputType | true
+    _avg?: AgenteIAAvgAggregateInputType
+    _sum?: AgenteIASumAggregateInputType
     _min?: AgenteIAMinAggregateInputType
     _max?: AgenteIAMaxAggregateInputType
   }
@@ -43347,9 +43385,12 @@ export namespace Prisma {
     apiKey: string
     prompt: string
     entrada: boolean
+    reativarAposMinutos: number | null
     criadoEm: Date
     atualizadoEm: Date
     _count: AgenteIACountAggregateOutputType | null
+    _avg: AgenteIAAvgAggregateOutputType | null
+    _sum: AgenteIASumAggregateOutputType | null
     _min: AgenteIAMinAggregateOutputType | null
     _max: AgenteIAMaxAggregateOutputType | null
   }
@@ -43379,6 +43420,7 @@ export namespace Prisma {
     apiKey?: boolean
     prompt?: boolean
     entrada?: boolean
+    reativarAposMinutos?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
     departamentos?: boolean | AgenteIA$departamentosArgs<ExtArgs>
@@ -43396,6 +43438,7 @@ export namespace Prisma {
     apiKey?: boolean
     prompt?: boolean
     entrada?: boolean
+    reativarAposMinutos?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
   }, ExtArgs["result"]["agenteIA"]>
@@ -43411,6 +43454,7 @@ export namespace Prisma {
     apiKey?: boolean
     prompt?: boolean
     entrada?: boolean
+    reativarAposMinutos?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
   }, ExtArgs["result"]["agenteIA"]>
@@ -43426,11 +43470,12 @@ export namespace Prisma {
     apiKey?: boolean
     prompt?: boolean
     entrada?: boolean
+    reativarAposMinutos?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
   }
 
-  export type AgenteIAOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "ativo" | "provedor" | "baseUrl" | "modelo" | "apiKey" | "prompt" | "entrada" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["agenteIA"]>
+  export type AgenteIAOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "ativo" | "provedor" | "baseUrl" | "modelo" | "apiKey" | "prompt" | "entrada" | "reativarAposMinutos" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["agenteIA"]>
   export type AgenteIAInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     departamentos?: boolean | AgenteIA$departamentosArgs<ExtArgs>
     _count?: boolean | AgenteIACountOutputTypeDefaultArgs<ExtArgs>
@@ -43476,6 +43521,12 @@ export namespace Prisma {
        * Agente de entrada (triagem): atende quem ainda não está em nenhum departamento.
        */
       entrada: boolean
+      /**
+       * Reativação automática (opcional): depois de tantos minutos sem atividade da equipe, o agente
+       * volta a responder uma conversa que um humano assumiu. Nulo = desligada (o agente só volta
+       * quando alguém o reativa no chat).
+       */
+      reativarAposMinutos: number | null
       criadoEm: Date
       atualizadoEm: Date
     }, ExtArgs["result"]["agenteIA"]>
@@ -43912,6 +43963,7 @@ export namespace Prisma {
     readonly apiKey: FieldRef<"AgenteIA", 'String'>
     readonly prompt: FieldRef<"AgenteIA", 'String'>
     readonly entrada: FieldRef<"AgenteIA", 'Boolean'>
+    readonly reativarAposMinutos: FieldRef<"AgenteIA", 'Int'>
     readonly criadoEm: FieldRef<"AgenteIA", 'DateTime'>
     readonly atualizadoEm: FieldRef<"AgenteIA", 'DateTime'>
   }
@@ -44897,6 +44949,7 @@ export namespace Prisma {
     apiKey: 'apiKey',
     prompt: 'prompt',
     entrada: 'entrada',
+    reativarAposMinutos: 'reativarAposMinutos',
     criadoEm: 'criadoEm',
     atualizadoEm: 'atualizadoEm'
   };
@@ -47874,6 +47927,7 @@ export namespace Prisma {
     apiKey?: StringFilter<"AgenteIA"> | string
     prompt?: StringFilter<"AgenteIA"> | string
     entrada?: BoolFilter<"AgenteIA"> | boolean
+    reativarAposMinutos?: IntNullableFilter<"AgenteIA"> | number | null
     criadoEm?: DateTimeFilter<"AgenteIA"> | Date | string
     atualizadoEm?: DateTimeFilter<"AgenteIA"> | Date | string
     departamentos?: DepartamentoListRelationFilter
@@ -47890,6 +47944,7 @@ export namespace Prisma {
     apiKey?: SortOrder
     prompt?: SortOrder
     entrada?: SortOrder
+    reativarAposMinutos?: SortOrderInput | SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
     departamentos?: DepartamentoOrderByRelationAggregateInput
@@ -47909,6 +47964,7 @@ export namespace Prisma {
     apiKey?: StringFilter<"AgenteIA"> | string
     prompt?: StringFilter<"AgenteIA"> | string
     entrada?: BoolFilter<"AgenteIA"> | boolean
+    reativarAposMinutos?: IntNullableFilter<"AgenteIA"> | number | null
     criadoEm?: DateTimeFilter<"AgenteIA"> | Date | string
     atualizadoEm?: DateTimeFilter<"AgenteIA"> | Date | string
     departamentos?: DepartamentoListRelationFilter
@@ -47925,11 +47981,14 @@ export namespace Prisma {
     apiKey?: SortOrder
     prompt?: SortOrder
     entrada?: SortOrder
+    reativarAposMinutos?: SortOrderInput | SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
     _count?: AgenteIACountOrderByAggregateInput
+    _avg?: AgenteIAAvgOrderByAggregateInput
     _max?: AgenteIAMaxOrderByAggregateInput
     _min?: AgenteIAMinOrderByAggregateInput
+    _sum?: AgenteIASumOrderByAggregateInput
   }
 
   export type AgenteIAScalarWhereWithAggregatesInput = {
@@ -47946,6 +48005,7 @@ export namespace Prisma {
     apiKey?: StringWithAggregatesFilter<"AgenteIA"> | string
     prompt?: StringWithAggregatesFilter<"AgenteIA"> | string
     entrada?: BoolWithAggregatesFilter<"AgenteIA"> | boolean
+    reativarAposMinutos?: IntNullableWithAggregatesFilter<"AgenteIA"> | number | null
     criadoEm?: DateTimeWithAggregatesFilter<"AgenteIA"> | Date | string
     atualizadoEm?: DateTimeWithAggregatesFilter<"AgenteIA"> | Date | string
   }
@@ -51016,6 +51076,7 @@ export namespace Prisma {
     apiKey?: string
     prompt: string
     entrada?: boolean
+    reativarAposMinutos?: number | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
     departamentos?: DepartamentoCreateNestedManyWithoutAgenteIaInput
@@ -51032,6 +51093,7 @@ export namespace Prisma {
     apiKey?: string
     prompt: string
     entrada?: boolean
+    reativarAposMinutos?: number | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
     departamentos?: DepartamentoUncheckedCreateNestedManyWithoutAgenteIaInput
@@ -51048,6 +51110,7 @@ export namespace Prisma {
     apiKey?: StringFieldUpdateOperationsInput | string
     prompt?: StringFieldUpdateOperationsInput | string
     entrada?: BoolFieldUpdateOperationsInput | boolean
+    reativarAposMinutos?: NullableIntFieldUpdateOperationsInput | number | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     departamentos?: DepartamentoUpdateManyWithoutAgenteIaNestedInput
@@ -51064,6 +51127,7 @@ export namespace Prisma {
     apiKey?: StringFieldUpdateOperationsInput | string
     prompt?: StringFieldUpdateOperationsInput | string
     entrada?: BoolFieldUpdateOperationsInput | boolean
+    reativarAposMinutos?: NullableIntFieldUpdateOperationsInput | number | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     departamentos?: DepartamentoUncheckedUpdateManyWithoutAgenteIaNestedInput
@@ -51080,6 +51144,7 @@ export namespace Prisma {
     apiKey?: string
     prompt: string
     entrada?: boolean
+    reativarAposMinutos?: number | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
   }
@@ -51095,6 +51160,7 @@ export namespace Prisma {
     apiKey?: StringFieldUpdateOperationsInput | string
     prompt?: StringFieldUpdateOperationsInput | string
     entrada?: BoolFieldUpdateOperationsInput | boolean
+    reativarAposMinutos?: NullableIntFieldUpdateOperationsInput | number | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -51110,6 +51176,7 @@ export namespace Prisma {
     apiKey?: StringFieldUpdateOperationsInput | string
     prompt?: StringFieldUpdateOperationsInput | string
     entrada?: BoolFieldUpdateOperationsInput | boolean
+    reativarAposMinutos?: NullableIntFieldUpdateOperationsInput | number | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -53214,8 +53281,13 @@ export namespace Prisma {
     apiKey?: SortOrder
     prompt?: SortOrder
     entrada?: SortOrder
+    reativarAposMinutos?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
+  }
+
+  export type AgenteIAAvgOrderByAggregateInput = {
+    reativarAposMinutos?: SortOrder
   }
 
   export type AgenteIAMaxOrderByAggregateInput = {
@@ -53229,6 +53301,7 @@ export namespace Prisma {
     apiKey?: SortOrder
     prompt?: SortOrder
     entrada?: SortOrder
+    reativarAposMinutos?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
   }
@@ -53244,8 +53317,13 @@ export namespace Prisma {
     apiKey?: SortOrder
     prompt?: SortOrder
     entrada?: SortOrder
+    reativarAposMinutos?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
+  }
+
+  export type AgenteIASumOrderByAggregateInput = {
+    reativarAposMinutos?: SortOrder
   }
 
   export type CampaignCreateNestedOneWithoutLeadsInput = {
@@ -57630,6 +57708,7 @@ export namespace Prisma {
     apiKey?: string
     prompt: string
     entrada?: boolean
+    reativarAposMinutos?: number | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
   }
@@ -57645,6 +57724,7 @@ export namespace Prisma {
     apiKey?: string
     prompt: string
     entrada?: boolean
+    reativarAposMinutos?: number | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
   }
@@ -57810,6 +57890,7 @@ export namespace Prisma {
     apiKey?: StringFieldUpdateOperationsInput | string
     prompt?: StringFieldUpdateOperationsInput | string
     entrada?: BoolFieldUpdateOperationsInput | boolean
+    reativarAposMinutos?: NullableIntFieldUpdateOperationsInput | number | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -57825,6 +57906,7 @@ export namespace Prisma {
     apiKey?: StringFieldUpdateOperationsInput | string
     prompt?: StringFieldUpdateOperationsInput | string
     entrada?: BoolFieldUpdateOperationsInput | boolean
+    reativarAposMinutos?: NullableIntFieldUpdateOperationsInput | number | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }

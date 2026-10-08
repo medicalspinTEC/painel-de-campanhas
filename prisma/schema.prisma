@@ -986,6 +986,10 @@ model AgenteIA {
   prompt      String
   /// Agente de entrada (triagem): atende quem ainda não está em nenhum departamento.
   entrada     Boolean @default(false)
+  /// Reativação automática (opcional): depois de tantos minutos sem atividade da equipe, o agente
+  /// volta a responder uma conversa que um humano assumiu. Nulo = desligada (o agente só volta
+  /// quando alguém o reativa no chat).
+  reativarAposMinutos Int?
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt

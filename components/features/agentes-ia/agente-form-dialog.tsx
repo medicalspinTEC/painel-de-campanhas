@@ -11,8 +11,20 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
-import { infoDoProvedor, LIMITE_NOME_AGENTE, LIMITE_PROMPT_AGENTE, PROMPT_EXEMPLO, PROVEDORES, type ProvedorIa } from "@/lib/agentes-ia"
+import {
+  infoDoProvedor,
+  LIMITE_NOME_AGENTE,
+  LIMITE_PROMPT_AGENTE,
+  PROMPT_EXEMPLO,
+  PROVEDORES,
+  REATIVACAO_MAX_MINUTOS,
+  separarTempo,
+  UNIDADES_TEMPO,
+  type ProvedorIa,
+  type UnidadeTempo,
+} from "@/lib/agentes-ia"
 import type { AgenteIaItem } from "@/services/agentes-ia"
 
 export function AgenteFormDialog({
@@ -33,6 +45,9 @@ export function AgenteFormDialog({
   const [baseUrl, setBaseUrl] = useState("")
   const [modelo, setModelo] = useState(infoDoProvedor("claude").modeloPadrao)
   const [prompt, setPrompt] = useState("")
+  const [reativar, setReativar] = useState(false)
+  const [tempoValor, setTempoValor] = useState("30")
+  const [tempoUnidade, setTempoUnidade] = useState<UnidadeTempo>("minutos")
   const [modelosDaConta, setModelosDaConta] = useState<OpcaoSelect[] | null>(null)
 
   // O diálogo é reaproveitado para criar e editar: recarrega os campos a cada abertura.
@@ -45,6 +60,10 @@ export function AgenteFormDialog({
     setModelo(agente?.modelo ?? infoDoProvedor("claude").modeloPadrao)
     setPrompt(agente?.prompt ?? "")
     setModelosDaConta(null)
+    const tempo = agente?.reativarAposMinutos ? separarTempo(agente.reativarAposMinutos) : { valor: 30, unidade: "minutos" as UnidadeTempo }
+    setReativar(Boolean(agente?.reativarAposMinutos))
+    setTempoValor(String(tempo.valor))
+    setTempoUnidade(tempo.unidade)
   }, [open, agente])
 
   const info = infoDoProvedor(provedor)
@@ -79,7 +98,13 @@ export function AgenteFormDialog({
 
   function salvar() {
     startTransition(async () => {
-      const payload = { nome, provedor, baseUrl, modelo, prompt, apiKey }
+      const minutosPorUnidade = UNIDADES_TEMPO.find((u) => u.key === tempoUnidade)?.minutos ?? 1
+      const reativarAposMinutos = reativar ? Math.round(Number(tempoValor) * minutosPorUnidade) : null
+      if (reativar && (!Number.isFinite(reativarAposMinutos) || !reativarAposMinutos || reativarAposMinutos < 1 || reativarAposMinutos > REATIVACAO_MAX_MINUTOS)) {
+        toast.error("Informe um tempo de reativação entre 1 minuto e 30 dias.")
+        return
+      }
+      const payload = { nome, provedor, baseUrl, modelo, prompt, apiKey, reativarAposMinutos }
       const resultado = agente ? await updateAgenteIaAction(agente.id, payload) : await createAgenteIaAction(payload)
       if (resultado.ok) {
         toast.success(resultado.message)
@@ -195,6 +220,40 @@ export function AgenteFormDialog({
               {prompt.length}/{LIMITE_PROMPT_AGENTE}. O app já avisa o agente do canal (WhatsApp), do nome do cliente, do departamento e da data;
               escreva aqui o que é específico do seu negócio.
             </FieldDescription>
+          </Field>
+
+          <Field>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-col gap-1">
+                <FieldLabel htmlFor="agente-reativar">Reativar automaticamente (opcional)</FieldLabel>
+                <FieldDescription>
+                  Por padrão, quando um humano assume a conversa o agente para e só volta se alguém o reativar no chat. Ligando esta opção, ele
+                  volta sozinho depois de um tempo sem atividade da equipe, na próxima mensagem do lead. Não vale para pausa manual nem para lead de
+                  campanha.
+                </FieldDescription>
+              </div>
+              <Switch id="agente-reativar" checked={reativar} onCheckedChange={setReativar} />
+            </div>
+            {reativar ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Depois de</span>
+                <Input
+                  type="number"
+                  min={1}
+                  value={tempoValor}
+                  onChange={(e) => setTempoValor(e.target.value)}
+                  className="w-24"
+                  aria-label="Tempo para reativar"
+                />
+                <SelectField
+                  value={tempoUnidade}
+                  onValueChange={(v) => setTempoUnidade(v as UnidadeTempo)}
+                  opcoes={UNIDADES_TEMPO.map((u) => ({ value: u.key, label: u.label }))}
+                  className="w-32"
+                />
+                <span className="text-sm text-muted-foreground">sem atividade da equipe</span>
+              </div>
+            ) : null}
           </Field>
         </div>
 

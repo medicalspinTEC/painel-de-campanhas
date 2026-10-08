@@ -8,7 +8,7 @@ import { detalhesDaRespostaEmAudio, guardarAudioRecebido } from "@/services/audi
 import { extrairMensagem, localizarLeadPorTelefone, telefoneDoRemoteJid } from "@/services/lead-response"
 import { createBot, desativarBotsConcorrentes, executarFluxo, gravarExecucao, type ContextoBot } from "@/services/nocode"
 import { cadastrarLeadPorMensagem } from "@/services/leads"
-import { carregarAgenteDoEscopo, registrarFalhaDoAgente, responderComAgente, type AgenteCarregado } from "@/services/agentes-ia"
+import { carregarAgenteDoEscopo, reativarAgenteSeVencido, registrarFalhaDoAgente, responderComAgente, type AgenteCarregado } from "@/services/agentes-ia"
 import { exigirPlugin, getChatPluginAtivo, getPluginsAtivos } from "@/services/settings"
 
 /**
@@ -257,12 +257,20 @@ async function atenderConversa({ lead, telefone, texto, payload }: Conversa): Pr
     }),
   ])
 
-  // 1. Bot pausado nesta conversa: só uma pessoa o reativa. (O caso "lead de campanha" já chega
+  // 1. Bot pausado nesta conversa: só uma pessoa o reativa (ou a reativação automática do agente de IA). (O caso "lead de campanha" já chega
   // aqui como pausa, feita por `pausarBotSeLeadEmCampanha` antes do fluxo de resposta; quem reativa
   // o bot decide, e essa decisão não é desfeita aqui.)
-  if (estado && !estado.botAtivo) return
+  let reativadoAgora = false
+  if (estado && !estado.botAtivo) {
+    // Exceção: agente de IA com reativação automática ligada, depois de o tempo passar sem atividade da equipe.
+    if ((await motoresDisponiveis()).ia) {
+      const agente = await carregarAgenteDoEscopo(atendimento?.departamentoId ?? null)
+      reativadoAgora = agente ? await reativarAgenteSeVencido(agente, lead, estado) : false
+    }
+    if (!reativadoAgora) return
+  }
   // Conversa que já tinha atendente antes de o bot existir nela: tratada como assumida.
-  if (!estado && atendimento?.atendenteId) {
+  if (!estado && !reativadoAgora && atendimento?.atendenteId) {
     await pausarBot(lead.id, "A conversa já estava com um atendente.")
     return
   }

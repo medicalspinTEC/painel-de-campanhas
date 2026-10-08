@@ -71,3 +71,29 @@ export const LIMITE_PROMPT_AGENTE = 8000
 export const PROMPT_EXEMPLO =
   "Você é a assistente virtual da empresa. Atenda com educação e objetividade, em português do Brasil, em mensagens curtas. " +
   "Tire dúvidas sobre os produtos e serviços. Se o cliente pedir algo que você não sabe responder, diga que um atendente humano vai ajudar."
+
+/** Reativação automática: de 1 minuto a 30 dias. */
+export const REATIVACAO_MIN_MINUTOS = 1
+export const REATIVACAO_MAX_MINUTOS = 30 * 24 * 60
+
+export type UnidadeTempo = "minutos" | "horas" | "dias"
+
+export const UNIDADES_TEMPO: readonly { key: UnidadeTempo; label: string; minutos: number }[] = [
+  { key: "minutos", label: "Minutos", minutos: 1 },
+  { key: "horas", label: "Horas", minutos: 60 },
+  { key: "dias", label: "Dias", minutos: 24 * 60 },
+]
+
+/** Escolhe a maior unidade que divide o valor exatamente (90 min → 90 minutos; 120 → 2 horas). */
+export function separarTempo(minutos: number): { valor: number; unidade: UnidadeTempo } {
+  for (const u of [...UNIDADES_TEMPO].reverse()) {
+    if (minutos % u.minutos === 0) return { valor: minutos / u.minutos, unidade: u.key }
+  }
+  return { valor: minutos, unidade: "minutos" }
+}
+
+export function descreverTempo(minutos: number): string {
+  const { valor, unidade } = separarTempo(minutos)
+  const nomes = { minutos: ["minuto", "minutos"], horas: ["hora", "horas"], dias: ["dia", "dias"] } as const
+  return `${valor} ${nomes[unidade][valor === 1 ? 0 : 1]}`
+}
