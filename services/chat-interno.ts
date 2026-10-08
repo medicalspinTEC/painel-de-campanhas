@@ -64,8 +64,6 @@ export interface InternoConversaDto {
   /** Nome exibido: o do grupo, ou o do outro participante na conversa direta. */
   nome: string
   participantes: InternoContato[]
-  /** Grupo: o usuário logado pode renomear, adicionar/remover pessoas e excluir o grupo. */
-  podeAdministrar: boolean
   ultimaMensagem: { texto: string; autorNome: string; data: string; temAnexo: boolean; minha: boolean } | null
   ultimaAtividade: string
   naoLidas: number
@@ -174,67 +172,6 @@ async function excluirConversaSemParticipantes(conversaId: string): Promise<void
   await prisma.internoConversa.deleteMany({ where: { id: conversaId } })
 }
 
-/**
- * Quem administra o grupo: quem o criou. Se o criador saiu (ou a conta dele foi apagada),
- * qualquer participante passa a administrar — assim o grupo nunca fica sem gestão.
- */
-function podeAdministrarGrupo(userId: string, criadoPorId: string | null, participantes: { id: string }[]): boolean {
-  if (!participantes.some((p) => p.id === userId)) return false
-  const criadorAindaNoGrupo = criadoPorId ? participantes.some((p) => p.id === criadoPorId) : false
-  return criadorAindaNoGrupo ? criadoPorId === userId : true
-}
-
-async function exigirAdministradorDoGrupo(userId: string, conversaId: string) {
-  const conversa = await prisma.internoConversa.findFirst({
-    where: { id: conversaId },
-    select: { id: true, tipo: true, criadoPorId: true, participantes: { select: { userId: true } } },
-  })
-  if (!conversa || !conversa.participantes.some((p) => p.userId === userId)) throw new ChatInternoError("Conversa não encontrada.")
-  if (conversa.tipo !== "grupo") throw new ChatInternoError("Isto só vale para grupos.")
-  const ids = conversa.participantes.map((p) => ({ id: p.userId }))
-  if (!podeAdministrarGrupo(userId, conversa.criadoPorId, ids)) {
-    throw new ChatInternoError("Só quem criou o grupo pode alterá-lo.")
-  }
-  return { id: conversa.id, membrosIds: ids.map((p) => p.id) }
-}
-
-/** Altera o nome do grupo. */
-export async function renomearGrupoInterno(userId: string, conversaId: string, nome: string): Promise<void> {
-  await exigirAdministradorDoGrupo(userId, conversaId)
-  const nomeLimpo = nome.trim().slice(0, LIMITE_NOME_GRUPO)
-  if (!nomeLimpo) throw new ChatInternoError("Dê um nome ao grupo.")
-  await prisma.internoConversa.updateMany({ where: { id: conversaId }, data: { nome: nomeLimpo } })
-}
-
-/** Adiciona pessoas ao grupo (as mensagens antigas não contam como não lidas para quem entra). */
-export async function adicionarMembrosGrupoInterno(userId: string, conversaId: string, novosIds: string[]): Promise<void> {
-  const { membrosIds } = await exigirAdministradorDoGrupo(userId, conversaId)
-  const atuais = new Set(membrosIds)
-  const ids = [...new Set(novosIds.filter((id) => id && !atuais.has(id)))]
-  if (ids.length === 0) throw new ChatInternoError("Escolha pelo menos uma pessoa para adicionar.")
-  if (atuais.size + ids.length > MAX_PARTICIPANTES_GRUPO) {
-    throw new ChatInternoError(`Um grupo aceita até ${MAX_PARTICIPANTES_GRUPO} pessoas.`)
-  }
-  const contatos = new Set((await listarContatosInternos(userId)).map((c) => c.id))
-  if (ids.some((id) => !contatos.has(id))) throw new ChatInternoError("Alguma das pessoas escolhidas não está disponível.")
-  await prisma.internoParticipante.createMany({ data: ids.map((id) => ({ conversaId, userId: id })), skipDuplicates: true })
-}
-
-/** Remove uma pessoa do grupo. Para sair do próprio grupo, use `sairDoGrupoInterno`. */
-export async function removerMembroGrupoInterno(userId: string, conversaId: string, membroId: string): Promise<void> {
-  const { membrosIds } = await exigirAdministradorDoGrupo(userId, conversaId)
-  if (membroId === userId) throw new ChatInternoError("Para sair do grupo, use a opção \"Sair do grupo\".")
-  if (!membrosIds.includes(membroId)) throw new ChatInternoError("Esta pessoa não está no grupo.")
-  if (membrosIds.length - 1 < 2) throw new ChatInternoError("Um grupo precisa ter pelo menos 2 pessoas. Se quiser encerrar, exclua o grupo.")
-  await prisma.internoParticipante.deleteMany({ where: { conversaId, userId: membroId } })
-}
-
-/** Exclui o grupo para todos (mensagens e arquivos pendentes no servidor também). */
-export async function excluirGrupoInterno(userId: string, conversaId: string): Promise<void> {
-  await exigirAdministradorDoGrupo(userId, conversaId)
-  await excluirConversaSemParticipantes(conversaId)
-}
-
 // ---------------------------------------------------------------------------
 // Leitura
 // ---------------------------------------------------------------------------
@@ -284,7 +221,6 @@ export async function listarConversasInternas(userId: string): Promise<InternoCo
         tipo,
         nome: tipo === "grupo" ? (conversa.nome ?? "Grupo") : (outro?.nome ?? "Conversa"),
         participantes,
-        podeAdministrar: tipo === "grupo" && podeAdministrarGrupo(userId, conversa.criadoPorId, participantes),
         ultimaMensagem: ultima
           ? {
               texto: ultima.texto.trim() || previewDeAnexo(ultima.anexoTipo),

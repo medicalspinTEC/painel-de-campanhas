@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "node:crypto"
 
+import { normalizarFerramentas } from "@/lib/mcp/catalogo"
 import { prisma, prismaGlobal } from "@/lib/prisma"
 import { workspaceAtualId } from "@/lib/workspace-context"
 
@@ -16,6 +17,8 @@ export interface McpStatus {
   ativo: boolean
   /** Início do token (ex.: `mcp_1a2b3c4d`), só para reconhecê-lo. */
   prefixo: string
+  /** Funções liberadas para este token (nomes de `lib/mcp/catalogo.ts`). */
+  ferramentas: string[]
   criadoEm: string
   ultimoUsoEm: string | null
 }
@@ -26,10 +29,34 @@ function hashDoToken(token: string): string {
   return createHash("sha256").update(token).digest("hex")
 }
 
-/** Gera (ou substitui) o token da instância. O anterior deixa de funcionar na hora. Devolve o token em texto, uma única vez. */
-export async function gerarTokenMcp(): Promise<string> {
+/** Erro de regra (ex.: nenhuma função escolhida): a action mostra a mensagem como está. */
+export class McpTokenError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = "McpTokenError"
+  }
+}
+
+function ferramentasEscolhidas(valor: unknown): string[] {
+  const ferramentas = normalizarFerramentas(valor)
+  if (ferramentas.length === 0) throw new McpTokenError("Escolha pelo menos uma função que o MCP poderá executar.")
+  return ferramentas
+}
+
+/**
+ * Gera (ou substitui) o token da instância com as funções escolhidas. O anterior deixa de funcionar
+ * na hora. Devolve o token em texto, uma única vez.
+ */
+export async function gerarTokenMcp(ferramentas: unknown): Promise<string> {
+  const liberadas = ferramentasEscolhidas(ferramentas)
   const token = `${PREFIXO_TOKEN}${randomBytes(32).toString("hex")}`
-  const dados = { tokenHash: hashDoToken(token), prefixo: token.slice(0, PREFIXO_TOKEN.length + 8), ativo: true, ultimoUsoEm: null }
+  const dados = {
+    tokenHash: hashDoToken(token),
+    prefixo: token.slice(0, PREFIXO_TOKEN.length + 8),
+    ativo: true,
+    ferramentas: liberadas,
+    ultimoUsoEm: null,
+  }
 
   await prisma.mcpToken.upsert({
     where: { workspaceId: await workspaceAtualId() },
@@ -46,12 +73,19 @@ export async function getMcpStatus(): Promise<McpStatus | null> {
     return {
       ativo: row.ativo,
       prefixo: row.prefixo,
+      ferramentas: normalizarFerramentas(row.ferramentas),
       criadoEm: row.criadoEm.toISOString(),
       ultimoUsoEm: row.ultimoUsoEm?.toISOString() ?? null,
     }
   } catch {
     return null
   }
+}
+
+/** Troca as funções liberadas sem gerar outro token (a IA já conectada passa a ver a nova lista na próxima chamada). */
+export async function definirFerramentasMcp(ferramentas: unknown): Promise<void> {
+  const liberadas = ferramentasEscolhidas(ferramentas)
+  await prisma.mcpToken.update({ where: { workspaceId: await workspaceAtualId() }, data: { ferramentas: liberadas } })
 }
 
 export async function definirMcpAtivo(ativo: boolean): Promise<void> {
@@ -63,12 +97,18 @@ export async function revogarTokenMcp(): Promise<void> {
   await prisma.mcpToken.deleteMany({})
 }
 
+export interface McpAcesso {
+  workspaceId: string
+  /** Funções que este token pode executar. */
+  ferramentas: string[]
+}
+
 /**
- * Descobre a instância dona de um token, ou `null` se ele não existe, está desativado ou a
- * instância está suspensa. É a única consulta global do MCP: a rota é chamada sem sessão,
+ * Descobre a instância dona de um token (e as funções liberadas), ou `null` se ele não existe,
+ * está desativado ou a instância está suspensa. É a única consulta global do MCP: a rota é chamada sem sessão,
  * então o próprio token diz de quem são os dados.
  */
-export async function workspaceDoTokenMcp(token: string): Promise<string | null> {
+export async function workspaceDoTokenMcp(token: string): Promise<McpAcesso | null> {
   if (!token.startsWith(PREFIXO_TOKEN) || token.length > 200) return null
 
   const row = await prismaGlobal.mcpToken.findUnique({ where: { tokenHash: hashDoToken(token) } })
@@ -80,5 +120,5 @@ export async function workspaceDoTokenMcp(token: string): Promise<string | null>
   if (!row.ultimoUsoEm || Date.now() - row.ultimoUsoEm.getTime() > 60_000) {
     void prismaGlobal.mcpToken.update({ where: { id: row.id }, data: { ultimoUsoEm: new Date() } }).catch(() => undefined)
   }
-  return row.workspaceId
+  return { workspaceId: row.workspaceId, ferramentas: normalizarFerramentas(row.ferramentas) }
 }

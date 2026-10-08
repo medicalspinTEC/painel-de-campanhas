@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { assignCampaignBulk, setLeadStatus } from "@/services/leads"
 import { LEAD_STATUS_LABEL, type CampaignStatus, type CampaignTipo, type LeadStatus } from "@/types"
 
 /** Ordem das colunas: a mesma ordem dos status já existentes na plataforma. */
@@ -85,4 +86,68 @@ export async function getKanbanBoard(): Promise<KanbanBoardData> {
   }))
 
   return { leads, campanhas, totais, limitePorColuna: KANBAN_LIMITE_POR_COLUNA }
+}
+
+const KANBAN_MAX_MENSAGEM_INDIVIDUAL = 4096
+const KANBAN_MAX_RESPOSTA_LEAD = 4096
+
+export type MoverKanbanOpcoes = {
+  /** Obrigatória ao mover para "Em campanha": campanha em que o lead vai entrar. */
+  campanhaId?: string | null
+  /** Texto do lead, exigido só quando a campanha é do tipo individual. */
+  mensagemIndividual?: string | null
+  /** Ao mover para "Respondeu": o que o lead respondeu (opcional, vai para o histórico). */
+  resposta?: string | null
+}
+
+/**
+ * Move um lead de coluna do kanban, sem sessão (usado pelo MCP). Aplica as MESMAS regras de
+ * `moveKanbanLeadAction` (app/actions/kanban.ts): reaproveita `setLeadStatus` e
+ * `assignCampaignBulk`, então timeline, webhooks e entrada/saída de campanha se comportam igual.
+ * Quem chama garante antes que o plugin Kanban está ativo.
+ */
+export async function moverLeadKanban(
+  leadId: string,
+  status: LeadStatus,
+  opcoes: MoverKanbanOpcoes = {},
+): Promise<{ ok: boolean; message: string }> {
+  if (!leadId || !Object.hasOwn(LEAD_STATUS_LABEL, status)) return { ok: false, message: "Status inválido." }
+
+  if (status === "em_campanha") {
+    const campanhaId = opcoes.campanhaId?.trim()
+    if (!campanhaId) return { ok: false, message: "Selecione a campanha em que o lead vai entrar." }
+
+    const campanha = await prisma.campaign.findUnique({
+      where: { id: campanhaId },
+      select: { nome: true, tipo: true, status: true },
+    })
+    if (!campanha) return { ok: false, message: "Campanha não encontrada." }
+    if (campanha.status === "encerrada") return { ok: false, message: "A campanha selecionada está encerrada." }
+
+    const mensagem = opcoes.mensagemIndividual?.trim() || null
+    if (campanha.tipo === "individual") {
+      if (!mensagem || mensagem.length < 10) {
+        return { ok: false, message: "Escreva uma mensagem com pelo menos 10 caracteres para a campanha individual." }
+      }
+      if (mensagem.length > KANBAN_MAX_MENSAGEM_INDIVIDUAL) {
+        return { ok: false, message: `A mensagem é muito longa (máximo de ${KANBAN_MAX_MENSAGEM_INDIVIDUAL} caracteres).` }
+      }
+    }
+
+    const { atualizados } = await assignCampaignBulk([leadId], campanhaId, campanha.tipo === "individual" ? mensagem : null)
+    if (atualizados === 0) return { ok: false, message: "Lead não encontrado." }
+
+    // Quem já respondeu continua "respondeu" após a vinculação; aqui a mudança é explícita.
+    const atual = await prisma.lead.findUnique({ where: { id: leadId }, select: { status: true } })
+    if (atual && atual.status !== "em_campanha") await setLeadStatus(leadId, "em_campanha")
+    return { ok: true, message: `Lead movido para ${campanha.nome}.` }
+  }
+
+  const resposta = status === "respondeu" ? opcoes.resposta?.trim() || null : null
+  if (resposta && resposta.length > KANBAN_MAX_RESPOSTA_LEAD) {
+    return { ok: false, message: `A resposta é muito longa (máximo de ${KANBAN_MAX_RESPOSTA_LEAD} caracteres).` }
+  }
+  const lead = await setLeadStatus(leadId, status, resposta)
+  if (!lead) return { ok: false, message: "Lead não encontrado." }
+  return { ok: true, message: `Lead movido para ${LEAD_STATUS_LABEL[status]}.` }
 }

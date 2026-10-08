@@ -496,6 +496,10 @@ model McpToken {
   prefixo   String
   ativo     Boolean @default(true)
 
+  /// Funções (tools) que este token pode executar, escolhidas pelo usuário ANTES de gerar o token.
+  /// Nomes de `lib/mcp/catalogo.ts`; a IA só enxerga essas. Vazio = nada liberado.
+  ferramentas String[] @default([])
+
   ultimoUsoEm  DateTime?
   criadoEm     DateTime  @default(now())
   atualizadoEm DateTime  @updatedAt

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 
 import { assertSecao } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
-import { definirMcpAtivo, gerarTokenMcp, revogarTokenMcp } from "@/services/mcp-token"
+import { definirFerramentasMcp, definirMcpAtivo, gerarTokenMcp, McpTokenError, revogarTokenMcp } from "@/services/mcp-token"
 
 export type McpAction = { ok: boolean; message: string }
 
@@ -15,19 +15,31 @@ async function executar(origem: string, falha: string, fn: () => Promise<McpActi
     revalidatePath("/integracoes")
     return resultado
   } catch (error) {
+    if (error instanceof McpTokenError) return { ok: false, message: error.message }
     await recordAppLog({ nivel: "erro", origem: "mcp", mensagem: `${origem}: ${falha}`, detalhes: error })
     return { ok: false, message: falha }
   }
 }
 
-/** Gera (ou troca) o token do MCP desta instância. O texto do token só volta aqui, uma vez. */
-export async function gerarTokenMcpAction(): Promise<McpAction & { token?: string }> {
+/**
+ * Gera (ou troca) o token do MCP desta instância, já com as funções escolhidas na tela.
+ * O texto do token só volta aqui, uma vez.
+ */
+export async function gerarTokenMcpAction(ferramentas: string[]): Promise<McpAction & { token?: string }> {
   let token: string | undefined
   const resultado = await executar("gerar token", "Não foi possível gerar o token do MCP.", async () => {
-    token = await gerarTokenMcp()
+    token = await gerarTokenMcp(ferramentas)
     return { ok: true, message: "Token do MCP gerado. Copie agora: ele não será mostrado de novo." }
   })
   return resultado.ok ? { ...resultado, token } : resultado
+}
+
+/** Troca as funções liberadas do token atual, sem gerar outro token. */
+export async function definirFerramentasMcpAction(ferramentas: string[]): Promise<McpAction> {
+  return executar("salvar funções", "Não foi possível salvar as funções do MCP.", async () => {
+    await definirFerramentasMcp(ferramentas)
+    return { ok: true, message: "Funções do MCP atualizadas." }
+  })
 }
 
 export async function definirMcpAtivoAction(ativo: boolean): Promise<McpAction> {

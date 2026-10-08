@@ -9,7 +9,8 @@ import { workspaceDoTokenMcp } from "@/services/mcp-token"
  *
  * Permite conectar um cliente MCP — Claude.ai (Connectors), Claude Desktop,
  * Claude Code, etc. — a UMA instância do painel, dando a ele as tools de
- * `lib/mcp/server.ts` (leads, campanhas, produtos, indicadores e eventos).
+ * `lib/mcp/server.ts` — somente as funções que o dono do token liberou em Integrações
+ * (`McpToken.ferramentas`), e respeitando os plugins ativos de cada função.
  *
  * Autenticação: cada instância gera o próprio token do MCP em Integrações
  * (`services/mcp-token.ts`). O MCP vem desligado: sem token válido a rota recusa
@@ -49,15 +50,15 @@ export async function POST(request: Request) {
   const token = extrairToken(request)
   if (!token) return naoAutorizado("Token do MCP ausente. Gere um em Integrações e envie em Authorization: Bearer.")
 
-  const workspaceId = await workspaceDoTokenMcp(token)
-  if (!workspaceId) return naoAutorizado("Token do MCP inválido, desativado ou removido.")
+  const acesso = await workspaceDoTokenMcp(token)
+  if (!acesso) return naoAutorizado("Token do MCP inválido, desativado ou removido.")
 
-  // Tudo abaixo roda dentro da instância dona do token.
-  return runInWorkspace(workspaceId, () => processarMcp(request))
+  // Tudo abaixo roda dentro da instância dona do token, só com as funções que ele liberou.
+  return runInWorkspace(acesso.workspaceId, () => processarMcp(request, acesso.ferramentas))
 }
 
-async function processarMcp(request: Request) {
-  const server = createAppMcpServer()
+async function processarMcp(request: Request, ferramentas: readonly string[]) {
+  const server = await createAppMcpServer({ ferramentas })
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,

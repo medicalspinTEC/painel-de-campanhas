@@ -84,7 +84,17 @@ export default async function IntegracoesPage() {
 
        {/*<InboundWebhookManager tokenInicial={tokenInicial} eventosIniciais={eventosIniciais} />*/}
 
-          <McpManager statusInicial={mcpStatus} />
+          <McpManager
+            statusInicial={mcpStatus}
+            plugins={{
+              chat: chatAtivo,
+              kanban: kanbanAtivo,
+              assistente: assistenteAtivo,
+              nocode: nocodeAtivo,
+              crm: crmAtivo,
+              agentesIa: agentesIaAtivo,
+            }}
+          />
 
           <Card>
             <CardHeader>

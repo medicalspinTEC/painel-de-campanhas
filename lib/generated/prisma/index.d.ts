@@ -22002,6 +22002,7 @@ export namespace Prisma {
     tokenHash: number
     prefixo: number
     ativo: number
+    ferramentas: number
     ultimoUsoEm: number
     criadoEm: number
     atualizadoEm: number
@@ -22037,6 +22038,7 @@ export namespace Prisma {
     tokenHash?: true
     prefixo?: true
     ativo?: true
+    ferramentas?: true
     ultimoUsoEm?: true
     criadoEm?: true
     atualizadoEm?: true
@@ -22121,6 +22123,7 @@ export namespace Prisma {
     tokenHash: string
     prefixo: string
     ativo: boolean
+    ferramentas: string[]
     ultimoUsoEm: Date | null
     criadoEm: Date
     atualizadoEm: Date
@@ -22149,6 +22152,7 @@ export namespace Prisma {
     tokenHash?: boolean
     prefixo?: boolean
     ativo?: boolean
+    ferramentas?: boolean
     ultimoUsoEm?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
@@ -22160,6 +22164,7 @@ export namespace Prisma {
     tokenHash?: boolean
     prefixo?: boolean
     ativo?: boolean
+    ferramentas?: boolean
     ultimoUsoEm?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
@@ -22171,6 +22176,7 @@ export namespace Prisma {
     tokenHash?: boolean
     prefixo?: boolean
     ativo?: boolean
+    ferramentas?: boolean
     ultimoUsoEm?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
@@ -22182,12 +22188,13 @@ export namespace Prisma {
     tokenHash?: boolean
     prefixo?: boolean
     ativo?: boolean
+    ferramentas?: boolean
     ultimoUsoEm?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
   }
 
-  export type McpTokenOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "tokenHash" | "prefixo" | "ativo" | "ultimoUsoEm" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["mcpToken"]>
+  export type McpTokenOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "tokenHash" | "prefixo" | "ativo" | "ferramentas" | "ultimoUsoEm" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["mcpToken"]>
 
   export type $McpTokenPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "McpToken"
@@ -22204,6 +22211,11 @@ export namespace Prisma {
        */
       prefixo: string
       ativo: boolean
+      /**
+       * Funções (tools) que este token pode executar, escolhidas pelo usuário ANTES de gerar o token.
+       * Nomes de `lib/mcp/catalogo.ts`; a IA só enxerga essas. Vazio = nada liberado.
+       */
+      ferramentas: string[]
       ultimoUsoEm: Date | null
       criadoEm: Date
       atualizadoEm: Date
@@ -22635,6 +22647,7 @@ export namespace Prisma {
     readonly tokenHash: FieldRef<"McpToken", 'String'>
     readonly prefixo: FieldRef<"McpToken", 'String'>
     readonly ativo: FieldRef<"McpToken", 'Boolean'>
+    readonly ferramentas: FieldRef<"McpToken", 'String[]'>
     readonly ultimoUsoEm: FieldRef<"McpToken", 'DateTime'>
     readonly criadoEm: FieldRef<"McpToken", 'DateTime'>
     readonly atualizadoEm: FieldRef<"McpToken", 'DateTime'>
@@ -48457,6 +48470,7 @@ export namespace Prisma {
     tokenHash: 'tokenHash',
     prefixo: 'prefixo',
     ativo: 'ativo',
+    ferramentas: 'ferramentas',
     ultimoUsoEm: 'ultimoUsoEm',
     criadoEm: 'criadoEm',
     atualizadoEm: 'atualizadoEm'
@@ -50303,6 +50317,7 @@ export namespace Prisma {
     tokenHash?: StringFilter<"McpToken"> | string
     prefixo?: StringFilter<"McpToken"> | string
     ativo?: BoolFilter<"McpToken"> | boolean
+    ferramentas?: StringNullableListFilter<"McpToken">
     ultimoUsoEm?: DateTimeNullableFilter<"McpToken"> | Date | string | null
     criadoEm?: DateTimeFilter<"McpToken"> | Date | string
     atualizadoEm?: DateTimeFilter<"McpToken"> | Date | string
@@ -50314,6 +50329,7 @@ export namespace Prisma {
     tokenHash?: SortOrder
     prefixo?: SortOrder
     ativo?: SortOrder
+    ferramentas?: SortOrder
     ultimoUsoEm?: SortOrderInput | SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
@@ -50328,6 +50344,7 @@ export namespace Prisma {
     NOT?: McpTokenWhereInput | McpTokenWhereInput[]
     prefixo?: StringFilter<"McpToken"> | string
     ativo?: BoolFilter<"McpToken"> | boolean
+    ferramentas?: StringNullableListFilter<"McpToken">
     ultimoUsoEm?: DateTimeNullableFilter<"McpToken"> | Date | string | null
     criadoEm?: DateTimeFilter<"McpToken"> | Date | string
     atualizadoEm?: DateTimeFilter<"McpToken"> | Date | string
@@ -50339,6 +50356,7 @@ export namespace Prisma {
     tokenHash?: SortOrder
     prefixo?: SortOrder
     ativo?: SortOrder
+    ferramentas?: SortOrder
     ultimoUsoEm?: SortOrderInput | SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
@@ -50356,6 +50374,7 @@ export namespace Prisma {
     tokenHash?: StringWithAggregatesFilter<"McpToken"> | string
     prefixo?: StringWithAggregatesFilter<"McpToken"> | string
     ativo?: BoolWithAggregatesFilter<"McpToken"> | boolean
+    ferramentas?: StringNullableListFilter<"McpToken">
     ultimoUsoEm?: DateTimeNullableWithAggregatesFilter<"McpToken"> | Date | string | null
     criadoEm?: DateTimeWithAggregatesFilter<"McpToken"> | Date | string
     atualizadoEm?: DateTimeWithAggregatesFilter<"McpToken"> | Date | string
@@ -53524,6 +53543,7 @@ export namespace Prisma {
     tokenHash: string
     prefixo: string
     ativo?: boolean
+    ferramentas?: McpTokenCreateferramentasInput | string[]
     ultimoUsoEm?: Date | string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
@@ -53535,6 +53555,7 @@ export namespace Prisma {
     tokenHash: string
     prefixo: string
     ativo?: boolean
+    ferramentas?: McpTokenCreateferramentasInput | string[]
     ultimoUsoEm?: Date | string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
@@ -53546,6 +53567,7 @@ export namespace Prisma {
     tokenHash?: StringFieldUpdateOperationsInput | string
     prefixo?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
+    ferramentas?: McpTokenUpdateferramentasInput | string[]
     ultimoUsoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53557,6 +53579,7 @@ export namespace Prisma {
     tokenHash?: StringFieldUpdateOperationsInput | string
     prefixo?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
+    ferramentas?: McpTokenUpdateferramentasInput | string[]
     ultimoUsoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53568,6 +53591,7 @@ export namespace Prisma {
     tokenHash: string
     prefixo: string
     ativo?: boolean
+    ferramentas?: McpTokenCreateferramentasInput | string[]
     ultimoUsoEm?: Date | string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
@@ -53579,6 +53603,7 @@ export namespace Prisma {
     tokenHash?: StringFieldUpdateOperationsInput | string
     prefixo?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
+    ferramentas?: McpTokenUpdateferramentasInput | string[]
     ultimoUsoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53590,6 +53615,7 @@ export namespace Prisma {
     tokenHash?: StringFieldUpdateOperationsInput | string
     prefixo?: StringFieldUpdateOperationsInput | string
     ativo?: BoolFieldUpdateOperationsInput | boolean
+    ferramentas?: McpTokenUpdateferramentasInput | string[]
     ultimoUsoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -56578,6 +56604,7 @@ export namespace Prisma {
     tokenHash?: SortOrder
     prefixo?: SortOrder
     ativo?: SortOrder
+    ferramentas?: SortOrder
     ultimoUsoEm?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
@@ -58474,6 +58501,15 @@ export namespace Prisma {
     delete?: CampaignMessageWhereInput | boolean
     connect?: CampaignMessageWhereUniqueInput
     update?: XOR<XOR<CampaignMessageUpdateToOneWithWhereWithoutEventosInput, CampaignMessageUpdateWithoutEventosInput>, CampaignMessageUncheckedUpdateWithoutEventosInput>
+  }
+
+  export type McpTokenCreateferramentasInput = {
+    set: string[]
+  }
+
+  export type McpTokenUpdateferramentasInput = {
+    set?: string[]
+    push?: string | string[]
   }
 
   export type DepartamentoCreateNestedOneWithoutBotsInput = {
