@@ -1,4 +1,5 @@
 import { Suspense, type ReactNode } from "react"
+import { cookies } from "next/headers"
 
 import { AppHeaderData } from "@/components/layout/app-header-data"
 import { AppHeaderSkeleton } from "@/components/layout/app-header-skeleton"
@@ -67,8 +68,13 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     return <DatabaseSetupNotice erro={resumirErro(error)} />
   }
 
+  // O sidebar grava o estado (aberto/recolhido) no cookie `sidebar_state`; aqui ele é lido de volta
+  // para a página já nascer como o usuário deixou, sem piscar. Sem cookie, começa aberto.
+  const estadoGuardado = (await cookies()).get("sidebar_state")?.value
+  const sidebarAberto = estadoGuardado !== "false"
+
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={sidebarAberto}>
       <Suspense fallback={null}>
         <AppThemeColorsData />
       </Suspense>
