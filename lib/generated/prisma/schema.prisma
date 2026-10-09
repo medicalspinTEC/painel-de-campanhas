@@ -391,7 +391,7 @@ model Settings {
   crmPluginAtivo        Boolean @default(false)
   agentesIaPluginAtivo  Boolean @default(false)
   /// Tema pronto do painel (ver lib/temas.ts). Vale para o modo claro e o escuro.
-  temaApp               String  @default("esmeralda")
+  temaApp               String  @default("oceano")
   /// Nome exibido no topo da sidebar (o subtítulo com a versão é fixo).
   appNome               String  @default("Medical Spin")
   /// Logo da sidebar como data URL (imagem já reduzida no navegador). Nulo = logo padrão.
@@ -753,7 +753,7 @@ model User {
   ativo   Boolean  @default(true)
 
   /// Preferência PESSOAL: o tema escolhido vale só para este usuário.
-  temaApp String @default("esmeralda")
+  temaApp String @default("oceano")
 
   /// Preferência PESSOAL do chat: quando ligada, as mensagens enviadas por este
   /// usuário chegam ao lead com o nome dele no início (ver `sendLeadMessageAction`).
