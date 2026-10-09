@@ -3,15 +3,7 @@ import { podeAcessar, SECOES } from "@/lib/permissoes"
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
-import {
-  getAgentesIaPluginAtivo,
-  getAppMarca,
-  getAssistentePluginAtivo,
-  getChatPluginAtivo,
-  getCrmPluginAtivo,
-  getKanbanPluginAtivo,
-  getNocodePluginAtivo,
-} from "@/services/settings"
+import { getAppMarca, getPluginsAtivos } from "@/services/settings"
 
 /**
  * Consulta o status da instância do WhatsApp (Evolution API). Isolado do
@@ -69,17 +61,14 @@ async function getEvolutionInstanceStatus() {
 }
 
 export async function AppSidebarData() {
-  const [status, chatAtivo, kanbanAtivo, assistenteAtivo, marca, nocodeAtivo, crmAtivo, agentesIaAtivo, usuario] = await Promise.all([
+  // Todos os plugins numa só consulta (antes eram seis, uma por plugin).
+  const [status, plugins, marca, usuario] = await Promise.all([
     getEvolutionInstanceStatus(),
-    getChatPluginAtivo(),
-    getKanbanPluginAtivo(),
-    getAssistentePluginAtivo(),
+    getPluginsAtivos(),
     getAppMarca(),
-    getNocodePluginAtivo(),
-    getCrmPluginAtivo(),
-    getAgentesIaPluginAtivo(),
     getCurrentUser(),
   ])
+  const { chat: chatAtivo, kanban: kanbanAtivo, assistente: assistenteAtivo, nocode: nocodeAtivo, crm: crmAtivo, agentesIa: agentesIaAtivo } = plugins
 
   const urlsPermitidas = usuario ? SECOES.filter((secao) => podeAcessar(usuario, secao.key)).map((secao) => secao.url) : []
 

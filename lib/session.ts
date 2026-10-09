@@ -12,6 +12,24 @@ import { getPluginsAtivos } from "@/services/settings"
 import { toUsuario, type Usuario } from "@/services/users"
 
 /**
+ * Instância ativa? Guardado por poucos segundos: o usuário continua sendo lido do banco a cada
+ * requisição (papel, seções e status valem na hora), e só esta checagem — que quase nunca muda —
+ * deixa de custar uma ida ao banco a cada troca de página. Suspender uma instância vale em até 5 s.
+ */
+const WORKSPACE_ATIVO_TTL_MS = 5_000
+const workspaceAtivoCache = new Map<string, { ativo: boolean; expira: number }>()
+
+async function workspaceEstaAtivo(workspaceId: string): Promise<boolean> {
+  const agora = Date.now()
+  const guardado = workspaceAtivoCache.get(workspaceId)
+  if (guardado && guardado.expira > agora) return guardado.ativo
+  const workspace = await prismaGlobal.workspace.findUnique({ where: { id: workspaceId }, select: { ativo: true } })
+  const ativo = Boolean(workspace?.ativo)
+  workspaceAtivoCache.set(workspaceId, { ativo, expira: agora + WORKSPACE_ATIVO_TTL_MS })
+  return ativo
+}
+
+/**
  * Usuário logado, lido do BANCO a cada requisição (memoizado por requisição).
  * Devolve `null` sem sessão válida, ou quando o usuário foi desativado/excluído
  * — assim o que o root/admin altera vale imediatamente, sem esperar o cookie expirar.
@@ -23,8 +41,7 @@ export const getCurrentUser = cache(async (): Promise<Usuario | null> => {
   const row = await prismaGlobal.user.findUnique({ where: { id } })
   if (!row || !row.ativo) return null
   // Instância suspensa (admin desativado): perde o acesso na hora, como o próprio admin.
-  const workspace = await prismaGlobal.workspace.findUnique({ where: { id: row.workspaceId }, select: { ativo: true } })
-  if (!workspace?.ativo) return null
+  if (!(await workspaceEstaAtivo(row.workspaceId))) return null
   return toUsuario(row)
 })
 
