@@ -87,7 +87,7 @@ export const TEMAS_APP = [
 
 export type TemaApp = (typeof TEMAS_APP)[number]["id"]
 
-export const TEMA_PADRAO: TemaApp = "esmeralda"
+export const TEMA_PADRAO: TemaApp = "oceano"
 
 /** Nome do cookie que guarda o tema para o servidor já renderizar a cor certa. */
 export const TEMA_COOKIE = "tema-app"
