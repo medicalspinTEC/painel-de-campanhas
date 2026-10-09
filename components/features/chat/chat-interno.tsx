@@ -398,7 +398,7 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
 
   return (
     <div className="flex h-[calc(100svh-6.5rem)] min-h-176 flex-col gap-3 lg:min-h-144">
-      <ChatAbas />
+      <ChatAbas ativa="equipe" naoLidasEquipe={totalNaoLidas} />
 
       <div className="relative grid min-h-0 flex-1 grid-cols-1 grid-rows-1 overflow-hidden rounded-lg border bg-card shadow-sm lg:grid-cols-[340px_minmax(0,1fr)]">
         {/* Lista de conversas */}
