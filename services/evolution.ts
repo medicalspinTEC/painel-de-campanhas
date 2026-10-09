@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { renderTemplate } from "@/lib/format"
+import { lerLinhaDeMidia, lerMidiaDeCampanha } from "@/lib/campanha-midia-storage"
 import { recordAppLog } from "@/services/app-logs"
 import { recordMessageEvent } from "@/services/message-events"
 
@@ -793,6 +794,11 @@ export async function sendCampaignMessageToLead(input: {
   /** Nulo para campanhas `individual` (não há CampaignMessage associada). */
   mensagemId: string | null
   texto: string
+  /**
+   * Anexo da mensagem (referência `<id>;<tipo>;<mime>;<bytes>;<nome>`, ver `lib/campanha-midia-storage.ts`).
+   * Quando presente, o arquivo é lido da pasta do servidor, enviado por `sendMedia` e o texto vai como legenda.
+   */
+  midia?: string | null
   telefone: string
   /**
   * Nome opcional para validar cadastro; o envio sempre usa a instância mais
@@ -877,6 +883,69 @@ export async function sendCampaignMessageToLead(input: {
     select: { nome: true },
   })
   const texto = renderTemplate(input.texto, lead?.nome?.trim() || "")
+
+  // Mensagem com imagem/arquivo: mesmo caminho do chat (`sendWhatsAppMedia`, conteúdo em base64, sem prévia).
+  // O arquivo vem da pasta do servidor — nunca do banco — e o texto personalizado vira a legenda.
+  if (input.midia) {
+    const meta = lerLinhaDeMidia(input.midia)
+    const dados = meta ? await lerMidiaDeCampanha(meta) : null
+    let erro: string | null = null
+    if (!meta || !dados) {
+      erro = "O anexo desta mensagem não está mais no servidor. Edite a campanha e anexe o arquivo novamente."
+    } else {
+      const envioMidia = await sendWhatsAppMedia({
+        telefone: input.telefone,
+        base64: dados.toString("base64"),
+        mimetype: meta.mime,
+        fileName: meta.nome,
+        mediatype: meta.tipo === "imagem" ? "image" : "document",
+        caption: texto,
+        instanciaNome: instanceName,
+      })
+      if (!envioMidia.ok) erro = envioMidia.erro ?? "Não foi possível enviar o anexo."
+    }
+
+    const marcador = meta ? `${meta.tipo === "imagem" ? "🖼️" : "📎"} ${meta.nome}\n${texto}` : texto
+    if (erro) {
+      await Promise.all([
+        recordMessageEvent({
+          kind: "falha",
+          leadId: input.leadId,
+          campanhaId: input.campanhaId,
+          mensagemId: input.mensagemId,
+          texto: marcador,
+          descricao: descricaoFalha,
+          detalhes: erro,
+        }),
+        recordAppLog({
+          nivel: "erro",
+          origem: "evolution",
+          mensagem: "Falha ao enviar mensagem de campanha com anexo.",
+          detalhes: erro,
+          contexto: {
+            etapa: "Envio de anexo da campanha (sendCampaignMessageToLead)",
+            leadId: input.leadId,
+            campanhaId: input.campanhaId,
+            mensagemId: input.mensagemId ?? undefined,
+            instanciaNome: instanceName,
+            telefone,
+          },
+        }),
+      ])
+      return { ok: false, erro }
+    }
+
+    await recordMessageEvent({
+      kind: "enviada",
+      leadId: input.leadId,
+      campanhaId: input.campanhaId,
+      mensagemId: input.mensagemId,
+      texto: marcador,
+      descricao: descricaoSucesso,
+      detalhes: `Enviada para ${telefone}`,
+    })
+    return { ok: true }
+  }
 
   try {
     const response = await fetch(`${apiUrl}/message/sendText/${encodeURIComponent(instanceName)}`, {

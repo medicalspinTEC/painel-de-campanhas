@@ -6,6 +6,7 @@ import { CalendarClock, GripVertical, Plus, Trash2, Users } from "lucide-react"
 import { toast } from "sonner"
 
 import { createCampaignAction, updateCampaignAction } from "@/app/actions/campaigns"
+import { CampaignMidiaField } from "@/components/features/campaigns/campaign-midia-field"
 import { CreatableSelectField } from "@/components/shared/creatable-select-field"
 import { LinkButton } from "@/components/shared/link-button"
 import { SelectField, opcoesComExtras } from "@/components/shared/select-field"
@@ -45,6 +46,8 @@ interface MensagemRascunho {
   dia: number
   horario: string
   texto: string
+  /** Referência do anexo (imagem/arquivo) guardado no servidor; o texto vira a legenda. */
+  midia?: string | null
 }
 
 export interface LeadResumo {
@@ -124,9 +127,11 @@ export function CampaignEditor({
   const [regiao, setRegiao] = useState(campanha?.filtros.regiao ?? QUALQUER)
   const [mensagens, setMensagens] = useState<MensagemRascunho[]>(
     campanha?.mensagens.length
-      ? campanha.mensagens.map((m) => ({ key: m.id, id: m.id, dia: m.dia, horario: m.horario, texto: m.texto }))
+      ? campanha.mensagens.map((m) => ({ key: m.id, id: m.id, dia: m.dia, horario: m.horario, texto: m.texto, midia: m.midia ?? null }))
       : [novaMensagem(0)],
   )
+  // Anexo único das campanhas individuais (cada lead recebe o próprio texto como legenda).
+  const [midiaIndividual, setMidiaIndividual] = useState<string | null>(campanha?.midia ?? null)
   const [arrastando, setArrastando] = useState<number | null>(null)
   const [sobre, setSobre] = useState<number | null>(null)
   const [leadIdsSelecionados, setLeadIdsSelecionados] = useState<string[]>(() =>
@@ -237,12 +242,13 @@ export function CampaignEditor({
         regiao: regiao === QUALQUER ? null : (regiao as Campaign["filtros"]["regiao"]),
       },
       leadIds: leadIdsSelecionados,
+      midia: individual ? midiaIndividual : null,
       mensagens: individual
         ? []
         : mensagens
             .slice()
             .sort((a, b) => a.dia - b.dia)
-            .map((m) => ({ id: m.id, dia: Number(m.dia) || 0, horario: m.horario, texto: m.texto.trim() })),
+            .map((m) => ({ id: m.id, dia: Number(m.dia) || 0, horario: m.horario, texto: m.texto.trim(), midia: m.midia ?? null })),
       leadMensagens: individual
         ? Object.fromEntries(leadIdsSelecionados.map((id) => [id, (leadMensagens[id] ?? "").trim()]))
         : undefined,
@@ -464,6 +470,7 @@ export function CampaignEditor({
                   placeholder="Olá {{primeiro_nome}}, tudo bem? Vi que você se interessou..."
                   rows={3}
                 />
+                <CampaignMidiaField value={mensagem.midia} onChange={(midia) => atualizarMensagem(index, { midia })} />
               </div>
             ))}
 
@@ -487,6 +494,13 @@ export function CampaignEditor({
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
+            {individual ? (
+              <CampaignMidiaField
+                value={midiaIndividual}
+                onChange={setMidiaIndividual}
+                label="Anexar imagem ou arquivo para todos os leads"
+              />
+            ) : null}
             {errors.leadIds ? (
               <p className="text-sm text-destructive" role="alert">
                 {errors.leadIds}

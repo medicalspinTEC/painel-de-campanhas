@@ -24,6 +24,8 @@ export interface EngineMessage {
   dia: number
   horario: string
   texto: string
+  /** Anexo (imagem/arquivo) da mensagem; o texto vira a legenda. Ver `lib/campanha-midia-storage.ts`. */
+  midia?: string | null
 }
 
 /**

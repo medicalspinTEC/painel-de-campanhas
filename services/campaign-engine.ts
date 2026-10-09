@@ -181,6 +181,7 @@ async function enviarMensagem(
       campanhaId,
       mensagemId: mensagem.id,
       texto: mensagem.texto,
+      midia: mensagem.midia,
       telefone: vinculo.lead.telefone,
       instanciaNome,
       descricaoSucesso: reiniciouCiclo
@@ -341,6 +342,7 @@ async function executarVarredura(agora: Date): Promise<EngineResult> {
       select: {
         id: true,
         instanciaNome: true,
+        midia: true,
         leadCampaigns: {
           where: { mensagemIndividual: { not: null }, enviadaIndividualEm: null },
           select: { id: true, leadId: true, mensagemIndividual: true, lead: { select: { telefone: true } } },
@@ -417,6 +419,7 @@ async function executarVarredura(agora: Date): Promise<EngineResult> {
           campanhaId: campanha.id,
           mensagemId: null,
           texto: vinculo.mensagemIndividual,
+          midia: campanha.midia,
           telefone: vinculo.lead.telefone,
           instanciaNome: campanha.instanciaNome,
           descricaoSucesso: "Mensagem individual enviada pela engine.",
@@ -443,7 +446,7 @@ async function executarVarredura(agora: Date): Promise<EngineResult> {
         reiniciadaEm: true,
         instanciaNome: true,
         mensagens: {
-          select: { id: true, dia: true, horario: true, texto: true },
+          select: { id: true, dia: true, horario: true, texto: true, midia: true },
           orderBy: { dia: "asc" },
         },
         leadCampaigns: {

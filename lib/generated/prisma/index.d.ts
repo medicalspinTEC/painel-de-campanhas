@@ -7476,6 +7476,7 @@ export namespace Prisma {
     descricao: string | null
     status: $Enums.CampaignStatus | null
     tipo: $Enums.CampaignTipo | null
+    midia: string | null
     idImportacao: number | null
     recorrenciaDias: number | null
     dataFinal: Date | null
@@ -7496,6 +7497,7 @@ export namespace Prisma {
     descricao: string | null
     status: $Enums.CampaignStatus | null
     tipo: $Enums.CampaignTipo | null
+    midia: string | null
     idImportacao: number | null
     recorrenciaDias: number | null
     dataFinal: Date | null
@@ -7516,6 +7518,7 @@ export namespace Prisma {
     descricao: number
     status: number
     tipo: number
+    midia: number
     idImportacao: number
     recorrenciaDias: number
     dataFinal: number
@@ -7548,6 +7551,7 @@ export namespace Prisma {
     descricao?: true
     status?: true
     tipo?: true
+    midia?: true
     idImportacao?: true
     recorrenciaDias?: true
     dataFinal?: true
@@ -7568,6 +7572,7 @@ export namespace Prisma {
     descricao?: true
     status?: true
     tipo?: true
+    midia?: true
     idImportacao?: true
     recorrenciaDias?: true
     dataFinal?: true
@@ -7588,6 +7593,7 @@ export namespace Prisma {
     descricao?: true
     status?: true
     tipo?: true
+    midia?: true
     idImportacao?: true
     recorrenciaDias?: true
     dataFinal?: true
@@ -7695,6 +7701,7 @@ export namespace Prisma {
     descricao: string | null
     status: $Enums.CampaignStatus
     tipo: $Enums.CampaignTipo
+    midia: string | null
     idImportacao: number
     recorrenciaDias: number
     dataFinal: Date | null
@@ -7734,6 +7741,7 @@ export namespace Prisma {
     descricao?: boolean
     status?: boolean
     tipo?: boolean
+    midia?: boolean
     idImportacao?: boolean
     recorrenciaDias?: boolean
     dataFinal?: boolean
@@ -7759,6 +7767,7 @@ export namespace Prisma {
     descricao?: boolean
     status?: boolean
     tipo?: boolean
+    midia?: boolean
     idImportacao?: boolean
     recorrenciaDias?: boolean
     dataFinal?: boolean
@@ -7779,6 +7788,7 @@ export namespace Prisma {
     descricao?: boolean
     status?: boolean
     tipo?: boolean
+    midia?: boolean
     idImportacao?: boolean
     recorrenciaDias?: boolean
     dataFinal?: boolean
@@ -7799,6 +7809,7 @@ export namespace Prisma {
     descricao?: boolean
     status?: boolean
     tipo?: boolean
+    midia?: boolean
     idImportacao?: boolean
     recorrenciaDias?: boolean
     dataFinal?: boolean
@@ -7812,7 +7823,7 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type CampaignOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "descricao" | "status" | "tipo" | "idImportacao" | "recorrenciaDias" | "dataFinal" | "instanciaNome" | "reiniciadaEm" | "filtroProduto" | "filtroMarca" | "filtroPersona" | "filtroRegiao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["campaign"]>
+  export type CampaignOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "descricao" | "status" | "tipo" | "midia" | "idImportacao" | "recorrenciaDias" | "dataFinal" | "instanciaNome" | "reiniciadaEm" | "filtroProduto" | "filtroMarca" | "filtroPersona" | "filtroRegiao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["campaign"]>
   export type CampaignInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     mensagens?: boolean | Campaign$mensagensArgs<ExtArgs>
     leads?: boolean | Campaign$leadsArgs<ExtArgs>
@@ -7845,6 +7856,12 @@ export namespace Prisma {
        * uma mensagem individual por lead (`individual`). Escolhido na criação.
        */
       tipo: $Enums.CampaignTipo
+      /**
+       * Imagem/arquivo enviado junto de cada mensagem das campanhas `individual` (o texto de cada lead vira a
+       * legenda). Só a referência `<id>;<tipo>;<mime>;<bytes>;<nome>` fica aqui: o arquivo está numa pasta do
+       * servidor (ver `lib/campanha-midia-storage.ts`), nunca no banco.
+       */
+      midia: string | null
       /**
        * Identificador sequencial e imutável para importação por planilha. Gerado
        * automaticamente a partir de 1 (o usuário não edita). Permite que o arquivo
@@ -8294,6 +8311,7 @@ export namespace Prisma {
     readonly descricao: FieldRef<"Campaign", 'String'>
     readonly status: FieldRef<"Campaign", 'CampaignStatus'>
     readonly tipo: FieldRef<"Campaign", 'CampaignTipo'>
+    readonly midia: FieldRef<"Campaign", 'String'>
     readonly idImportacao: FieldRef<"Campaign", 'Int'>
     readonly recorrenciaDias: FieldRef<"Campaign", 'Int'>
     readonly dataFinal: FieldRef<"Campaign", 'DateTime'>
@@ -9937,6 +9955,7 @@ export namespace Prisma {
     dia: number | null
     horario: string | null
     texto: string | null
+    midia: string | null
     campanhaId: string | null
   }
 
@@ -9945,6 +9964,7 @@ export namespace Prisma {
     dia: number | null
     horario: string | null
     texto: string | null
+    midia: string | null
     campanhaId: string | null
   }
 
@@ -9953,6 +9973,7 @@ export namespace Prisma {
     dia: number
     horario: number
     texto: number
+    midia: number
     campanhaId: number
     _all: number
   }
@@ -9971,6 +9992,7 @@ export namespace Prisma {
     dia?: true
     horario?: true
     texto?: true
+    midia?: true
     campanhaId?: true
   }
 
@@ -9979,6 +10001,7 @@ export namespace Prisma {
     dia?: true
     horario?: true
     texto?: true
+    midia?: true
     campanhaId?: true
   }
 
@@ -9987,6 +10010,7 @@ export namespace Prisma {
     dia?: true
     horario?: true
     texto?: true
+    midia?: true
     campanhaId?: true
     _all?: true
   }
@@ -10082,6 +10106,7 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    midia: string | null
     campanhaId: string
     _count: CampaignMessageCountAggregateOutputType | null
     _avg: CampaignMessageAvgAggregateOutputType | null
@@ -10109,6 +10134,7 @@ export namespace Prisma {
     dia?: boolean
     horario?: boolean
     texto?: boolean
+    midia?: boolean
     campanhaId?: boolean
     campanha?: boolean | CampaignDefaultArgs<ExtArgs>
     eventos?: boolean | CampaignMessage$eventosArgs<ExtArgs>
@@ -10120,6 +10146,7 @@ export namespace Prisma {
     dia?: boolean
     horario?: boolean
     texto?: boolean
+    midia?: boolean
     campanhaId?: boolean
     campanha?: boolean | CampaignDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["campaignMessage"]>
@@ -10129,6 +10156,7 @@ export namespace Prisma {
     dia?: boolean
     horario?: boolean
     texto?: boolean
+    midia?: boolean
     campanhaId?: boolean
     campanha?: boolean | CampaignDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["campaignMessage"]>
@@ -10138,10 +10166,11 @@ export namespace Prisma {
     dia?: boolean
     horario?: boolean
     texto?: boolean
+    midia?: boolean
     campanhaId?: boolean
   }
 
-  export type CampaignMessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "dia" | "horario" | "texto" | "campanhaId", ExtArgs["result"]["campaignMessage"]>
+  export type CampaignMessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "dia" | "horario" | "texto" | "midia" | "campanhaId", ExtArgs["result"]["campaignMessage"]>
   export type CampaignMessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     campanha?: boolean | CampaignDefaultArgs<ExtArgs>
     eventos?: boolean | CampaignMessage$eventosArgs<ExtArgs>
@@ -10165,6 +10194,11 @@ export namespace Prisma {
       dia: number
       horario: string
       texto: string
+      /**
+       * Referência ao anexo (imagem/arquivo) desta mensagem — o texto vira a legenda. O conteúdo NÃO fica no
+       * banco: ver `lib/campanha-midia-storage.ts`.
+       */
+      midia: string | null
       campanhaId: string
     }, ExtArgs["result"]["campaignMessage"]>
     composites: {}
@@ -10595,6 +10629,7 @@ export namespace Prisma {
     readonly dia: FieldRef<"CampaignMessage", 'Int'>
     readonly horario: FieldRef<"CampaignMessage", 'String'>
     readonly texto: FieldRef<"CampaignMessage", 'String'>
+    readonly midia: FieldRef<"CampaignMessage", 'String'>
     readonly campanhaId: FieldRef<"CampaignMessage", 'String'>
   }
     
@@ -49483,6 +49518,7 @@ export namespace Prisma {
     descricao: 'descricao',
     status: 'status',
     tipo: 'tipo',
+    midia: 'midia',
     idImportacao: 'idImportacao',
     recorrenciaDias: 'recorrenciaDias',
     dataFinal: 'dataFinal',
@@ -49518,6 +49554,7 @@ export namespace Prisma {
     dia: 'dia',
     horario: 'horario',
     texto: 'texto',
+    midia: 'midia',
     campanhaId: 'campanhaId'
   };
 
@@ -50488,6 +50525,7 @@ export namespace Prisma {
     descricao?: StringNullableFilter<"Campaign"> | string | null
     status?: EnumCampaignStatusFilter<"Campaign"> | $Enums.CampaignStatus
     tipo?: EnumCampaignTipoFilter<"Campaign"> | $Enums.CampaignTipo
+    midia?: StringNullableFilter<"Campaign"> | string | null
     idImportacao?: IntFilter<"Campaign"> | number
     recorrenciaDias?: IntFilter<"Campaign"> | number
     dataFinal?: DateTimeNullableFilter<"Campaign"> | Date | string | null
@@ -50512,6 +50550,7 @@ export namespace Prisma {
     descricao?: SortOrderInput | SortOrder
     status?: SortOrder
     tipo?: SortOrder
+    midia?: SortOrderInput | SortOrder
     idImportacao?: SortOrder
     recorrenciaDias?: SortOrder
     dataFinal?: SortOrderInput | SortOrder
@@ -50540,6 +50579,7 @@ export namespace Prisma {
     descricao?: StringNullableFilter<"Campaign"> | string | null
     status?: EnumCampaignStatusFilter<"Campaign"> | $Enums.CampaignStatus
     tipo?: EnumCampaignTipoFilter<"Campaign"> | $Enums.CampaignTipo
+    midia?: StringNullableFilter<"Campaign"> | string | null
     recorrenciaDias?: IntFilter<"Campaign"> | number
     dataFinal?: DateTimeNullableFilter<"Campaign"> | Date | string | null
     instanciaNome?: StringNullableFilter<"Campaign"> | string | null
@@ -50563,6 +50603,7 @@ export namespace Prisma {
     descricao?: SortOrderInput | SortOrder
     status?: SortOrder
     tipo?: SortOrder
+    midia?: SortOrderInput | SortOrder
     idImportacao?: SortOrder
     recorrenciaDias?: SortOrder
     dataFinal?: SortOrderInput | SortOrder
@@ -50591,6 +50632,7 @@ export namespace Prisma {
     descricao?: StringNullableWithAggregatesFilter<"Campaign"> | string | null
     status?: EnumCampaignStatusWithAggregatesFilter<"Campaign"> | $Enums.CampaignStatus
     tipo?: EnumCampaignTipoWithAggregatesFilter<"Campaign"> | $Enums.CampaignTipo
+    midia?: StringNullableWithAggregatesFilter<"Campaign"> | string | null
     idImportacao?: IntWithAggregatesFilter<"Campaign"> | number
     recorrenciaDias?: IntWithAggregatesFilter<"Campaign"> | number
     dataFinal?: DateTimeNullableWithAggregatesFilter<"Campaign"> | Date | string | null
@@ -50686,6 +50728,7 @@ export namespace Prisma {
     dia?: IntFilter<"CampaignMessage"> | number
     horario?: StringFilter<"CampaignMessage"> | string
     texto?: StringFilter<"CampaignMessage"> | string
+    midia?: StringNullableFilter<"CampaignMessage"> | string | null
     campanhaId?: StringFilter<"CampaignMessage"> | string
     campanha?: XOR<CampaignScalarRelationFilter, CampaignWhereInput>
     eventos?: TimelineEventListRelationFilter
@@ -50696,6 +50739,7 @@ export namespace Prisma {
     dia?: SortOrder
     horario?: SortOrder
     texto?: SortOrder
+    midia?: SortOrderInput | SortOrder
     campanhaId?: SortOrder
     campanha?: CampaignOrderByWithRelationInput
     eventos?: TimelineEventOrderByRelationAggregateInput
@@ -50709,6 +50753,7 @@ export namespace Prisma {
     dia?: IntFilter<"CampaignMessage"> | number
     horario?: StringFilter<"CampaignMessage"> | string
     texto?: StringFilter<"CampaignMessage"> | string
+    midia?: StringNullableFilter<"CampaignMessage"> | string | null
     campanhaId?: StringFilter<"CampaignMessage"> | string
     campanha?: XOR<CampaignScalarRelationFilter, CampaignWhereInput>
     eventos?: TimelineEventListRelationFilter
@@ -50719,6 +50764,7 @@ export namespace Prisma {
     dia?: SortOrder
     horario?: SortOrder
     texto?: SortOrder
+    midia?: SortOrderInput | SortOrder
     campanhaId?: SortOrder
     _count?: CampaignMessageCountOrderByAggregateInput
     _avg?: CampaignMessageAvgOrderByAggregateInput
@@ -50735,6 +50781,7 @@ export namespace Prisma {
     dia?: IntWithAggregatesFilter<"CampaignMessage"> | number
     horario?: StringWithAggregatesFilter<"CampaignMessage"> | string
     texto?: StringWithAggregatesFilter<"CampaignMessage"> | string
+    midia?: StringNullableWithAggregatesFilter<"CampaignMessage"> | string | null
     campanhaId?: StringWithAggregatesFilter<"CampaignMessage"> | string
   }
 
@@ -53631,6 +53678,7 @@ export namespace Prisma {
     descricao?: string | null
     status?: $Enums.CampaignStatus
     tipo?: $Enums.CampaignTipo
+    midia?: string | null
     idImportacao?: number
     recorrenciaDias?: number
     dataFinal?: Date | string | null
@@ -53655,6 +53703,7 @@ export namespace Prisma {
     descricao?: string | null
     status?: $Enums.CampaignStatus
     tipo?: $Enums.CampaignTipo
+    midia?: string | null
     idImportacao?: number
     recorrenciaDias?: number
     dataFinal?: Date | string | null
@@ -53679,6 +53728,7 @@ export namespace Prisma {
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
     tipo?: EnumCampaignTipoFieldUpdateOperationsInput | $Enums.CampaignTipo
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     recorrenciaDias?: IntFieldUpdateOperationsInput | number
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
@@ -53702,6 +53752,7 @@ export namespace Prisma {
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
     tipo?: EnumCampaignTipoFieldUpdateOperationsInput | $Enums.CampaignTipo
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     idImportacao?: IntFieldUpdateOperationsInput | number
     recorrenciaDias?: IntFieldUpdateOperationsInput | number
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53726,6 +53777,7 @@ export namespace Prisma {
     descricao?: string | null
     status?: $Enums.CampaignStatus
     tipo?: $Enums.CampaignTipo
+    midia?: string | null
     idImportacao?: number
     recorrenciaDias?: number
     dataFinal?: Date | string | null
@@ -53746,6 +53798,7 @@ export namespace Prisma {
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
     tipo?: EnumCampaignTipoFieldUpdateOperationsInput | $Enums.CampaignTipo
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     recorrenciaDias?: IntFieldUpdateOperationsInput | number
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
@@ -53765,6 +53818,7 @@ export namespace Prisma {
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
     tipo?: EnumCampaignTipoFieldUpdateOperationsInput | $Enums.CampaignTipo
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     idImportacao?: IntFieldUpdateOperationsInput | number
     recorrenciaDias?: IntFieldUpdateOperationsInput | number
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53858,6 +53912,7 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    midia?: string | null
     campanha: CampaignCreateNestedOneWithoutMensagensInput
     eventos?: TimelineEventCreateNestedManyWithoutMensagemInput
   }
@@ -53867,6 +53922,7 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    midia?: string | null
     campanhaId: string
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutMensagemInput
   }
@@ -53876,6 +53932,7 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     campanha?: CampaignUpdateOneRequiredWithoutMensagensNestedInput
     eventos?: TimelineEventUpdateManyWithoutMensagemNestedInput
   }
@@ -53885,6 +53942,7 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     campanhaId?: StringFieldUpdateOperationsInput | string
     eventos?: TimelineEventUncheckedUpdateManyWithoutMensagemNestedInput
   }
@@ -53894,6 +53952,7 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    midia?: string | null
     campanhaId: string
   }
 
@@ -53902,6 +53961,7 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type CampaignMessageUncheckedUpdateManyInput = {
@@ -53909,6 +53969,7 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     campanhaId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -57231,6 +57292,7 @@ export namespace Prisma {
     descricao?: SortOrder
     status?: SortOrder
     tipo?: SortOrder
+    midia?: SortOrder
     idImportacao?: SortOrder
     recorrenciaDias?: SortOrder
     dataFinal?: SortOrder
@@ -57256,6 +57318,7 @@ export namespace Prisma {
     descricao?: SortOrder
     status?: SortOrder
     tipo?: SortOrder
+    midia?: SortOrder
     idImportacao?: SortOrder
     recorrenciaDias?: SortOrder
     dataFinal?: SortOrder
@@ -57276,6 +57339,7 @@ export namespace Prisma {
     descricao?: SortOrder
     status?: SortOrder
     tipo?: SortOrder
+    midia?: SortOrder
     idImportacao?: SortOrder
     recorrenciaDias?: SortOrder
     dataFinal?: SortOrder
@@ -57378,6 +57442,7 @@ export namespace Prisma {
     dia?: SortOrder
     horario?: SortOrder
     texto?: SortOrder
+    midia?: SortOrder
     campanhaId?: SortOrder
   }
 
@@ -57390,6 +57455,7 @@ export namespace Prisma {
     dia?: SortOrder
     horario?: SortOrder
     texto?: SortOrder
+    midia?: SortOrder
     campanhaId?: SortOrder
   }
 
@@ -57398,6 +57464,7 @@ export namespace Prisma {
     dia?: SortOrder
     horario?: SortOrder
     texto?: SortOrder
+    midia?: SortOrder
     campanhaId?: SortOrder
   }
 
@@ -61440,6 +61507,7 @@ export namespace Prisma {
     descricao?: string | null
     status?: $Enums.CampaignStatus
     tipo?: $Enums.CampaignTipo
+    midia?: string | null
     idImportacao?: number
     recorrenciaDias?: number
     dataFinal?: Date | string | null
@@ -61463,6 +61531,7 @@ export namespace Prisma {
     descricao?: string | null
     status?: $Enums.CampaignStatus
     tipo?: $Enums.CampaignTipo
+    midia?: string | null
     idImportacao?: number
     recorrenciaDias?: number
     dataFinal?: Date | string | null
@@ -61727,6 +61796,7 @@ export namespace Prisma {
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
     tipo?: EnumCampaignTipoFieldUpdateOperationsInput | $Enums.CampaignTipo
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     recorrenciaDias?: IntFieldUpdateOperationsInput | number
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
@@ -61749,6 +61819,7 @@ export namespace Prisma {
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
     tipo?: EnumCampaignTipoFieldUpdateOperationsInput | $Enums.CampaignTipo
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     idImportacao?: IntFieldUpdateOperationsInput | number
     recorrenciaDias?: IntFieldUpdateOperationsInput | number
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -62131,6 +62202,7 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    midia?: string | null
     eventos?: TimelineEventCreateNestedManyWithoutMensagemInput
   }
 
@@ -62139,6 +62211,7 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    midia?: string | null
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutMensagemInput
   }
 
@@ -62300,6 +62373,7 @@ export namespace Prisma {
     dia?: IntFilter<"CampaignMessage"> | number
     horario?: StringFilter<"CampaignMessage"> | string
     texto?: StringFilter<"CampaignMessage"> | string
+    midia?: StringNullableFilter<"CampaignMessage"> | string | null
     campanhaId?: StringFilter<"CampaignMessage"> | string
   }
 
@@ -62437,6 +62511,7 @@ export namespace Prisma {
     descricao?: string | null
     status?: $Enums.CampaignStatus
     tipo?: $Enums.CampaignTipo
+    midia?: string | null
     idImportacao?: number
     recorrenciaDias?: number
     dataFinal?: Date | string | null
@@ -62460,6 +62535,7 @@ export namespace Prisma {
     descricao?: string | null
     status?: $Enums.CampaignStatus
     tipo?: $Enums.CampaignTipo
+    midia?: string | null
     idImportacao?: number
     recorrenciaDias?: number
     dataFinal?: Date | string | null
@@ -62562,6 +62638,7 @@ export namespace Prisma {
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
     tipo?: EnumCampaignTipoFieldUpdateOperationsInput | $Enums.CampaignTipo
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     recorrenciaDias?: IntFieldUpdateOperationsInput | number
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
@@ -62584,6 +62661,7 @@ export namespace Prisma {
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
     tipo?: EnumCampaignTipoFieldUpdateOperationsInput | $Enums.CampaignTipo
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     idImportacao?: IntFieldUpdateOperationsInput | number
     recorrenciaDias?: IntFieldUpdateOperationsInput | number
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -62607,6 +62685,7 @@ export namespace Prisma {
     descricao?: string | null
     status?: $Enums.CampaignStatus
     tipo?: $Enums.CampaignTipo
+    midia?: string | null
     idImportacao?: number
     recorrenciaDias?: number
     dataFinal?: Date | string | null
@@ -62630,6 +62709,7 @@ export namespace Prisma {
     descricao?: string | null
     status?: $Enums.CampaignStatus
     tipo?: $Enums.CampaignTipo
+    midia?: string | null
     idImportacao?: number
     recorrenciaDias?: number
     dataFinal?: Date | string | null
@@ -62701,6 +62781,7 @@ export namespace Prisma {
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
     tipo?: EnumCampaignTipoFieldUpdateOperationsInput | $Enums.CampaignTipo
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     recorrenciaDias?: IntFieldUpdateOperationsInput | number
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
@@ -62723,6 +62804,7 @@ export namespace Prisma {
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
     tipo?: EnumCampaignTipoFieldUpdateOperationsInput | $Enums.CampaignTipo
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     idImportacao?: IntFieldUpdateOperationsInput | number
     recorrenciaDias?: IntFieldUpdateOperationsInput | number
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -62939,6 +63021,7 @@ export namespace Prisma {
     descricao?: string | null
     status?: $Enums.CampaignStatus
     tipo?: $Enums.CampaignTipo
+    midia?: string | null
     idImportacao?: number
     recorrenciaDias?: number
     dataFinal?: Date | string | null
@@ -62962,6 +63045,7 @@ export namespace Prisma {
     descricao?: string | null
     status?: $Enums.CampaignStatus
     tipo?: $Enums.CampaignTipo
+    midia?: string | null
     idImportacao?: number
     recorrenciaDias?: number
     dataFinal?: Date | string | null
@@ -62988,6 +63072,7 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    midia?: string | null
     campanha: CampaignCreateNestedOneWithoutMensagensInput
   }
 
@@ -62996,6 +63081,7 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    midia?: string | null
     campanhaId: string
   }
 
@@ -63085,6 +63171,7 @@ export namespace Prisma {
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
     tipo?: EnumCampaignTipoFieldUpdateOperationsInput | $Enums.CampaignTipo
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     recorrenciaDias?: IntFieldUpdateOperationsInput | number
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
@@ -63107,6 +63194,7 @@ export namespace Prisma {
     descricao?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
     tipo?: EnumCampaignTipoFieldUpdateOperationsInput | $Enums.CampaignTipo
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     idImportacao?: IntFieldUpdateOperationsInput | number
     recorrenciaDias?: IntFieldUpdateOperationsInput | number
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -63139,6 +63227,7 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     campanha?: CampaignUpdateOneRequiredWithoutMensagensNestedInput
   }
 
@@ -63147,6 +63236,7 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     campanhaId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -66294,6 +66384,7 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    midia?: string | null
   }
 
   export type LeadCreateManyCampanhaInput = {
@@ -66340,6 +66431,7 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     eventos?: TimelineEventUpdateManyWithoutMensagemNestedInput
   }
 
@@ -66348,6 +66440,7 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
     eventos?: TimelineEventUncheckedUpdateManyWithoutMensagemNestedInput
   }
 
@@ -66356,6 +66449,7 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    midia?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type LeadUpdateWithoutCampanhaInput = {

@@ -156,6 +156,11 @@ model Campaign {
   /// uma mensagem individual por lead (`individual`). Escolhido na criação.
   tipo CampaignTipo @default(padrao)
 
+  /// Imagem/arquivo enviado junto de cada mensagem das campanhas `individual` (o texto de cada lead vira a
+  /// legenda). Só a referência `<id>;<tipo>;<mime>;<bytes>;<nome>` fica aqui: o arquivo está numa pasta do
+  /// servidor (ver `lib/campanha-midia-storage.ts`), nunca no banco.
+  midia String?
+
   /// Identificador sequencial e imutável para importação por planilha. Gerado
   /// automaticamente a partir de 1 (o usuário não edita). Permite que o arquivo
   /// traga este número na coluna "campanha" em vez do nome exato da campanha.
@@ -230,6 +235,10 @@ model CampaignMessage {
   dia     Int
   horario String
   texto   String
+
+  /// Referência ao anexo (imagem/arquivo) desta mensagem — o texto vira a legenda. O conteúdo NÃO fica no
+  /// banco: ver `lib/campanha-midia-storage.ts`.
+  midia String?
 
   campanhaId String
   campanha   Campaign @relation(fields: [campanhaId], references: [id], onDelete: Cascade)

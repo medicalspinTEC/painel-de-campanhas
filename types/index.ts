@@ -52,6 +52,11 @@ export interface CampaignMessage {
   dia: number
   horario: string
   texto: string
+  /**
+   * Referência ao anexo (imagem/arquivo): `<id>;<tipo>;<mime>;<bytes>;<nome>`. O arquivo fica numa pasta do
+   * servidor, nunca no banco (ver `lib/campanha-midia-storage.ts`). O texto vira a legenda.
+   */
+  midia?: string | null
 }
 
 export interface Campaign {
@@ -78,6 +83,8 @@ export interface Campaign {
     regiao?: Regiao | null
   }
   mensagens: CampaignMessage[]
+  /** Anexo único das campanhas `individual` (cada lead recebe o próprio texto como legenda). Mesmo formato de `CampaignMessage.midia`. */
+  midia?: string | null
 }
 
 export interface TimelineEvent {

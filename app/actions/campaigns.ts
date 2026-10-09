@@ -15,6 +15,12 @@ import {
 import { recordAppLog } from "@/services/app-logs"
 import type { CampaignStatus } from "@/types"
 import { assertSecao } from "@/lib/session"
+import {
+  CAMPANHA_MIDIA_TAMANHO_MAXIMO,
+  lerLinhaDeMidia,
+  linhaDeMidia,
+  salvarMidiaDeCampanha,
+} from "@/lib/campanha-midia-storage"
 
 export interface CampaignActionResult {
   ok: boolean
@@ -29,6 +35,26 @@ function revalidar(id?: string) {
   revalidatePath("/leads")
   revalidatePath("/relatorios")
   if (id) revalidatePath(`/campanhas/${id}`)
+}
+
+/** Limite de legenda do WhatsApp para imagem/documento. */
+const LEGENDA_MAXIMA = 1024
+
+/**
+ * Só aceita referências de anexo no formato que o app gera (vindas do upload). Qualquer outra coisa vira
+ * "sem anexo", para o cliente não conseguir apontar para caminhos arbitrários.
+ */
+function limparReferencia(valor: string | null | undefined): string | null {
+  const meta = lerLinhaDeMidia(valor)
+  return meta ? linhaDeMidia(meta) : null
+}
+
+function sanitizarMidias(input: CampaignInput): CampaignInput {
+  return {
+    ...input,
+    midia: limparReferencia(input.midia),
+    mensagens: input.mensagens.map((m) => ({ ...m, midia: limparReferencia(m.midia) })),
+  }
 }
 
 function validar(input: CampaignInput) {
@@ -55,6 +81,11 @@ function validar(input: CampaignInput) {
       const semMensagem = leadIds.some((id) => (mensagens[id] ?? "").trim().length < 10)
       if (semMensagem) errors.mensagens = "Escreva uma mensagem com pelo menos 10 caracteres para cada lead selecionado."
     }
+    if (input.midia) {
+      const mensagens = input.leadMensagens ?? {}
+      const longa = [...new Set((input.leadIds ?? []).filter(Boolean))].some((id) => (mensagens[id] ?? "").trim().length > LEGENDA_MAXIMA)
+      if (longa) errors.mensagens = `Com anexo, o texto vira a legenda e pode ter no máximo ${LEGENDA_MAXIMA} caracteres.`
+    }
     return errors
   }
 
@@ -65,11 +96,14 @@ function validar(input: CampaignInput) {
   if (input.mensagens.length === 0) errors.mensagens = "Adicione pelo menos uma mensagem na sequência."
   if (input.mensagens.some((m) => m.texto.trim().length < 10))
     errors.mensagens = "Todas as mensagens precisam ter no mínimo 10 caracteres."
+  else if (input.mensagens.some((m) => m.midia && m.texto.trim().length > LEGENDA_MAXIMA))
+    errors.mensagens = `Com anexo, o texto vira a legenda e pode ter no máximo ${LEGENDA_MAXIMA} caracteres.`
   return errors
 }
 
-export async function createCampaignAction(input: CampaignInput): Promise<CampaignActionResult> {
+export async function createCampaignAction(entrada: CampaignInput): Promise<CampaignActionResult> {
   await assertSecao("campanhas")
+  const input = sanitizarMidias(entrada)
   const errors = validar(input)
   if (Object.keys(errors).length > 0) return { ok: false, message: "Corrija os campos destacados.", errors }
   try {
@@ -82,8 +116,9 @@ export async function createCampaignAction(input: CampaignInput): Promise<Campai
   }
 }
 
-export async function updateCampaignAction(id: string, input: CampaignInput): Promise<CampaignActionResult> {
+export async function updateCampaignAction(id: string, entrada: CampaignInput): Promise<CampaignActionResult> {
   await assertSecao("campanhas")
+  const input = sanitizarMidias(entrada)
   const errors = validar(input)
   if (Object.keys(errors).length > 0) return { ok: false, message: "Corrija os campos destacados.", errors }
   try {
@@ -188,4 +223,44 @@ export async function deleteCampaignAction(id: string): Promise<CampaignActionRe
   }
   revalidar()
   return { ok: true, message: "Campanha excluída e leads liberados." }
+}
+
+
+export interface UploadMidiaResult {
+  ok: boolean
+  message: string
+  /** Referência a guardar na mensagem (`<id>;<tipo>;<mime>;<bytes>;<nome>`). Só vai para o banco ao salvar a campanha. */
+  midia?: string
+}
+
+/**
+ * Recebe a imagem/arquivo escolhido no editor da campanha e o guarda numa pasta do servidor (NÃO no
+ * banco — ver `lib/campanha-midia-storage.ts`). Devolve só a referência. Não há pré-visualização.
+ * Recebe um FormData com `arquivo`.
+ */
+export async function uploadMidiaCampanhaAction(formData: FormData): Promise<UploadMidiaResult> {
+  await assertSecao("campanhas")
+
+  const arquivo = formData.get("arquivo")
+  if (!(arquivo instanceof File) || arquivo.size === 0) {
+    return { ok: false, message: "Nenhum arquivo foi recebido. Escolha o arquivo novamente." }
+  }
+  if (arquivo.size > CAMPANHA_MIDIA_TAMANHO_MAXIMO) {
+    return {
+      ok: false,
+      message: `O arquivo é muito grande (máximo de ${Math.round(CAMPANHA_MIDIA_TAMANHO_MAXIMO / 1024 / 1024)} MB).`,
+    }
+  }
+
+  try {
+    const meta = await salvarMidiaDeCampanha({
+      dados: Buffer.from(await arquivo.arrayBuffer()),
+      nome: arquivo.name,
+      mime: arquivo.type,
+    })
+    return { ok: true, message: "Arquivo anexado.", midia: linhaDeMidia(meta) }
+  } catch (error) {
+    await recordAppLog({ origem: "campaigns", mensagem: "Falha ao guardar o anexo da campanha.", detalhes: error })
+    return { ok: false, message: "Não foi possível guardar o arquivo no servidor." }
+  }
 }

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { decidirCiclo } from "@/lib/campaign-engine-schedule"
 import { recordAppLog } from "@/services/app-logs"
+import { copiarMidiaDeCampanha } from "@/lib/campanha-midia-storage"
 import { sendCampaignMessageToLead } from "@/services/evolution"
 import { assignCampaign } from "@/services/leads"
 import { getSettings } from "@/services/settings"
@@ -38,7 +39,8 @@ type CampaignRecord = {
   filtroPersona: string | null
   filtroRegiao: string | null
   criadoEm: Date
-  mensagens: Array<{ id: string; dia: number; horario: string; texto: string }>
+  midia: string | null
+  mensagens: Array<{ id: string; dia: number; horario: string; texto: string; midia: string | null }>
 }
 
 function toCampaign(record: CampaignRecord): Campaign {
@@ -60,14 +62,15 @@ function toCampaign(record: CampaignRecord): Campaign {
       regiao: record.filtroRegiao as Campaign["filtros"]["regiao"],
     },
     mensagens: record.mensagens.map(
-      (m): CampaignMessage => ({ id: m.id, dia: m.dia, horario: m.horario, texto: m.texto }),
+      (m): CampaignMessage => ({ id: m.id, dia: m.dia, horario: m.horario, texto: m.texto, midia: m.midia }),
     ),
+    midia: record.midia,
   }
 }
 
 const campaignInclude = {
   mensagens: {
-    select: { id: true, dia: true, horario: true, texto: true },
+    select: { id: true, dia: true, horario: true, texto: true, midia: true },
     orderBy: { dia: "asc" as const },
   },
 } as const
@@ -341,6 +344,8 @@ export interface CampaignInput {
    * `individual`; cada lead selecionado precisa de uma entrada aqui.
    */
   leadMensagens?: Record<string, string>
+  /** Anexo das campanhas `individual` (referência já validada pela action). */
+  midia?: string | null
 }
 
 function toCampaignData(input: CampaignInput) {
@@ -352,6 +357,7 @@ function toCampaignData(input: CampaignInput) {
     recorrenciaDias: input.recorrenciaDias,
     dataFinal: input.dataFinal ? new Date(input.dataFinal) : null,
     instanciaNome: input.instanciaNome?.trim() || null,
+    midia: (input.tipo ?? "padrao") === "individual" ? input.midia ?? null : null,
     filtroProduto: input.filtros.produto ?? null,
     filtroMarca: input.filtros.marca ?? null,
     filtroPersona: input.filtros.persona ?? null,
@@ -581,7 +587,7 @@ export async function createCampaign(input: CampaignInput): Promise<Campaign> {
       // Campanha já criada ativa dispara agora: registra o início.
       reiniciadaEm: input.status === "ativa" ? new Date() : null,
       mensagens: {
-        create: tipo === "padrao" ? input.mensagens.map((m) => ({ dia: m.dia, horario: m.horario, texto: m.texto })) : [],
+        create: tipo === "padrao" ? input.mensagens.map((m) => ({ dia: m.dia, horario: m.horario, texto: m.texto, midia: m.midia ?? null })) : [],
       },
     },
     include: campaignInclude,
@@ -627,7 +633,7 @@ export async function updateCampaign(id: string, input: CampaignInput): Promise<
     for (const m of mantidas) {
       await tx.campaignMessage.update({
         where: { id: m.id },
-        data: { dia: m.dia, horario: m.horario, texto: m.texto },
+        data: { dia: m.dia, horario: m.horario, texto: m.texto, midia: m.midia ?? null },
       })
     }
     return tx.campaign.update({
@@ -638,7 +644,7 @@ export async function updateCampaign(id: string, input: CampaignInput): Promise<
         // para "ativa"; editar uma campanha já ativa não deve reenviar tudo.
         ...(input.status === "ativa" && existe.status !== "ativa" ? { reiniciadaEm: new Date() } : {}),
         mensagens: {
-          create: novas.map((m) => ({ dia: m.dia, horario: m.horario, texto: m.texto })),
+          create: novas.map((m) => ({ dia: m.dia, horario: m.horario, texto: m.texto, midia: m.midia ?? null })),
         },
       },
       include: campaignInclude,
@@ -718,8 +724,17 @@ export async function duplicateCampaign(id: string): Promise<Campaign | null> {
       filtroMarca: original.filtroMarca,
       filtroPersona: original.filtroPersona,
       filtroRegiao: original.filtroRegiao,
+      // Cada cópia tem o próprio arquivo: apagar a campanha original não pode quebrar a cópia.
+      midia: await copiarMidiaDeCampanha(original.midia),
       mensagens: {
-        create: original.mensagens.map((m) => ({ dia: m.dia, horario: m.horario, texto: m.texto })),
+        create: await Promise.all(
+          original.mensagens.map(async (m) => ({
+            dia: m.dia,
+            horario: m.horario,
+            texto: m.texto,
+            midia: await copiarMidiaDeCampanha(m.midia),
+          })),
+        ),
       },
     },
     include: campaignInclude,
@@ -756,7 +771,7 @@ export async function getCampaignSchedule(campanhaId: string): Promise<Record<st
     select: {
       recorrenciaDias: true,
       reiniciadaEm: true,
-      mensagens: { select: { id: true, dia: true, horario: true, texto: true }, orderBy: { dia: "asc" } },
+      mensagens: { select: { id: true, dia: true, horario: true, texto: true, midia: true }, orderBy: { dia: "asc" } },
     },
   })
   if (!campanha) return {}
@@ -873,7 +888,7 @@ export async function skipToNextMessage(leadId: string, campanhaId: string): Pro
         reiniciadaEm: true,
         dataFinal: true,
         instanciaNome: true,
-        mensagens: { select: { id: true, dia: true, horario: true, texto: true }, orderBy: { dia: "asc" } },
+        mensagens: { select: { id: true, dia: true, horario: true, texto: true, midia: true }, orderBy: { dia: "asc" } },
       },
     }),
     prisma.leadCampaign.findUnique({
@@ -921,6 +936,7 @@ export async function skipToNextMessage(leadId: string, campanhaId: string): Pro
     campanhaId,
     mensagemId: alvo.id,
     texto: alvo.texto,
+    midia: alvo.midia,
     telefone: lead.telefone,
     instanciaNome: campanha.instanciaNome,
     descricaoSucesso: reiniciouCiclo
@@ -1217,10 +1233,18 @@ export async function createFollowUpCampaign(campanhaId: string): Promise<Follow
       filtroMarca: null,
       filtroPersona: null,
       filtroRegiao: null,
+      midia: await copiarMidiaDeCampanha(original.midia),
       mensagens: {
         create:
           original.tipo === "padrao"
-            ? original.mensagens.map((m) => ({ dia: m.dia, horario: m.horario, texto: m.texto }))
+            ? await Promise.all(
+                original.mensagens.map(async (m) => ({
+                  dia: m.dia,
+                  horario: m.horario,
+                  texto: m.texto,
+                  midia: await copiarMidiaDeCampanha(m.midia),
+                })),
+              )
             : [],
       },
     },
