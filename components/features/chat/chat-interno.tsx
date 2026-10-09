@@ -866,7 +866,7 @@ function GrupoConfigDialog({
           <div className="max-h-52 overflow-y-auto rounded-lg border">
             {grupo.participantes.map((pessoa) => (
               <div key={pessoa.id} className="flex items-center gap-3 px-3 py-2">
-                <AvatarNome nome={pessoa.nome} className="size-8" />
+                <AvatarNome nome={pessoa.nome} userId={pessoa.id} fotoEm={pessoa.fotoEm} className="size-8" />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium">{pessoa.id === usuarioId ? `${pessoa.nome} (você)` : pessoa.nome}</span>
                   <span className="block truncate text-xs text-muted-foreground">@{pessoa.username}</span>
@@ -905,7 +905,7 @@ function GrupoConfigDialog({
                     disponiveis.map((contato) => (
                       <label key={contato.id} className="flex cursor-pointer items-center gap-3 px-3 py-2 hover:bg-muted/60">
                         <Checkbox checked={marcados.has(contato.id)} onCheckedChange={() => alternar(contato.id)} aria-label={contato.nome} />
-                        <AvatarNome nome={contato.nome} className="size-8" />
+                        <AvatarNome nome={contato.nome} userId={contato.id} fotoEm={contato.fotoEm} className="size-8" />
                         <span className="min-w-0">
                           <span className="block truncate text-sm font-medium">{contato.nome}</span>
                           <span className="block truncate text-xs text-muted-foreground">@{contato.username}</span>
