@@ -123,7 +123,7 @@ export function AgenteFormDialog({
         <DialogHeader>
           <DialogTitle>{editando ? "Editar agente de IA" : "Novo agente de IA"}</DialogTitle>
           <DialogDescription>
-            O agente responde as mensagens dos leads usando um modelo de IA (Claude, Groq ou outra API compatível). Por enquanto ele só conversa: não executa comandos.
+            O agente responde as mensagens dos leads usando um modelo de IA (Claude, Groq ou outra API compatível). Os atendentes também podem pedir a ele, no chat, uma sugestão de resposta com base no histórico da conversa e neste prompt. Por enquanto ele só conversa: não executa comandos.
           </DialogDescription>
         </DialogHeader>
 
@@ -218,7 +218,7 @@ export function AgenteFormDialog({
             />
             <FieldDescription>
               {prompt.length}/{LIMITE_PROMPT_AGENTE}. O app já avisa o agente do canal (WhatsApp), do nome do cliente, do departamento e da data;
-              escreva aqui o que é específico do seu negócio.
+              escreva aqui o que é específico do seu negócio. O mesmo prompt orienta as sugestões de resposta para os atendentes.
             </FieldDescription>
           </Field>
 

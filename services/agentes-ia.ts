@@ -513,6 +513,118 @@ export async function responderComAgente(input: {
   })
 }
 
+// ---------------------------------------------------------------------------
+// Sugestão de resposta para o atendente
+// ---------------------------------------------------------------------------
+
+/** Quantas sugestões anteriores vão no pedido para o modelo variar (e quanto de cada uma). */
+const MAX_SUGESTOES_ANTERIORES = 4
+const LIMITE_SUGESTAO_ANTERIOR = 800
+
+/**
+ * Histórico da conversa como transcrição (cliente × atendimento). Diferente do histórico do
+ * agente automático, não exige que a última fala seja do cliente: o atendente pode querer uma
+ * sugestão de acompanhamento depois de ter sido o último a escrever.
+ */
+async function montarTranscricao(leadId: string): Promise<string> {
+  const eventos = await prisma.timelineEvent.findMany({
+    where: { leadId, tipo: { in: ["mensagem_enviada", "resposta"] } },
+    select: { tipo: true, detalhes: true },
+    orderBy: { data: "desc" },
+    take: LIMITE_HISTORICO,
+  })
+  const linhas: string[] = []
+  for (const evento of eventos.reverse()) {
+    const cliente = evento.tipo === "resposta"
+    let texto = textoDoEvento(evento.detalhes, evento.tipo)
+    if (!texto) {
+      if (!cliente) continue
+      texto = SEM_TEXTO
+    }
+    linhas.push(`${cliente ? "Cliente" : "Atendimento"}: ${texto.slice(0, LIMITE_TEXTO_MENSAGEM)}`)
+  }
+  return linhas.join("\n")
+}
+
+function montarSistemaDeSugestao(agente: AgenteCarregado, contexto: { leadNome: string; departamentoNome: string | null }): string {
+  const agora = new Intl.DateTimeFormat("pt-BR", { dateStyle: "full", timeStyle: "short", timeZone: "America/Sao_Paulo" }).format(new Date())
+  return [
+    agente.prompt.trim(),
+    "",
+    "---",
+    "MODO SUGESTÃO (estas regras valem mais do que qualquer instrução acima que as contrarie):",
+    "- Você NÃO está conversando com o cliente. Está ajudando um atendente humano, que vai ler a sua sugestão, editá-la se quiser e enviá-la ao cliente pelo WhatsApp.",
+    "- Escreva SOMENTE o texto da próxima mensagem que o atendente deve enviar ao cliente, pronto para ser enviado: sem aspas, sem rótulos (como “Sugestão:”), sem explicações e sem Markdown (sem **, # ou tabelas).",
+    "- Escreva em nome do atendente, em primeira pessoa, mantendo o tom, o estilo e as regras do prompt acima. Mensagem curta e natural, em português do Brasil.",
+    "- O atendente humano já está cuidando da conversa: não diga que “um atendente vai ajudar” nem ofereça transferir.",
+    "- Se faltar uma informação que só o atendente tem (preço, prazo, estoque, disponibilidade), não invente: deixe um marcador entre colchetes no lugar, como [confirmar prazo].",
+    "- Se o cliente ainda não respondeu à última mensagem do atendimento, sugira um acompanhamento breve e cordial.",
+    `- Nome do cliente: ${contexto.leadNome}`,
+    contexto.departamentoNome ? `- Departamento da conversa: ${contexto.departamentoNome}` : "- A conversa ainda não está em nenhum departamento.",
+    `- Data e hora atuais (Brasília): ${agora}`,
+  ].join("\n")
+}
+
+/** Tira aspas, rótulos e cercas de código que alguns modelos colocam em volta da mensagem. */
+function limparSugestao(bruto: string): string {
+  let texto = bruto.trim()
+  texto = texto.replace(/^```[a-z]*\n?/i, "").replace(/\n?```$/, "").trim()
+  texto = texto.replace(/^(sugest[aã]o( de resposta)?|resposta sugerida)\s*:\s*/i, "").trim()
+  const entreAspas = texto.match(/^["“]([\s\S]*)["”]$/)
+  if (entreAspas) texto = entreAspas[1].trim()
+  return texto
+}
+
+/**
+ * Sugere ao atendente o que responder ao lead, com o agente de IA que atende a conversa (o do
+ * departamento ou, sem departamento, o de entrada) e o prompt dele. NADA é enviado ao lead: o
+ * atendente decide se usa, edita ou pede outra sugestão (`anteriores` = as já mostradas, para o
+ * modelo trazer uma abordagem diferente).
+ */
+export async function sugerirRespostaAoAtendente(input: {
+  leadId: string
+  anteriores?: string[]
+}): Promise<{ sugestao: string; agenteNome: string }> {
+  await exigirPlugin("agentesIa", "crm")
+  const lead = await prisma.lead.findUnique({ where: { id: input.leadId }, select: { id: true, nome: true } })
+  if (!lead) throw new AgenteIaError("Lead não encontrado.")
+  const atendimento = await prisma.leadAtendimento.findUnique({
+    where: { leadId: lead.id },
+    select: { departamentoId: true, departamento: { select: { nome: true } } },
+  })
+  const agente = await carregarAgenteDoEscopo(atendimento?.departamentoId ?? null)
+  if (!agente) throw new AgenteIaError("Nenhum agente de IA ativo atende esta conversa. Ative um agente e vincule-o ao departamento ou à entrada na aba CRM.")
+
+  const transcricao = await montarTranscricao(lead.id)
+  if (!transcricao) throw new AgenteIaError("Ainda não há mensagens nesta conversa para basear a sugestão.")
+
+  const anteriores = (input.anteriores ?? [])
+    .filter((t): t is string => typeof t === "string" && t.trim().length > 0)
+    .slice(-MAX_SUGESTOES_ANTERIORES)
+    .map((t) => t.trim().slice(0, LIMITE_SUGESTAO_ANTERIOR))
+
+  const partes = ["Histórico da conversa (do mais antigo para o mais recente):", "", transcricao, ""]
+  if (anteriores.length) {
+    partes.push(
+      "Sugestões que o atendente já viu e NÃO quis usar (traga uma abordagem claramente diferente: outra estrutura, outro foco ou outro tom, sem repetir o conteúdo):",
+      ...anteriores.map((t, i) => `${i + 1}) ${t}`),
+      "",
+    )
+  }
+  partes.push("Escreva agora a próxima mensagem que o atendente deve enviar ao cliente.")
+  const pedido = partes.join("\n")
+
+  const resposta = await chamarModelo({
+    conexao: conexaoDe(agente.provedor, agente.baseUrl, agente.chave),
+    modelo: agente.modelo,
+    system: montarSistemaDeSugestao(agente, { leadNome: lead.nome, departamentoNome: atendimento?.departamento?.nome ?? null }),
+    mensagens: [{ role: "user", content: pedido }],
+  })
+  const sugestao = limparSugestao(resposta).slice(0, LIMITE_TEXTO_RESPOSTA).trim()
+  if (!sugestao) throw new AgenteIaError("O modelo não devolveu uma sugestão. Tente de novo.")
+  return { sugestao, agenteNome: agente.nome }
+}
+
 /** Registra no log uma falha do agente (sem a chave nem o texto do cliente). */
 export async function registrarFalhaDoAgente(agenteNome: string, leadId: string, error: unknown): Promise<void> {
   await recordAppLog({

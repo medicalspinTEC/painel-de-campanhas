@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react"
 import { toast } from "sonner"
-import { ArrowLeft, ArrowRightLeft, Bot, Building2, CheckCheck, Clock, Download, FileText, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Mic, Paperclip, Search, Send, Smile, Sparkles, StickyNote, Trash2, UserCheck, UserRound, X, Zap } from "lucide-react"
+import { ArrowLeft, ArrowRightLeft, Bot, Building2, Check, CheckCheck, ChevronLeft, ChevronRight, Clock, Download, FileText, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Mic, Paperclip, RefreshCw, Search, Send, Smile, Sparkles, StickyNote, Trash2, UserCheck, UserRound, X, Zap } from "lucide-react"
 
 import { alternarBotConversaAction, assumirConversaAction } from "@/app/actions/crm"
-import { createChatInternalNoteAction, loadChatMessagesAction, refreshChatInboxAction, sendChatAudioAction, sendChatFileAction } from "@/app/actions/chat"
+import { createChatInternalNoteAction, loadChatMessagesAction, refreshChatInboxAction, sendChatAudioAction, sendChatFileAction, sugerirRespostaAction } from "@/app/actions/chat"
 import { sendLeadMessageAction, setLeadStatusAction } from "@/app/actions/leads"
 import { saveChatIdentificarAction } from "@/app/actions/users"
 import { LinkButton } from "@/components/shared/link-button"
@@ -25,8 +25,10 @@ import { LeadAvatar } from "@/components/shared/lead-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 import { SelectField } from "@/components/shared/select-field"
 import { Textarea } from "@/components/ui/textarea"
+import { MAX_SUGESTOES_POR_CONVERSA } from "@/lib/agentes-ia"
 import { gatilhoDeTemplate, type ChatTemplate } from "@/lib/chat-templates"
 import { avaliarAtendimento } from "@/lib/crm-permissoes"
 import { formatRelative } from "@/lib/format"
@@ -156,6 +158,12 @@ export function ChatInbox({
   const [indiceTemplate, setIndiceTemplate] = useState(0)
   const [menuTemplateFechado, setMenuTemplateFechado] = useState(false)
   const [seletorEmojiAberto, setSeletorEmojiAberto] = useState(false)
+  // Plugin Agentes de IA: sugestões de resposta para o atendente (nada é enviado ao lead).
+  const [sugestoes, setSugestoes] = useState<{ leadId: string; textos: string[]; indice: number; agenteNome: string } | null>(null)
+  const [gerandoSugestao, setGerandoSugestao] = useState(false)
+  const [erroSugestao, setErroSugestao] = useState<string | null>(null)
+  const pedidoSugestaoRef = useRef(0)
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const [instancia, setInstancia] = useState(instancias[0]?.nome ?? "")
   const [enviando, setEnviando] = useState(false)
   // Arquivos recebidos que acabaram de ser baixados (o servidor apaga o arquivo ao terminar o download).
@@ -198,6 +206,16 @@ export function ChatInbox({
   const menuTemplateAberto = sugestoesTemplate.length > 0 && !menuTemplateFechado
   const indiceTemplateAtivo = Math.min(indiceTemplate, Math.max(sugestoesTemplate.length - 1, 0))
   const idSelecionadoRef = useRef(conversaSelecionadaId)
+  const sugestaoAtual = sugestoes && sugestoes.leadId === conversaAtiva?.id ? (sugestoes.textos[sugestoes.indice] ?? null) : null
+  const painelSugestaoVisivel = sugestoes !== null || gerandoSugestao || erroSugestao !== null
+
+  // Trocar (ou fechar) a conversa descarta as sugestões da anterior e ignora pedidos em andamento.
+  useEffect(() => {
+    pedidoSugestaoRef.current += 1
+    setSugestoes(null)
+    setGerandoSugestao(false)
+    setErroSugestao(null)
+  }, [conversaSelecionadaId])
   const areaMensagensRef = useRef<HTMLDivElement | null>(null)
   const pertoDoFimRef = useRef(true)
   const conversaDoScrollRef = useRef<string | null>(null)
@@ -414,6 +432,47 @@ export function ChatInbox({
     }
   }
 
+  function fecharSugestao() {
+    pedidoSugestaoRef.current += 1
+    setSugestoes(null)
+    setGerandoSugestao(false)
+    setErroSugestao(null)
+  }
+
+  /** Pede uma sugestão ao agente de IA. Se já há sugestões, as anteriores vão junto para a nova ser diferente. */
+  async function pedirSugestao() {
+    const leadId = conversaAtiva?.id
+    if (!leadId || gerandoSugestao) return
+    const anteriores = sugestoes && sugestoes.leadId === leadId ? sugestoes.textos : []
+    const pedido = ++pedidoSugestaoRef.current
+    setGerandoSugestao(true)
+    setErroSugestao(null)
+    const resultado = await sugerirRespostaAction(leadId, anteriores).catch(() => ({
+      ok: false as const,
+      message: "Não foi possível gerar a sugestão agora. Tente de novo.",
+    }))
+    if (pedido !== pedidoSugestaoRef.current || idSelecionadoRef.current !== leadId) return
+    setGerandoSugestao(false)
+    if (!resultado.ok) {
+      setErroSugestao(resultado.message)
+      return
+    }
+    setSugestoes((atual) => {
+      const base = atual && atual.leadId === leadId ? atual.textos : []
+      const textos = [...base, resultado.sugestao]
+      return { leadId, textos, indice: textos.length - 1, agenteNome: resultado.agenteNome }
+    })
+  }
+
+  /** Aceita a sugestão: ela vai para o campo de mensagem, onde o atendente ainda pode editar antes de enviar. */
+  function usarSugestao() {
+    if (!sugestaoAtual) return
+    setTexto(sugestaoAtual.slice(0, limiteTexto))
+    setMenuTemplateFechado(true)
+    fecharSugestao()
+    requestAnimationFrame(() => textareaRef.current?.focus())
+  }
+
   async function enviarMensagem() {
     const leadId = conversaAtiva?.id
     const mensagem = texto.trim()
@@ -437,6 +496,7 @@ export function ChatInbox({
     }
 
     setTexto("")
+    fecharSugestao()
     if (modoComposicao === "resposta") setModoComposicao("mensagem")
     toast.success(resultado.message)
     pertoDoFimRef.current = true
@@ -1179,6 +1239,72 @@ export function ChatInbox({
                         </Button>
                       </div>
                     ) : null}
+                    {modoComposicao === "mensagem" && !gravando && conversaAtiva.agenteIa && painelSugestaoVisivel ? (
+                      <div className="mb-3 rounded-xl border border-primary/30 bg-primary/5 p-3" role="region" aria-label="Sugestão de resposta">
+                        <div className="mb-2 flex items-center gap-2 text-xs font-medium text-primary">
+                          <Sparkles className="size-3.5 shrink-0" />
+                          <span className="min-w-0 flex-1 truncate">Sugestão do agente “{sugestoes?.agenteNome ?? conversaAtiva.agenteIa.nome}”</span>
+                          {sugestoes && sugestoes.textos.length > 1 ? (
+                            <span className="flex shrink-0 items-center gap-0.5 text-muted-foreground">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-6 rounded-full"
+                                aria-label="Sugestão anterior"
+                                disabled={sugestoes.indice === 0}
+                                onClick={() => setSugestoes((atual) => (atual ? { ...atual, indice: Math.max(atual.indice - 1, 0) } : atual))}
+                              >
+                                <ChevronLeft className="size-3.5" />
+                              </Button>
+                              <span className="tabular-nums">{sugestoes.indice + 1}/{sugestoes.textos.length}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-6 rounded-full"
+                                aria-label="Próxima sugestão"
+                                disabled={sugestoes.indice >= sugestoes.textos.length - 1}
+                                onClick={() => setSugestoes((atual) => (atual ? { ...atual, indice: Math.min(atual.indice + 1, atual.textos.length - 1) } : atual))}
+                              >
+                                <ChevronRight className="size-3.5" />
+                              </Button>
+                            </span>
+                          ) : null}
+                          <Button type="button" variant="ghost" size="icon" className="size-6 shrink-0 rounded-full" aria-label="Fechar sugestão" onClick={fecharSugestao}>
+                            <X className="size-3.5" />
+                          </Button>
+                        </div>
+                        {sugestaoAtual ? (
+                          <p className="max-h-40 overflow-y-auto whitespace-pre-wrap text-sm leading-snug">{sugestaoAtual}</p>
+                        ) : gerandoSugestao ? (
+                          <p className="text-sm text-muted-foreground" role="status">Lendo a conversa e escrevendo uma sugestão...</p>
+                        ) : null}
+                        {erroSugestao ? (
+                          <p role="alert" className="text-sm text-destructive">{erroSugestao}</p>
+                        ) : null}
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                          {sugestaoAtual ? (
+                            <Button type="button" size="sm" className="rounded-full" onClick={usarSugestao} disabled={enviando}>
+                              <Check className="size-4" />
+                              {texto.trim() ? "Substituir meu texto" : "Usar sugestão"}
+                            </Button>
+                          ) : null}
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="rounded-full"
+                            onClick={() => void pedirSugestao()}
+                            disabled={gerandoSugestao || (sugestoes?.textos.length ?? 0) >= MAX_SUGESTOES_POR_CONVERSA}
+                          >
+                            {gerandoSugestao ? <Spinner className="size-4" /> : <RefreshCw className="size-4" />}
+                            {sugestaoAtual ? "Outra sugestão" : "Tentar de novo"}
+                          </Button>
+                          {sugestaoAtual ? <span className="text-[11px] text-muted-foreground">Você pode editar antes de enviar.</span> : null}
+                        </div>
+                      </div>
+                    ) : null}
                     <div className="mb-3 flex flex-wrap items-center gap-1.5">
                       <Popover open={seletorEmojiAberto} onOpenChange={setSeletorEmojiAberto}>
                         <PopoverTrigger
@@ -1222,6 +1348,21 @@ export function ChatInbox({
                           onClick={() => setTemplatesAberto(true)}
                         >
                           <Zap className="size-4" />
+                        </Button>
+                      ) : null}
+                      {modoComposicao === "mensagem" && conversaAtiva.agenteIa ? (
+                        <Button
+                          type="button"
+                          variant={painelSugestaoVisivel ? "secondary" : "ghost"}
+                          size="icon"
+                          className="rounded-full"
+                          aria-label="Sugerir resposta com IA"
+                          aria-pressed={painelSugestaoVisivel}
+                          title={`Sugerir resposta com o agente de IA “${conversaAtiva.agenteIa.nome}”`}
+                          disabled={enviando || envioBloqueado || gravando}
+                          onClick={() => (painelSugestaoVisivel ? fecharSugestao() : void pedirSugestao())}
+                        >
+                          {gerandoSugestao && !sugestaoAtual ? <Spinner className="size-4" /> : <Sparkles className="size-4" />}
                         </Button>
                       ) : null}
                       <Button
@@ -1362,6 +1503,7 @@ export function ChatInbox({
                           </>
                         ) : null}
                         <Textarea
+                          ref={textareaRef}
                           value={texto}
                           onChange={(event) => {
                             setTexto(event.target.value)

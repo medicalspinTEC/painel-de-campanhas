@@ -89,8 +89,8 @@ export function AgentesManager({
               Agentes
             </CardTitle>
             <CardDescription>
-              {agentes.length} {agentes.length === 1 ? "agente cadastrado" : "agentes cadastrados"}. O agente só responde mensagens e para
-              quando um humano assume a conversa. Só vale para conversas sem campanha.
+              {agentes.length} {agentes.length === 1 ? "agente cadastrado" : "agentes cadastrados"}. O agente responde mensagens e para
+              quando um humano assume a conversa (só vale para conversas sem campanha). Mesmo com um atendente na conversa, ele pode sugerir respostas no chat.
             </CardDescription>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">

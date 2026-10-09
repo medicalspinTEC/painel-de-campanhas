@@ -24,7 +24,7 @@ import { exigirPlugin, getChatPluginAtivo, getPluginsAtivos } from "@/services/s
  *   2. Menu esperando a resposta do lead → o MESMO bot retoma dali e segue a opção escolhida.
  *   3. Plugin Agentes de IA: o agente de IA ativo do departamento da conversa (ou, sem
  *      departamento, o agente de entrada) responde — e tem prioridade sobre o bot No Code do mesmo
- *      escopo. O agente só conversa (não executa comandos).
+ *      escopo. O agente só conversa (não executa comandos). Sugestões de resposta para atendentes: `sugerirRespostaAoAtendente` (services/agentes-ia.ts).
  *   4. Conversa já num departamento → o bot ativo desse departamento (se houver).
  *   5. Conversa sem departamento → o bot de entrada ativo (triagem), se houver.
  *

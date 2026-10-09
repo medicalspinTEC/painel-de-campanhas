@@ -97,3 +97,6 @@ export function descreverTempo(minutos: number): string {
   const nomes = { minutos: ["minuto", "minutos"], horas: ["hora", "horas"], dias: ["dia", "dias"] } as const
   return `${valor} ${nomes[unidade][valor === 1 ? 0 : 1]}`
 }
+
+/** Sugestões de resposta para o atendente: quantas o atendente pode pedir em sequência na mesma conversa. */
+export const MAX_SUGESTOES_POR_CONVERSA = 8

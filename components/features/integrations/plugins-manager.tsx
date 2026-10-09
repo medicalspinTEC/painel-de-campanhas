@@ -250,7 +250,7 @@ export function PluginsManager({
                 id: "agentesIa",
                 titulo: "Agentes de IA",
                 descricao:
-                  "Agentes de atendimento com IA (Claude, Groq ou outra API compatível, via chave de API) que respondem as mensagens dos leads. Podem ser vinculados a um departamento ou ser o agente de entrada na aba CRM (exige o plugin CRM ativo). Por enquanto só respondem mensagens, sem executar comandos.",
+                  "Agentes de atendimento com IA (Claude, Groq ou outra API compatível, via chave de API) que respondem as mensagens dos leads. Podem ser vinculados a um departamento ou ser o agente de entrada na aba CRM (exige o plugin CRM ativo). Também sugerem respostas aos atendentes no chat, com base no histórico da conversa. Por enquanto só conversam, sem executar comandos.",
                 ativo: agentesIaAtivo,
                 onChange: alterarAgentesIa,
                 icon: Sparkles,

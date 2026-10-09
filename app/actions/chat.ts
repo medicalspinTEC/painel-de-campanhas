@@ -5,8 +5,10 @@ import { revalidatePath } from "next/cache"
 import { PluginDesativadoError } from "@/lib/plugins"
 import { ARQUIVO_TAMANHO_MAXIMO } from "@/lib/arquivo-storage"
 import { AUDIO_TAMANHO_MAXIMO, extensaoDoMime } from "@/lib/audio-storage"
+import { MAX_SUGESTOES_POR_CONVERSA } from "@/lib/agentes-ia"
 import { assertSecao } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
+import { AgenteIaError, sugerirRespostaAoAtendente } from "@/services/agentes-ia"
 import { addChatInternalNote, getChatInbox, getChatMessages, getChatsForExport } from "@/services/chat"
 import { CrmError, filtrarLeadsParaEnvio, pausarBotComNota } from "@/services/crm"
 import type { ChatTemplate } from "@/lib/chat-templates"
@@ -239,4 +241,30 @@ export async function deleteChatTemplateAction(id: string) {
     await deleteChatTemplate(userId, id)
     return "Template excluído."
   }, "Não foi possível excluir o template.")
+}
+
+/**
+ * Plugin Agentes de IA: sugere ao atendente o que responder ao lead (nada é enviado ao lead).
+ * `anteriores` são as sugestões já mostradas, para o agente trazer uma abordagem diferente.
+ */
+export async function sugerirRespostaAction(
+  leadId: string,
+  anteriores: string[] = [],
+): Promise<{ ok: true; sugestao: string; agenteNome: string } | { ok: false; message: string }> {
+  await assertSecao("chat")
+  const id = typeof leadId === "string" ? leadId.trim() : ""
+  if (!id) return { ok: false, message: "Selecione uma conversa para pedir a sugestão." }
+  const lista = Array.isArray(anteriores) ? anteriores.filter((t) => typeof t === "string") : []
+  if (lista.length >= MAX_SUGESTOES_POR_CONVERSA) {
+    return { ok: false, message: `Você já pediu ${MAX_SUGESTOES_POR_CONVERSA} sugestões nesta conversa. Escolha uma delas ou escreva a resposta.` }
+  }
+  try {
+    const { sugestao, agenteNome } = await sugerirRespostaAoAtendente({ leadId: id, anteriores: lista })
+    return { ok: true, sugestao, agenteNome }
+  } catch (error) {
+    if (error instanceof AgenteIaError || error instanceof PluginDesativadoError) return { ok: false, message: error.message }
+    // Nunca registra o corpo da chamada (pode ter a chave de API) nem o texto da conversa.
+    void recordAppLog({ origem: "agentes-ia", mensagem: "Falha ao gerar sugestão de resposta.", detalhes: error instanceof Error ? error.message : String(error), contexto: { leadId: id } })
+    return { ok: false, message: "Não foi possível gerar a sugestão agora. Tente de novo." }
+  }
 }
