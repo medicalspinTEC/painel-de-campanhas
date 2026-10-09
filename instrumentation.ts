@@ -109,21 +109,6 @@ export async function register() {
       const { limparArquivosExpirados } = await import("@/lib/arquivo-storage")
       const arquivos = await limparArquivosExpirados()
       if (arquivos.removidos) console.log("[v0] limpeza de arquivos recebidos:", arquivos)
-      // Anexos de campanha que nenhuma campanha referencia mais (anexo trocado, campanha apagada).
-      const { limparMidiasOrfas, lerLinhaDeMidia } = await import("@/lib/campanha-midia-storage")
-      // Cliente SEM filtro por instância: a pasta é compartilhada, então é preciso enxergar as referências de todas.
-      const { prismaGlobal } = await import("@/lib/prisma-base")
-      const [mensagensComMidia, campanhasComMidia] = await Promise.all([
-        prismaGlobal.campaignMessage.findMany({ where: { midia: { not: null } }, select: { midia: true } }),
-        prismaGlobal.campaign.findMany({ where: { midia: { not: null } }, select: { midia: true } }),
-      ])
-      const referenciados = new Set<string>()
-      for (const { midia } of [...mensagensComMidia, ...campanhasComMidia]) {
-        const meta = lerLinhaDeMidia(midia)
-        if (meta) referenciados.add(meta.id)
-      }
-      const midias = await limparMidiasOrfas(referenciados)
-      if (midias.removidos) console.log("[v0] limpeza de anexos de campanha órfãos:", midias)
       // Anexos do chat interno (equipe) que ninguém baixou.
       const { limparAnexosInternosExpirados } = await import("@/lib/interno-storage")
       const internos = await limparAnexosInternosExpirados()
