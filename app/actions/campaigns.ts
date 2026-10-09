@@ -13,8 +13,18 @@ import {
   type CampaignInput,
 } from "@/services/campaigns"
 import { recordAppLog } from "@/services/app-logs"
-import type { CampaignStatus } from "@/types"
+import type { CampanhaAnexo, CampaignStatus } from "@/types"
 import { assertSecao } from "@/lib/session"
+import { prismaGlobal } from "@/lib/prisma"
+import { mimeLimpo, nomeSeguro } from "@/lib/arquivo-storage"
+import {
+  CAMPANHA_ANEXO_TAMANHO_MAXIMO,
+  idDeAnexoValido,
+  removerAnexoCampanha,
+  salvarAnexoCampanha,
+  tamanhoDoAnexoCampanha,
+  tipoDoAnexo,
+} from "@/lib/campanha-anexo-storage"
 
 export interface CampaignActionResult {
   ok: boolean
@@ -63,13 +73,86 @@ function validar(input: CampaignInput) {
   // chegar depois, por filtro ou importação).
   if (input.recorrenciaDias < 1) errors.recorrenciaDias = "A recorrência mínima é de 1 dia."
   if (input.mensagens.length === 0) errors.mensagens = "Adicione pelo menos uma mensagem na sequência."
-  if (input.mensagens.some((m) => m.texto.trim().length < 10))
-    errors.mensagens = "Todas as mensagens precisam ter no mínimo 10 caracteres."
+  // Mensagem com imagem/vídeo/arquivo pode ir sem texto (a mídia é o conteúdo); sem mídia, mínimo de 10 caracteres.
+  if (input.mensagens.some((m) => !m.anexo && m.texto.trim().length < 10))
+    errors.mensagens = "Todas as mensagens precisam ter no mínimo 10 caracteres (ou uma imagem/arquivo anexado)."
   return errors
 }
 
-export async function createCampaignAction(input: CampaignInput): Promise<CampaignActionResult> {
+/**
+ * O navegador só informa a referência do anexo; tipo, mime, nome e tamanho são refeitos aqui a
+ * partir do que de fato está no servidor. Referência inválida ou arquivo sumido => sem anexo.
+ */
+async function sanearAnexos(input: CampaignInput): Promise<CampaignInput> {
+  const mensagens = await Promise.all(
+    input.mensagens.map(async (m) => {
+      const anexo = m.anexo
+      if (!anexo || !idDeAnexoValido(anexo.id)) return { ...m, anexo: null }
+      const tamanho = await tamanhoDoAnexoCampanha(anexo.id)
+      if (tamanho === null) return { ...m, anexo: null }
+      const mime = mimeLimpo(anexo.mime)
+      const limpo: CampanhaAnexo = {
+        id: anexo.id,
+        tipo: tipoDoAnexo(mime),
+        mime,
+        nome: nomeSeguro(anexo.nome, "arquivo"),
+        tamanho,
+      }
+      return { ...m, anexo: limpo }
+    }),
+  )
+  return { ...input, mensagens }
+}
+
+/**
+ * Envia a imagem, o vídeo ou o arquivo de UMA mensagem da campanha. O conteúdo vai para uma pasta do
+ * servidor (nunca para o banco) e fica lá até a mensagem ser removida ou a campanha excluída; o
+ * painel não mostra pré-visualização. Recebe um FormData com `arquivo`; devolve a referência a ser
+ * enviada de volta ao salvar a campanha.
+ */
+export async function uploadCampaignAnexoAction(
+  formData: FormData,
+): Promise<{ ok: true; anexo: CampanhaAnexo } | { ok: false; message: string }> {
   await assertSecao("campanhas")
+
+  const arquivo = formData.get("arquivo")
+  if (!(arquivo instanceof File) || arquivo.size === 0) {
+    return { ok: false, message: "Nenhum arquivo foi recebido. Escolha o arquivo novamente." }
+  }
+  if (arquivo.size > CAMPANHA_ANEXO_TAMANHO_MAXIMO) {
+    return {
+      ok: false,
+      message: `O arquivo é muito grande (máximo de ${Math.round(CAMPANHA_ANEXO_TAMANHO_MAXIMO / 1024 / 1024)} MB).`,
+    }
+  }
+
+  try {
+    const anexo = await salvarAnexoCampanha(Buffer.from(await arquivo.arrayBuffer()), {
+      nome: arquivo.name,
+      mime: arquivo.type,
+    })
+    return { ok: true, anexo }
+  } catch (error) {
+    await recordAppLog({ origem: "campaigns", mensagem: "Falha ao guardar o anexo da campanha no servidor.", detalhes: error })
+    return {
+      ok: false,
+      message: "Não foi possível guardar o arquivo no servidor. Verifique o volume da pasta de anexos (CAMPANHA_ANEXO_DIR) e suas permissões.",
+    }
+  }
+}
+
+/** Descarta um arquivo recém-enviado que ainda não foi salvo em nenhuma campanha (ex.: o usuário trocou o anexo). */
+export async function descartarAnexoNovoAction(id: string): Promise<void> {
+  await assertSecao("campanhas")
+  // Só apaga se nenhuma mensagem salva o referencia: um anexo já salvo só sai pela edição da campanha.
+  // `prismaGlobal`: a checagem vale para todas as instâncias, não só a do usuário.
+  const emUso = await prismaGlobal.campaignMessage.count({ where: { anexoId: id } })
+  if (emUso === 0) await removerAnexoCampanha(id)
+}
+
+export async function createCampaignAction(bruto: CampaignInput): Promise<CampaignActionResult> {
+  await assertSecao("campanhas")
+  const input = await sanearAnexos(bruto)
   const errors = validar(input)
   if (Object.keys(errors).length > 0) return { ok: false, message: "Corrija os campos destacados.", errors }
   try {
@@ -82,8 +165,9 @@ export async function createCampaignAction(input: CampaignInput): Promise<Campai
   }
 }
 
-export async function updateCampaignAction(id: string, input: CampaignInput): Promise<CampaignActionResult> {
+export async function updateCampaignAction(id: string, bruto: CampaignInput): Promise<CampaignActionResult> {
   await assertSecao("campanhas")
+  const input = await sanearAnexos(bruto)
   const errors = validar(input)
   if (Object.keys(errors).length > 0) return { ok: false, message: "Corrija os campos destacados.", errors }
   try {

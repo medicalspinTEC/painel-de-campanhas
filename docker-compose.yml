@@ -47,8 +47,14 @@ services:
       # Mensagens de voz do chat: ficam nesta pasta (não no banco) e são apagadas após N dias.
       AUDIO_STORAGE_DIR: ${AUDIO_STORAGE_DIR:-/app/data/audios}
       AUDIO_RETENTION_DAYS: ${AUDIO_RETENTION_DAYS:-30}
+      # Imagens/vídeos/arquivos das campanhas: ficam neste volume (não no banco). 30 dias com a
+      # campanha ativa/pausada, 10 dias quando não está; apagados na hora se a campanha for excluída.
+      CAMPANHA_ANEXO_DIR: ${CAMPANHA_ANEXO_DIR:-/app/data/campanhas}
+      CAMPANHA_ANEXO_DIAS_ATIVA: ${CAMPANHA_ANEXO_DIAS_ATIVA:-30}
+      CAMPANHA_ANEXO_DIAS_INATIVA: ${CAMPANHA_ANEXO_DIAS_INATIVA:-10}
     volumes:
       - audio_data:/app/data/audios
+      - campanha_data:/app/data/campanhas
     ports:
       - "3000:3000"
     depends_on:
@@ -60,3 +66,4 @@ services:
 volumes:
   db_data:
   audio_data:
+  campanha_data:

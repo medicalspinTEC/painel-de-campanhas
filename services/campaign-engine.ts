@@ -11,6 +11,7 @@ import {
 import { recordAppLog } from "@/services/app-logs"
 import { encerrarCampanhasExpiradas } from "@/services/campaigns"
 import { sendCampaignMessageToLead } from "@/services/evolution"
+import type { CampanhaAnexo } from "@/types"
 import { sendWhatsAppText } from "@/services/evolution"
 import { recordMessageEvent } from "@/services/message-events"
 import { getSettings } from "@/services/settings"
@@ -174,6 +175,7 @@ async function enviarMensagem(
   mensagem: EngineMessage,
   reiniciouCiclo: boolean,
   instanciaNome: string | null,
+  anexo: CampanhaAnexo | null = null,
 ): Promise<boolean> {
   try {
     const envio = await sendCampaignMessageToLead({
@@ -181,6 +183,7 @@ async function enviarMensagem(
       campanhaId,
       mensagemId: mensagem.id,
       texto: mensagem.texto,
+      anexo,
       telefone: vinculo.lead.telefone,
       instanciaNome,
       descricaoSucesso: reiniciouCiclo
@@ -443,7 +446,17 @@ async function executarVarredura(agora: Date): Promise<EngineResult> {
         reiniciadaEm: true,
         instanciaNome: true,
         mensagens: {
-          select: { id: true, dia: true, horario: true, texto: true },
+          select: {
+            id: true,
+            dia: true,
+            horario: true,
+            texto: true,
+            anexoId: true,
+            anexoTipo: true,
+            anexoMime: true,
+            anexoNome: true,
+            anexoTamanho: true,
+          },
           orderBy: { dia: "asc" },
         },
         leadCampaigns: {
@@ -615,7 +628,18 @@ async function executarVarredura(agora: Date): Promise<EngineResult> {
           // orçamento for recalculado.
           if (orcamento <= 0) continue
 
-          const ok = await enviarMensagem(vinculo, campanha.id, decisao.mensagem, false, campanha.instanciaNome)
+          const alvoComAnexo = campanha.mensagens.find((m) => m.id === decisao.mensagem.id)
+          const anexo: CampanhaAnexo | null =
+            alvoComAnexo?.anexoId && alvoComAnexo.anexoTipo
+              ? {
+                  id: alvoComAnexo.anexoId,
+                  tipo: alvoComAnexo.anexoTipo as CampanhaAnexo["tipo"],
+                  mime: alvoComAnexo.anexoMime ?? "application/octet-stream",
+                  nome: alvoComAnexo.anexoNome ?? "arquivo",
+                  tamanho: alvoComAnexo.anexoTamanho ?? 0,
+                }
+              : null
+          const ok = await enviarMensagem(vinculo, campanha.id, decisao.mensagem, false, campanha.instanciaNome, anexo)
           if (ok) {
             enviados += 1
             orcamento -= 1

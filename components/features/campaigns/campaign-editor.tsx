@@ -2,10 +2,15 @@
 
 import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useState, useTransition } from "react"
-import { CalendarClock, GripVertical, Plus, Trash2, Users } from "lucide-react"
+import { CalendarClock, FileText, Film, GripVertical, ImageIcon, Paperclip, Plus, Trash2, Users, X } from "lucide-react"
 import { toast } from "sonner"
 
-import { createCampaignAction, updateCampaignAction } from "@/app/actions/campaigns"
+import {
+  createCampaignAction,
+  descartarAnexoNovoAction,
+  updateCampaignAction,
+  uploadCampaignAnexoAction,
+} from "@/app/actions/campaigns"
 import { CreatableSelectField } from "@/components/shared/creatable-select-field"
 import { LinkButton } from "@/components/shared/link-button"
 import { SelectField, opcoesComExtras } from "@/components/shared/select-field"
@@ -22,6 +27,7 @@ import { cn } from "@/lib/utils"
 import {
   CAMPAIGN_STATUS_LABEL,
   CAMPAIGN_TIPO_LABEL,
+  type CampanhaAnexo,
   type Campaign,
   type CampaignStatus,
   type CampaignTipo,
@@ -45,6 +51,24 @@ interface MensagemRascunho {
   dia: number
   horario: string
   texto: string
+  /** Imagem/vídeo/arquivo enviado junto. O conteúdo fica no servidor; aqui só a referência (sem prévia). */
+  anexo?: CampanhaAnexo | null
+}
+
+/** Mesmo limite do servidor (`CAMPANHA_ANEXO_TAMANHO_MAXIMO`): avisa antes de subir um arquivo grande demais. */
+const ANEXO_MAX_MB = 20
+const ACEITA_ANEXO =
+  "image/jpeg,image/png,image/webp,image/gif,video/mp4,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip"
+
+function tamanhoLegivel(bytes: number): string {
+  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`
+}
+
+function IconeDoAnexo({ tipo, className }: { tipo: CampanhaAnexo["tipo"]; className?: string }) {
+  if (tipo === "imagem") return <ImageIcon className={className} />
+  if (tipo === "video") return <Film className={className} />
+  return <FileText className={className} />
 }
 
 export interface LeadResumo {
@@ -124,9 +148,18 @@ export function CampaignEditor({
   const [regiao, setRegiao] = useState(campanha?.filtros.regiao ?? QUALQUER)
   const [mensagens, setMensagens] = useState<MensagemRascunho[]>(
     campanha?.mensagens.length
-      ? campanha.mensagens.map((m) => ({ key: m.id, id: m.id, dia: m.dia, horario: m.horario, texto: m.texto }))
+      ? campanha.mensagens.map((m) => ({
+          key: m.id,
+          id: m.id,
+          dia: m.dia,
+          horario: m.horario,
+          texto: m.texto,
+          anexo: m.anexo ?? null,
+        }))
       : [novaMensagem(0)],
   )
+  // Chave da mensagem cujo arquivo está subindo agora.
+  const [enviandoAnexo, setEnviandoAnexo] = useState<string | null>(null)
   const [arrastando, setArrastando] = useState<number | null>(null)
   const [sobre, setSobre] = useState<number | null>(null)
   const [leadIdsSelecionados, setLeadIdsSelecionados] = useState<string[]>(() =>
@@ -196,7 +229,43 @@ export function CampaignEditor({
   }
 
   function removerMensagem(index: number) {
+    const anexo = mensagens[index]?.anexo
+    // Arquivo recém-enviado e ainda não salvo some junto; um já salvo só sai quando a campanha é salva.
+    if (anexo) void descartarAnexoNovoAction(anexo.id)
     setMensagens((atual) => atual.filter((_, i) => i !== index))
+  }
+
+  async function anexarArquivo(index: number, arquivo: File | undefined) {
+    if (!arquivo) return
+    const mensagem = mensagens[index]
+    if (!mensagem) return
+    if (arquivo.size > ANEXO_MAX_MB * 1024 * 1024) {
+      toast.error(`O arquivo é muito grande (máximo de ${ANEXO_MAX_MB} MB).`)
+      return
+    }
+    setEnviandoAnexo(mensagem.key)
+    try {
+      const dados = new FormData()
+      dados.set("arquivo", arquivo)
+      const res = await uploadCampaignAnexoAction(dados)
+      if (!res.ok) {
+        toast.error(res.message)
+        return
+      }
+      // Trocar o arquivo: o anterior, se nunca foi salvo, é descartado do servidor.
+      if (mensagem.anexo) void descartarAnexoNovoAction(mensagem.anexo.id)
+      setMensagens((atual) => atual.map((m) => (m.key === mensagem.key ? { ...m, anexo: res.anexo } : m)))
+    } catch {
+      toast.error("Não foi possível enviar o arquivo.")
+    } finally {
+      setEnviandoAnexo(null)
+    }
+  }
+
+  function removerAnexo(index: number) {
+    const anexo = mensagens[index]?.anexo
+    if (anexo) void descartarAnexoNovoAction(anexo.id)
+    atualizarMensagem(index, { anexo: null })
   }
 
   function adicionarMensagem() {
@@ -242,7 +311,13 @@ export function CampaignEditor({
         : mensagens
             .slice()
             .sort((a, b) => a.dia - b.dia)
-            .map((m) => ({ id: m.id, dia: Number(m.dia) || 0, horario: m.horario, texto: m.texto.trim() })),
+            .map((m) => ({
+              id: m.id,
+              dia: Number(m.dia) || 0,
+              horario: m.horario,
+              texto: m.texto.trim(),
+              anexo: m.anexo ?? null,
+            })),
       leadMensagens: individual
         ? Object.fromEntries(leadIdsSelecionados.map((id) => [id, (leadMensagens[id] ?? "").trim()]))
         : undefined,
@@ -461,9 +536,53 @@ export function CampaignEditor({
                 <Textarea
                   value={mensagem.texto}
                   onChange={(e) => atualizarMensagem(index, { texto: e.target.value })}
-                  placeholder="Olá {{primeiro_nome}}, tudo bem? Vi que você se interessou..."
+                  placeholder={
+                    mensagem.anexo
+                      ? "Legenda (opcional) que acompanha o arquivo. Use {{primeiro_nome}} para personalizar."
+                      : "Olá {{primeiro_nome}}, tudo bem? Vi que você se interessou..."
+                  }
                   rows={3}
                 />
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    id={`anexo-${mensagem.key}`}
+                    type="file"
+                    accept={ACEITA_ANEXO}
+                    className="hidden"
+                    onChange={(e) => {
+                      void anexarArquivo(index, e.target.files?.[0])
+                      e.target.value = ""
+                    }}
+                  />
+                  {mensagem.anexo ? (
+                    // Sem miniatura nem prévia: só o ícone, o nome e o tamanho do arquivo guardado.
+                    <span className="flex min-w-0 max-w-full items-center gap-2 rounded-lg border border-border bg-muted/40 px-2.5 py-1.5 text-xs">
+                      <IconeDoAnexo tipo={mensagem.anexo.tipo} className="size-4 shrink-0 text-muted-foreground" />
+                      <span className="truncate font-medium">{mensagem.anexo.nome}</span>
+                      <span className="shrink-0 text-muted-foreground tabular-nums">
+                        {tamanhoLegivel(mensagem.anexo.tamanho)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removerAnexo(index)}
+                        className="shrink-0 rounded-sm text-muted-foreground transition-colors hover:text-foreground"
+                        aria-label={`Remover o arquivo da mensagem ${index + 1}`}
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </span>
+                  ) : null}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={enviandoAnexo === mensagem.key}
+                    onClick={() => document.getElementById(`anexo-${mensagem.key}`)?.click()}
+                  >
+                    {enviandoAnexo === mensagem.key ? <Spinner className="size-4" /> : <Paperclip className="size-4" />}
+                    {mensagem.anexo ? "Trocar arquivo" : "Anexar imagem ou arquivo"}
+                  </Button>
+                </div>
               </div>
             ))}
 
@@ -612,7 +731,17 @@ export function CampaignEditor({
                   Dia {m.dia} · {m.horario}
                 </span>
                 <p className="rounded-lg rounded-tl-sm bg-primary/12 px-3 py-2 text-sm leading-relaxed text-foreground">
-                  {m.texto.trim() ? renderTemplate(m.texto) : `Mensagem ${i + 1} sem conteúdo`}
+                  {m.anexo ? (
+                    <span className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <IconeDoAnexo tipo={m.anexo.tipo} className="size-3.5 shrink-0" />
+                      <span className="truncate">{m.anexo.nome}</span>
+                    </span>
+                  ) : null}
+                  {m.texto.trim()
+                    ? renderTemplate(m.texto)
+                    : m.anexo
+                      ? null
+                      : `Mensagem ${i + 1} sem conteúdo`}
                 </p>
               </div>
             ))}

@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma"
 import { renderTemplate } from "@/lib/format"
 import { recordAppLog } from "@/services/app-logs"
 import { recordMessageEvent } from "@/services/message-events"
+import { CAMPANHA_LEGENDA_MAXIMA, lerAnexoCampanha } from "@/lib/campanha-anexo-storage"
+import type { CampanhaAnexo } from "@/types"
 
 export interface EvolutionSendResult {
   ok: boolean
@@ -630,8 +632,8 @@ export async function sendWhatsAppMedia(input: {
   base64: string
   mimetype: string
   fileName: string
-  /** `image` aparece como foto no WhatsApp; `document` chega como arquivo para baixar. */
-  mediatype: "image" | "document"
+  /** `image` aparece como foto, `video` como vídeo; `document` chega como arquivo para baixar. */
+  mediatype: "image" | "video" | "document"
   caption?: string | null
   instanciaNome?: string | null
 }): Promise<EvolutionSendResult> {
@@ -681,7 +683,7 @@ export async function sendWhatsAppMedia(input: {
       await recordAppLog({
         nivel: "erro",
         origem: "evolution",
-        mensagem: `Evolution retornou HTTP ${response.status} ao enviar ${input.mediatype === "image" ? "imagem" : "arquivo"}.`,
+        mensagem: `Evolution retornou HTTP ${response.status} ao enviar ${input.mediatype === "image" ? "imagem" : input.mediatype === "video" ? "vídeo" : "arquivo"}.`,
         detalhes: detalhe || mensagem,
         contexto: {
           etapa: "Envio de imagem/arquivo",
@@ -793,6 +795,11 @@ export async function sendCampaignMessageToLead(input: {
   /** Nulo para campanhas `individual` (não há CampaignMessage associada). */
   mensagemId: string | null
   texto: string
+  /**
+   * Imagem/vídeo/arquivo enviado junto com a mensagem (o texto vira a legenda). O conteúdo é lido
+   * da pasta do servidor só agora, na hora do envio — nunca vem do banco.
+   */
+  anexo?: CampanhaAnexo | null
   telefone: string
   /**
   * Nome opcional para validar cadastro; o envio sempre usa a instância mais
@@ -878,23 +885,14 @@ export async function sendCampaignMessageToLead(input: {
   })
   const texto = renderTemplate(input.texto, lead?.nome?.trim() || "")
 
-  try {
-    const response = await fetch(`${apiUrl}/message/sendText/${encodeURIComponent(instanceName)}`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        apikey: apiKey,
-      },
-      body: JSON.stringify({
-        number: telefone,
-        text: texto,
-      }),
-    })
-
-    if (!response.ok) {
-      const detalhe = await response.text()
-      const mensagem = detalhe || `Evolution respondeu com status ${response.status}`
-
+  // Anexo: o arquivo vem da pasta do servidor só agora. Se sumiu, a falha é registrada como qualquer
+  // outra (e a engine desiste após as tentativas), com um motivo claro para o usuário reanexar.
+  const anexo = input.anexo ?? null
+  let anexoBase64: string | null = null
+  if (anexo) {
+    const dados = await lerAnexoCampanha(anexo.id)
+    if (!dados) {
+      const mensagem = `O arquivo "${anexo.nome}" anexado a esta mensagem não está mais no servidor (anexos de campanha expiram: 30 dias com a campanha ativa/pausada, 10 dias quando não está). Anexe-o novamente na campanha.`
       await Promise.all([
         recordMessageEvent({
           kind: "falha",
@@ -908,8 +906,90 @@ export async function sendCampaignMessageToLead(input: {
         recordAppLog({
           nivel: "erro",
           origem: "evolution",
-          mensagem: `Evolution retornou HTTP ${response.status}`,
-          detalhes: mensagem,
+          mensagem,
+          detalhes: `anexoId=${anexo.id}`,
+          contexto: {
+            etapa: "Leitura do anexo (sendCampaignMessageToLead)",
+            leadId: input.leadId,
+            campanhaId: input.campanhaId,
+            mensagemId: input.mensagemId ?? undefined,
+          },
+        }),
+      ])
+      return { ok: false, erro: mensagem }
+    }
+    anexoBase64 = dados.toString("base64")
+  }
+
+  // O que aparece no chat/timeline: com mídia, o marcador (ícone + nome) e a legenda, como no envio manual.
+  const icone = anexo?.tipo === "imagem" ? "🖼️" : anexo?.tipo === "video" ? "🎬" : "📎"
+  const textoRegistro = anexo ? (texto ? `${icone} ${anexo.nome}\n${texto}` : `${icone} ${anexo.nome}`) : texto
+  const endpoint = `${apiUrl}/message/${anexo ? "sendMedia" : "sendText"}/${instanceName}`
+
+  try {
+    let falha: { mensagem: string; statusHttp?: number } | null = null
+
+    if (anexo && anexoBase64) {
+      // Legenda do WhatsApp tem limite: se o texto passar dele, a mídia vai sem legenda e o texto em seguida.
+      const legendaCabe = texto.length <= CAMPANHA_LEGENDA_MAXIMA
+      const midia = await sendWhatsAppMedia({
+        telefone,
+        base64: anexoBase64,
+        mimetype: anexo.mime,
+        fileName: anexo.nome,
+        mediatype: anexo.tipo === "imagem" ? "image" : anexo.tipo === "video" ? "video" : "document",
+        caption: legendaCabe ? texto : null,
+        instanciaNome: instanceName,
+      })
+      if (!midia.ok) {
+        falha = { mensagem: midia.erro ?? "Falha ao enviar o anexo pela Evolution." }
+      } else if (texto && !legendaCabe) {
+        const complemento = await sendWhatsAppText({ telefone, texto, instanciaNome: instanceName })
+        if (!complemento.ok) {
+          // A mídia já saiu: não reenvia tudo (duplicaria o arquivo), só avisa nos logs.
+          await recordAppLog({
+            nivel: "aviso",
+            origem: "evolution",
+            mensagem: "A mídia da campanha foi enviada, mas o texto que a acompanha falhou.",
+            detalhes: complemento.erro ?? null,
+            contexto: { leadId: input.leadId, campanhaId: input.campanhaId, mensagemId: input.mensagemId ?? undefined },
+          })
+        }
+      }
+    } else {
+      const response = await fetch(`${apiUrl}/message/sendText/${encodeURIComponent(instanceName)}`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          apikey: apiKey,
+        },
+        body: JSON.stringify({
+          number: telefone,
+          text: texto,
+        }),
+      })
+      if (!response.ok) {
+        const detalhe = await response.text()
+        falha = { mensagem: detalhe || `Evolution respondeu com status ${response.status}`, statusHttp: response.status }
+      }
+    }
+
+    if (falha) {
+      await Promise.all([
+        recordMessageEvent({
+          kind: "falha",
+          leadId: input.leadId,
+          campanhaId: input.campanhaId,
+          mensagemId: input.mensagemId,
+          texto: textoRegistro,
+          descricao: descricaoFalha,
+          detalhes: falha.mensagem,
+        }),
+        recordAppLog({
+          nivel: "erro",
+          origem: "evolution",
+          mensagem: falha.statusHttp ? `Evolution retornou HTTP ${falha.statusHttp}` : "Falha ao enviar mensagem com anexo pela Evolution.",
+          detalhes: falha.mensagem,
           contexto: {
             etapa: "Resposta da Evolution API (sendCampaignMessageToLead)",
             leadId: input.leadId,
@@ -917,13 +997,13 @@ export async function sendCampaignMessageToLead(input: {
             mensagemId: input.mensagemId ?? undefined,
             instanciaNome: instanceName,
             telefone,
-            statusHttp: String(response.status),
-            endpoint: `${apiUrl}/message/sendText/${instanceName}`,
+            statusHttp: falha.statusHttp ? String(falha.statusHttp) : undefined,
+            endpoint,
           },
         }),
       ])
 
-      return { ok: false, erro: mensagem }
+      return { ok: false, erro: falha.mensagem }
     }
 
     await recordMessageEvent({
@@ -931,7 +1011,7 @@ export async function sendCampaignMessageToLead(input: {
       leadId: input.leadId,
       campanhaId: input.campanhaId,
       mensagemId: input.mensagemId,
-      texto,
+      texto: textoRegistro,
       descricao: descricaoSucesso,
       detalhes: `Enviada para ${telefone}`,
     })
@@ -946,7 +1026,7 @@ export async function sendCampaignMessageToLead(input: {
         leadId: input.leadId,
         campanhaId: input.campanhaId,
         mensagemId: input.mensagemId,
-        texto,
+        texto: textoRegistro,
         descricao: descricaoFalha,
         detalhes: mensagem,
       }),
@@ -962,7 +1042,7 @@ export async function sendCampaignMessageToLead(input: {
           mensagemId: input.mensagemId ?? undefined,
           instanciaNome: instanceName,
           telefone,
-          endpoint: `${apiUrl}/message/sendText/${instanceName}`,
+          endpoint,
         },
       }),
     ])

@@ -72,13 +72,19 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Storage para os áudios sobreviverem a novos deploys; o app apaga sozinho os mais velhos
 # que AUDIO_RETENTION_DAYS (padrão 30). O chown deixa a pasta gravável pelo usuário nextjs.
 ENV AUDIO_STORAGE_DIR=/app/data/audios
-RUN mkdir -p /app/data/audios && chown -R nextjs:nodejs /app/data
+# Pasta dos anexos das campanhas (imagens/vídeos/arquivos): monte um volume persistente aqui.
+ENV CAMPANHA_ANEXO_DIR=/app/data/campanhas
+RUN mkdir -p /app/data/audios /app/data/campanhas && chown -R nextjs:nodejs /app/data
 
-USER nextjs
+# Um volume montado sobrescreve o dono da pasta (vira root) e o usuário `nextjs` não consegue gravar.
+# O entrypoint roda como root só para acertar o dono das pastas de dados e então vira `nextjs`.
+RUN apk add --no-cache su-exec
+COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["node", "server.js"]

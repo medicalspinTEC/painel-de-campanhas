@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/prisma"
+import { copiarAnexoCampanha, removerAnexoCampanha } from "@/lib/campanha-anexo-storage"
 import { decidirCiclo } from "@/lib/campaign-engine-schedule"
 import { recordAppLog } from "@/services/app-logs"
 import { sendCampaignMessageToLead } from "@/services/evolution"
 import { assignCampaign } from "@/services/leads"
 import { getSettings } from "@/services/settings"
 import { emitWebhookEvent } from "@/services/webhooks"
-import type { Campaign, CampaignMessage, CampaignStatus, CampaignTipo, LeadStatus } from "@/types"
+import type { CampanhaAnexo, Campaign, CampaignMessage, CampaignStatus, CampaignTipo, LeadStatus } from "@/types"
 
 export interface CampaignWithStats extends Campaign {
   /**
@@ -38,8 +39,59 @@ type CampaignRecord = {
   filtroPersona: string | null
   filtroRegiao: string | null
   criadoEm: Date
-  mensagens: Array<{ id: string; dia: number; horario: string; texto: string }>
+  mensagens: Array<{
+    id: string
+    dia: number
+    horario: string
+    texto: string
+    anexoId: string | null
+    anexoTipo: string | null
+    anexoMime: string | null
+    anexoNome: string | null
+    anexoTamanho: number | null
+  }>
 }
+
+/** Colunas do anexo -> objeto do app (nulo se a mensagem não tem anexo). */
+function lerAnexo(m: {
+  anexoId: string | null
+  anexoTipo: string | null
+  anexoMime: string | null
+  anexoNome: string | null
+  anexoTamanho: number | null
+}): CampanhaAnexo | null {
+  if (!m.anexoId || !m.anexoTipo) return null
+  return {
+    id: m.anexoId,
+    tipo: m.anexoTipo as CampanhaAnexo["tipo"],
+    mime: m.anexoMime ?? "application/octet-stream",
+    nome: m.anexoNome ?? "arquivo",
+    tamanho: m.anexoTamanho ?? 0,
+  }
+}
+
+/** Objeto do app -> colunas do anexo (todas nulas quando não há anexo, para limpar ao remover). */
+function dadosDoAnexo(a: CampanhaAnexo | null | undefined) {
+  return {
+    anexoId: a?.id ?? null,
+    anexoTipo: a?.tipo ?? null,
+    anexoMime: a?.mime ?? null,
+    anexoNome: a?.nome ?? null,
+    anexoTamanho: a?.tamanho ?? null,
+  }
+}
+
+const mensagemSelect = {
+  id: true,
+  dia: true,
+  horario: true,
+  texto: true,
+  anexoId: true,
+  anexoTipo: true,
+  anexoMime: true,
+  anexoNome: true,
+  anexoTamanho: true,
+} as const
 
 function toCampaign(record: CampaignRecord): Campaign {
   return {
@@ -60,14 +112,14 @@ function toCampaign(record: CampaignRecord): Campaign {
       regiao: record.filtroRegiao as Campaign["filtros"]["regiao"],
     },
     mensagens: record.mensagens.map(
-      (m): CampaignMessage => ({ id: m.id, dia: m.dia, horario: m.horario, texto: m.texto }),
+      (m): CampaignMessage => ({ id: m.id, dia: m.dia, horario: m.horario, texto: m.texto, anexo: lerAnexo(m) }),
     ),
   }
 }
 
 const campaignInclude = {
   mensagens: {
-    select: { id: true, dia: true, horario: true, texto: true },
+    select: mensagemSelect,
     orderBy: { dia: "asc" as const },
   },
 } as const
@@ -581,7 +633,10 @@ export async function createCampaign(input: CampaignInput): Promise<Campaign> {
       // Campanha já criada ativa dispara agora: registra o início.
       reiniciadaEm: input.status === "ativa" ? new Date() : null,
       mensagens: {
-        create: tipo === "padrao" ? input.mensagens.map((m) => ({ dia: m.dia, horario: m.horario, texto: m.texto })) : [],
+        create:
+          tipo === "padrao"
+            ? input.mensagens.map((m) => ({ dia: m.dia, horario: m.horario, texto: m.texto, ...dadosDoAnexo(m.anexo) }))
+            : [],
       },
     },
     include: campaignInclude,
@@ -620,6 +675,13 @@ export async function updateCampaign(id: string, input: CampaignInput): Promise<
   const mantidas = tipo === "padrao" ? input.mensagens.filter((m): m is CampaignMessage => Boolean(m.id)) : []
   const novas = tipo === "padrao" ? input.mensagens.filter((m) => !m.id) : []
 
+  // Arquivos que deixam de ser usados (mensagem removida, anexo trocado ou retirado) são apagados
+  // do servidor depois que a edição for salva com sucesso.
+  const anexosAntes = await prisma.campaignMessage.findMany({
+    where: { campanhaId: id, anexoId: { not: null } },
+    select: { id: true, anexoId: true },
+  })
+
   const campanha = await prisma.$transaction(async (tx) => {
     await tx.campaignMessage.deleteMany({
       where: { campanhaId: id, id: { notIn: mantidas.map((m) => m.id) } },
@@ -627,7 +689,7 @@ export async function updateCampaign(id: string, input: CampaignInput): Promise<
     for (const m of mantidas) {
       await tx.campaignMessage.update({
         where: { id: m.id },
-        data: { dia: m.dia, horario: m.horario, texto: m.texto },
+        data: { dia: m.dia, horario: m.horario, texto: m.texto, ...dadosDoAnexo(m.anexo) },
       })
     }
     return tx.campaign.update({
@@ -638,12 +700,19 @@ export async function updateCampaign(id: string, input: CampaignInput): Promise<
         // para "ativa"; editar uma campanha já ativa não deve reenviar tudo.
         ...(input.status === "ativa" && existe.status !== "ativa" ? { reiniciadaEm: new Date() } : {}),
         mensagens: {
-          create: novas.map((m) => ({ dia: m.dia, horario: m.horario, texto: m.texto })),
+          create: novas.map((m) => ({ dia: m.dia, horario: m.horario, texto: m.texto, ...dadosDoAnexo(m.anexo) })),
         },
       },
       include: campaignInclude,
     })
   })
+
+  const anexosDepois = new Set(
+    campanha.mensagens.map((m) => m.anexoId).filter((anexoId): anexoId is string => Boolean(anexoId)),
+  )
+  for (const antes of anexosAntes) {
+    if (antes.anexoId && !anexosDepois.has(antes.anexoId)) await removerAnexoCampanha(antes.anexoId)
+  }
 
   const atualizada = toCampaign(campanha)
   await emitWebhookEvent("campanha.atualizada", { campanha: atualizada })
@@ -719,7 +788,18 @@ export async function duplicateCampaign(id: string): Promise<Campaign | null> {
       filtroPersona: original.filtroPersona,
       filtroRegiao: original.filtroRegiao,
       mensagens: {
-        create: original.mensagens.map((m) => ({ dia: m.dia, horario: m.horario, texto: m.texto })),
+        // Cada cópia ganha o próprio arquivo: apagar uma campanha não pode quebrar a outra.
+        create: await Promise.all(
+          original.mensagens.map(async (m) => {
+            const novoId = m.anexoId ? await copiarAnexoCampanha(m.anexoId) : null
+            return {
+              dia: m.dia,
+              horario: m.horario,
+              texto: m.texto,
+              ...dadosDoAnexo(novoId ? { ...lerAnexo(m)!, id: novoId } : null),
+            }
+          }),
+        ),
       },
     },
     include: campaignInclude,
@@ -873,7 +953,7 @@ export async function skipToNextMessage(leadId: string, campanhaId: string): Pro
         reiniciadaEm: true,
         dataFinal: true,
         instanciaNome: true,
-        mensagens: { select: { id: true, dia: true, horario: true, texto: true }, orderBy: { dia: "asc" } },
+        mensagens: { select: mensagemSelect, orderBy: { dia: "asc" } },
       },
     }),
     prisma.leadCampaign.findUnique({
@@ -921,6 +1001,7 @@ export async function skipToNextMessage(leadId: string, campanhaId: string): Pro
     campanhaId,
     mensagemId: alvo.id,
     texto: alvo.texto,
+    anexo: lerAnexo(alvo),
     telefone: lead.telefone,
     instanciaNome: campanha.instanciaNome,
     descricaoSucesso: reiniciouCiclo
@@ -1220,7 +1301,17 @@ export async function createFollowUpCampaign(campanhaId: string): Promise<Follow
       mensagens: {
         create:
           original.tipo === "padrao"
-            ? original.mensagens.map((m) => ({ dia: m.dia, horario: m.horario, texto: m.texto }))
+            ? await Promise.all(
+                original.mensagens.map(async (m) => {
+                  const novoId = m.anexoId ? await copiarAnexoCampanha(m.anexoId) : null
+                  return {
+                    dia: m.dia,
+                    horario: m.horario,
+                    texto: m.texto,
+                    ...dadosDoAnexo(novoId ? { ...lerAnexo(m)!, id: novoId } : null),
+                  }
+                }),
+              )
             : [],
       },
     },
@@ -1245,6 +1336,10 @@ export async function createFollowUpCampaign(campanhaId: string): Promise<Follow
 }
 
 export async function deleteCampaign(id: string): Promise<void> {
+  const anexos = await prisma.campaignMessage.findMany({
+    where: { campanhaId: id, anexoId: { not: null } },
+    select: { anexoId: true },
+  })
   /*
    * `onDelete: SetNull` libera os leads automaticamente, mas os que estavam
    * "em campanha" precisam voltar a "novo" — senão ficariam com um status que
@@ -1262,6 +1357,9 @@ export async function deleteCampaign(id: string): Promise<void> {
     }),
     prisma.campaign.delete({ where: { id } }),
   ])
+
+  // Campanha excluída: os arquivos anexados saem do servidor junto.
+  for (const a of anexos) await removerAnexoCampanha(a.anexoId)
 
   await emitWebhookEvent("campanha.removida", {
     campanha: { id: removida.id, nome: removida.nome, status: removida.status },

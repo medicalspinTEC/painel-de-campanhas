@@ -47,11 +47,22 @@ export interface Lead {
   entradaCampanhaEm: string | null
 }
 
+/** Referência a uma imagem/vídeo/arquivo enviado junto com a mensagem (o conteúdo fica no servidor, não no banco). */
+export interface CampanhaAnexo {
+  id: string
+  tipo: "imagem" | "documento" | "video"
+  mime: string
+  nome: string
+  tamanho: number
+}
+
 export interface CampaignMessage {
   id: string
   dia: number
   horario: string
   texto: string
+  /** Mídia opcional enviada com a mensagem. Sem pré-visualização no painel. */
+  anexo?: CampanhaAnexo | null
 }
 
 export interface Campaign {

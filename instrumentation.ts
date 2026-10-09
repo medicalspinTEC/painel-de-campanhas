@@ -113,6 +113,22 @@ export async function register() {
       const { limparAnexosInternosExpirados } = await import("@/lib/interno-storage")
       const internos = await limparAnexosInternosExpirados()
       if (internos.removidos) console.log("[v0] limpeza de anexos do chat interno:", internos)
+      // Anexos de campanha: 30 dias com a campanha ativa/pausada, 10 dias quando ela não está
+      // (a exclusão da campanha apaga na hora, em `deleteCampaign`). Vale para todas as instâncias.
+      const { aplicarRetencaoAnexos } = await import("@/lib/campanha-anexo-storage")
+      const { prismaGlobal } = await import("@/lib/prisma")
+      const comAnexo = await prismaGlobal.campaignMessage.findMany({
+        where: { anexoId: { not: null } },
+        select: { anexoId: true, campanha: { select: { status: true, atualizadoEm: true } } },
+      })
+      const retencao = await aplicarRetencaoAnexos(
+        comAnexo.map((m) => ({
+          anexoId: m.anexoId as string,
+          campanhaStatus: m.campanha.status,
+          campanhaAtualizadaEm: m.campanha.atualizadoEm,
+        })),
+      )
+      if (retencao.expirados || retencao.orfaos) console.log("[v0] limpeza de anexos de campanha:", retencao)
       ultimoErroAudios = ""
       if (resultado.removidos) console.log("[v0] limpeza de áudios do chat:", resultado)
     } catch (error) {

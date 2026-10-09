@@ -231,6 +231,14 @@ model CampaignMessage {
   horario String
   texto   String
 
+  // Imagem/vídeo/arquivo opcional enviado junto com a mensagem. O conteúdo NÃO fica no banco:
+  // vive numa pasta do servidor (ver `lib/campanha-anexo-storage.ts`) e aqui há só a referência.
+  anexoId      String?
+  anexoTipo    String?
+  anexoMime    String?
+  anexoNome    String?
+  anexoTamanho Int?
+
   campanhaId String
   campanha   Campaign @relation(fields: [campanhaId], references: [id], onDelete: Cascade)
 

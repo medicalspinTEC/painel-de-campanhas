@@ -9926,10 +9926,12 @@ export namespace Prisma {
 
   export type CampaignMessageAvgAggregateOutputType = {
     dia: number | null
+    anexoTamanho: number | null
   }
 
   export type CampaignMessageSumAggregateOutputType = {
     dia: number | null
+    anexoTamanho: number | null
   }
 
   export type CampaignMessageMinAggregateOutputType = {
@@ -9937,6 +9939,11 @@ export namespace Prisma {
     dia: number | null
     horario: string | null
     texto: string | null
+    anexoId: string | null
+    anexoTipo: string | null
+    anexoMime: string | null
+    anexoNome: string | null
+    anexoTamanho: number | null
     campanhaId: string | null
   }
 
@@ -9945,6 +9952,11 @@ export namespace Prisma {
     dia: number | null
     horario: string | null
     texto: string | null
+    anexoId: string | null
+    anexoTipo: string | null
+    anexoMime: string | null
+    anexoNome: string | null
+    anexoTamanho: number | null
     campanhaId: string | null
   }
 
@@ -9953,6 +9965,11 @@ export namespace Prisma {
     dia: number
     horario: number
     texto: number
+    anexoId: number
+    anexoTipo: number
+    anexoMime: number
+    anexoNome: number
+    anexoTamanho: number
     campanhaId: number
     _all: number
   }
@@ -9960,10 +9977,12 @@ export namespace Prisma {
 
   export type CampaignMessageAvgAggregateInputType = {
     dia?: true
+    anexoTamanho?: true
   }
 
   export type CampaignMessageSumAggregateInputType = {
     dia?: true
+    anexoTamanho?: true
   }
 
   export type CampaignMessageMinAggregateInputType = {
@@ -9971,6 +9990,11 @@ export namespace Prisma {
     dia?: true
     horario?: true
     texto?: true
+    anexoId?: true
+    anexoTipo?: true
+    anexoMime?: true
+    anexoNome?: true
+    anexoTamanho?: true
     campanhaId?: true
   }
 
@@ -9979,6 +10003,11 @@ export namespace Prisma {
     dia?: true
     horario?: true
     texto?: true
+    anexoId?: true
+    anexoTipo?: true
+    anexoMime?: true
+    anexoNome?: true
+    anexoTamanho?: true
     campanhaId?: true
   }
 
@@ -9987,6 +10016,11 @@ export namespace Prisma {
     dia?: true
     horario?: true
     texto?: true
+    anexoId?: true
+    anexoTipo?: true
+    anexoMime?: true
+    anexoNome?: true
+    anexoTamanho?: true
     campanhaId?: true
     _all?: true
   }
@@ -10082,6 +10116,11 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    anexoId: string | null
+    anexoTipo: string | null
+    anexoMime: string | null
+    anexoNome: string | null
+    anexoTamanho: number | null
     campanhaId: string
     _count: CampaignMessageCountAggregateOutputType | null
     _avg: CampaignMessageAvgAggregateOutputType | null
@@ -10109,6 +10148,11 @@ export namespace Prisma {
     dia?: boolean
     horario?: boolean
     texto?: boolean
+    anexoId?: boolean
+    anexoTipo?: boolean
+    anexoMime?: boolean
+    anexoNome?: boolean
+    anexoTamanho?: boolean
     campanhaId?: boolean
     campanha?: boolean | CampaignDefaultArgs<ExtArgs>
     eventos?: boolean | CampaignMessage$eventosArgs<ExtArgs>
@@ -10120,6 +10164,11 @@ export namespace Prisma {
     dia?: boolean
     horario?: boolean
     texto?: boolean
+    anexoId?: boolean
+    anexoTipo?: boolean
+    anexoMime?: boolean
+    anexoNome?: boolean
+    anexoTamanho?: boolean
     campanhaId?: boolean
     campanha?: boolean | CampaignDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["campaignMessage"]>
@@ -10129,6 +10178,11 @@ export namespace Prisma {
     dia?: boolean
     horario?: boolean
     texto?: boolean
+    anexoId?: boolean
+    anexoTipo?: boolean
+    anexoMime?: boolean
+    anexoNome?: boolean
+    anexoTamanho?: boolean
     campanhaId?: boolean
     campanha?: boolean | CampaignDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["campaignMessage"]>
@@ -10138,10 +10192,15 @@ export namespace Prisma {
     dia?: boolean
     horario?: boolean
     texto?: boolean
+    anexoId?: boolean
+    anexoTipo?: boolean
+    anexoMime?: boolean
+    anexoNome?: boolean
+    anexoTamanho?: boolean
     campanhaId?: boolean
   }
 
-  export type CampaignMessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "dia" | "horario" | "texto" | "campanhaId", ExtArgs["result"]["campaignMessage"]>
+  export type CampaignMessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "dia" | "horario" | "texto" | "anexoId" | "anexoTipo" | "anexoMime" | "anexoNome" | "anexoTamanho" | "campanhaId", ExtArgs["result"]["campaignMessage"]>
   export type CampaignMessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     campanha?: boolean | CampaignDefaultArgs<ExtArgs>
     eventos?: boolean | CampaignMessage$eventosArgs<ExtArgs>
@@ -10165,6 +10224,11 @@ export namespace Prisma {
       dia: number
       horario: string
       texto: string
+      anexoId: string | null
+      anexoTipo: string | null
+      anexoMime: string | null
+      anexoNome: string | null
+      anexoTamanho: number | null
       campanhaId: string
     }, ExtArgs["result"]["campaignMessage"]>
     composites: {}
@@ -10595,6 +10659,11 @@ export namespace Prisma {
     readonly dia: FieldRef<"CampaignMessage", 'Int'>
     readonly horario: FieldRef<"CampaignMessage", 'String'>
     readonly texto: FieldRef<"CampaignMessage", 'String'>
+    readonly anexoId: FieldRef<"CampaignMessage", 'String'>
+    readonly anexoTipo: FieldRef<"CampaignMessage", 'String'>
+    readonly anexoMime: FieldRef<"CampaignMessage", 'String'>
+    readonly anexoNome: FieldRef<"CampaignMessage", 'String'>
+    readonly anexoTamanho: FieldRef<"CampaignMessage", 'Int'>
     readonly campanhaId: FieldRef<"CampaignMessage", 'String'>
   }
     
@@ -49518,6 +49587,11 @@ export namespace Prisma {
     dia: 'dia',
     horario: 'horario',
     texto: 'texto',
+    anexoId: 'anexoId',
+    anexoTipo: 'anexoTipo',
+    anexoMime: 'anexoMime',
+    anexoNome: 'anexoNome',
+    anexoTamanho: 'anexoTamanho',
     campanhaId: 'campanhaId'
   };
 
@@ -50686,6 +50760,11 @@ export namespace Prisma {
     dia?: IntFilter<"CampaignMessage"> | number
     horario?: StringFilter<"CampaignMessage"> | string
     texto?: StringFilter<"CampaignMessage"> | string
+    anexoId?: StringNullableFilter<"CampaignMessage"> | string | null
+    anexoTipo?: StringNullableFilter<"CampaignMessage"> | string | null
+    anexoMime?: StringNullableFilter<"CampaignMessage"> | string | null
+    anexoNome?: StringNullableFilter<"CampaignMessage"> | string | null
+    anexoTamanho?: IntNullableFilter<"CampaignMessage"> | number | null
     campanhaId?: StringFilter<"CampaignMessage"> | string
     campanha?: XOR<CampaignScalarRelationFilter, CampaignWhereInput>
     eventos?: TimelineEventListRelationFilter
@@ -50696,6 +50775,11 @@ export namespace Prisma {
     dia?: SortOrder
     horario?: SortOrder
     texto?: SortOrder
+    anexoId?: SortOrderInput | SortOrder
+    anexoTipo?: SortOrderInput | SortOrder
+    anexoMime?: SortOrderInput | SortOrder
+    anexoNome?: SortOrderInput | SortOrder
+    anexoTamanho?: SortOrderInput | SortOrder
     campanhaId?: SortOrder
     campanha?: CampaignOrderByWithRelationInput
     eventos?: TimelineEventOrderByRelationAggregateInput
@@ -50709,6 +50793,11 @@ export namespace Prisma {
     dia?: IntFilter<"CampaignMessage"> | number
     horario?: StringFilter<"CampaignMessage"> | string
     texto?: StringFilter<"CampaignMessage"> | string
+    anexoId?: StringNullableFilter<"CampaignMessage"> | string | null
+    anexoTipo?: StringNullableFilter<"CampaignMessage"> | string | null
+    anexoMime?: StringNullableFilter<"CampaignMessage"> | string | null
+    anexoNome?: StringNullableFilter<"CampaignMessage"> | string | null
+    anexoTamanho?: IntNullableFilter<"CampaignMessage"> | number | null
     campanhaId?: StringFilter<"CampaignMessage"> | string
     campanha?: XOR<CampaignScalarRelationFilter, CampaignWhereInput>
     eventos?: TimelineEventListRelationFilter
@@ -50719,6 +50808,11 @@ export namespace Prisma {
     dia?: SortOrder
     horario?: SortOrder
     texto?: SortOrder
+    anexoId?: SortOrderInput | SortOrder
+    anexoTipo?: SortOrderInput | SortOrder
+    anexoMime?: SortOrderInput | SortOrder
+    anexoNome?: SortOrderInput | SortOrder
+    anexoTamanho?: SortOrderInput | SortOrder
     campanhaId?: SortOrder
     _count?: CampaignMessageCountOrderByAggregateInput
     _avg?: CampaignMessageAvgOrderByAggregateInput
@@ -50735,6 +50829,11 @@ export namespace Prisma {
     dia?: IntWithAggregatesFilter<"CampaignMessage"> | number
     horario?: StringWithAggregatesFilter<"CampaignMessage"> | string
     texto?: StringWithAggregatesFilter<"CampaignMessage"> | string
+    anexoId?: StringNullableWithAggregatesFilter<"CampaignMessage"> | string | null
+    anexoTipo?: StringNullableWithAggregatesFilter<"CampaignMessage"> | string | null
+    anexoMime?: StringNullableWithAggregatesFilter<"CampaignMessage"> | string | null
+    anexoNome?: StringNullableWithAggregatesFilter<"CampaignMessage"> | string | null
+    anexoTamanho?: IntNullableWithAggregatesFilter<"CampaignMessage"> | number | null
     campanhaId?: StringWithAggregatesFilter<"CampaignMessage"> | string
   }
 
@@ -53858,6 +53957,11 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoNome?: string | null
+    anexoTamanho?: number | null
     campanha: CampaignCreateNestedOneWithoutMensagensInput
     eventos?: TimelineEventCreateNestedManyWithoutMensagemInput
   }
@@ -53867,6 +53971,11 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoNome?: string | null
+    anexoTamanho?: number | null
     campanhaId: string
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutMensagemInput
   }
@@ -53876,6 +53985,11 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
     campanha?: CampaignUpdateOneRequiredWithoutMensagensNestedInput
     eventos?: TimelineEventUpdateManyWithoutMensagemNestedInput
   }
@@ -53885,6 +53999,11 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
     campanhaId?: StringFieldUpdateOperationsInput | string
     eventos?: TimelineEventUncheckedUpdateManyWithoutMensagemNestedInput
   }
@@ -53894,6 +54013,11 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoNome?: string | null
+    anexoTamanho?: number | null
     campanhaId: string
   }
 
@@ -53902,6 +54026,11 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type CampaignMessageUncheckedUpdateManyInput = {
@@ -53909,6 +54038,11 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
     campanhaId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -57373,16 +57507,33 @@ export namespace Prisma {
     enviadaIndividualEm?: SortOrder
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type CampaignMessageCountOrderByAggregateInput = {
     id?: SortOrder
     dia?: SortOrder
     horario?: SortOrder
     texto?: SortOrder
+    anexoId?: SortOrder
+    anexoTipo?: SortOrder
+    anexoMime?: SortOrder
+    anexoNome?: SortOrder
+    anexoTamanho?: SortOrder
     campanhaId?: SortOrder
   }
 
   export type CampaignMessageAvgOrderByAggregateInput = {
     dia?: SortOrder
+    anexoTamanho?: SortOrder
   }
 
   export type CampaignMessageMaxOrderByAggregateInput = {
@@ -57390,6 +57541,11 @@ export namespace Prisma {
     dia?: SortOrder
     horario?: SortOrder
     texto?: SortOrder
+    anexoId?: SortOrder
+    anexoTipo?: SortOrder
+    anexoMime?: SortOrder
+    anexoNome?: SortOrder
+    anexoTamanho?: SortOrder
     campanhaId?: SortOrder
   }
 
@@ -57398,11 +57554,33 @@ export namespace Prisma {
     dia?: SortOrder
     horario?: SortOrder
     texto?: SortOrder
+    anexoId?: SortOrder
+    anexoTipo?: SortOrder
+    anexoMime?: SortOrder
+    anexoNome?: SortOrder
+    anexoTamanho?: SortOrder
     campanhaId?: SortOrder
   }
 
   export type CampaignMessageSumOrderByAggregateInput = {
     dia?: SortOrder
+    anexoTamanho?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type EnumScheduledMessageStatusFilter<$PrismaModel = never> = {
@@ -57770,17 +57948,6 @@ export namespace Prisma {
     isEmpty?: boolean
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
   export type WebhookCountOrderByAggregateInput = {
     id?: SortOrder
     workspaceId?: SortOrder
@@ -57827,22 +57994,6 @@ export namespace Prisma {
 
   export type WebhookSumOrderByAggregateInput = {
     ultimoEnvioStatus?: SortOrder
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type EnumAppLogNivelFilter<$PrismaModel = never> = {
@@ -59813,6 +59964,14 @@ export namespace Prisma {
     connect?: TimelineEventWhereUniqueInput | TimelineEventWhereUniqueInput[]
   }
 
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type CampaignUpdateOneRequiredWithoutMensagensNestedInput = {
     create?: XOR<CampaignCreateWithoutMensagensInput, CampaignUncheckedCreateWithoutMensagensInput>
     connectOrCreate?: CampaignCreateOrConnectWithoutMensagensInput
@@ -59878,14 +60037,6 @@ export namespace Prisma {
   export type WebhookUpdateeventosInput = {
     set?: string[]
     push?: string | string[]
-  }
-
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type EnumAppLogNivelFieldUpdateOperationsInput = {
@@ -61262,6 +61413,33 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedEnumScheduledMessageStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.ScheduledMessageStatus | EnumScheduledMessageStatusFieldRefInput<$PrismaModel>
     in?: $Enums.ScheduledMessageStatus[] | ListEnumScheduledMessageStatusFieldRefInput<$PrismaModel>
@@ -61290,33 +61468,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBoolFilter<$PrismaModel>
     _max?: NestedBoolFilter<$PrismaModel>
-  }
-
-  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedEnumAppLogNivelFilter<$PrismaModel = never> = {
@@ -62131,6 +62282,11 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoNome?: string | null
+    anexoTamanho?: number | null
     eventos?: TimelineEventCreateNestedManyWithoutMensagemInput
   }
 
@@ -62139,6 +62295,11 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoNome?: string | null
+    anexoTamanho?: number | null
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutMensagemInput
   }
 
@@ -62300,6 +62461,11 @@ export namespace Prisma {
     dia?: IntFilter<"CampaignMessage"> | number
     horario?: StringFilter<"CampaignMessage"> | string
     texto?: StringFilter<"CampaignMessage"> | string
+    anexoId?: StringNullableFilter<"CampaignMessage"> | string | null
+    anexoTipo?: StringNullableFilter<"CampaignMessage"> | string | null
+    anexoMime?: StringNullableFilter<"CampaignMessage"> | string | null
+    anexoNome?: StringNullableFilter<"CampaignMessage"> | string | null
+    anexoTamanho?: IntNullableFilter<"CampaignMessage"> | number | null
     campanhaId?: StringFilter<"CampaignMessage"> | string
   }
 
@@ -62988,6 +63154,11 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoNome?: string | null
+    anexoTamanho?: number | null
     campanha: CampaignCreateNestedOneWithoutMensagensInput
   }
 
@@ -62996,6 +63167,11 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoNome?: string | null
+    anexoTamanho?: number | null
     campanhaId: string
   }
 
@@ -63139,6 +63315,11 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
     campanha?: CampaignUpdateOneRequiredWithoutMensagensNestedInput
   }
 
@@ -63147,6 +63328,11 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
     campanhaId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -66294,6 +66480,11 @@ export namespace Prisma {
     dia: number
     horario: string
     texto: string
+    anexoId?: string | null
+    anexoTipo?: string | null
+    anexoMime?: string | null
+    anexoNome?: string | null
+    anexoTamanho?: number | null
   }
 
   export type LeadCreateManyCampanhaInput = {
@@ -66340,6 +66531,11 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
     eventos?: TimelineEventUpdateManyWithoutMensagemNestedInput
   }
 
@@ -66348,6 +66544,11 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
     eventos?: TimelineEventUncheckedUpdateManyWithoutMensagemNestedInput
   }
 
@@ -66356,6 +66557,11 @@ export namespace Prisma {
     dia?: IntFieldUpdateOperationsInput | number
     horario?: StringFieldUpdateOperationsInput | string
     texto?: StringFieldUpdateOperationsInput | string
+    anexoId?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTipo?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoMime?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
+    anexoTamanho?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type LeadUpdateWithoutCampanhaInput = {
