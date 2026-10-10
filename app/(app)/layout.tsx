@@ -7,6 +7,7 @@ import { AppSidebar } from "@/components/layout/app-sidebar"
 import { AppSidebarData } from "@/components/layout/app-sidebar-data"
 import { AppThemeColorsData } from "@/components/layout/app-theme-colors-data"
 import { DatabaseSetupNotice } from "@/components/layout/database-setup-notice"
+import { PushAtivador } from "@/components/features/push/push-ativador"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { checkDatabaseConnection, isDatabaseConfigured } from "@/lib/prisma"
 
@@ -87,6 +88,8 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         </Suspense>
         <div className="min-w-0 flex-1 p-4 md:p-6">{children}</div>
       </SidebarInset>
+      {/* Pede a permissão de notificações (precisa de um toque do usuário) e registra o aparelho. */}
+      <PushAtivador />
     </SidebarProvider>
   )
 }

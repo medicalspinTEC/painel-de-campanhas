@@ -89,6 +89,13 @@ export async function requireSecao(secao: SecaoKey): Promise<Usuario> {
   return user
 }
 
+/** Telas só do Root (ex.: Notificações push). Quem não é root vai para a tela "sem acesso". */
+export async function requireRoot(): Promise<Usuario> {
+  const user = await requireUser()
+  if (user.role !== "root") redirect("/sem-acesso")
+  return user
+}
+
 /** Tela de Usuários: root, ou admin com ao menos um poder de gestão de usuários. */
 export async function requireGestaoUsuarios(): Promise<Usuario> {
   const user = await requireUser()
@@ -123,6 +130,13 @@ export async function assertSecao(...secoes: SecaoKey[]): Promise<Usuario> {
 export async function assertUsuario(): Promise<Usuario> {
   const user = await getCurrentUser()
   if (!user) throw new ForbiddenError("Sessão expirada. Faça login novamente.")
+  return user
+}
+
+/** Exige o nível Root (actions das telas só do Root). */
+export async function assertRoot(): Promise<Usuario> {
+  const user = await assertUsuario()
+  if (user.role !== "root") throw new ForbiddenError("Somente o Root pode realizar esta ação.")
   return user
 }
 

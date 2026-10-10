@@ -4,6 +4,7 @@ import { manutencaoBackup } from "@/services/backup"
 import { processDueMessages } from "@/services/campaign-engine"
 import { processarFollowUps } from "@/services/followup"
 import { manutencaoNoCode } from "@/services/nocode-webhook-execucoes"
+import { manutencaoPush } from "@/services/push"
 
 /**
  * Aciona a engine de disparo sob demanda.
@@ -43,12 +44,18 @@ async function handle(request: Request) {
       console.error("[v0] follow-up dos bots falhou:", error)
       return null
     })
+    // Notificações push agendadas (não derruba a engine se falhar).
+    const push = await manutencaoPush().catch((error) => {
+      console.error("[v0] notificações push falharam:", error)
+      return null
+    })
     return NextResponse.json({
       ok: true,
       ...resultado,
       ...(followUp ? { followUp } : {}),
       ...(nocode ? { nocode } : {}),
       ...(backup ? { backup } : {}),
+      ...(push ? { push } : {}),
     })
   } catch (error) {
     console.error("[v0] GET/POST /api/cron falhou:", error)

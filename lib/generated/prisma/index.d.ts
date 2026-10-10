@@ -258,6 +258,19 @@ export type InternoParticipante = $Result.DefaultSelection<Prisma.$InternoPartic
  * 
  */
 export type InternoMensagem = $Result.DefaultSelection<Prisma.$InternoMensagemPayload>
+/**
+ * Model PushAssinatura
+ * Aparelho (navegador/PWA instalado) que aceitou receber notificações push de um usuário.
+ * Tabela GLOBAL (sem `workspaceId`): o Root envia avisos para todas as instâncias, então ela é
+ * acessada só por `prismaGlobal` (ver `services/push.ts`). Sai junto com o usuário (cascata).
+ */
+export type PushAssinatura = $Result.DefaultSelection<Prisma.$PushAssinaturaPayload>
+/**
+ * Model PushNotificacao
+ * Notificação push criada pelo Root: enviada na hora, agendada ou guardada como rascunho.
+ * Tabela GLOBAL (sem `workspaceId`), acessada só por `prismaGlobal`.
+ */
+export type PushNotificacao = $Result.DefaultSelection<Prisma.$PushNotificacaoPayload>
 
 /**
  * Enums
@@ -877,6 +890,26 @@ export class PrismaClient<
     * ```
     */
   get internoMensagem(): Prisma.InternoMensagemDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.pushAssinatura`: Exposes CRUD operations for the **PushAssinatura** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PushAssinaturas
+    * const pushAssinaturas = await prisma.pushAssinatura.findMany()
+    * ```
+    */
+  get pushAssinatura(): Prisma.PushAssinaturaDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.pushNotificacao`: Exposes CRUD operations for the **PushNotificacao** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PushNotificacaos
+    * const pushNotificacaos = await prisma.pushNotificacao.findMany()
+    * ```
+    */
+  get pushNotificacao(): Prisma.PushNotificacaoDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1355,7 +1388,9 @@ export namespace Prisma {
     AgenteIA: 'AgenteIA',
     InternoConversa: 'InternoConversa',
     InternoParticipante: 'InternoParticipante',
-    InternoMensagem: 'InternoMensagem'
+    InternoMensagem: 'InternoMensagem',
+    PushAssinatura: 'PushAssinatura',
+    PushNotificacao: 'PushNotificacao'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1374,7 +1409,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "botConversa" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "userFoto" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia" | "followUpBot" | "chatTemplate" | "followUpTemplate" | "followUpConversa" | "agenteIA" | "internoConversa" | "internoParticipante" | "internoMensagem"
+      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "botConversa" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "userFoto" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia" | "followUpBot" | "chatTemplate" | "followUpTemplate" | "followUpConversa" | "agenteIA" | "internoConversa" | "internoParticipante" | "internoMensagem" | "pushAssinatura" | "pushNotificacao"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4264,6 +4299,154 @@ export namespace Prisma {
           }
         }
       }
+      PushAssinatura: {
+        payload: Prisma.$PushAssinaturaPayload<ExtArgs>
+        fields: Prisma.PushAssinaturaFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PushAssinaturaFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushAssinaturaPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PushAssinaturaFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushAssinaturaPayload>
+          }
+          findFirst: {
+            args: Prisma.PushAssinaturaFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushAssinaturaPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PushAssinaturaFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushAssinaturaPayload>
+          }
+          findMany: {
+            args: Prisma.PushAssinaturaFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushAssinaturaPayload>[]
+          }
+          create: {
+            args: Prisma.PushAssinaturaCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushAssinaturaPayload>
+          }
+          createMany: {
+            args: Prisma.PushAssinaturaCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PushAssinaturaCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushAssinaturaPayload>[]
+          }
+          delete: {
+            args: Prisma.PushAssinaturaDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushAssinaturaPayload>
+          }
+          update: {
+            args: Prisma.PushAssinaturaUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushAssinaturaPayload>
+          }
+          deleteMany: {
+            args: Prisma.PushAssinaturaDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PushAssinaturaUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PushAssinaturaUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushAssinaturaPayload>[]
+          }
+          upsert: {
+            args: Prisma.PushAssinaturaUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushAssinaturaPayload>
+          }
+          aggregate: {
+            args: Prisma.PushAssinaturaAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePushAssinatura>
+          }
+          groupBy: {
+            args: Prisma.PushAssinaturaGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PushAssinaturaGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PushAssinaturaCountArgs<ExtArgs>
+            result: $Utils.Optional<PushAssinaturaCountAggregateOutputType> | number
+          }
+        }
+      }
+      PushNotificacao: {
+        payload: Prisma.$PushNotificacaoPayload<ExtArgs>
+        fields: Prisma.PushNotificacaoFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PushNotificacaoFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushNotificacaoPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PushNotificacaoFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushNotificacaoPayload>
+          }
+          findFirst: {
+            args: Prisma.PushNotificacaoFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushNotificacaoPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PushNotificacaoFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushNotificacaoPayload>
+          }
+          findMany: {
+            args: Prisma.PushNotificacaoFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushNotificacaoPayload>[]
+          }
+          create: {
+            args: Prisma.PushNotificacaoCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushNotificacaoPayload>
+          }
+          createMany: {
+            args: Prisma.PushNotificacaoCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PushNotificacaoCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushNotificacaoPayload>[]
+          }
+          delete: {
+            args: Prisma.PushNotificacaoDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushNotificacaoPayload>
+          }
+          update: {
+            args: Prisma.PushNotificacaoUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushNotificacaoPayload>
+          }
+          deleteMany: {
+            args: Prisma.PushNotificacaoDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PushNotificacaoUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PushNotificacaoUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushNotificacaoPayload>[]
+          }
+          upsert: {
+            args: Prisma.PushNotificacaoUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushNotificacaoPayload>
+          }
+          aggregate: {
+            args: Prisma.PushNotificacaoAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePushNotificacao>
+          }
+          groupBy: {
+            args: Prisma.PushNotificacaoGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PushNotificacaoGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PushNotificacaoCountArgs<ExtArgs>
+            result: $Utils.Optional<PushNotificacaoCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -4391,6 +4574,8 @@ export namespace Prisma {
     internoConversa?: InternoConversaOmit
     internoParticipante?: InternoParticipanteOmit
     internoMensagem?: InternoMensagemOmit
+    pushAssinatura?: PushAssinaturaOmit
+    pushNotificacao?: PushNotificacaoOmit
   }
 
   /* Types for Logging */
@@ -4684,12 +4869,14 @@ export namespace Prisma {
     chatTemplates: number
     internoParticipacoes: number
     internoMensagens: number
+    pushAssinaturas: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     chatTemplates?: boolean | UserCountOutputTypeCountChatTemplatesArgs
     internoParticipacoes?: boolean | UserCountOutputTypeCountInternoParticipacoesArgs
     internoMensagens?: boolean | UserCountOutputTypeCountInternoMensagensArgs
+    pushAssinaturas?: boolean | UserCountOutputTypeCountPushAssinaturasArgs
   }
 
   // Custom InputTypes
@@ -4722,6 +4909,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountInternoMensagensArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: InternoMensagemWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountPushAssinaturasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PushAssinaturaWhereInput
   }
 
 
@@ -32464,6 +32658,7 @@ export namespace Prisma {
     chatTemplates?: boolean | User$chatTemplatesArgs<ExtArgs>
     internoParticipacoes?: boolean | User$internoParticipacoesArgs<ExtArgs>
     internoMensagens?: boolean | User$internoMensagensArgs<ExtArgs>
+    pushAssinaturas?: boolean | User$pushAssinaturasArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -32525,6 +32720,7 @@ export namespace Prisma {
     chatTemplates?: boolean | User$chatTemplatesArgs<ExtArgs>
     internoParticipacoes?: boolean | User$internoParticipacoesArgs<ExtArgs>
     internoMensagens?: boolean | User$internoMensagensArgs<ExtArgs>
+    pushAssinaturas?: boolean | User$pushAssinaturasArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -32547,6 +32743,10 @@ export namespace Prisma {
        */
       internoParticipacoes: Prisma.$InternoParticipantePayload<ExtArgs>[]
       internoMensagens: Prisma.$InternoMensagemPayload<ExtArgs>[]
+      /**
+       * Aparelhos que aceitaram receber notificações push (ver `services/push.ts`).
+       */
+      pushAssinaturas: Prisma.$PushAssinaturaPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -32994,6 +33194,7 @@ export namespace Prisma {
     chatTemplates<T extends User$chatTemplatesArgs<ExtArgs> = {}>(args?: Subset<T, User$chatTemplatesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     internoParticipacoes<T extends User$internoParticipacoesArgs<ExtArgs> = {}>(args?: Subset<T, User$internoParticipacoesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InternoParticipantePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     internoMensagens<T extends User$internoMensagensArgs<ExtArgs> = {}>(args?: Subset<T, User$internoMensagensArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InternoMensagemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    pushAssinaturas<T extends User$pushAssinaturasArgs<ExtArgs> = {}>(args?: Subset<T, User$pushAssinaturasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushAssinaturaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -33532,6 +33733,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: InternoMensagemScalarFieldEnum | InternoMensagemScalarFieldEnum[]
+  }
+
+  /**
+   * User.pushAssinaturas
+   */
+  export type User$pushAssinaturasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushAssinatura
+     */
+    select?: PushAssinaturaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushAssinatura
+     */
+    omit?: PushAssinaturaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushAssinaturaInclude<ExtArgs> | null
+    where?: PushAssinaturaWhereInput
+    orderBy?: PushAssinaturaOrderByWithRelationInput | PushAssinaturaOrderByWithRelationInput[]
+    cursor?: PushAssinaturaWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PushAssinaturaScalarFieldEnum | PushAssinaturaScalarFieldEnum[]
   }
 
   /**
@@ -49501,6 +49726,2492 @@ export namespace Prisma {
 
 
   /**
+   * Model PushAssinatura
+   */
+
+  export type AggregatePushAssinatura = {
+    _count: PushAssinaturaCountAggregateOutputType | null
+    _avg: PushAssinaturaAvgAggregateOutputType | null
+    _sum: PushAssinaturaSumAggregateOutputType | null
+    _min: PushAssinaturaMinAggregateOutputType | null
+    _max: PushAssinaturaMaxAggregateOutputType | null
+  }
+
+  export type PushAssinaturaAvgAggregateOutputType = {
+    falhas: number | null
+  }
+
+  export type PushAssinaturaSumAggregateOutputType = {
+    falhas: number | null
+  }
+
+  export type PushAssinaturaMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    endpoint: string | null
+    p256dh: string | null
+    auth: string | null
+    userAgent: string | null
+    plataforma: string | null
+    instalado: boolean | null
+    falhas: number | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+    ultimoEnvioEm: Date | null
+  }
+
+  export type PushAssinaturaMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    endpoint: string | null
+    p256dh: string | null
+    auth: string | null
+    userAgent: string | null
+    plataforma: string | null
+    instalado: boolean | null
+    falhas: number | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+    ultimoEnvioEm: Date | null
+  }
+
+  export type PushAssinaturaCountAggregateOutputType = {
+    id: number
+    userId: number
+    endpoint: number
+    p256dh: number
+    auth: number
+    userAgent: number
+    plataforma: number
+    instalado: number
+    falhas: number
+    criadoEm: number
+    atualizadoEm: number
+    ultimoEnvioEm: number
+    _all: number
+  }
+
+
+  export type PushAssinaturaAvgAggregateInputType = {
+    falhas?: true
+  }
+
+  export type PushAssinaturaSumAggregateInputType = {
+    falhas?: true
+  }
+
+  export type PushAssinaturaMinAggregateInputType = {
+    id?: true
+    userId?: true
+    endpoint?: true
+    p256dh?: true
+    auth?: true
+    userAgent?: true
+    plataforma?: true
+    instalado?: true
+    falhas?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    ultimoEnvioEm?: true
+  }
+
+  export type PushAssinaturaMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    endpoint?: true
+    p256dh?: true
+    auth?: true
+    userAgent?: true
+    plataforma?: true
+    instalado?: true
+    falhas?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    ultimoEnvioEm?: true
+  }
+
+  export type PushAssinaturaCountAggregateInputType = {
+    id?: true
+    userId?: true
+    endpoint?: true
+    p256dh?: true
+    auth?: true
+    userAgent?: true
+    plataforma?: true
+    instalado?: true
+    falhas?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    ultimoEnvioEm?: true
+    _all?: true
+  }
+
+  export type PushAssinaturaAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PushAssinatura to aggregate.
+     */
+    where?: PushAssinaturaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushAssinaturas to fetch.
+     */
+    orderBy?: PushAssinaturaOrderByWithRelationInput | PushAssinaturaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PushAssinaturaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushAssinaturas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushAssinaturas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PushAssinaturas
+    **/
+    _count?: true | PushAssinaturaCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PushAssinaturaAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PushAssinaturaSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PushAssinaturaMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PushAssinaturaMaxAggregateInputType
+  }
+
+  export type GetPushAssinaturaAggregateType<T extends PushAssinaturaAggregateArgs> = {
+        [P in keyof T & keyof AggregatePushAssinatura]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePushAssinatura[P]>
+      : GetScalarType<T[P], AggregatePushAssinatura[P]>
+  }
+
+
+
+
+  export type PushAssinaturaGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PushAssinaturaWhereInput
+    orderBy?: PushAssinaturaOrderByWithAggregationInput | PushAssinaturaOrderByWithAggregationInput[]
+    by: PushAssinaturaScalarFieldEnum[] | PushAssinaturaScalarFieldEnum
+    having?: PushAssinaturaScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PushAssinaturaCountAggregateInputType | true
+    _avg?: PushAssinaturaAvgAggregateInputType
+    _sum?: PushAssinaturaSumAggregateInputType
+    _min?: PushAssinaturaMinAggregateInputType
+    _max?: PushAssinaturaMaxAggregateInputType
+  }
+
+  export type PushAssinaturaGroupByOutputType = {
+    id: string
+    userId: string
+    endpoint: string
+    p256dh: string
+    auth: string
+    userAgent: string | null
+    plataforma: string
+    instalado: boolean
+    falhas: number
+    criadoEm: Date
+    atualizadoEm: Date
+    ultimoEnvioEm: Date | null
+    _count: PushAssinaturaCountAggregateOutputType | null
+    _avg: PushAssinaturaAvgAggregateOutputType | null
+    _sum: PushAssinaturaSumAggregateOutputType | null
+    _min: PushAssinaturaMinAggregateOutputType | null
+    _max: PushAssinaturaMaxAggregateOutputType | null
+  }
+
+  type GetPushAssinaturaGroupByPayload<T extends PushAssinaturaGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PushAssinaturaGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PushAssinaturaGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PushAssinaturaGroupByOutputType[P]>
+            : GetScalarType<T[P], PushAssinaturaGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PushAssinaturaSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    endpoint?: boolean
+    p256dh?: boolean
+    auth?: boolean
+    userAgent?: boolean
+    plataforma?: boolean
+    instalado?: boolean
+    falhas?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    ultimoEnvioEm?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["pushAssinatura"]>
+
+  export type PushAssinaturaSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    endpoint?: boolean
+    p256dh?: boolean
+    auth?: boolean
+    userAgent?: boolean
+    plataforma?: boolean
+    instalado?: boolean
+    falhas?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    ultimoEnvioEm?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["pushAssinatura"]>
+
+  export type PushAssinaturaSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    endpoint?: boolean
+    p256dh?: boolean
+    auth?: boolean
+    userAgent?: boolean
+    plataforma?: boolean
+    instalado?: boolean
+    falhas?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    ultimoEnvioEm?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["pushAssinatura"]>
+
+  export type PushAssinaturaSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    endpoint?: boolean
+    p256dh?: boolean
+    auth?: boolean
+    userAgent?: boolean
+    plataforma?: boolean
+    instalado?: boolean
+    falhas?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    ultimoEnvioEm?: boolean
+  }
+
+  export type PushAssinaturaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "endpoint" | "p256dh" | "auth" | "userAgent" | "plataforma" | "instalado" | "falhas" | "criadoEm" | "atualizadoEm" | "ultimoEnvioEm", ExtArgs["result"]["pushAssinatura"]>
+  export type PushAssinaturaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type PushAssinaturaIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type PushAssinaturaIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $PushAssinaturaPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PushAssinatura"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      /**
+       * Endereço do serviço de push do navegador (único por aparelho/navegador).
+       */
+      endpoint: string
+      p256dh: string
+      auth: string
+      userAgent: string | null
+      /**
+       * "ios" | "android" | "desktop"
+       */
+      plataforma: string
+      /**
+       * O app estava instalado (modo standalone) quando a assinatura foi registrada.
+       */
+      instalado: boolean
+      /**
+       * Falhas seguidas de entrega; ao chegar no limite a assinatura é apagada.
+       */
+      falhas: number
+      criadoEm: Date
+      atualizadoEm: Date
+      ultimoEnvioEm: Date | null
+    }, ExtArgs["result"]["pushAssinatura"]>
+    composites: {}
+  }
+
+  type PushAssinaturaGetPayload<S extends boolean | null | undefined | PushAssinaturaDefaultArgs> = $Result.GetResult<Prisma.$PushAssinaturaPayload, S>
+
+  type PushAssinaturaCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PushAssinaturaFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PushAssinaturaCountAggregateInputType | true
+    }
+
+  export interface PushAssinaturaDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PushAssinatura'], meta: { name: 'PushAssinatura' } }
+    /**
+     * Find zero or one PushAssinatura that matches the filter.
+     * @param {PushAssinaturaFindUniqueArgs} args - Arguments to find a PushAssinatura
+     * @example
+     * // Get one PushAssinatura
+     * const pushAssinatura = await prisma.pushAssinatura.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PushAssinaturaFindUniqueArgs>(args: SelectSubset<T, PushAssinaturaFindUniqueArgs<ExtArgs>>): Prisma__PushAssinaturaClient<$Result.GetResult<Prisma.$PushAssinaturaPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PushAssinatura that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PushAssinaturaFindUniqueOrThrowArgs} args - Arguments to find a PushAssinatura
+     * @example
+     * // Get one PushAssinatura
+     * const pushAssinatura = await prisma.pushAssinatura.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PushAssinaturaFindUniqueOrThrowArgs>(args: SelectSubset<T, PushAssinaturaFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PushAssinaturaClient<$Result.GetResult<Prisma.$PushAssinaturaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PushAssinatura that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushAssinaturaFindFirstArgs} args - Arguments to find a PushAssinatura
+     * @example
+     * // Get one PushAssinatura
+     * const pushAssinatura = await prisma.pushAssinatura.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PushAssinaturaFindFirstArgs>(args?: SelectSubset<T, PushAssinaturaFindFirstArgs<ExtArgs>>): Prisma__PushAssinaturaClient<$Result.GetResult<Prisma.$PushAssinaturaPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PushAssinatura that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushAssinaturaFindFirstOrThrowArgs} args - Arguments to find a PushAssinatura
+     * @example
+     * // Get one PushAssinatura
+     * const pushAssinatura = await prisma.pushAssinatura.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PushAssinaturaFindFirstOrThrowArgs>(args?: SelectSubset<T, PushAssinaturaFindFirstOrThrowArgs<ExtArgs>>): Prisma__PushAssinaturaClient<$Result.GetResult<Prisma.$PushAssinaturaPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PushAssinaturas that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushAssinaturaFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PushAssinaturas
+     * const pushAssinaturas = await prisma.pushAssinatura.findMany()
+     * 
+     * // Get first 10 PushAssinaturas
+     * const pushAssinaturas = await prisma.pushAssinatura.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const pushAssinaturaWithIdOnly = await prisma.pushAssinatura.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PushAssinaturaFindManyArgs>(args?: SelectSubset<T, PushAssinaturaFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushAssinaturaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PushAssinatura.
+     * @param {PushAssinaturaCreateArgs} args - Arguments to create a PushAssinatura.
+     * @example
+     * // Create one PushAssinatura
+     * const PushAssinatura = await prisma.pushAssinatura.create({
+     *   data: {
+     *     // ... data to create a PushAssinatura
+     *   }
+     * })
+     * 
+     */
+    create<T extends PushAssinaturaCreateArgs>(args: SelectSubset<T, PushAssinaturaCreateArgs<ExtArgs>>): Prisma__PushAssinaturaClient<$Result.GetResult<Prisma.$PushAssinaturaPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PushAssinaturas.
+     * @param {PushAssinaturaCreateManyArgs} args - Arguments to create many PushAssinaturas.
+     * @example
+     * // Create many PushAssinaturas
+     * const pushAssinatura = await prisma.pushAssinatura.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PushAssinaturaCreateManyArgs>(args?: SelectSubset<T, PushAssinaturaCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PushAssinaturas and returns the data saved in the database.
+     * @param {PushAssinaturaCreateManyAndReturnArgs} args - Arguments to create many PushAssinaturas.
+     * @example
+     * // Create many PushAssinaturas
+     * const pushAssinatura = await prisma.pushAssinatura.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PushAssinaturas and only return the `id`
+     * const pushAssinaturaWithIdOnly = await prisma.pushAssinatura.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PushAssinaturaCreateManyAndReturnArgs>(args?: SelectSubset<T, PushAssinaturaCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushAssinaturaPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PushAssinatura.
+     * @param {PushAssinaturaDeleteArgs} args - Arguments to delete one PushAssinatura.
+     * @example
+     * // Delete one PushAssinatura
+     * const PushAssinatura = await prisma.pushAssinatura.delete({
+     *   where: {
+     *     // ... filter to delete one PushAssinatura
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PushAssinaturaDeleteArgs>(args: SelectSubset<T, PushAssinaturaDeleteArgs<ExtArgs>>): Prisma__PushAssinaturaClient<$Result.GetResult<Prisma.$PushAssinaturaPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PushAssinatura.
+     * @param {PushAssinaturaUpdateArgs} args - Arguments to update one PushAssinatura.
+     * @example
+     * // Update one PushAssinatura
+     * const pushAssinatura = await prisma.pushAssinatura.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PushAssinaturaUpdateArgs>(args: SelectSubset<T, PushAssinaturaUpdateArgs<ExtArgs>>): Prisma__PushAssinaturaClient<$Result.GetResult<Prisma.$PushAssinaturaPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PushAssinaturas.
+     * @param {PushAssinaturaDeleteManyArgs} args - Arguments to filter PushAssinaturas to delete.
+     * @example
+     * // Delete a few PushAssinaturas
+     * const { count } = await prisma.pushAssinatura.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PushAssinaturaDeleteManyArgs>(args?: SelectSubset<T, PushAssinaturaDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PushAssinaturas.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushAssinaturaUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PushAssinaturas
+     * const pushAssinatura = await prisma.pushAssinatura.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PushAssinaturaUpdateManyArgs>(args: SelectSubset<T, PushAssinaturaUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PushAssinaturas and returns the data updated in the database.
+     * @param {PushAssinaturaUpdateManyAndReturnArgs} args - Arguments to update many PushAssinaturas.
+     * @example
+     * // Update many PushAssinaturas
+     * const pushAssinatura = await prisma.pushAssinatura.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PushAssinaturas and only return the `id`
+     * const pushAssinaturaWithIdOnly = await prisma.pushAssinatura.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PushAssinaturaUpdateManyAndReturnArgs>(args: SelectSubset<T, PushAssinaturaUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushAssinaturaPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PushAssinatura.
+     * @param {PushAssinaturaUpsertArgs} args - Arguments to update or create a PushAssinatura.
+     * @example
+     * // Update or create a PushAssinatura
+     * const pushAssinatura = await prisma.pushAssinatura.upsert({
+     *   create: {
+     *     // ... data to create a PushAssinatura
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PushAssinatura we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PushAssinaturaUpsertArgs>(args: SelectSubset<T, PushAssinaturaUpsertArgs<ExtArgs>>): Prisma__PushAssinaturaClient<$Result.GetResult<Prisma.$PushAssinaturaPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PushAssinaturas.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushAssinaturaCountArgs} args - Arguments to filter PushAssinaturas to count.
+     * @example
+     * // Count the number of PushAssinaturas
+     * const count = await prisma.pushAssinatura.count({
+     *   where: {
+     *     // ... the filter for the PushAssinaturas we want to count
+     *   }
+     * })
+    **/
+    count<T extends PushAssinaturaCountArgs>(
+      args?: Subset<T, PushAssinaturaCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PushAssinaturaCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PushAssinatura.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushAssinaturaAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PushAssinaturaAggregateArgs>(args: Subset<T, PushAssinaturaAggregateArgs>): Prisma.PrismaPromise<GetPushAssinaturaAggregateType<T>>
+
+    /**
+     * Group by PushAssinatura.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushAssinaturaGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PushAssinaturaGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PushAssinaturaGroupByArgs['orderBy'] }
+        : { orderBy?: PushAssinaturaGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PushAssinaturaGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPushAssinaturaGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PushAssinatura model
+   */
+  readonly fields: PushAssinaturaFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PushAssinatura.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PushAssinaturaClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PushAssinatura model
+   */
+  interface PushAssinaturaFieldRefs {
+    readonly id: FieldRef<"PushAssinatura", 'String'>
+    readonly userId: FieldRef<"PushAssinatura", 'String'>
+    readonly endpoint: FieldRef<"PushAssinatura", 'String'>
+    readonly p256dh: FieldRef<"PushAssinatura", 'String'>
+    readonly auth: FieldRef<"PushAssinatura", 'String'>
+    readonly userAgent: FieldRef<"PushAssinatura", 'String'>
+    readonly plataforma: FieldRef<"PushAssinatura", 'String'>
+    readonly instalado: FieldRef<"PushAssinatura", 'Boolean'>
+    readonly falhas: FieldRef<"PushAssinatura", 'Int'>
+    readonly criadoEm: FieldRef<"PushAssinatura", 'DateTime'>
+    readonly atualizadoEm: FieldRef<"PushAssinatura", 'DateTime'>
+    readonly ultimoEnvioEm: FieldRef<"PushAssinatura", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PushAssinatura findUnique
+   */
+  export type PushAssinaturaFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushAssinatura
+     */
+    select?: PushAssinaturaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushAssinatura
+     */
+    omit?: PushAssinaturaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushAssinaturaInclude<ExtArgs> | null
+    /**
+     * Filter, which PushAssinatura to fetch.
+     */
+    where: PushAssinaturaWhereUniqueInput
+  }
+
+  /**
+   * PushAssinatura findUniqueOrThrow
+   */
+  export type PushAssinaturaFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushAssinatura
+     */
+    select?: PushAssinaturaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushAssinatura
+     */
+    omit?: PushAssinaturaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushAssinaturaInclude<ExtArgs> | null
+    /**
+     * Filter, which PushAssinatura to fetch.
+     */
+    where: PushAssinaturaWhereUniqueInput
+  }
+
+  /**
+   * PushAssinatura findFirst
+   */
+  export type PushAssinaturaFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushAssinatura
+     */
+    select?: PushAssinaturaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushAssinatura
+     */
+    omit?: PushAssinaturaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushAssinaturaInclude<ExtArgs> | null
+    /**
+     * Filter, which PushAssinatura to fetch.
+     */
+    where?: PushAssinaturaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushAssinaturas to fetch.
+     */
+    orderBy?: PushAssinaturaOrderByWithRelationInput | PushAssinaturaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PushAssinaturas.
+     */
+    cursor?: PushAssinaturaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushAssinaturas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushAssinaturas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PushAssinaturas.
+     */
+    distinct?: PushAssinaturaScalarFieldEnum | PushAssinaturaScalarFieldEnum[]
+  }
+
+  /**
+   * PushAssinatura findFirstOrThrow
+   */
+  export type PushAssinaturaFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushAssinatura
+     */
+    select?: PushAssinaturaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushAssinatura
+     */
+    omit?: PushAssinaturaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushAssinaturaInclude<ExtArgs> | null
+    /**
+     * Filter, which PushAssinatura to fetch.
+     */
+    where?: PushAssinaturaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushAssinaturas to fetch.
+     */
+    orderBy?: PushAssinaturaOrderByWithRelationInput | PushAssinaturaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PushAssinaturas.
+     */
+    cursor?: PushAssinaturaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushAssinaturas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushAssinaturas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PushAssinaturas.
+     */
+    distinct?: PushAssinaturaScalarFieldEnum | PushAssinaturaScalarFieldEnum[]
+  }
+
+  /**
+   * PushAssinatura findMany
+   */
+  export type PushAssinaturaFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushAssinatura
+     */
+    select?: PushAssinaturaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushAssinatura
+     */
+    omit?: PushAssinaturaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushAssinaturaInclude<ExtArgs> | null
+    /**
+     * Filter, which PushAssinaturas to fetch.
+     */
+    where?: PushAssinaturaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushAssinaturas to fetch.
+     */
+    orderBy?: PushAssinaturaOrderByWithRelationInput | PushAssinaturaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PushAssinaturas.
+     */
+    cursor?: PushAssinaturaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushAssinaturas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushAssinaturas.
+     */
+    skip?: number
+    distinct?: PushAssinaturaScalarFieldEnum | PushAssinaturaScalarFieldEnum[]
+  }
+
+  /**
+   * PushAssinatura create
+   */
+  export type PushAssinaturaCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushAssinatura
+     */
+    select?: PushAssinaturaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushAssinatura
+     */
+    omit?: PushAssinaturaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushAssinaturaInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PushAssinatura.
+     */
+    data: XOR<PushAssinaturaCreateInput, PushAssinaturaUncheckedCreateInput>
+  }
+
+  /**
+   * PushAssinatura createMany
+   */
+  export type PushAssinaturaCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PushAssinaturas.
+     */
+    data: PushAssinaturaCreateManyInput | PushAssinaturaCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PushAssinatura createManyAndReturn
+   */
+  export type PushAssinaturaCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushAssinatura
+     */
+    select?: PushAssinaturaSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushAssinatura
+     */
+    omit?: PushAssinaturaOmit<ExtArgs> | null
+    /**
+     * The data used to create many PushAssinaturas.
+     */
+    data: PushAssinaturaCreateManyInput | PushAssinaturaCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushAssinaturaIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PushAssinatura update
+   */
+  export type PushAssinaturaUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushAssinatura
+     */
+    select?: PushAssinaturaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushAssinatura
+     */
+    omit?: PushAssinaturaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushAssinaturaInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PushAssinatura.
+     */
+    data: XOR<PushAssinaturaUpdateInput, PushAssinaturaUncheckedUpdateInput>
+    /**
+     * Choose, which PushAssinatura to update.
+     */
+    where: PushAssinaturaWhereUniqueInput
+  }
+
+  /**
+   * PushAssinatura updateMany
+   */
+  export type PushAssinaturaUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PushAssinaturas.
+     */
+    data: XOR<PushAssinaturaUpdateManyMutationInput, PushAssinaturaUncheckedUpdateManyInput>
+    /**
+     * Filter which PushAssinaturas to update
+     */
+    where?: PushAssinaturaWhereInput
+    /**
+     * Limit how many PushAssinaturas to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PushAssinatura updateManyAndReturn
+   */
+  export type PushAssinaturaUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushAssinatura
+     */
+    select?: PushAssinaturaSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushAssinatura
+     */
+    omit?: PushAssinaturaOmit<ExtArgs> | null
+    /**
+     * The data used to update PushAssinaturas.
+     */
+    data: XOR<PushAssinaturaUpdateManyMutationInput, PushAssinaturaUncheckedUpdateManyInput>
+    /**
+     * Filter which PushAssinaturas to update
+     */
+    where?: PushAssinaturaWhereInput
+    /**
+     * Limit how many PushAssinaturas to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushAssinaturaIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PushAssinatura upsert
+   */
+  export type PushAssinaturaUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushAssinatura
+     */
+    select?: PushAssinaturaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushAssinatura
+     */
+    omit?: PushAssinaturaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushAssinaturaInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PushAssinatura to update in case it exists.
+     */
+    where: PushAssinaturaWhereUniqueInput
+    /**
+     * In case the PushAssinatura found by the `where` argument doesn't exist, create a new PushAssinatura with this data.
+     */
+    create: XOR<PushAssinaturaCreateInput, PushAssinaturaUncheckedCreateInput>
+    /**
+     * In case the PushAssinatura was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PushAssinaturaUpdateInput, PushAssinaturaUncheckedUpdateInput>
+  }
+
+  /**
+   * PushAssinatura delete
+   */
+  export type PushAssinaturaDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushAssinatura
+     */
+    select?: PushAssinaturaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushAssinatura
+     */
+    omit?: PushAssinaturaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushAssinaturaInclude<ExtArgs> | null
+    /**
+     * Filter which PushAssinatura to delete.
+     */
+    where: PushAssinaturaWhereUniqueInput
+  }
+
+  /**
+   * PushAssinatura deleteMany
+   */
+  export type PushAssinaturaDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PushAssinaturas to delete
+     */
+    where?: PushAssinaturaWhereInput
+    /**
+     * Limit how many PushAssinaturas to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PushAssinatura without action
+   */
+  export type PushAssinaturaDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushAssinatura
+     */
+    select?: PushAssinaturaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushAssinatura
+     */
+    omit?: PushAssinaturaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushAssinaturaInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PushNotificacao
+   */
+
+  export type AggregatePushNotificacao = {
+    _count: PushNotificacaoCountAggregateOutputType | null
+    _avg: PushNotificacaoAvgAggregateOutputType | null
+    _sum: PushNotificacaoSumAggregateOutputType | null
+    _min: PushNotificacaoMinAggregateOutputType | null
+    _max: PushNotificacaoMaxAggregateOutputType | null
+  }
+
+  export type PushNotificacaoAvgAggregateOutputType = {
+    totalAlvos: number | null
+    enviados: number | null
+    falhas: number | null
+    removidos: number | null
+  }
+
+  export type PushNotificacaoSumAggregateOutputType = {
+    totalAlvos: number | null
+    enviados: number | null
+    falhas: number | null
+    removidos: number | null
+  }
+
+  export type PushNotificacaoMinAggregateOutputType = {
+    id: string | null
+    titulo: string | null
+    corpo: string | null
+    url: string | null
+    imagem: string | null
+    urgente: boolean | null
+    publico: string | null
+    somenteInstalados: boolean | null
+    status: string | null
+    agendadaPara: Date | null
+    enviadaEm: Date | null
+    totalAlvos: number | null
+    enviados: number | null
+    falhas: number | null
+    removidos: number | null
+    erro: string | null
+    criadoPorId: string | null
+    criadoPorNome: string | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+    ultimaVarreduraEm: Date | null
+  }
+
+  export type PushNotificacaoMaxAggregateOutputType = {
+    id: string | null
+    titulo: string | null
+    corpo: string | null
+    url: string | null
+    imagem: string | null
+    urgente: boolean | null
+    publico: string | null
+    somenteInstalados: boolean | null
+    status: string | null
+    agendadaPara: Date | null
+    enviadaEm: Date | null
+    totalAlvos: number | null
+    enviados: number | null
+    falhas: number | null
+    removidos: number | null
+    erro: string | null
+    criadoPorId: string | null
+    criadoPorNome: string | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+    ultimaVarreduraEm: Date | null
+  }
+
+  export type PushNotificacaoCountAggregateOutputType = {
+    id: number
+    titulo: number
+    corpo: number
+    url: number
+    imagem: number
+    urgente: number
+    publico: number
+    papeis: number
+    usuarioIds: number
+    somenteInstalados: number
+    status: number
+    agendadaPara: number
+    enviadaEm: number
+    totalAlvos: number
+    enviados: number
+    falhas: number
+    removidos: number
+    erro: number
+    criadoPorId: number
+    criadoPorNome: number
+    criadoEm: number
+    atualizadoEm: number
+    ultimaVarreduraEm: number
+    _all: number
+  }
+
+
+  export type PushNotificacaoAvgAggregateInputType = {
+    totalAlvos?: true
+    enviados?: true
+    falhas?: true
+    removidos?: true
+  }
+
+  export type PushNotificacaoSumAggregateInputType = {
+    totalAlvos?: true
+    enviados?: true
+    falhas?: true
+    removidos?: true
+  }
+
+  export type PushNotificacaoMinAggregateInputType = {
+    id?: true
+    titulo?: true
+    corpo?: true
+    url?: true
+    imagem?: true
+    urgente?: true
+    publico?: true
+    somenteInstalados?: true
+    status?: true
+    agendadaPara?: true
+    enviadaEm?: true
+    totalAlvos?: true
+    enviados?: true
+    falhas?: true
+    removidos?: true
+    erro?: true
+    criadoPorId?: true
+    criadoPorNome?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    ultimaVarreduraEm?: true
+  }
+
+  export type PushNotificacaoMaxAggregateInputType = {
+    id?: true
+    titulo?: true
+    corpo?: true
+    url?: true
+    imagem?: true
+    urgente?: true
+    publico?: true
+    somenteInstalados?: true
+    status?: true
+    agendadaPara?: true
+    enviadaEm?: true
+    totalAlvos?: true
+    enviados?: true
+    falhas?: true
+    removidos?: true
+    erro?: true
+    criadoPorId?: true
+    criadoPorNome?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    ultimaVarreduraEm?: true
+  }
+
+  export type PushNotificacaoCountAggregateInputType = {
+    id?: true
+    titulo?: true
+    corpo?: true
+    url?: true
+    imagem?: true
+    urgente?: true
+    publico?: true
+    papeis?: true
+    usuarioIds?: true
+    somenteInstalados?: true
+    status?: true
+    agendadaPara?: true
+    enviadaEm?: true
+    totalAlvos?: true
+    enviados?: true
+    falhas?: true
+    removidos?: true
+    erro?: true
+    criadoPorId?: true
+    criadoPorNome?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    ultimaVarreduraEm?: true
+    _all?: true
+  }
+
+  export type PushNotificacaoAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PushNotificacao to aggregate.
+     */
+    where?: PushNotificacaoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushNotificacaos to fetch.
+     */
+    orderBy?: PushNotificacaoOrderByWithRelationInput | PushNotificacaoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PushNotificacaoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushNotificacaos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushNotificacaos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PushNotificacaos
+    **/
+    _count?: true | PushNotificacaoCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PushNotificacaoAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PushNotificacaoSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PushNotificacaoMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PushNotificacaoMaxAggregateInputType
+  }
+
+  export type GetPushNotificacaoAggregateType<T extends PushNotificacaoAggregateArgs> = {
+        [P in keyof T & keyof AggregatePushNotificacao]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePushNotificacao[P]>
+      : GetScalarType<T[P], AggregatePushNotificacao[P]>
+  }
+
+
+
+
+  export type PushNotificacaoGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PushNotificacaoWhereInput
+    orderBy?: PushNotificacaoOrderByWithAggregationInput | PushNotificacaoOrderByWithAggregationInput[]
+    by: PushNotificacaoScalarFieldEnum[] | PushNotificacaoScalarFieldEnum
+    having?: PushNotificacaoScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PushNotificacaoCountAggregateInputType | true
+    _avg?: PushNotificacaoAvgAggregateInputType
+    _sum?: PushNotificacaoSumAggregateInputType
+    _min?: PushNotificacaoMinAggregateInputType
+    _max?: PushNotificacaoMaxAggregateInputType
+  }
+
+  export type PushNotificacaoGroupByOutputType = {
+    id: string
+    titulo: string
+    corpo: string
+    url: string
+    imagem: string | null
+    urgente: boolean
+    publico: string
+    papeis: string[]
+    usuarioIds: string[]
+    somenteInstalados: boolean
+    status: string
+    agendadaPara: Date | null
+    enviadaEm: Date | null
+    totalAlvos: number
+    enviados: number
+    falhas: number
+    removidos: number
+    erro: string | null
+    criadoPorId: string | null
+    criadoPorNome: string | null
+    criadoEm: Date
+    atualizadoEm: Date
+    ultimaVarreduraEm: Date | null
+    _count: PushNotificacaoCountAggregateOutputType | null
+    _avg: PushNotificacaoAvgAggregateOutputType | null
+    _sum: PushNotificacaoSumAggregateOutputType | null
+    _min: PushNotificacaoMinAggregateOutputType | null
+    _max: PushNotificacaoMaxAggregateOutputType | null
+  }
+
+  type GetPushNotificacaoGroupByPayload<T extends PushNotificacaoGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PushNotificacaoGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PushNotificacaoGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PushNotificacaoGroupByOutputType[P]>
+            : GetScalarType<T[P], PushNotificacaoGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PushNotificacaoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    titulo?: boolean
+    corpo?: boolean
+    url?: boolean
+    imagem?: boolean
+    urgente?: boolean
+    publico?: boolean
+    papeis?: boolean
+    usuarioIds?: boolean
+    somenteInstalados?: boolean
+    status?: boolean
+    agendadaPara?: boolean
+    enviadaEm?: boolean
+    totalAlvos?: boolean
+    enviados?: boolean
+    falhas?: boolean
+    removidos?: boolean
+    erro?: boolean
+    criadoPorId?: boolean
+    criadoPorNome?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    ultimaVarreduraEm?: boolean
+  }, ExtArgs["result"]["pushNotificacao"]>
+
+  export type PushNotificacaoSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    titulo?: boolean
+    corpo?: boolean
+    url?: boolean
+    imagem?: boolean
+    urgente?: boolean
+    publico?: boolean
+    papeis?: boolean
+    usuarioIds?: boolean
+    somenteInstalados?: boolean
+    status?: boolean
+    agendadaPara?: boolean
+    enviadaEm?: boolean
+    totalAlvos?: boolean
+    enviados?: boolean
+    falhas?: boolean
+    removidos?: boolean
+    erro?: boolean
+    criadoPorId?: boolean
+    criadoPorNome?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    ultimaVarreduraEm?: boolean
+  }, ExtArgs["result"]["pushNotificacao"]>
+
+  export type PushNotificacaoSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    titulo?: boolean
+    corpo?: boolean
+    url?: boolean
+    imagem?: boolean
+    urgente?: boolean
+    publico?: boolean
+    papeis?: boolean
+    usuarioIds?: boolean
+    somenteInstalados?: boolean
+    status?: boolean
+    agendadaPara?: boolean
+    enviadaEm?: boolean
+    totalAlvos?: boolean
+    enviados?: boolean
+    falhas?: boolean
+    removidos?: boolean
+    erro?: boolean
+    criadoPorId?: boolean
+    criadoPorNome?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    ultimaVarreduraEm?: boolean
+  }, ExtArgs["result"]["pushNotificacao"]>
+
+  export type PushNotificacaoSelectScalar = {
+    id?: boolean
+    titulo?: boolean
+    corpo?: boolean
+    url?: boolean
+    imagem?: boolean
+    urgente?: boolean
+    publico?: boolean
+    papeis?: boolean
+    usuarioIds?: boolean
+    somenteInstalados?: boolean
+    status?: boolean
+    agendadaPara?: boolean
+    enviadaEm?: boolean
+    totalAlvos?: boolean
+    enviados?: boolean
+    falhas?: boolean
+    removidos?: boolean
+    erro?: boolean
+    criadoPorId?: boolean
+    criadoPorNome?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    ultimaVarreduraEm?: boolean
+  }
+
+  export type PushNotificacaoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "titulo" | "corpo" | "url" | "imagem" | "urgente" | "publico" | "papeis" | "usuarioIds" | "somenteInstalados" | "status" | "agendadaPara" | "enviadaEm" | "totalAlvos" | "enviados" | "falhas" | "removidos" | "erro" | "criadoPorId" | "criadoPorNome" | "criadoEm" | "atualizadoEm" | "ultimaVarreduraEm", ExtArgs["result"]["pushNotificacao"]>
+
+  export type $PushNotificacaoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PushNotificacao"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      titulo: string
+      corpo: string
+      /**
+       * Para onde o toque leva: caminho do painel ("/chat") ou endereço https.
+       */
+      url: string
+      /**
+       * Imagem grande opcional (https).
+       */
+      imagem: string | null
+      /**
+       * Fica na tela até o usuário interagir.
+       */
+      urgente: boolean
+      /**
+       * "todos" | "papeis" | "usuarios"
+       */
+      publico: string
+      papeis: string[]
+      usuarioIds: string[]
+      /**
+       * Só aparelhos com o app instalado (PWA).
+       */
+      somenteInstalados: boolean
+      /**
+       * "rascunho" | "agendada" | "enviando" | "enviada" | "cancelada" | "falha"
+       */
+      status: string
+      agendadaPara: Date | null
+      enviadaEm: Date | null
+      totalAlvos: number
+      enviados: number
+      falhas: number
+      /**
+       * Aparelhos apagados por estarem inválidos (o usuário desinstalou ou revogou).
+       */
+      removidos: number
+      erro: string | null
+      criadoPorId: string | null
+      criadoPorNome: string | null
+      criadoEm: Date
+      atualizadoEm: Date
+      /**
+       * Sinal de vida do envio em andamento.
+       */
+      ultimaVarreduraEm: Date | null
+    }, ExtArgs["result"]["pushNotificacao"]>
+    composites: {}
+  }
+
+  type PushNotificacaoGetPayload<S extends boolean | null | undefined | PushNotificacaoDefaultArgs> = $Result.GetResult<Prisma.$PushNotificacaoPayload, S>
+
+  type PushNotificacaoCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PushNotificacaoFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PushNotificacaoCountAggregateInputType | true
+    }
+
+  export interface PushNotificacaoDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PushNotificacao'], meta: { name: 'PushNotificacao' } }
+    /**
+     * Find zero or one PushNotificacao that matches the filter.
+     * @param {PushNotificacaoFindUniqueArgs} args - Arguments to find a PushNotificacao
+     * @example
+     * // Get one PushNotificacao
+     * const pushNotificacao = await prisma.pushNotificacao.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PushNotificacaoFindUniqueArgs>(args: SelectSubset<T, PushNotificacaoFindUniqueArgs<ExtArgs>>): Prisma__PushNotificacaoClient<$Result.GetResult<Prisma.$PushNotificacaoPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PushNotificacao that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PushNotificacaoFindUniqueOrThrowArgs} args - Arguments to find a PushNotificacao
+     * @example
+     * // Get one PushNotificacao
+     * const pushNotificacao = await prisma.pushNotificacao.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PushNotificacaoFindUniqueOrThrowArgs>(args: SelectSubset<T, PushNotificacaoFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PushNotificacaoClient<$Result.GetResult<Prisma.$PushNotificacaoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PushNotificacao that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushNotificacaoFindFirstArgs} args - Arguments to find a PushNotificacao
+     * @example
+     * // Get one PushNotificacao
+     * const pushNotificacao = await prisma.pushNotificacao.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PushNotificacaoFindFirstArgs>(args?: SelectSubset<T, PushNotificacaoFindFirstArgs<ExtArgs>>): Prisma__PushNotificacaoClient<$Result.GetResult<Prisma.$PushNotificacaoPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PushNotificacao that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushNotificacaoFindFirstOrThrowArgs} args - Arguments to find a PushNotificacao
+     * @example
+     * // Get one PushNotificacao
+     * const pushNotificacao = await prisma.pushNotificacao.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PushNotificacaoFindFirstOrThrowArgs>(args?: SelectSubset<T, PushNotificacaoFindFirstOrThrowArgs<ExtArgs>>): Prisma__PushNotificacaoClient<$Result.GetResult<Prisma.$PushNotificacaoPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PushNotificacaos that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushNotificacaoFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PushNotificacaos
+     * const pushNotificacaos = await prisma.pushNotificacao.findMany()
+     * 
+     * // Get first 10 PushNotificacaos
+     * const pushNotificacaos = await prisma.pushNotificacao.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const pushNotificacaoWithIdOnly = await prisma.pushNotificacao.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PushNotificacaoFindManyArgs>(args?: SelectSubset<T, PushNotificacaoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushNotificacaoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PushNotificacao.
+     * @param {PushNotificacaoCreateArgs} args - Arguments to create a PushNotificacao.
+     * @example
+     * // Create one PushNotificacao
+     * const PushNotificacao = await prisma.pushNotificacao.create({
+     *   data: {
+     *     // ... data to create a PushNotificacao
+     *   }
+     * })
+     * 
+     */
+    create<T extends PushNotificacaoCreateArgs>(args: SelectSubset<T, PushNotificacaoCreateArgs<ExtArgs>>): Prisma__PushNotificacaoClient<$Result.GetResult<Prisma.$PushNotificacaoPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PushNotificacaos.
+     * @param {PushNotificacaoCreateManyArgs} args - Arguments to create many PushNotificacaos.
+     * @example
+     * // Create many PushNotificacaos
+     * const pushNotificacao = await prisma.pushNotificacao.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PushNotificacaoCreateManyArgs>(args?: SelectSubset<T, PushNotificacaoCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PushNotificacaos and returns the data saved in the database.
+     * @param {PushNotificacaoCreateManyAndReturnArgs} args - Arguments to create many PushNotificacaos.
+     * @example
+     * // Create many PushNotificacaos
+     * const pushNotificacao = await prisma.pushNotificacao.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PushNotificacaos and only return the `id`
+     * const pushNotificacaoWithIdOnly = await prisma.pushNotificacao.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PushNotificacaoCreateManyAndReturnArgs>(args?: SelectSubset<T, PushNotificacaoCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushNotificacaoPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PushNotificacao.
+     * @param {PushNotificacaoDeleteArgs} args - Arguments to delete one PushNotificacao.
+     * @example
+     * // Delete one PushNotificacao
+     * const PushNotificacao = await prisma.pushNotificacao.delete({
+     *   where: {
+     *     // ... filter to delete one PushNotificacao
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PushNotificacaoDeleteArgs>(args: SelectSubset<T, PushNotificacaoDeleteArgs<ExtArgs>>): Prisma__PushNotificacaoClient<$Result.GetResult<Prisma.$PushNotificacaoPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PushNotificacao.
+     * @param {PushNotificacaoUpdateArgs} args - Arguments to update one PushNotificacao.
+     * @example
+     * // Update one PushNotificacao
+     * const pushNotificacao = await prisma.pushNotificacao.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PushNotificacaoUpdateArgs>(args: SelectSubset<T, PushNotificacaoUpdateArgs<ExtArgs>>): Prisma__PushNotificacaoClient<$Result.GetResult<Prisma.$PushNotificacaoPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PushNotificacaos.
+     * @param {PushNotificacaoDeleteManyArgs} args - Arguments to filter PushNotificacaos to delete.
+     * @example
+     * // Delete a few PushNotificacaos
+     * const { count } = await prisma.pushNotificacao.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PushNotificacaoDeleteManyArgs>(args?: SelectSubset<T, PushNotificacaoDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PushNotificacaos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushNotificacaoUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PushNotificacaos
+     * const pushNotificacao = await prisma.pushNotificacao.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PushNotificacaoUpdateManyArgs>(args: SelectSubset<T, PushNotificacaoUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PushNotificacaos and returns the data updated in the database.
+     * @param {PushNotificacaoUpdateManyAndReturnArgs} args - Arguments to update many PushNotificacaos.
+     * @example
+     * // Update many PushNotificacaos
+     * const pushNotificacao = await prisma.pushNotificacao.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PushNotificacaos and only return the `id`
+     * const pushNotificacaoWithIdOnly = await prisma.pushNotificacao.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PushNotificacaoUpdateManyAndReturnArgs>(args: SelectSubset<T, PushNotificacaoUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushNotificacaoPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PushNotificacao.
+     * @param {PushNotificacaoUpsertArgs} args - Arguments to update or create a PushNotificacao.
+     * @example
+     * // Update or create a PushNotificacao
+     * const pushNotificacao = await prisma.pushNotificacao.upsert({
+     *   create: {
+     *     // ... data to create a PushNotificacao
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PushNotificacao we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PushNotificacaoUpsertArgs>(args: SelectSubset<T, PushNotificacaoUpsertArgs<ExtArgs>>): Prisma__PushNotificacaoClient<$Result.GetResult<Prisma.$PushNotificacaoPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PushNotificacaos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushNotificacaoCountArgs} args - Arguments to filter PushNotificacaos to count.
+     * @example
+     * // Count the number of PushNotificacaos
+     * const count = await prisma.pushNotificacao.count({
+     *   where: {
+     *     // ... the filter for the PushNotificacaos we want to count
+     *   }
+     * })
+    **/
+    count<T extends PushNotificacaoCountArgs>(
+      args?: Subset<T, PushNotificacaoCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PushNotificacaoCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PushNotificacao.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushNotificacaoAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PushNotificacaoAggregateArgs>(args: Subset<T, PushNotificacaoAggregateArgs>): Prisma.PrismaPromise<GetPushNotificacaoAggregateType<T>>
+
+    /**
+     * Group by PushNotificacao.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushNotificacaoGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PushNotificacaoGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PushNotificacaoGroupByArgs['orderBy'] }
+        : { orderBy?: PushNotificacaoGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PushNotificacaoGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPushNotificacaoGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PushNotificacao model
+   */
+  readonly fields: PushNotificacaoFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PushNotificacao.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PushNotificacaoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PushNotificacao model
+   */
+  interface PushNotificacaoFieldRefs {
+    readonly id: FieldRef<"PushNotificacao", 'String'>
+    readonly titulo: FieldRef<"PushNotificacao", 'String'>
+    readonly corpo: FieldRef<"PushNotificacao", 'String'>
+    readonly url: FieldRef<"PushNotificacao", 'String'>
+    readonly imagem: FieldRef<"PushNotificacao", 'String'>
+    readonly urgente: FieldRef<"PushNotificacao", 'Boolean'>
+    readonly publico: FieldRef<"PushNotificacao", 'String'>
+    readonly papeis: FieldRef<"PushNotificacao", 'String[]'>
+    readonly usuarioIds: FieldRef<"PushNotificacao", 'String[]'>
+    readonly somenteInstalados: FieldRef<"PushNotificacao", 'Boolean'>
+    readonly status: FieldRef<"PushNotificacao", 'String'>
+    readonly agendadaPara: FieldRef<"PushNotificacao", 'DateTime'>
+    readonly enviadaEm: FieldRef<"PushNotificacao", 'DateTime'>
+    readonly totalAlvos: FieldRef<"PushNotificacao", 'Int'>
+    readonly enviados: FieldRef<"PushNotificacao", 'Int'>
+    readonly falhas: FieldRef<"PushNotificacao", 'Int'>
+    readonly removidos: FieldRef<"PushNotificacao", 'Int'>
+    readonly erro: FieldRef<"PushNotificacao", 'String'>
+    readonly criadoPorId: FieldRef<"PushNotificacao", 'String'>
+    readonly criadoPorNome: FieldRef<"PushNotificacao", 'String'>
+    readonly criadoEm: FieldRef<"PushNotificacao", 'DateTime'>
+    readonly atualizadoEm: FieldRef<"PushNotificacao", 'DateTime'>
+    readonly ultimaVarreduraEm: FieldRef<"PushNotificacao", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PushNotificacao findUnique
+   */
+  export type PushNotificacaoFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushNotificacao
+     */
+    select?: PushNotificacaoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushNotificacao
+     */
+    omit?: PushNotificacaoOmit<ExtArgs> | null
+    /**
+     * Filter, which PushNotificacao to fetch.
+     */
+    where: PushNotificacaoWhereUniqueInput
+  }
+
+  /**
+   * PushNotificacao findUniqueOrThrow
+   */
+  export type PushNotificacaoFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushNotificacao
+     */
+    select?: PushNotificacaoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushNotificacao
+     */
+    omit?: PushNotificacaoOmit<ExtArgs> | null
+    /**
+     * Filter, which PushNotificacao to fetch.
+     */
+    where: PushNotificacaoWhereUniqueInput
+  }
+
+  /**
+   * PushNotificacao findFirst
+   */
+  export type PushNotificacaoFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushNotificacao
+     */
+    select?: PushNotificacaoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushNotificacao
+     */
+    omit?: PushNotificacaoOmit<ExtArgs> | null
+    /**
+     * Filter, which PushNotificacao to fetch.
+     */
+    where?: PushNotificacaoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushNotificacaos to fetch.
+     */
+    orderBy?: PushNotificacaoOrderByWithRelationInput | PushNotificacaoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PushNotificacaos.
+     */
+    cursor?: PushNotificacaoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushNotificacaos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushNotificacaos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PushNotificacaos.
+     */
+    distinct?: PushNotificacaoScalarFieldEnum | PushNotificacaoScalarFieldEnum[]
+  }
+
+  /**
+   * PushNotificacao findFirstOrThrow
+   */
+  export type PushNotificacaoFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushNotificacao
+     */
+    select?: PushNotificacaoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushNotificacao
+     */
+    omit?: PushNotificacaoOmit<ExtArgs> | null
+    /**
+     * Filter, which PushNotificacao to fetch.
+     */
+    where?: PushNotificacaoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushNotificacaos to fetch.
+     */
+    orderBy?: PushNotificacaoOrderByWithRelationInput | PushNotificacaoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PushNotificacaos.
+     */
+    cursor?: PushNotificacaoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushNotificacaos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushNotificacaos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PushNotificacaos.
+     */
+    distinct?: PushNotificacaoScalarFieldEnum | PushNotificacaoScalarFieldEnum[]
+  }
+
+  /**
+   * PushNotificacao findMany
+   */
+  export type PushNotificacaoFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushNotificacao
+     */
+    select?: PushNotificacaoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushNotificacao
+     */
+    omit?: PushNotificacaoOmit<ExtArgs> | null
+    /**
+     * Filter, which PushNotificacaos to fetch.
+     */
+    where?: PushNotificacaoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushNotificacaos to fetch.
+     */
+    orderBy?: PushNotificacaoOrderByWithRelationInput | PushNotificacaoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PushNotificacaos.
+     */
+    cursor?: PushNotificacaoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushNotificacaos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushNotificacaos.
+     */
+    skip?: number
+    distinct?: PushNotificacaoScalarFieldEnum | PushNotificacaoScalarFieldEnum[]
+  }
+
+  /**
+   * PushNotificacao create
+   */
+  export type PushNotificacaoCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushNotificacao
+     */
+    select?: PushNotificacaoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushNotificacao
+     */
+    omit?: PushNotificacaoOmit<ExtArgs> | null
+    /**
+     * The data needed to create a PushNotificacao.
+     */
+    data: XOR<PushNotificacaoCreateInput, PushNotificacaoUncheckedCreateInput>
+  }
+
+  /**
+   * PushNotificacao createMany
+   */
+  export type PushNotificacaoCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PushNotificacaos.
+     */
+    data: PushNotificacaoCreateManyInput | PushNotificacaoCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PushNotificacao createManyAndReturn
+   */
+  export type PushNotificacaoCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushNotificacao
+     */
+    select?: PushNotificacaoSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushNotificacao
+     */
+    omit?: PushNotificacaoOmit<ExtArgs> | null
+    /**
+     * The data used to create many PushNotificacaos.
+     */
+    data: PushNotificacaoCreateManyInput | PushNotificacaoCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PushNotificacao update
+   */
+  export type PushNotificacaoUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushNotificacao
+     */
+    select?: PushNotificacaoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushNotificacao
+     */
+    omit?: PushNotificacaoOmit<ExtArgs> | null
+    /**
+     * The data needed to update a PushNotificacao.
+     */
+    data: XOR<PushNotificacaoUpdateInput, PushNotificacaoUncheckedUpdateInput>
+    /**
+     * Choose, which PushNotificacao to update.
+     */
+    where: PushNotificacaoWhereUniqueInput
+  }
+
+  /**
+   * PushNotificacao updateMany
+   */
+  export type PushNotificacaoUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PushNotificacaos.
+     */
+    data: XOR<PushNotificacaoUpdateManyMutationInput, PushNotificacaoUncheckedUpdateManyInput>
+    /**
+     * Filter which PushNotificacaos to update
+     */
+    where?: PushNotificacaoWhereInput
+    /**
+     * Limit how many PushNotificacaos to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PushNotificacao updateManyAndReturn
+   */
+  export type PushNotificacaoUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushNotificacao
+     */
+    select?: PushNotificacaoSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushNotificacao
+     */
+    omit?: PushNotificacaoOmit<ExtArgs> | null
+    /**
+     * The data used to update PushNotificacaos.
+     */
+    data: XOR<PushNotificacaoUpdateManyMutationInput, PushNotificacaoUncheckedUpdateManyInput>
+    /**
+     * Filter which PushNotificacaos to update
+     */
+    where?: PushNotificacaoWhereInput
+    /**
+     * Limit how many PushNotificacaos to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PushNotificacao upsert
+   */
+  export type PushNotificacaoUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushNotificacao
+     */
+    select?: PushNotificacaoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushNotificacao
+     */
+    omit?: PushNotificacaoOmit<ExtArgs> | null
+    /**
+     * The filter to search for the PushNotificacao to update in case it exists.
+     */
+    where: PushNotificacaoWhereUniqueInput
+    /**
+     * In case the PushNotificacao found by the `where` argument doesn't exist, create a new PushNotificacao with this data.
+     */
+    create: XOR<PushNotificacaoCreateInput, PushNotificacaoUncheckedCreateInput>
+    /**
+     * In case the PushNotificacao was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PushNotificacaoUpdateInput, PushNotificacaoUncheckedUpdateInput>
+  }
+
+  /**
+   * PushNotificacao delete
+   */
+  export type PushNotificacaoDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushNotificacao
+     */
+    select?: PushNotificacaoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushNotificacao
+     */
+    omit?: PushNotificacaoOmit<ExtArgs> | null
+    /**
+     * Filter which PushNotificacao to delete.
+     */
+    where: PushNotificacaoWhereUniqueInput
+  }
+
+  /**
+   * PushNotificacao deleteMany
+   */
+  export type PushNotificacaoDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PushNotificacaos to delete
+     */
+    where?: PushNotificacaoWhereInput
+    /**
+     * Limit how many PushNotificacaos to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PushNotificacao without action
+   */
+  export type PushNotificacaoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushNotificacao
+     */
+    select?: PushNotificacaoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushNotificacao
+     */
+    omit?: PushNotificacaoOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -50118,6 +52829,53 @@ export namespace Prisma {
   };
 
   export type InternoMensagemScalarFieldEnum = (typeof InternoMensagemScalarFieldEnum)[keyof typeof InternoMensagemScalarFieldEnum]
+
+
+  export const PushAssinaturaScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    endpoint: 'endpoint',
+    p256dh: 'p256dh',
+    auth: 'auth',
+    userAgent: 'userAgent',
+    plataforma: 'plataforma',
+    instalado: 'instalado',
+    falhas: 'falhas',
+    criadoEm: 'criadoEm',
+    atualizadoEm: 'atualizadoEm',
+    ultimoEnvioEm: 'ultimoEnvioEm'
+  };
+
+  export type PushAssinaturaScalarFieldEnum = (typeof PushAssinaturaScalarFieldEnum)[keyof typeof PushAssinaturaScalarFieldEnum]
+
+
+  export const PushNotificacaoScalarFieldEnum: {
+    id: 'id',
+    titulo: 'titulo',
+    corpo: 'corpo',
+    url: 'url',
+    imagem: 'imagem',
+    urgente: 'urgente',
+    publico: 'publico',
+    papeis: 'papeis',
+    usuarioIds: 'usuarioIds',
+    somenteInstalados: 'somenteInstalados',
+    status: 'status',
+    agendadaPara: 'agendadaPara',
+    enviadaEm: 'enviadaEm',
+    totalAlvos: 'totalAlvos',
+    enviados: 'enviados',
+    falhas: 'falhas',
+    removidos: 'removidos',
+    erro: 'erro',
+    criadoPorId: 'criadoPorId',
+    criadoPorNome: 'criadoPorNome',
+    criadoEm: 'criadoEm',
+    atualizadoEm: 'atualizadoEm',
+    ultimaVarreduraEm: 'ultimaVarreduraEm'
+  };
+
+  export type PushNotificacaoScalarFieldEnum = (typeof PushNotificacaoScalarFieldEnum)[keyof typeof PushNotificacaoScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -52412,6 +55170,7 @@ export namespace Prisma {
     chatTemplates?: ChatTemplateListRelationFilter
     internoParticipacoes?: InternoParticipanteListRelationFilter
     internoMensagens?: InternoMensagemListRelationFilter
+    pushAssinaturas?: PushAssinaturaListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -52434,6 +55193,7 @@ export namespace Prisma {
     chatTemplates?: ChatTemplateOrderByRelationAggregateInput
     internoParticipacoes?: InternoParticipanteOrderByRelationAggregateInput
     internoMensagens?: InternoMensagemOrderByRelationAggregateInput
+    pushAssinaturas?: PushAssinaturaOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -52459,6 +55219,7 @@ export namespace Prisma {
     chatTemplates?: ChatTemplateListRelationFilter
     internoParticipacoes?: InternoParticipanteListRelationFilter
     internoMensagens?: InternoMensagemListRelationFilter
+    pushAssinaturas?: PushAssinaturaListRelationFilter
   }, "id" | "username">
 
   export type UserOrderByWithAggregationInput = {
@@ -53504,6 +56265,242 @@ export namespace Prisma {
     anexoNome?: StringNullableWithAggregatesFilter<"InternoMensagem"> | string | null
     baixadoPor?: StringNullableListFilter<"InternoMensagem">
     criadoEm?: DateTimeWithAggregatesFilter<"InternoMensagem"> | Date | string
+  }
+
+  export type PushAssinaturaWhereInput = {
+    AND?: PushAssinaturaWhereInput | PushAssinaturaWhereInput[]
+    OR?: PushAssinaturaWhereInput[]
+    NOT?: PushAssinaturaWhereInput | PushAssinaturaWhereInput[]
+    id?: StringFilter<"PushAssinatura"> | string
+    userId?: StringFilter<"PushAssinatura"> | string
+    endpoint?: StringFilter<"PushAssinatura"> | string
+    p256dh?: StringFilter<"PushAssinatura"> | string
+    auth?: StringFilter<"PushAssinatura"> | string
+    userAgent?: StringNullableFilter<"PushAssinatura"> | string | null
+    plataforma?: StringFilter<"PushAssinatura"> | string
+    instalado?: BoolFilter<"PushAssinatura"> | boolean
+    falhas?: IntFilter<"PushAssinatura"> | number
+    criadoEm?: DateTimeFilter<"PushAssinatura"> | Date | string
+    atualizadoEm?: DateTimeFilter<"PushAssinatura"> | Date | string
+    ultimoEnvioEm?: DateTimeNullableFilter<"PushAssinatura"> | Date | string | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type PushAssinaturaOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    endpoint?: SortOrder
+    p256dh?: SortOrder
+    auth?: SortOrder
+    userAgent?: SortOrderInput | SortOrder
+    plataforma?: SortOrder
+    instalado?: SortOrder
+    falhas?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    ultimoEnvioEm?: SortOrderInput | SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type PushAssinaturaWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    endpoint?: string
+    AND?: PushAssinaturaWhereInput | PushAssinaturaWhereInput[]
+    OR?: PushAssinaturaWhereInput[]
+    NOT?: PushAssinaturaWhereInput | PushAssinaturaWhereInput[]
+    userId?: StringFilter<"PushAssinatura"> | string
+    p256dh?: StringFilter<"PushAssinatura"> | string
+    auth?: StringFilter<"PushAssinatura"> | string
+    userAgent?: StringNullableFilter<"PushAssinatura"> | string | null
+    plataforma?: StringFilter<"PushAssinatura"> | string
+    instalado?: BoolFilter<"PushAssinatura"> | boolean
+    falhas?: IntFilter<"PushAssinatura"> | number
+    criadoEm?: DateTimeFilter<"PushAssinatura"> | Date | string
+    atualizadoEm?: DateTimeFilter<"PushAssinatura"> | Date | string
+    ultimoEnvioEm?: DateTimeNullableFilter<"PushAssinatura"> | Date | string | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "endpoint">
+
+  export type PushAssinaturaOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    endpoint?: SortOrder
+    p256dh?: SortOrder
+    auth?: SortOrder
+    userAgent?: SortOrderInput | SortOrder
+    plataforma?: SortOrder
+    instalado?: SortOrder
+    falhas?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    ultimoEnvioEm?: SortOrderInput | SortOrder
+    _count?: PushAssinaturaCountOrderByAggregateInput
+    _avg?: PushAssinaturaAvgOrderByAggregateInput
+    _max?: PushAssinaturaMaxOrderByAggregateInput
+    _min?: PushAssinaturaMinOrderByAggregateInput
+    _sum?: PushAssinaturaSumOrderByAggregateInput
+  }
+
+  export type PushAssinaturaScalarWhereWithAggregatesInput = {
+    AND?: PushAssinaturaScalarWhereWithAggregatesInput | PushAssinaturaScalarWhereWithAggregatesInput[]
+    OR?: PushAssinaturaScalarWhereWithAggregatesInput[]
+    NOT?: PushAssinaturaScalarWhereWithAggregatesInput | PushAssinaturaScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PushAssinatura"> | string
+    userId?: StringWithAggregatesFilter<"PushAssinatura"> | string
+    endpoint?: StringWithAggregatesFilter<"PushAssinatura"> | string
+    p256dh?: StringWithAggregatesFilter<"PushAssinatura"> | string
+    auth?: StringWithAggregatesFilter<"PushAssinatura"> | string
+    userAgent?: StringNullableWithAggregatesFilter<"PushAssinatura"> | string | null
+    plataforma?: StringWithAggregatesFilter<"PushAssinatura"> | string
+    instalado?: BoolWithAggregatesFilter<"PushAssinatura"> | boolean
+    falhas?: IntWithAggregatesFilter<"PushAssinatura"> | number
+    criadoEm?: DateTimeWithAggregatesFilter<"PushAssinatura"> | Date | string
+    atualizadoEm?: DateTimeWithAggregatesFilter<"PushAssinatura"> | Date | string
+    ultimoEnvioEm?: DateTimeNullableWithAggregatesFilter<"PushAssinatura"> | Date | string | null
+  }
+
+  export type PushNotificacaoWhereInput = {
+    AND?: PushNotificacaoWhereInput | PushNotificacaoWhereInput[]
+    OR?: PushNotificacaoWhereInput[]
+    NOT?: PushNotificacaoWhereInput | PushNotificacaoWhereInput[]
+    id?: StringFilter<"PushNotificacao"> | string
+    titulo?: StringFilter<"PushNotificacao"> | string
+    corpo?: StringFilter<"PushNotificacao"> | string
+    url?: StringFilter<"PushNotificacao"> | string
+    imagem?: StringNullableFilter<"PushNotificacao"> | string | null
+    urgente?: BoolFilter<"PushNotificacao"> | boolean
+    publico?: StringFilter<"PushNotificacao"> | string
+    papeis?: StringNullableListFilter<"PushNotificacao">
+    usuarioIds?: StringNullableListFilter<"PushNotificacao">
+    somenteInstalados?: BoolFilter<"PushNotificacao"> | boolean
+    status?: StringFilter<"PushNotificacao"> | string
+    agendadaPara?: DateTimeNullableFilter<"PushNotificacao"> | Date | string | null
+    enviadaEm?: DateTimeNullableFilter<"PushNotificacao"> | Date | string | null
+    totalAlvos?: IntFilter<"PushNotificacao"> | number
+    enviados?: IntFilter<"PushNotificacao"> | number
+    falhas?: IntFilter<"PushNotificacao"> | number
+    removidos?: IntFilter<"PushNotificacao"> | number
+    erro?: StringNullableFilter<"PushNotificacao"> | string | null
+    criadoPorId?: StringNullableFilter<"PushNotificacao"> | string | null
+    criadoPorNome?: StringNullableFilter<"PushNotificacao"> | string | null
+    criadoEm?: DateTimeFilter<"PushNotificacao"> | Date | string
+    atualizadoEm?: DateTimeFilter<"PushNotificacao"> | Date | string
+    ultimaVarreduraEm?: DateTimeNullableFilter<"PushNotificacao"> | Date | string | null
+  }
+
+  export type PushNotificacaoOrderByWithRelationInput = {
+    id?: SortOrder
+    titulo?: SortOrder
+    corpo?: SortOrder
+    url?: SortOrder
+    imagem?: SortOrderInput | SortOrder
+    urgente?: SortOrder
+    publico?: SortOrder
+    papeis?: SortOrder
+    usuarioIds?: SortOrder
+    somenteInstalados?: SortOrder
+    status?: SortOrder
+    agendadaPara?: SortOrderInput | SortOrder
+    enviadaEm?: SortOrderInput | SortOrder
+    totalAlvos?: SortOrder
+    enviados?: SortOrder
+    falhas?: SortOrder
+    removidos?: SortOrder
+    erro?: SortOrderInput | SortOrder
+    criadoPorId?: SortOrderInput | SortOrder
+    criadoPorNome?: SortOrderInput | SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    ultimaVarreduraEm?: SortOrderInput | SortOrder
+  }
+
+  export type PushNotificacaoWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: PushNotificacaoWhereInput | PushNotificacaoWhereInput[]
+    OR?: PushNotificacaoWhereInput[]
+    NOT?: PushNotificacaoWhereInput | PushNotificacaoWhereInput[]
+    titulo?: StringFilter<"PushNotificacao"> | string
+    corpo?: StringFilter<"PushNotificacao"> | string
+    url?: StringFilter<"PushNotificacao"> | string
+    imagem?: StringNullableFilter<"PushNotificacao"> | string | null
+    urgente?: BoolFilter<"PushNotificacao"> | boolean
+    publico?: StringFilter<"PushNotificacao"> | string
+    papeis?: StringNullableListFilter<"PushNotificacao">
+    usuarioIds?: StringNullableListFilter<"PushNotificacao">
+    somenteInstalados?: BoolFilter<"PushNotificacao"> | boolean
+    status?: StringFilter<"PushNotificacao"> | string
+    agendadaPara?: DateTimeNullableFilter<"PushNotificacao"> | Date | string | null
+    enviadaEm?: DateTimeNullableFilter<"PushNotificacao"> | Date | string | null
+    totalAlvos?: IntFilter<"PushNotificacao"> | number
+    enviados?: IntFilter<"PushNotificacao"> | number
+    falhas?: IntFilter<"PushNotificacao"> | number
+    removidos?: IntFilter<"PushNotificacao"> | number
+    erro?: StringNullableFilter<"PushNotificacao"> | string | null
+    criadoPorId?: StringNullableFilter<"PushNotificacao"> | string | null
+    criadoPorNome?: StringNullableFilter<"PushNotificacao"> | string | null
+    criadoEm?: DateTimeFilter<"PushNotificacao"> | Date | string
+    atualizadoEm?: DateTimeFilter<"PushNotificacao"> | Date | string
+    ultimaVarreduraEm?: DateTimeNullableFilter<"PushNotificacao"> | Date | string | null
+  }, "id">
+
+  export type PushNotificacaoOrderByWithAggregationInput = {
+    id?: SortOrder
+    titulo?: SortOrder
+    corpo?: SortOrder
+    url?: SortOrder
+    imagem?: SortOrderInput | SortOrder
+    urgente?: SortOrder
+    publico?: SortOrder
+    papeis?: SortOrder
+    usuarioIds?: SortOrder
+    somenteInstalados?: SortOrder
+    status?: SortOrder
+    agendadaPara?: SortOrderInput | SortOrder
+    enviadaEm?: SortOrderInput | SortOrder
+    totalAlvos?: SortOrder
+    enviados?: SortOrder
+    falhas?: SortOrder
+    removidos?: SortOrder
+    erro?: SortOrderInput | SortOrder
+    criadoPorId?: SortOrderInput | SortOrder
+    criadoPorNome?: SortOrderInput | SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    ultimaVarreduraEm?: SortOrderInput | SortOrder
+    _count?: PushNotificacaoCountOrderByAggregateInput
+    _avg?: PushNotificacaoAvgOrderByAggregateInput
+    _max?: PushNotificacaoMaxOrderByAggregateInput
+    _min?: PushNotificacaoMinOrderByAggregateInput
+    _sum?: PushNotificacaoSumOrderByAggregateInput
+  }
+
+  export type PushNotificacaoScalarWhereWithAggregatesInput = {
+    AND?: PushNotificacaoScalarWhereWithAggregatesInput | PushNotificacaoScalarWhereWithAggregatesInput[]
+    OR?: PushNotificacaoScalarWhereWithAggregatesInput[]
+    NOT?: PushNotificacaoScalarWhereWithAggregatesInput | PushNotificacaoScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PushNotificacao"> | string
+    titulo?: StringWithAggregatesFilter<"PushNotificacao"> | string
+    corpo?: StringWithAggregatesFilter<"PushNotificacao"> | string
+    url?: StringWithAggregatesFilter<"PushNotificacao"> | string
+    imagem?: StringNullableWithAggregatesFilter<"PushNotificacao"> | string | null
+    urgente?: BoolWithAggregatesFilter<"PushNotificacao"> | boolean
+    publico?: StringWithAggregatesFilter<"PushNotificacao"> | string
+    papeis?: StringNullableListFilter<"PushNotificacao">
+    usuarioIds?: StringNullableListFilter<"PushNotificacao">
+    somenteInstalados?: BoolWithAggregatesFilter<"PushNotificacao"> | boolean
+    status?: StringWithAggregatesFilter<"PushNotificacao"> | string
+    agendadaPara?: DateTimeNullableWithAggregatesFilter<"PushNotificacao"> | Date | string | null
+    enviadaEm?: DateTimeNullableWithAggregatesFilter<"PushNotificacao"> | Date | string | null
+    totalAlvos?: IntWithAggregatesFilter<"PushNotificacao"> | number
+    enviados?: IntWithAggregatesFilter<"PushNotificacao"> | number
+    falhas?: IntWithAggregatesFilter<"PushNotificacao"> | number
+    removidos?: IntWithAggregatesFilter<"PushNotificacao"> | number
+    erro?: StringNullableWithAggregatesFilter<"PushNotificacao"> | string | null
+    criadoPorId?: StringNullableWithAggregatesFilter<"PushNotificacao"> | string | null
+    criadoPorNome?: StringNullableWithAggregatesFilter<"PushNotificacao"> | string | null
+    criadoEm?: DateTimeWithAggregatesFilter<"PushNotificacao"> | Date | string
+    atualizadoEm?: DateTimeWithAggregatesFilter<"PushNotificacao"> | Date | string
+    ultimaVarreduraEm?: DateTimeNullableWithAggregatesFilter<"PushNotificacao"> | Date | string | null
   }
 
   export type LeadCreateInput = {
@@ -55846,6 +58843,7 @@ export namespace Prisma {
     chatTemplates?: ChatTemplateCreateNestedManyWithoutUserInput
     internoParticipacoes?: InternoParticipanteCreateNestedManyWithoutUserInput
     internoMensagens?: InternoMensagemCreateNestedManyWithoutAutorInput
+    pushAssinaturas?: PushAssinaturaCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -55868,6 +58866,7 @@ export namespace Prisma {
     chatTemplates?: ChatTemplateUncheckedCreateNestedManyWithoutUserInput
     internoParticipacoes?: InternoParticipanteUncheckedCreateNestedManyWithoutUserInput
     internoMensagens?: InternoMensagemUncheckedCreateNestedManyWithoutAutorInput
+    pushAssinaturas?: PushAssinaturaUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -55890,6 +58889,7 @@ export namespace Prisma {
     chatTemplates?: ChatTemplateUpdateManyWithoutUserNestedInput
     internoParticipacoes?: InternoParticipanteUpdateManyWithoutUserNestedInput
     internoMensagens?: InternoMensagemUpdateManyWithoutAutorNestedInput
+    pushAssinaturas?: PushAssinaturaUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -55912,6 +58912,7 @@ export namespace Prisma {
     chatTemplates?: ChatTemplateUncheckedUpdateManyWithoutUserNestedInput
     internoParticipacoes?: InternoParticipanteUncheckedUpdateManyWithoutUserNestedInput
     internoMensagens?: InternoMensagemUncheckedUpdateManyWithoutAutorNestedInput
+    pushAssinaturas?: PushAssinaturaUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -57019,6 +60020,292 @@ export namespace Prisma {
     anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
     baixadoPor?: InternoMensagemUpdatebaixadoPorInput | string[]
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PushAssinaturaCreateInput = {
+    id?: string
+    endpoint: string
+    p256dh: string
+    auth: string
+    userAgent?: string | null
+    plataforma?: string
+    instalado?: boolean
+    falhas?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    ultimoEnvioEm?: Date | string | null
+    user: UserCreateNestedOneWithoutPushAssinaturasInput
+  }
+
+  export type PushAssinaturaUncheckedCreateInput = {
+    id?: string
+    userId: string
+    endpoint: string
+    p256dh: string
+    auth: string
+    userAgent?: string | null
+    plataforma?: string
+    instalado?: boolean
+    falhas?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    ultimoEnvioEm?: Date | string | null
+  }
+
+  export type PushAssinaturaUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    plataforma?: StringFieldUpdateOperationsInput | string
+    instalado?: BoolFieldUpdateOperationsInput | boolean
+    falhas?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutPushAssinaturasNestedInput
+  }
+
+  export type PushAssinaturaUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    plataforma?: StringFieldUpdateOperationsInput | string
+    instalado?: BoolFieldUpdateOperationsInput | boolean
+    falhas?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PushAssinaturaCreateManyInput = {
+    id?: string
+    userId: string
+    endpoint: string
+    p256dh: string
+    auth: string
+    userAgent?: string | null
+    plataforma?: string
+    instalado?: boolean
+    falhas?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    ultimoEnvioEm?: Date | string | null
+  }
+
+  export type PushAssinaturaUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    plataforma?: StringFieldUpdateOperationsInput | string
+    instalado?: BoolFieldUpdateOperationsInput | boolean
+    falhas?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PushAssinaturaUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    plataforma?: StringFieldUpdateOperationsInput | string
+    instalado?: BoolFieldUpdateOperationsInput | boolean
+    falhas?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PushNotificacaoCreateInput = {
+    id?: string
+    titulo: string
+    corpo: string
+    url?: string
+    imagem?: string | null
+    urgente?: boolean
+    publico?: string
+    papeis?: PushNotificacaoCreatepapeisInput | string[]
+    usuarioIds?: PushNotificacaoCreateusuarioIdsInput | string[]
+    somenteInstalados?: boolean
+    status?: string
+    agendadaPara?: Date | string | null
+    enviadaEm?: Date | string | null
+    totalAlvos?: number
+    enviados?: number
+    falhas?: number
+    removidos?: number
+    erro?: string | null
+    criadoPorId?: string | null
+    criadoPorNome?: string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    ultimaVarreduraEm?: Date | string | null
+  }
+
+  export type PushNotificacaoUncheckedCreateInput = {
+    id?: string
+    titulo: string
+    corpo: string
+    url?: string
+    imagem?: string | null
+    urgente?: boolean
+    publico?: string
+    papeis?: PushNotificacaoCreatepapeisInput | string[]
+    usuarioIds?: PushNotificacaoCreateusuarioIdsInput | string[]
+    somenteInstalados?: boolean
+    status?: string
+    agendadaPara?: Date | string | null
+    enviadaEm?: Date | string | null
+    totalAlvos?: number
+    enviados?: number
+    falhas?: number
+    removidos?: number
+    erro?: string | null
+    criadoPorId?: string | null
+    criadoPorNome?: string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    ultimaVarreduraEm?: Date | string | null
+  }
+
+  export type PushNotificacaoUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    titulo?: StringFieldUpdateOperationsInput | string
+    corpo?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    imagem?: NullableStringFieldUpdateOperationsInput | string | null
+    urgente?: BoolFieldUpdateOperationsInput | boolean
+    publico?: StringFieldUpdateOperationsInput | string
+    papeis?: PushNotificacaoUpdatepapeisInput | string[]
+    usuarioIds?: PushNotificacaoUpdateusuarioIdsInput | string[]
+    somenteInstalados?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    agendadaPara?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enviadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    totalAlvos?: IntFieldUpdateOperationsInput | number
+    enviados?: IntFieldUpdateOperationsInput | number
+    falhas?: IntFieldUpdateOperationsInput | number
+    removidos?: IntFieldUpdateOperationsInput | number
+    erro?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoPorId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoPorNome?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimaVarreduraEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PushNotificacaoUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    titulo?: StringFieldUpdateOperationsInput | string
+    corpo?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    imagem?: NullableStringFieldUpdateOperationsInput | string | null
+    urgente?: BoolFieldUpdateOperationsInput | boolean
+    publico?: StringFieldUpdateOperationsInput | string
+    papeis?: PushNotificacaoUpdatepapeisInput | string[]
+    usuarioIds?: PushNotificacaoUpdateusuarioIdsInput | string[]
+    somenteInstalados?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    agendadaPara?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enviadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    totalAlvos?: IntFieldUpdateOperationsInput | number
+    enviados?: IntFieldUpdateOperationsInput | number
+    falhas?: IntFieldUpdateOperationsInput | number
+    removidos?: IntFieldUpdateOperationsInput | number
+    erro?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoPorId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoPorNome?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimaVarreduraEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PushNotificacaoCreateManyInput = {
+    id?: string
+    titulo: string
+    corpo: string
+    url?: string
+    imagem?: string | null
+    urgente?: boolean
+    publico?: string
+    papeis?: PushNotificacaoCreatepapeisInput | string[]
+    usuarioIds?: PushNotificacaoCreateusuarioIdsInput | string[]
+    somenteInstalados?: boolean
+    status?: string
+    agendadaPara?: Date | string | null
+    enviadaEm?: Date | string | null
+    totalAlvos?: number
+    enviados?: number
+    falhas?: number
+    removidos?: number
+    erro?: string | null
+    criadoPorId?: string | null
+    criadoPorNome?: string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    ultimaVarreduraEm?: Date | string | null
+  }
+
+  export type PushNotificacaoUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    titulo?: StringFieldUpdateOperationsInput | string
+    corpo?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    imagem?: NullableStringFieldUpdateOperationsInput | string | null
+    urgente?: BoolFieldUpdateOperationsInput | boolean
+    publico?: StringFieldUpdateOperationsInput | string
+    papeis?: PushNotificacaoUpdatepapeisInput | string[]
+    usuarioIds?: PushNotificacaoUpdateusuarioIdsInput | string[]
+    somenteInstalados?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    agendadaPara?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enviadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    totalAlvos?: IntFieldUpdateOperationsInput | number
+    enviados?: IntFieldUpdateOperationsInput | number
+    falhas?: IntFieldUpdateOperationsInput | number
+    removidos?: IntFieldUpdateOperationsInput | number
+    erro?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoPorId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoPorNome?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimaVarreduraEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PushNotificacaoUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    titulo?: StringFieldUpdateOperationsInput | string
+    corpo?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    imagem?: NullableStringFieldUpdateOperationsInput | string | null
+    urgente?: BoolFieldUpdateOperationsInput | boolean
+    publico?: StringFieldUpdateOperationsInput | string
+    papeis?: PushNotificacaoUpdatepapeisInput | string[]
+    usuarioIds?: PushNotificacaoUpdateusuarioIdsInput | string[]
+    somenteInstalados?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    agendadaPara?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enviadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    totalAlvos?: IntFieldUpdateOperationsInput | number
+    enviados?: IntFieldUpdateOperationsInput | number
+    falhas?: IntFieldUpdateOperationsInput | number
+    removidos?: IntFieldUpdateOperationsInput | number
+    erro?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoPorId?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoPorNome?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimaVarreduraEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -58682,6 +61969,12 @@ export namespace Prisma {
     none?: InternoMensagemWhereInput
   }
 
+  export type PushAssinaturaListRelationFilter = {
+    every?: PushAssinaturaWhereInput
+    some?: PushAssinaturaWhereInput
+    none?: PushAssinaturaWhereInput
+  }
+
   export type ChatTemplateOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -58691,6 +61984,10 @@ export namespace Prisma {
   }
 
   export type InternoMensagemOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PushAssinaturaOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -59376,6 +62673,147 @@ export namespace Prisma {
 
   export type InternoMensagemSumOrderByAggregateInput = {
     anexoTamanho?: SortOrder
+  }
+
+  export type PushAssinaturaCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    endpoint?: SortOrder
+    p256dh?: SortOrder
+    auth?: SortOrder
+    userAgent?: SortOrder
+    plataforma?: SortOrder
+    instalado?: SortOrder
+    falhas?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    ultimoEnvioEm?: SortOrder
+  }
+
+  export type PushAssinaturaAvgOrderByAggregateInput = {
+    falhas?: SortOrder
+  }
+
+  export type PushAssinaturaMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    endpoint?: SortOrder
+    p256dh?: SortOrder
+    auth?: SortOrder
+    userAgent?: SortOrder
+    plataforma?: SortOrder
+    instalado?: SortOrder
+    falhas?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    ultimoEnvioEm?: SortOrder
+  }
+
+  export type PushAssinaturaMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    endpoint?: SortOrder
+    p256dh?: SortOrder
+    auth?: SortOrder
+    userAgent?: SortOrder
+    plataforma?: SortOrder
+    instalado?: SortOrder
+    falhas?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    ultimoEnvioEm?: SortOrder
+  }
+
+  export type PushAssinaturaSumOrderByAggregateInput = {
+    falhas?: SortOrder
+  }
+
+  export type PushNotificacaoCountOrderByAggregateInput = {
+    id?: SortOrder
+    titulo?: SortOrder
+    corpo?: SortOrder
+    url?: SortOrder
+    imagem?: SortOrder
+    urgente?: SortOrder
+    publico?: SortOrder
+    papeis?: SortOrder
+    usuarioIds?: SortOrder
+    somenteInstalados?: SortOrder
+    status?: SortOrder
+    agendadaPara?: SortOrder
+    enviadaEm?: SortOrder
+    totalAlvos?: SortOrder
+    enviados?: SortOrder
+    falhas?: SortOrder
+    removidos?: SortOrder
+    erro?: SortOrder
+    criadoPorId?: SortOrder
+    criadoPorNome?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    ultimaVarreduraEm?: SortOrder
+  }
+
+  export type PushNotificacaoAvgOrderByAggregateInput = {
+    totalAlvos?: SortOrder
+    enviados?: SortOrder
+    falhas?: SortOrder
+    removidos?: SortOrder
+  }
+
+  export type PushNotificacaoMaxOrderByAggregateInput = {
+    id?: SortOrder
+    titulo?: SortOrder
+    corpo?: SortOrder
+    url?: SortOrder
+    imagem?: SortOrder
+    urgente?: SortOrder
+    publico?: SortOrder
+    somenteInstalados?: SortOrder
+    status?: SortOrder
+    agendadaPara?: SortOrder
+    enviadaEm?: SortOrder
+    totalAlvos?: SortOrder
+    enviados?: SortOrder
+    falhas?: SortOrder
+    removidos?: SortOrder
+    erro?: SortOrder
+    criadoPorId?: SortOrder
+    criadoPorNome?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    ultimaVarreduraEm?: SortOrder
+  }
+
+  export type PushNotificacaoMinOrderByAggregateInput = {
+    id?: SortOrder
+    titulo?: SortOrder
+    corpo?: SortOrder
+    url?: SortOrder
+    imagem?: SortOrder
+    urgente?: SortOrder
+    publico?: SortOrder
+    somenteInstalados?: SortOrder
+    status?: SortOrder
+    agendadaPara?: SortOrder
+    enviadaEm?: SortOrder
+    totalAlvos?: SortOrder
+    enviados?: SortOrder
+    falhas?: SortOrder
+    removidos?: SortOrder
+    erro?: SortOrder
+    criadoPorId?: SortOrder
+    criadoPorNome?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    ultimaVarreduraEm?: SortOrder
+  }
+
+  export type PushNotificacaoSumOrderByAggregateInput = {
+    totalAlvos?: SortOrder
+    enviados?: SortOrder
+    falhas?: SortOrder
+    removidos?: SortOrder
   }
 
   export type CampaignCreateNestedOneWithoutLeadsInput = {
@@ -60307,6 +63745,13 @@ export namespace Prisma {
     connect?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
   }
 
+  export type PushAssinaturaCreateNestedManyWithoutUserInput = {
+    create?: XOR<PushAssinaturaCreateWithoutUserInput, PushAssinaturaUncheckedCreateWithoutUserInput> | PushAssinaturaCreateWithoutUserInput[] | PushAssinaturaUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PushAssinaturaCreateOrConnectWithoutUserInput | PushAssinaturaCreateOrConnectWithoutUserInput[]
+    createMany?: PushAssinaturaCreateManyUserInputEnvelope
+    connect?: PushAssinaturaWhereUniqueInput | PushAssinaturaWhereUniqueInput[]
+  }
+
   export type UserFotoUncheckedCreateNestedOneWithoutUserInput = {
     create?: XOR<UserFotoCreateWithoutUserInput, UserFotoUncheckedCreateWithoutUserInput>
     connectOrCreate?: UserFotoCreateOrConnectWithoutUserInput
@@ -60338,6 +63783,13 @@ export namespace Prisma {
     connectOrCreate?: InternoMensagemCreateOrConnectWithoutAutorInput | InternoMensagemCreateOrConnectWithoutAutorInput[]
     createMany?: InternoMensagemCreateManyAutorInputEnvelope
     connect?: InternoMensagemWhereUniqueInput | InternoMensagemWhereUniqueInput[]
+  }
+
+  export type PushAssinaturaUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<PushAssinaturaCreateWithoutUserInput, PushAssinaturaUncheckedCreateWithoutUserInput> | PushAssinaturaCreateWithoutUserInput[] | PushAssinaturaUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PushAssinaturaCreateOrConnectWithoutUserInput | PushAssinaturaCreateOrConnectWithoutUserInput[]
+    createMany?: PushAssinaturaCreateManyUserInputEnvelope
+    connect?: PushAssinaturaWhereUniqueInput | PushAssinaturaWhereUniqueInput[]
   }
 
   export type EnumUserRoleFieldUpdateOperationsInput = {
@@ -60416,6 +63868,20 @@ export namespace Prisma {
     deleteMany?: InternoMensagemScalarWhereInput | InternoMensagemScalarWhereInput[]
   }
 
+  export type PushAssinaturaUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PushAssinaturaCreateWithoutUserInput, PushAssinaturaUncheckedCreateWithoutUserInput> | PushAssinaturaCreateWithoutUserInput[] | PushAssinaturaUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PushAssinaturaCreateOrConnectWithoutUserInput | PushAssinaturaCreateOrConnectWithoutUserInput[]
+    upsert?: PushAssinaturaUpsertWithWhereUniqueWithoutUserInput | PushAssinaturaUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PushAssinaturaCreateManyUserInputEnvelope
+    set?: PushAssinaturaWhereUniqueInput | PushAssinaturaWhereUniqueInput[]
+    disconnect?: PushAssinaturaWhereUniqueInput | PushAssinaturaWhereUniqueInput[]
+    delete?: PushAssinaturaWhereUniqueInput | PushAssinaturaWhereUniqueInput[]
+    connect?: PushAssinaturaWhereUniqueInput | PushAssinaturaWhereUniqueInput[]
+    update?: PushAssinaturaUpdateWithWhereUniqueWithoutUserInput | PushAssinaturaUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PushAssinaturaUpdateManyWithWhereWithoutUserInput | PushAssinaturaUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PushAssinaturaScalarWhereInput | PushAssinaturaScalarWhereInput[]
+  }
+
   export type UserFotoUncheckedUpdateOneWithoutUserNestedInput = {
     create?: XOR<UserFotoCreateWithoutUserInput, UserFotoUncheckedCreateWithoutUserInput>
     connectOrCreate?: UserFotoCreateOrConnectWithoutUserInput
@@ -60476,6 +63942,20 @@ export namespace Prisma {
     update?: InternoMensagemUpdateWithWhereUniqueWithoutAutorInput | InternoMensagemUpdateWithWhereUniqueWithoutAutorInput[]
     updateMany?: InternoMensagemUpdateManyWithWhereWithoutAutorInput | InternoMensagemUpdateManyWithWhereWithoutAutorInput[]
     deleteMany?: InternoMensagemScalarWhereInput | InternoMensagemScalarWhereInput[]
+  }
+
+  export type PushAssinaturaUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PushAssinaturaCreateWithoutUserInput, PushAssinaturaUncheckedCreateWithoutUserInput> | PushAssinaturaCreateWithoutUserInput[] | PushAssinaturaUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PushAssinaturaCreateOrConnectWithoutUserInput | PushAssinaturaCreateOrConnectWithoutUserInput[]
+    upsert?: PushAssinaturaUpsertWithWhereUniqueWithoutUserInput | PushAssinaturaUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PushAssinaturaCreateManyUserInputEnvelope
+    set?: PushAssinaturaWhereUniqueInput | PushAssinaturaWhereUniqueInput[]
+    disconnect?: PushAssinaturaWhereUniqueInput | PushAssinaturaWhereUniqueInput[]
+    delete?: PushAssinaturaWhereUniqueInput | PushAssinaturaWhereUniqueInput[]
+    connect?: PushAssinaturaWhereUniqueInput | PushAssinaturaWhereUniqueInput[]
+    update?: PushAssinaturaUpdateWithWhereUniqueWithoutUserInput | PushAssinaturaUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PushAssinaturaUpdateManyWithWhereWithoutUserInput | PushAssinaturaUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PushAssinaturaScalarWhereInput | PushAssinaturaScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutFotoInput = {
@@ -61201,6 +64681,38 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutInternoMensagensInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutInternoMensagensInput, UserUpdateWithoutInternoMensagensInput>, UserUncheckedUpdateWithoutInternoMensagensInput>
+  }
+
+  export type UserCreateNestedOneWithoutPushAssinaturasInput = {
+    create?: XOR<UserCreateWithoutPushAssinaturasInput, UserUncheckedCreateWithoutPushAssinaturasInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPushAssinaturasInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutPushAssinaturasNestedInput = {
+    create?: XOR<UserCreateWithoutPushAssinaturasInput, UserUncheckedCreateWithoutPushAssinaturasInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPushAssinaturasInput
+    upsert?: UserUpsertWithoutPushAssinaturasInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPushAssinaturasInput, UserUpdateWithoutPushAssinaturasInput>, UserUncheckedUpdateWithoutPushAssinaturasInput>
+  }
+
+  export type PushNotificacaoCreatepapeisInput = {
+    set: string[]
+  }
+
+  export type PushNotificacaoCreateusuarioIdsInput = {
+    set: string[]
+  }
+
+  export type PushNotificacaoUpdatepapeisInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type PushNotificacaoUpdateusuarioIdsInput = {
+    set?: string[]
+    push?: string | string[]
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -63984,6 +67496,44 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type PushAssinaturaCreateWithoutUserInput = {
+    id?: string
+    endpoint: string
+    p256dh: string
+    auth: string
+    userAgent?: string | null
+    plataforma?: string
+    instalado?: boolean
+    falhas?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    ultimoEnvioEm?: Date | string | null
+  }
+
+  export type PushAssinaturaUncheckedCreateWithoutUserInput = {
+    id?: string
+    endpoint: string
+    p256dh: string
+    auth: string
+    userAgent?: string | null
+    plataforma?: string
+    instalado?: boolean
+    falhas?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    ultimoEnvioEm?: Date | string | null
+  }
+
+  export type PushAssinaturaCreateOrConnectWithoutUserInput = {
+    where: PushAssinaturaWhereUniqueInput
+    create: XOR<PushAssinaturaCreateWithoutUserInput, PushAssinaturaUncheckedCreateWithoutUserInput>
+  }
+
+  export type PushAssinaturaCreateManyUserInputEnvelope = {
+    data: PushAssinaturaCreateManyUserInput | PushAssinaturaCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserFotoUpsertWithoutUserInput = {
     update: XOR<UserFotoUpdateWithoutUserInput, UserFotoUncheckedUpdateWithoutUserInput>
     create: XOR<UserFotoCreateWithoutUserInput, UserFotoUncheckedCreateWithoutUserInput>
@@ -64125,6 +67675,40 @@ export namespace Prisma {
     criadoEm?: DateTimeFilter<"InternoMensagem"> | Date | string
   }
 
+  export type PushAssinaturaUpsertWithWhereUniqueWithoutUserInput = {
+    where: PushAssinaturaWhereUniqueInput
+    update: XOR<PushAssinaturaUpdateWithoutUserInput, PushAssinaturaUncheckedUpdateWithoutUserInput>
+    create: XOR<PushAssinaturaCreateWithoutUserInput, PushAssinaturaUncheckedCreateWithoutUserInput>
+  }
+
+  export type PushAssinaturaUpdateWithWhereUniqueWithoutUserInput = {
+    where: PushAssinaturaWhereUniqueInput
+    data: XOR<PushAssinaturaUpdateWithoutUserInput, PushAssinaturaUncheckedUpdateWithoutUserInput>
+  }
+
+  export type PushAssinaturaUpdateManyWithWhereWithoutUserInput = {
+    where: PushAssinaturaScalarWhereInput
+    data: XOR<PushAssinaturaUpdateManyMutationInput, PushAssinaturaUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type PushAssinaturaScalarWhereInput = {
+    AND?: PushAssinaturaScalarWhereInput | PushAssinaturaScalarWhereInput[]
+    OR?: PushAssinaturaScalarWhereInput[]
+    NOT?: PushAssinaturaScalarWhereInput | PushAssinaturaScalarWhereInput[]
+    id?: StringFilter<"PushAssinatura"> | string
+    userId?: StringFilter<"PushAssinatura"> | string
+    endpoint?: StringFilter<"PushAssinatura"> | string
+    p256dh?: StringFilter<"PushAssinatura"> | string
+    auth?: StringFilter<"PushAssinatura"> | string
+    userAgent?: StringNullableFilter<"PushAssinatura"> | string | null
+    plataforma?: StringFilter<"PushAssinatura"> | string
+    instalado?: BoolFilter<"PushAssinatura"> | boolean
+    falhas?: IntFilter<"PushAssinatura"> | number
+    criadoEm?: DateTimeFilter<"PushAssinatura"> | Date | string
+    atualizadoEm?: DateTimeFilter<"PushAssinatura"> | Date | string
+    ultimoEnvioEm?: DateTimeNullableFilter<"PushAssinatura"> | Date | string | null
+  }
+
   export type UserCreateWithoutFotoInput = {
     id?: string
     workspaceId: string
@@ -64144,6 +67728,7 @@ export namespace Prisma {
     chatTemplates?: ChatTemplateCreateNestedManyWithoutUserInput
     internoParticipacoes?: InternoParticipanteCreateNestedManyWithoutUserInput
     internoMensagens?: InternoMensagemCreateNestedManyWithoutAutorInput
+    pushAssinaturas?: PushAssinaturaCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFotoInput = {
@@ -64165,6 +67750,7 @@ export namespace Prisma {
     chatTemplates?: ChatTemplateUncheckedCreateNestedManyWithoutUserInput
     internoParticipacoes?: InternoParticipanteUncheckedCreateNestedManyWithoutUserInput
     internoMensagens?: InternoMensagemUncheckedCreateNestedManyWithoutAutorInput
+    pushAssinaturas?: PushAssinaturaUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFotoInput = {
@@ -64202,6 +67788,7 @@ export namespace Prisma {
     chatTemplates?: ChatTemplateUpdateManyWithoutUserNestedInput
     internoParticipacoes?: InternoParticipanteUpdateManyWithoutUserNestedInput
     internoMensagens?: InternoMensagemUpdateManyWithoutAutorNestedInput
+    pushAssinaturas?: PushAssinaturaUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFotoInput = {
@@ -64223,6 +67810,7 @@ export namespace Prisma {
     chatTemplates?: ChatTemplateUncheckedUpdateManyWithoutUserNestedInput
     internoParticipacoes?: InternoParticipanteUncheckedUpdateManyWithoutUserNestedInput
     internoMensagens?: InternoMensagemUncheckedUpdateManyWithoutAutorNestedInput
+    pushAssinaturas?: PushAssinaturaUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AtendenteDepartamentoCreateWithoutDepartamentoInput = {
@@ -64587,6 +68175,7 @@ export namespace Prisma {
     chatTemplates?: ChatTemplateCreateNestedManyWithoutUserInput
     internoParticipacoes?: InternoParticipanteCreateNestedManyWithoutUserInput
     internoMensagens?: InternoMensagemCreateNestedManyWithoutAutorInput
+    pushAssinaturas?: PushAssinaturaCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAtendenteInput = {
@@ -64608,6 +68197,7 @@ export namespace Prisma {
     chatTemplates?: ChatTemplateUncheckedCreateNestedManyWithoutUserInput
     internoParticipacoes?: InternoParticipanteUncheckedCreateNestedManyWithoutUserInput
     internoMensagens?: InternoMensagemUncheckedCreateNestedManyWithoutAutorInput
+    pushAssinaturas?: PushAssinaturaUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAtendenteInput = {
@@ -64685,6 +68275,7 @@ export namespace Prisma {
     chatTemplates?: ChatTemplateUpdateManyWithoutUserNestedInput
     internoParticipacoes?: InternoParticipanteUpdateManyWithoutUserNestedInput
     internoMensagens?: InternoMensagemUpdateManyWithoutAutorNestedInput
+    pushAssinaturas?: PushAssinaturaUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAtendenteInput = {
@@ -64706,6 +68297,7 @@ export namespace Prisma {
     chatTemplates?: ChatTemplateUncheckedUpdateManyWithoutUserNestedInput
     internoParticipacoes?: InternoParticipanteUncheckedUpdateManyWithoutUserNestedInput
     internoMensagens?: InternoMensagemUncheckedUpdateManyWithoutAutorNestedInput
+    pushAssinaturas?: PushAssinaturaUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AtendenteDepartamentoUpsertWithWhereUniqueWithoutAtendenteInput = {
@@ -65378,6 +68970,7 @@ export namespace Prisma {
     atendente?: AtendenteCreateNestedOneWithoutUserInput
     internoParticipacoes?: InternoParticipanteCreateNestedManyWithoutUserInput
     internoMensagens?: InternoMensagemCreateNestedManyWithoutAutorInput
+    pushAssinaturas?: PushAssinaturaCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutChatTemplatesInput = {
@@ -65399,6 +68992,7 @@ export namespace Prisma {
     atendente?: AtendenteUncheckedCreateNestedOneWithoutUserInput
     internoParticipacoes?: InternoParticipanteUncheckedCreateNestedManyWithoutUserInput
     internoMensagens?: InternoMensagemUncheckedCreateNestedManyWithoutAutorInput
+    pushAssinaturas?: PushAssinaturaUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutChatTemplatesInput = {
@@ -65436,6 +69030,7 @@ export namespace Prisma {
     atendente?: AtendenteUpdateOneWithoutUserNestedInput
     internoParticipacoes?: InternoParticipanteUpdateManyWithoutUserNestedInput
     internoMensagens?: InternoMensagemUpdateManyWithoutAutorNestedInput
+    pushAssinaturas?: PushAssinaturaUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChatTemplatesInput = {
@@ -65457,6 +69052,7 @@ export namespace Prisma {
     atendente?: AtendenteUncheckedUpdateOneWithoutUserNestedInput
     internoParticipacoes?: InternoParticipanteUncheckedUpdateManyWithoutUserNestedInput
     internoMensagens?: InternoMensagemUncheckedUpdateManyWithoutAutorNestedInput
+    pushAssinaturas?: PushAssinaturaUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type FollowUpBotCreateWithoutTemplatesInput = {
@@ -65989,6 +69585,7 @@ export namespace Prisma {
     atendente?: AtendenteCreateNestedOneWithoutUserInput
     chatTemplates?: ChatTemplateCreateNestedManyWithoutUserInput
     internoMensagens?: InternoMensagemCreateNestedManyWithoutAutorInput
+    pushAssinaturas?: PushAssinaturaCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutInternoParticipacoesInput = {
@@ -66010,6 +69607,7 @@ export namespace Prisma {
     atendente?: AtendenteUncheckedCreateNestedOneWithoutUserInput
     chatTemplates?: ChatTemplateUncheckedCreateNestedManyWithoutUserInput
     internoMensagens?: InternoMensagemUncheckedCreateNestedManyWithoutAutorInput
+    pushAssinaturas?: PushAssinaturaUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutInternoParticipacoesInput = {
@@ -66082,6 +69680,7 @@ export namespace Prisma {
     atendente?: AtendenteUpdateOneWithoutUserNestedInput
     chatTemplates?: ChatTemplateUpdateManyWithoutUserNestedInput
     internoMensagens?: InternoMensagemUpdateManyWithoutAutorNestedInput
+    pushAssinaturas?: PushAssinaturaUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInternoParticipacoesInput = {
@@ -66103,6 +69702,7 @@ export namespace Prisma {
     atendente?: AtendenteUncheckedUpdateOneWithoutUserNestedInput
     chatTemplates?: ChatTemplateUncheckedUpdateManyWithoutUserNestedInput
     internoMensagens?: InternoMensagemUncheckedUpdateManyWithoutAutorNestedInput
+    pushAssinaturas?: PushAssinaturaUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type InternoConversaCreateWithoutMensagensInput = {
@@ -66153,6 +69753,7 @@ export namespace Prisma {
     atendente?: AtendenteCreateNestedOneWithoutUserInput
     chatTemplates?: ChatTemplateCreateNestedManyWithoutUserInput
     internoParticipacoes?: InternoParticipanteCreateNestedManyWithoutUserInput
+    pushAssinaturas?: PushAssinaturaCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutInternoMensagensInput = {
@@ -66174,6 +69775,7 @@ export namespace Prisma {
     atendente?: AtendenteUncheckedCreateNestedOneWithoutUserInput
     chatTemplates?: ChatTemplateUncheckedCreateNestedManyWithoutUserInput
     internoParticipacoes?: InternoParticipanteUncheckedCreateNestedManyWithoutUserInput
+    pushAssinaturas?: PushAssinaturaUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutInternoMensagensInput = {
@@ -66246,6 +69848,7 @@ export namespace Prisma {
     atendente?: AtendenteUpdateOneWithoutUserNestedInput
     chatTemplates?: ChatTemplateUpdateManyWithoutUserNestedInput
     internoParticipacoes?: InternoParticipanteUpdateManyWithoutUserNestedInput
+    pushAssinaturas?: PushAssinaturaUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInternoMensagensInput = {
@@ -66267,6 +69870,111 @@ export namespace Prisma {
     atendente?: AtendenteUncheckedUpdateOneWithoutUserNestedInput
     chatTemplates?: ChatTemplateUncheckedUpdateManyWithoutUserNestedInput
     internoParticipacoes?: InternoParticipanteUncheckedUpdateManyWithoutUserNestedInput
+    pushAssinaturas?: PushAssinaturaUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutPushAssinaturasInput = {
+    id?: string
+    workspaceId: string
+    username: string
+    nome: string
+    senhaHash: string
+    role?: $Enums.UserRole
+    secoes?: UserCreatesecoesInput | string[]
+    poderes?: UserCreatepoderesInput | string[]
+    ativo?: boolean
+    temaApp?: string
+    chatIdentificarRemetente?: boolean
+    fotoAtualizadaEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    foto?: UserFotoCreateNestedOneWithoutUserInput
+    atendente?: AtendenteCreateNestedOneWithoutUserInput
+    chatTemplates?: ChatTemplateCreateNestedManyWithoutUserInput
+    internoParticipacoes?: InternoParticipanteCreateNestedManyWithoutUserInput
+    internoMensagens?: InternoMensagemCreateNestedManyWithoutAutorInput
+  }
+
+  export type UserUncheckedCreateWithoutPushAssinaturasInput = {
+    id?: string
+    workspaceId: string
+    username: string
+    nome: string
+    senhaHash: string
+    role?: $Enums.UserRole
+    secoes?: UserCreatesecoesInput | string[]
+    poderes?: UserCreatepoderesInput | string[]
+    ativo?: boolean
+    temaApp?: string
+    chatIdentificarRemetente?: boolean
+    fotoAtualizadaEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    foto?: UserFotoUncheckedCreateNestedOneWithoutUserInput
+    atendente?: AtendenteUncheckedCreateNestedOneWithoutUserInput
+    chatTemplates?: ChatTemplateUncheckedCreateNestedManyWithoutUserInput
+    internoParticipacoes?: InternoParticipanteUncheckedCreateNestedManyWithoutUserInput
+    internoMensagens?: InternoMensagemUncheckedCreateNestedManyWithoutAutorInput
+  }
+
+  export type UserCreateOrConnectWithoutPushAssinaturasInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutPushAssinaturasInput, UserUncheckedCreateWithoutPushAssinaturasInput>
+  }
+
+  export type UserUpsertWithoutPushAssinaturasInput = {
+    update: XOR<UserUpdateWithoutPushAssinaturasInput, UserUncheckedUpdateWithoutPushAssinaturasInput>
+    create: XOR<UserCreateWithoutPushAssinaturasInput, UserUncheckedCreateWithoutPushAssinaturasInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutPushAssinaturasInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutPushAssinaturasInput, UserUncheckedUpdateWithoutPushAssinaturasInput>
+  }
+
+  export type UserUpdateWithoutPushAssinaturasInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    senhaHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    secoes?: UserUpdatesecoesInput | string[]
+    poderes?: UserUpdatepoderesInput | string[]
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    temaApp?: StringFieldUpdateOperationsInput | string
+    chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
+    fotoAtualizadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    foto?: UserFotoUpdateOneWithoutUserNestedInput
+    atendente?: AtendenteUpdateOneWithoutUserNestedInput
+    chatTemplates?: ChatTemplateUpdateManyWithoutUserNestedInput
+    internoParticipacoes?: InternoParticipanteUpdateManyWithoutUserNestedInput
+    internoMensagens?: InternoMensagemUpdateManyWithoutAutorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutPushAssinaturasInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    senhaHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    secoes?: UserUpdatesecoesInput | string[]
+    poderes?: UserUpdatepoderesInput | string[]
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    temaApp?: StringFieldUpdateOperationsInput | string
+    chatIdentificarRemetente?: BoolFieldUpdateOperationsInput | boolean
+    fotoAtualizadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    foto?: UserFotoUncheckedUpdateOneWithoutUserNestedInput
+    atendente?: AtendenteUncheckedUpdateOneWithoutUserNestedInput
+    chatTemplates?: ChatTemplateUncheckedUpdateManyWithoutUserNestedInput
+    internoParticipacoes?: InternoParticipanteUncheckedUpdateManyWithoutUserNestedInput
+    internoMensagens?: InternoMensagemUncheckedUpdateManyWithoutAutorNestedInput
   }
 
   export type LeadCampaignCreateManyLeadInput = {
@@ -66882,6 +70590,20 @@ export namespace Prisma {
     criadoEm?: Date | string
   }
 
+  export type PushAssinaturaCreateManyUserInput = {
+    id?: string
+    endpoint: string
+    p256dh: string
+    auth: string
+    userAgent?: string | null
+    plataforma?: string
+    instalado?: boolean
+    falhas?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    ultimoEnvioEm?: Date | string | null
+  }
+
   export type ChatTemplateUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     nome?: StringFieldUpdateOperationsInput | string
@@ -66961,6 +70683,48 @@ export namespace Prisma {
     anexoNome?: NullableStringFieldUpdateOperationsInput | string | null
     baixadoPor?: InternoMensagemUpdatebaixadoPorInput | string[]
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PushAssinaturaUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    plataforma?: StringFieldUpdateOperationsInput | string
+    instalado?: BoolFieldUpdateOperationsInput | boolean
+    falhas?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PushAssinaturaUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    plataforma?: StringFieldUpdateOperationsInput | string
+    instalado?: BoolFieldUpdateOperationsInput | boolean
+    falhas?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PushAssinaturaUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    plataforma?: StringFieldUpdateOperationsInput | string
+    instalado?: BoolFieldUpdateOperationsInput | boolean
+    falhas?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    ultimoEnvioEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type AtendenteDepartamentoCreateManyDepartamentoInput = {

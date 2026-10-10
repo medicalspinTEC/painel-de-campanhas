@@ -98,6 +98,24 @@ export async function register() {
   setTimeout(tickBackup, 30_000)
   setInterval(tickBackup, 60_000)
 
+  // Notificações push agendadas: envia as que já chegaram na hora (varredura a cada 30 s).
+  let ultimoErroPush = ""
+  const tickPush = async () => {
+    try {
+      const { manutencaoPush } = await import("@/services/push")
+      const resultado = await manutencaoPush()
+      ultimoErroPush = ""
+      if (resultado.enviadas || resultado.interrompidas) console.log("[v0] notificações push:", resultado)
+    } catch (error) {
+      // Só loga quando o erro muda (ex.: migration ainda não aplicada), para não encher o log a cada 30s.
+      const mensagem = error instanceof Error ? error.message : String(error)
+      if (mensagem !== ultimoErroPush) console.error("[v0] falha na rotina de notificações push:", error)
+      ultimoErroPush = mensagem
+    }
+  }
+  setTimeout(tickPush, 35_000)
+  setInterval(tickPush, 30_000)
+
   // Mensagens de voz do chat ficam numa pasta do servidor (não no banco) e são apagadas
   // sozinhas depois de AUDIO_RETENTION_DAYS dias (padrão 30). Varredura a cada hora.
   let ultimoErroAudios = ""

@@ -1,4 +1,5 @@
 import { ContaForms } from "@/components/features/conta/conta-forms"
+import { PushDispositivoCard } from "@/components/features/push/push-dispositivo-card"
 import { PageHeader } from "@/components/shared/page-header"
 import { requireUser } from "@/lib/session"
 
@@ -22,6 +23,7 @@ export default async function ContaPage() {
         temaApp={usuario.temaApp}
         fotoEm={usuario.fotoEm}
       />
+      <PushDispositivoCard />
     </div>
   )
 }

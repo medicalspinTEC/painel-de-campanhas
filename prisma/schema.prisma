@@ -783,6 +783,9 @@ model User {
   internoParticipacoes InternoParticipante[]
   internoMensagens     InternoMensagem[]
 
+  /// Aparelhos que aceitaram receber notificações push (ver `services/push.ts`).
+  pushAssinaturas PushAssinatura[]
+
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
@@ -1109,4 +1112,79 @@ model InternoMensagem {
 
   @@index([conversaId, criadoEm])
   @@index([anexoId])
+}
+
+
+/// Aparelho (navegador/PWA instalado) que aceitou receber notificações push de um usuário.
+/// Tabela GLOBAL (sem `workspaceId`): o Root envia avisos para todas as instâncias, então ela é
+/// acessada só por `prismaGlobal` (ver `services/push.ts`). Sai junto com o usuário (cascata).
+model PushAssinatura {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Endereço do serviço de push do navegador (único por aparelho/navegador).
+  endpoint String @unique
+  p256dh   String
+  auth     String
+
+  userAgent  String?
+  /// "ios" | "android" | "desktop"
+  plataforma String  @default("desktop")
+  /// O app estava instalado (modo standalone) quando a assinatura foi registrada.
+  instalado  Boolean @default(false)
+  /// Falhas seguidas de entrega; ao chegar no limite a assinatura é apagada.
+  falhas     Int     @default(0)
+
+  criadoEm      DateTime  @default(now())
+  atualizadoEm  DateTime  @updatedAt
+  ultimoEnvioEm DateTime?
+
+  @@index([userId])
+}
+
+/// Notificação push criada pelo Root: enviada na hora, agendada ou guardada como rascunho.
+/// Tabela GLOBAL (sem `workspaceId`), acessada só por `prismaGlobal`.
+model PushNotificacao {
+  id String @id @default(cuid())
+
+  titulo String
+  corpo  String
+  /// Para onde o toque leva: caminho do painel ("/chat") ou endereço https.
+  url    String  @default("/")
+  /// Imagem grande opcional (https).
+  imagem String?
+  /// Fica na tela até o usuário interagir.
+  urgente Boolean @default(false)
+
+  /// "todos" | "papeis" | "usuarios"
+  publico           String   @default("todos")
+  papeis            String[] @default([])
+  usuarioIds        String[] @default([])
+  /// Só aparelhos com o app instalado (PWA).
+  somenteInstalados Boolean  @default(true)
+
+  /// "rascunho" | "agendada" | "enviando" | "enviada" | "cancelada" | "falha"
+  status       String    @default("rascunho")
+  agendadaPara DateTime?
+  enviadaEm    DateTime?
+
+  totalAlvos Int     @default(0)
+  enviados   Int     @default(0)
+  falhas     Int     @default(0)
+  /// Aparelhos apagados por estarem inválidos (o usuário desinstalou ou revogou).
+  removidos  Int     @default(0)
+  erro       String?
+
+  criadoPorId   String?
+  criadoPorNome String?
+
+  criadoEm          DateTime  @default(now())
+  atualizadoEm      DateTime  @updatedAt
+  /// Sinal de vida do envio em andamento.
+  ultimaVarreduraEm DateTime?
+
+  @@index([status, agendadaPara])
+  @@index([criadoEm])
 }

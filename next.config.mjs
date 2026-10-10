@@ -2,6 +2,9 @@
 const nextConfig = {
   output: 'standalone',
 
+  // Envio de notificações push (Node puro, usa crypto/https): carregado do node_modules, não empacotado.
+  serverExternalPackages: ['web-push'],
+
   experimental: {
     // Guarda no navegador, por 20 s, as páginas já visitadas: voltar para uma aba do menu é
     // instantâneo. Ações que alteram dados (revalidatePath/router.refresh) limpam esse cache.

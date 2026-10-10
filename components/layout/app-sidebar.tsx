@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   BarChart3,
+  BellRing,
   ClipboardList,
   Columns3,
   Contact,
@@ -166,6 +167,8 @@ export function AppSidebar({
   const itensSistema = [
     ...navSistema.filter((item) => visivel(item.url) && (item.url !== "/nocode" || nocodeAtivo)),
     ...(usuario && podeGerenciarUsuarios(usuario) ? [{ title: "Usuários", url: "/usuarios", icon: UserCog }] : []),
+    // Notificações push (avisos externos para quem instalou o app): exclusivo do Root.
+    ...(usuario?.role === "root" ? [{ title: "Notificações push", url: "/push", icon: BellRing }] : []),
   ]
 
   return (
