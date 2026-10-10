@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server"
 
 import { guardApi } from "@/lib/session"
-import { criarDownloadBackup } from "@/services/backup"
+import { criarDownloadBackup, recriarDownloadBackup } from "@/services/backup"
 
 /**
  * Baixa o backup como arquivo .json, sem precisar de webhook.
  *
- * GET /api/backup/download?secoes=leads,campanhas
+ * GET /api/backup/download?secoes=leads,campanhas   → novo backup (entra no histórico)
+ * GET /api/backup/download?de=<id do backup>          → baixa de novo um backup do histórico
  * Mesmo acesso da página de Configurações.
  */
 export const dynamic = "force-dynamic"
@@ -15,10 +16,12 @@ export async function GET(request: Request) {
   const negado = await guardApi("configuracoes")
   if (negado) return negado
 
-  const secoes = (new URL(request.url).searchParams.get("secoes") ?? "").split(",").filter(Boolean)
+  const params = new URL(request.url).searchParams
+  const de = params.get("de")?.trim()
+  const secoes = (params.get("secoes") ?? "").split(",").filter(Boolean)
 
   try {
-    const resultado = await criarDownloadBackup(secoes)
+    const resultado = de ? await recriarDownloadBackup(de) : await criarDownloadBackup(secoes)
     if (!resultado.ok) return NextResponse.json({ ok: false, erro: resultado.erro }, { status: 400 })
 
     return new Response(resultado.stream, {

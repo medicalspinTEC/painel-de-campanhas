@@ -222,6 +222,17 @@ export function BackupPanel({
     }
   }
 
+  /** Baixa de novo um backup do histórico (gera o arquivo outra vez, com as mesmas seções). */
+  function baixarDeNovo(id: string) {
+    const link = document.createElement("a")
+    link.href = `/api/backup/download?de=${encodeURIComponent(id)}`
+    link.rel = "noopener"
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    toast.success("Gerando o arquivo. O download começa em instantes.")
+  }
+
   async function tentarDeNovo(id: string) {
     const resultado = await retentarBackupAction(id)
     if (!resultado.ok) {
@@ -488,7 +499,12 @@ export function BackupPanel({
       </div>
 
       <section className="flex flex-col gap-3 rounded-xl border p-4">
-        <h3 className="font-medium">Últimos backups</h3>
+        <div className="flex flex-col gap-0.5">
+          <h3 className="font-medium">Últimos backups</h3>
+          <p className="text-xs text-muted-foreground">
+            Mostra os 5 mais recentes. "Baixar de novo" gera o arquivo outra vez com as mesmas seções, trazendo os dados de agora.
+          </p>
+        </div>
         {backups.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhum backup feito ainda.</p>
         ) : (
@@ -510,12 +526,25 @@ export function BackupPanel({
                     <Badge variant="outline">{backup.origem === "manual" ? "Manual" : backup.origem === "download" ? "Download" : "Automático"}</Badge>
                     <span className="text-muted-foreground">{formatarData(backup.criadoEm)}</span>
                   </div>
-                  {backup.status === "falha" && backup.origem !== "download" ? (
-                    <Button size="sm" variant="outline" onClick={() => void tentarDeNovo(backup.id)}>
-                      <RefreshCw className="size-3.5" />
-                      Tentar de novo
-                    </Button>
-                  ) : null}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {backup.status !== "enviando" && backup.secoes.length > 0 ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => baixarDeNovo(backup.id)}
+                        title="Gera o arquivo de novo, com as mesmas seções e os dados de agora"
+                      >
+                        <Download className="size-3.5" />
+                        Baixar de novo
+                      </Button>
+                    ) : null}
+                    {backup.status === "falha" && backup.origem !== "download" ? (
+                      <Button size="sm" variant="outline" onClick={() => void tentarDeNovo(backup.id)}>
+                        <RefreshCw className="size-3.5" />
+                        Tentar de novo
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
 
                 <p className="text-xs text-muted-foreground">{nomesDasSecoes(backup.secoes)}</p>

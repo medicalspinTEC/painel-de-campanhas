@@ -305,7 +305,10 @@ function paraBackup(row: LinhaExecucao): BackupRow {
   }
 }
 
-export async function listarBackups(limite = 20): Promise<BackupRow[]> {
+/** A tela mostra os 5 últimos; o banco guarda até `HISTORICO_MAXIMO` (ver `podarHistorico`). */
+export const BACKUPS_EXIBIDOS = 5
+
+export async function listarBackups(limite = BACKUPS_EXIBIDOS): Promise<BackupRow[]> {
   const rows = await prisma.backupExecucao.findMany({
     orderBy: { criadoEm: "desc" },
     take: Math.min(Math.max(limite, 1), HISTORICO_MAXIMO),
@@ -823,6 +826,43 @@ export async function criarDownloadBackup(secoesEscolhidas: unknown): Promise<Re
 
   const nome = nomeArquivoBackup(run.criadoEm)
   return { ok: true, stream, nome }
+}
+
+/**
+ * Baixa de novo um backup do histórico. O arquivo não fica guardado no servidor:
+ * ele é gerado outra vez com as MESMAS seções do backup original, então traz os
+ * dados de agora (não uma foto daquele dia). Não cria nova linha no histórico.
+ */
+export async function recriarDownloadBackup(id: string): Promise<ResultadoDownload> {
+  const original = await prisma.backupExecucao.findUnique({ where: { id } })
+  if (!original) return { ok: false, erro: "Backup não encontrado." }
+  if (original.status === "enviando") return { ok: false, erro: "Este backup ainda está em andamento." }
+
+  const secoes = normalizarSecoes(original.secoes)
+  if (!secoes.length) return { ok: false, erro: "Este backup não tem seções para baixar." }
+  const tabelas = secoes.flatMap((secao) => SECOES_POR_CHAVE[secao].tabelas.map((tabela) => ({ secao, tabela })))
+
+  const agora = new Date()
+  const codificador = new TextEncoder()
+  const iterador = gerarArquivoBackup({ id: original.id, geradoEm: agora, secoes, tabelas, resumo: {} })
+
+  // O stream é lido depois que o handler já respondeu: fixa a instância para as consultas dele.
+  const naInstancia = await capturarWorkspace()
+  const stream = new ReadableStream<Uint8Array>({
+    pull: (controlador) =>
+      naInstancia(async () => {
+        try {
+          const { value, done } = await iterador.next()
+          if (done) controlador.close()
+          else controlador.enqueue(codificador.encode(value))
+        } catch (error) {
+          controlador.error(error)
+        }
+      }),
+    cancel: () => naInstancia(() => iterador.return(undefined).then(() => undefined, () => undefined)),
+  })
+
+  return { ok: true, stream, nome: nomeArquivoBackup(agora) }
 }
 
 // ---------------------------------------------------------------------------
