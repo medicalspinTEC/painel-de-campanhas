@@ -7,6 +7,7 @@
  */
 
 import { PLUGIN_NOME, type PluginKey } from "@/lib/plugins"
+import { LEAD_STATUS_LABEL, type LeadStatus } from "@/types"
 
 export type NodeType =
   | "webhook"
@@ -24,6 +25,8 @@ export type NodeType =
   | "transferir_atendente"
   // Vincula o lead a uma campanha (ação do app, não depende de plugin).
   | "enviar_lead_campanha"
+  // Troca o status do lead (ex.: marcar como “Não contatar”). Ação do app, não depende de plugin.
+  | "alterar_status_lead"
   // Lógica: segue por "Verdadeiro" ou "Falso" conforme o plugin escolhido esteja ativo.
   | "plugin_ativo"
 
@@ -41,6 +44,13 @@ export function blocoPermitido(_type: NodeType, _kind: FlowKind): boolean {
 
 /** Plugins que o bloco "Plugin ativo" pode verificar. */
 export const PLUGINS_VERIFICAVEIS: PluginKey[] = ["chat", "kanban", "assistente", "nocode", "crm"]
+
+/**
+ * Status que o bloco “Alterar status do lead” pode aplicar. “Em campanha” fica de fora de
+ * propósito: esse status é consequência de o lead estar vinculado a uma campanha (use o bloco
+ * “Enviar lead para campanha”), e aplicá-lo à mão deixaria o lead marcado sem campanha nenhuma.
+ */
+export const STATUS_ALTERAVEIS_NO_FLUXO: LeadStatus[] = ["novo", "sem_campanha", "respondeu", "encerrado", "nao_contatar"]
 
 /** Gatilho de cada tipo de fluxo. */
 export function gatilhoDoTipo(kind: FlowKind): NodeType {
@@ -100,6 +110,7 @@ export interface NodeDef {
     | "UserCheck"
     | "Megaphone"
     | "Puzzle"
+    | "Tag"
   /** Classes de cor do ícone (Tailwind). */
   cor: string
   temEntrada: boolean
@@ -447,6 +458,37 @@ export const NODE_CATALOG: Record<NodeType, NodeDef> = {
     ],
     padrao: { campanhaId: "", campanhaNome: "", leadId: "{{lead.id}}", mensagemIndividual: "" },
   },
+  alterar_status_lead: {
+    type: "alterar_status_lead",
+    label: "Alterar status do lead",
+    descricao:
+      "Troca o status do lead. “Não contatar” e “Respondeu” também tiram o lead de todas as campanhas; com “Não contatar” ele deixa de poder entrar em campanhas, mas segue conversando no chat normalmente.",
+    categoria: "Ação",
+    icone: "Tag",
+    cor: "bg-sky-500/15 text-sky-600 dark:text-sky-400",
+    temEntrada: true,
+    saidas: [
+      { id: "main", label: "Alterado" },
+      { id: "nao_alterado", label: "Não alterado" },
+    ],
+    campos: [
+      {
+        key: "status",
+        label: "Novo status",
+        kind: "select",
+        options: STATUS_ALTERAVEIS_NO_FLUXO.map((value) => ({ value, label: LEAD_STATUS_LABEL[value] })),
+        help: "Se o lead já estiver nesse status, o fluxo segue por “Alterado” sem mudar nada.",
+      },
+      {
+        key: "leadId",
+        label: "Lead",
+        kind: "text",
+        placeholder: "{{lead.id}}",
+        help: "Id do lead. Num bot, {{lead.id}} é o lead da conversa; num fluxo de webhook, use antes o bloco “Buscar lead pelo telefone”. Sem lead encontrado, segue por “Não alterado”.",
+      },
+    ],
+    padrao: { status: "nao_contatar", leadId: "{{lead.id}}" },
+  },
   ignorar: {
     type: "ignorar",
     label: "Encerrar (ignorar)",
@@ -595,6 +637,9 @@ export function validarGrafo(
     }
     if (no.type === "enviar_lead_campanha" && !String(no.config?.campanhaId ?? "").trim()) {
       return `Escolha a campanha do bloco “${no.name}”.`
+    }
+    if (no.type === "alterar_status_lead" && !STATUS_ALTERAVEIS_NO_FLUXO.includes(no.config?.status as LeadStatus)) {
+      return `Escolha o status do bloco “${no.name}”.`
     }
     if (no.type === "plugin_ativo" && !PLUGINS_VERIFICAVEIS.includes(no.config?.plugin as PluginKey)) {
       return `Escolha o plugin do bloco “${no.name}”.`

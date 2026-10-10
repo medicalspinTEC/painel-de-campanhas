@@ -1,4 +1,4 @@
-export type LeadStatus = "novo" | "em_campanha" | "sem_campanha" | "respondeu" | "encerrado"
+export type LeadStatus = "novo" | "em_campanha" | "sem_campanha" | "respondeu" | "encerrado" | "nao_contatar"
 
 export type CampaignStatus = "ativa" | "pausada" | "encerrada" | "rascunho"
 
@@ -122,6 +122,7 @@ export const LEAD_STATUS_LABEL: Record<LeadStatus, string> = {
   sem_campanha: "Sem campanha",
   respondeu: "Respondeu",
   encerrado: "Encerrado",
+  nao_contatar: "Não contatar",
 }
 
 export const CAMPAIGN_TIPO_LABEL: Record<CampaignTipo, string> = {

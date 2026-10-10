@@ -345,7 +345,9 @@ async function executarVarredura(agora: Date): Promise<EngineResult> {
         id: true,
         instanciaNome: true,
         leadCampaigns: {
-          where: { mensagemIndividual: { not: null }, enviadaIndividualEm: null },
+          // Rede de segurança: lead “Não contatar” nunca recebe campanha, mesmo que algum
+          // vínculo antigo ainda exista.
+          where: { mensagemIndividual: { not: null }, enviadaIndividualEm: null, lead: { status: { not: "nao_contatar" } } },
           select: { id: true, leadId: true, mensagemIndividual: true, lead: { select: { telefone: true } } },
         },
       },
@@ -460,6 +462,8 @@ async function executarVarredura(agora: Date): Promise<EngineResult> {
           orderBy: { dia: "asc" },
         },
         leadCampaigns: {
+          // Rede de segurança: lead “Não contatar” nunca recebe campanha.
+          where: { lead: { status: { not: "nao_contatar" } } },
           select: {
             id: true,
             leadId: true,

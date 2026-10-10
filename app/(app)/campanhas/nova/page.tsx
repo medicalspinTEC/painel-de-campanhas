@@ -33,7 +33,10 @@ export default async function NovaCampanhaPage() {
         personas={personas}
         regioes={regioes}
         instancias={instancias}
-        leads={leads.map((l) => ({
+        // Leads “Não contatar” não podem ser vinculados a campanhas: nem aparecem na seleção.
+        leads={leads
+          .filter((l) => l.status !== "nao_contatar")
+          .map((l) => ({
           id: l.id,
           nome: l.nome,
           telefone: l.telefone,

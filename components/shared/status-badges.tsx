@@ -27,6 +27,7 @@ const leadStyles: Record<LeadStatus, string> = {
   sem_campanha: "border-chart-4/30 bg-chart-4/12 text-chart-4",
   respondeu: "border-chart-3/35 bg-chart-3/15 text-chart-3",
   encerrado: "border-border bg-secondary text-secondary-foreground",
+  nao_contatar: "border-destructive/30 bg-destructive/10 text-destructive",
 }
 
 export function LeadStatusBadge({ status, className }: { status: LeadStatus; className?: string }) {

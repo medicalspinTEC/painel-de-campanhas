@@ -15,7 +15,7 @@ import { guardApi } from "@/lib/session"
  * Protegidas por sessão via proxy.ts. No Next 16 os `params` são assíncronos.
  */
 
-const STATUS_VALIDOS: LeadStatus[] = ["novo", "em_campanha", "sem_campanha", "respondeu", "encerrado"]
+const STATUS_VALIDOS: LeadStatus[] = ["novo", "em_campanha", "sem_campanha", "respondeu", "encerrado", "nao_contatar"]
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const bloqueio = await guardApi("leads", "campanhas", "kanban", "chat")

@@ -10,7 +10,7 @@ import {
 import { decidirCiclo } from "@/lib/campaign-engine-schedule"
 import { recordAppLog } from "@/services/app-logs"
 import { sendCampaignMessageToLead } from "@/services/evolution"
-import { assignCampaign } from "@/services/leads"
+import { assignCampaign, STATUS_PRESERVADOS_NA_VINCULACAO } from "@/services/leads"
 import { getSettings } from "@/services/settings"
 import { emitWebhookEvent } from "@/services/webhooks"
 import type { CampanhaAnexo, Campaign, CampaignMessage, CampaignStatus, CampaignTipo, LeadStatus } from "@/types"
@@ -302,7 +302,7 @@ async function encerrarLeadsDaCampanha(campanhaId: string) {
 
   if (paraEncerrar.length > 0) {
     await prisma.lead.updateMany({
-      where: { id: { in: paraEncerrar }, status: { not: "respondeu" } },
+      where: { id: { in: paraEncerrar }, status: { notIn: STATUS_PRESERVADOS_NA_VINCULACAO } },
       data: { status: "encerrado" },
     })
   }
@@ -548,7 +548,10 @@ async function sincronizarMensagensIndividuais(campanhaId: string, leadMensagens
  * os filtros são nulos, todos os leads passam a ser compatíveis.
  */
 async function leadsQueAtendemAosFiltros(filtros: Campaign["filtros"]): Promise<string[]> {
-  const where: { produto?: string; marca?: string; persona?: string; regiao?: string } = {}
+  // Leads “Não contatar” nunca entram em campanha, nem por filtro de público.
+  const where: { produto?: string; marca?: string; persona?: string; regiao?: string; status: { not: LeadStatus } } = {
+    status: { not: "nao_contatar" },
+  }
   if (filtros.produto) where.produto = filtros.produto
   if (filtros.marca) where.marca = filtros.marca
   if (filtros.persona) where.persona = filtros.persona
@@ -577,7 +580,18 @@ async function leadsFinaisDaCampanha(
 }
 
 async function sincronizarLeadsDaCampanha(campanhaId: string, leadIds: string[] | undefined, campanhaAtualId?: string) {
-  const selecionados = new Set((leadIds ?? []).filter(Boolean))
+  const pedidos = [...new Set((leadIds ?? []).filter(Boolean))]
+  // Leads “Não contatar” não podem ser vinculados a campanhas: ficam de fora mesmo se vierem na
+  // seleção (a tela nem os lista, mas a API/MCP poderiam enviá-los).
+  const bloqueados =
+    pedidos.length > 0
+      ? new Set(
+          (await prisma.lead.findMany({ where: { id: { in: pedidos }, status: "nao_contatar" }, select: { id: true } })).map(
+            (l) => l.id,
+          ),
+        )
+      : new Set<string>()
+  const selecionados = new Set(pedidos.filter((id) => !bloqueados.has(id)))
   const atuais = await prisma.leadCampaign.findMany({
     where: { campanhaId: campanhaAtualId ?? campanhaId },
     select: { leadId: true },
@@ -623,7 +637,7 @@ async function sincronizarLeadsDaCampanha(campanhaId: string, leadIds: string[] 
   // esse estado para quem já respondeu.
   if (selecionados.size > 0) {
     await prisma.lead.updateMany({
-      where: { id: { in: Array.from(selecionados) }, status: { not: "respondeu" } },
+      where: { id: { in: Array.from(selecionados) }, status: { notIn: STATUS_PRESERVADOS_NA_VINCULACAO } },
       data: { status: "em_campanha" },
     })
   }

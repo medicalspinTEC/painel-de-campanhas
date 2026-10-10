@@ -23,6 +23,11 @@ enum LeadStatus {
   sem_campanha
   respondeu
   encerrado
+  /// Lead que não deve receber nenhum tipo de campanha (opt-out, pedido do
+  /// próprio lead etc.). Não pode ser vinculado a campanhas (manual, em massa,
+  /// importação, filtro automático, No Code ou chat), mas continua conversando
+  /// normalmente no chat. Só deixa de valer quando alguém troca o status.
+  nao_contatar
 }
 
 enum CampaignStatus {

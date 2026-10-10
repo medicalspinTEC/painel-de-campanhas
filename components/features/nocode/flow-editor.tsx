@@ -57,6 +57,7 @@ const VARIAVEIS_BOT = [
   "departamento.nome",
 ]
 const VARIAVEIS_CAMPANHA = ["campanha.id", "campanha.nome", "campanha.status"]
+const VARIAVEIS_STATUS_LEAD = ["status_lead.anterior", "status_lead.atual"]
 const VARIAVEIS_MENU = ["opcao.numero", "opcao.texto"]
 const VARIAVEIS_LEAD = ["lead.encontrado", "lead.id", "lead.nome", "lead.status", "lead.temCampanha", "lead.campanhasIds"]
 
@@ -100,7 +101,10 @@ export function FlowEditor({
   const noSelecionado = selecao?.tipo === "no" ? nodes.find((n) => n.id === selecao.id) : undefined
 
   const variaveis = useMemo(() => {
-    const campanha = nodes.some((n) => n.type === "enviar_lead_campanha") ? VARIAVEIS_CAMPANHA : []
+    const campanha = [
+      ...(nodes.some((n) => n.type === "enviar_lead_campanha") ? VARIAVEIS_CAMPANHA : []),
+      ...(nodes.some((n) => n.type === "alterar_status_lead") ? VARIAVEIS_STATUS_LEAD : []),
+    ]
     if (bot) return [...VARIAVEIS_BOT, ...(nodes.some((n) => n.type === "menu") ? VARIAVEIS_MENU : []), ...campanha]
     const lista = [...VARIAVEIS_WEBHOOK]
     if (nodes.some((n) => n.type === "extrair_telefone")) lista.push("telefone")

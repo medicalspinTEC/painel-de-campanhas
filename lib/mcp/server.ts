@@ -66,6 +66,7 @@ import {
   deleteLead,
   getLead,
   getLeadTimeline,
+  LeadNaoContatarError,
   LeadValidationError,
   listLeads,
   sendLeadMessage,
@@ -116,7 +117,7 @@ import type { CampaignStatus, LeadStatus } from "@/types"
  * O texto que treina a IA vem de `lib/mcp/prompt-treinamento.ts`.
  */
 
-const STATUS_LEAD_VALORES: [LeadStatus, ...LeadStatus[]] = ["novo", "em_campanha", "sem_campanha", "respondeu", "encerrado"]
+const STATUS_LEAD_VALORES: [LeadStatus, ...LeadStatus[]] = ["novo", "em_campanha", "sem_campanha", "respondeu", "encerrado", "nao_contatar"]
 
 const STATUS_CAMPANHA_VALORES: [CampaignStatus, ...CampaignStatus[]] = ["rascunho", "ativa", "pausada", "encerrada"]
 
@@ -550,7 +551,13 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
       if (campanha.tipo === "individual" && !textoOuNull(mensagemIndividual)) {
         return errorResult("Esta campanha é individual: informe mensagemIndividual com o texto que o lead vai receber.")
       }
-      const lead = await assignCampaign(leadId, campanhaId, textoOuNull(mensagemIndividual))
+      let lead
+      try {
+        lead = await assignCampaign(leadId, campanhaId, textoOuNull(mensagemIndividual))
+      } catch (error) {
+        if (error instanceof LeadNaoContatarError) return errorResult(error.message)
+        throw error
+      }
       if (!lead) return errorResult("Lead não encontrado.")
       return jsonResult({ ok: true, lead: (await getLead(leadId)) ?? lead })
     },

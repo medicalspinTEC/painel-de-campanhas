@@ -9,6 +9,7 @@ import {
   Phone,
   Puzzle,
   Send,
+  Tag,
   Timer,
   UserCheck,
   UserSearch,
@@ -18,6 +19,7 @@ import {
 
 import { PLUGIN_NOME, type PluginKey } from "@/lib/plugins"
 import { NODE_CATALOG, opcoesDoMenu, OPERADORES, type FlowNode, type NodeDef } from "@/lib/nocode/catalog"
+import { LEAD_STATUS_LABEL, type LeadStatus } from "@/types"
 
 export const ICONES: Record<NodeDef["icone"], LucideIcon> = {
   Webhook,
@@ -34,6 +36,7 @@ export const ICONES: Record<NodeDef["icone"], LucideIcon> = {
   UserCheck,
   Megaphone,
   Puzzle,
+  Tag,
 }
 
 /** Linha de resumo exibida no cartão do bloco, no canvas. */
@@ -66,6 +69,8 @@ export function resumoDoNo(no: FlowNode): string {
       return cfg.modo === "especifico" ? "Atendente específico" : "Distribuir entre atendentes"
     case "enviar_lead_campanha":
       return String(cfg.campanhaNome ?? "").trim() || (cfg.campanhaId ? "Campanha escolhida" : "(escolha a campanha)")
+    case "alterar_status_lead":
+      return LEAD_STATUS_LABEL[cfg.status as LeadStatus] ?? "(escolha o status)"
     case "transferir_departamento":
       return String(cfg.departamento ?? "").trim() || "(escolha o departamento)"
     default:

@@ -19,7 +19,7 @@ export interface ActionState {
   errors?: Record<string, string>
 }
 
-const STATUS_VALIDOS: LeadStatus[] = ["novo", "em_campanha", "respondeu", "encerrado"]
+const STATUS_VALIDOS: LeadStatus[] = ["novo", "em_campanha", "respondeu", "encerrado", "nao_contatar"]
 
 /** Tamanho máximo para as dimensões de segmentação (texto livre). */
 const MAX_SEGMENTO = 60
@@ -568,7 +568,7 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
 
 export async function assignCampaignAction(leadIds: string[], campanhaId: string | null, mensagemIndividual?: string | null) {
   await assertSecao("leads", "campanhas", "kanban", "chat")
-  let resultado: { atualizados: number }
+  let resultado: { atualizados: number; bloqueados: number }
   try {
     // Em lote: antes disparava uma chamada de serviço (e uma varredura da
     // engine) por lead selecionado — lento com muitos leads. Ver
@@ -578,6 +578,19 @@ export async function assignCampaignAction(leadIds: string[], campanhaId: string
     await recordAppLog({ origem: "leads", mensagem: `Falha ao mover ${leadIds.length} lead(s) de campanha.`, detalhes: error })
     return { ok: false, message: "Não foi possível mover os leads de campanha." }
   }
+  if (resultado.bloqueados > 0 && resultado.atualizados === 0) {
+    return {
+      ok: false,
+      message:
+        resultado.bloqueados === 1
+          ? "Esse lead está com status “Não contatar” e não pode ser vinculado a campanhas."
+          : `Esses ${resultado.bloqueados} leads estão com status “Não contatar” e não podem ser vinculados a campanhas.`,
+    }
+  }
   revalidarLeads()
-  return { ok: true, message: `${resultado.atualizados} lead(s) movidos de campanha.` }
+  const aviso =
+    resultado.bloqueados > 0
+      ? ` ${resultado.bloqueados} lead(s) com status “Não contatar” não foram vinculados.`
+      : ""
+  return { ok: true, message: `${resultado.atualizados} lead(s) movidos de campanha.${aviso}` }
 }

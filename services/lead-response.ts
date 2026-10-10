@@ -358,10 +358,13 @@ export async function processarRespostaLead(payload: unknown): Promise<RespostaL
   await prisma.leadCampaign.deleteMany({ where: { leadId: lead.id } })
 
   const statusAnterior = lead.status
+  // Quem está como “Não contatar” continua assim ao responder: a marca só sai por troca explícita
+  // de status, senão a resposta reabriria o lead para campanhas sem ninguém decidir isso.
+  const statusNovo = statusAnterior === "nao_contatar" ? "nao_contatar" : "respondeu"
   const leadAtualizado = await prisma.lead.update({
     where: { id: lead.id },
     data: {
-      status: "respondeu",
+      status: statusNovo,
       campanhaId: null,
       entradaCampanhaEm: null,
     },
@@ -401,7 +404,7 @@ export async function processarRespostaLead(payload: unknown): Promise<RespostaL
     resposta: textoResposta,
     origem: "whatsapp",
   })
-  if (statusAnterior !== "respondeu") {
+  if (statusAnterior !== statusNovo) {
     await emitWebhookEvent("lead.status_alterado", { lead: leadPayload, statusAnterior })
     await emitWebhookEvent("lead.status_alterado", { lead: leadPayload })
   }

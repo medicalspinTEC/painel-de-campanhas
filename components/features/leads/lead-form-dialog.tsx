@@ -100,6 +100,7 @@ export function LeadFormDialog({
   }, [state, onOpenChange])
 
   const erros = state.errors ?? {}
+  const naoContatar = status === "nao_contatar"
   const opcoesCampanha = useMemo(() => [{ value: "none", label: "Sem campanha" }, ...campanhas.map((c) => ({ value: c.id, label: c.nome }))], [campanhas])
 
   const opcoesProduto = useMemo(
@@ -280,9 +281,18 @@ export function LeadFormDialog({
               {erros.notas ? <FieldError>{erros.notas}</FieldError> : null}
             </Field>
 
-            <Field className="sm:col-span-2">
+            <Field className="sm:col-span-2" data-invalid={Boolean(erros.campanhasIds)}>
               <FieldLabel>Campanhas</FieldLabel>
-              <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 p-3">
+              {naoContatar ? (
+                <p className="text-sm text-muted-foreground">
+                  Leads com status “Não contatar” não entram em campanhas (as atuais, se houver, são removidas ao salvar), mas
+                  continuam conversando normalmente no chat.
+                </p>
+              ) : null}
+              <div
+                className={`flex flex-col gap-2 rounded-lg border border-border bg-muted/30 p-3 ${naoContatar ? "pointer-events-none opacity-50" : ""}`}
+                aria-disabled={naoContatar}
+              >
                 {opcoesCampanha.map((opcao) => {
                   if (opcao.value === "none") {
                     return (
@@ -307,7 +317,8 @@ export function LeadFormDialog({
                   )
                 })}
               </div>
-              <input type="hidden" name="campanhasIds" value={campanhasSelecionadas.join(",")} />
+              <input type="hidden" name="campanhasIds" value={naoContatar ? "" : campanhasSelecionadas.join(",")} />
+              {erros.campanhasIds ? <FieldError>{erros.campanhasIds}</FieldError> : null}
             </Field>
           </div>
 

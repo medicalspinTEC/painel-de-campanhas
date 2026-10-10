@@ -11,6 +11,7 @@ import {
   NODE_CATALOG,
   OPERADORES_SEM_VALOR,
   PLUGINS_VERIFICAVEIS,
+  STATUS_ALTERAVEIS_NO_FLUXO,
   validarGrafo,
   type FlowEdge,
   type FlowKind,
@@ -27,6 +28,8 @@ import { configurarWebhookEvolution, sendWhatsAppText } from "@/services/evoluti
 import { processarRespostaLead, telefonesBatem } from "@/services/lead-response"
 import { CrmError, transferirConversaPorBot, transferirParaAtendentePorBot } from "@/services/crm"
 import { enviarLeadParaCampanha } from "@/services/lead-campanha"
+import { setLeadStatus } from "@/services/leads"
+import { LEAD_STATUS_LABEL, type LeadStatus } from "@/types"
 import { mensagemPluginDesativado, type PluginKey } from "@/lib/plugins"
 import { exigirPlugin, getPluginsAtivos } from "@/services/settings"
 
@@ -609,6 +612,43 @@ async function executarBloco(no: FlowNode, ctx: Contexto, simulacao: boolean): P
         if (error instanceof CrmError) return { saida: "nao_enviado", resumo: { motivo: error.message } }
         throw error
       }
+    }
+
+    case "alterar_status_lead": {
+      const status = String(cfg.status ?? "").trim() as LeadStatus
+      if (!STATUS_ALTERAVEIS_NO_FLUXO.includes(status)) throw new Error("Escolha o novo status do lead.")
+      const leadId = String(resolverCampo(texto("leadId") || "{{lead.id}}", ctx) ?? "").trim()
+      if (simulacao) return { saida: "main", status: "simulado", resumo: { leadId: leadId || null, status } }
+      if (!leadId) return { saida: "nao_alterado", resumo: { motivo: "Nenhum lead para alterar (lead não encontrado)." } }
+
+      const atual = await prisma.lead.findUnique({ where: { id: leadId }, select: { nome: true, status: true } })
+      if (!atual) return { saida: "nao_alterado", resumo: { motivo: "Lead não encontrado." } }
+
+      const vars = { status_lead: { anterior: atual.status, atual: status } }
+      // Já está no status pedido: o objetivo do bloco está cumprido, então segue por “Alterado”.
+      if (atual.status === status) {
+        return { saida: "main", vars, resumo: { lead: atual.nome, status, jaEstava: true } }
+      }
+
+      // `setLeadStatus` é a mesma rotina da tabela de leads, do kanban e da API: com “Não contatar”
+      // (ou “Respondeu”) o lead sai de todas as campanhas, e o webhook de status é emitido.
+      const lead = await setLeadStatus(leadId, status)
+      if (!lead) return { saida: "nao_alterado", resumo: { motivo: "Lead não encontrado." } }
+
+      // A equipe vê no chat que o status mudou (e por quem). Nunca derruba a execução.
+      const bot = botDe(ctx)
+      const autor = bot ? `o bot “${bot.flowNome}”` : "um fluxo No Code"
+      try {
+        await prisma.chatInternalNote.create({
+          data: {
+            leadId,
+            texto: `Status do lead alterado de “${LEAD_STATUS_LABEL[atual.status]}” para “${LEAD_STATUS_LABEL[status]}” por ${autor}.`,
+          },
+        })
+      } catch (error) {
+        console.error("[nocode] falha ao registrar a nota interna da troca de status", error)
+      }
+      return { saida: "main", vars, resumo: { lead: atual.nome, de: atual.status, para: status } }
     }
 
     case "transferir_departamento": {

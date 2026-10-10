@@ -38,11 +38,14 @@ export async function enviarLeadParaCampanha(input: {
   if (!campanhaId) throw new CrmError("Escolha a campanha.")
 
   const [lead, campanha, vinculo] = await Promise.all([
-    prisma.lead.findUnique({ where: { id: leadId }, select: { id: true, nome: true } }),
+    prisma.lead.findUnique({ where: { id: leadId }, select: { id: true, nome: true, status: true } }),
     prisma.campaign.findUnique({ where: { id: campanhaId }, select: { id: true, nome: true, status: true, tipo: true } }),
     prisma.leadCampaign.findUnique({ where: { leadId_campanhaId: { leadId, campanhaId } }, select: { leadId: true } }),
   ])
   if (!lead) throw new CrmError("Lead não encontrado.")
+  if (lead.status === "nao_contatar") {
+    throw new CrmError(`${lead.nome} está com status “Não contatar” e não pode ser enviado para campanhas.`)
+  }
   if (!campanha) throw new CrmError("Campanha não encontrada.")
   if (campanha.status === "encerrada") throw new CrmError(`A campanha “${campanha.nome}” está encerrada.`)
   if (vinculo) throw new CrmError(`${lead.nome} já está na campanha “${campanha.nome}”.`)

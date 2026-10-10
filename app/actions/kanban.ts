@@ -58,7 +58,8 @@ export async function moveKanbanLeadAction(leadId: string, status: LeadStatus, o
         }
       }
 
-      const { atualizados } = await assignCampaignBulk([leadId], campanhaId, campanha.tipo === "individual" ? mensagem : null)
+      const { atualizados, bloqueados } = await assignCampaignBulk([leadId], campanhaId, campanha.tipo === "individual" ? mensagem : null)
+      if (bloqueados > 0 && atualizados === 0) return { ok: false, message: "Lead com status “Não contatar” não pode ser vinculado a campanhas. Mude o status antes." }
       if (atualizados === 0) return { ok: false, message: "Lead não encontrado." }
 
       // Quem já respondeu continua "respondeu" após a vinculação (regra de

@@ -503,6 +503,11 @@ async function validarUnicidadeEtelefone(
 export async function createLead(input: LeadInput): Promise<Lead> {
   const agora = new Date()
 
+  // Lead “Não contatar” nasce sem campanha: não aceita vínculo algum.
+  if (input.status === "nao_contatar" && (input.campanhaId || input.campanhasIds?.length)) {
+    throw new LeadValidationError({ campanhasIds: MSG_LEAD_NAO_CONTATAR })
+  }
+
   // Impede telefone sem país 55 e cadastros duplicados de nome/telefone.
   // Devolve o telefone normalizado (só dígitos) que será gravado.
   const telefoneNormalizado = await validarUnicidadeEtelefone(input.nome, input.telefone)
@@ -733,6 +738,12 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
       continue
     }
 
+    // Lead novo já marcado como “Não contatar” não pode chegar com uma campanha.
+    if (input.status === "nao_contatar" && input.campanhaId) {
+      resultados.push({ index, ok: false, motivo: MSG_LEAD_NAO_CONTATAR })
+      continue
+    }
+
     if (nomesExistentes.has(nomeChave)) {
       resultados.push({ index, ok: false, motivo: "Já existe um lead cadastrado com este nome." })
       continue
@@ -893,6 +904,7 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
     vinculo.entrouEmCampanhaAtiva ||
     comCampanhaExplicita.some((l) => statusCampanhaExplicitaPorId.get(l.campanhaId) === "ativa")
   for (const l of aceitos) {
+    if (l.status === "nao_contatar") continue // nunca entra em campanha, nem por filtro
     for (const c of campanhasElegiveis) {
       if (c.id === l.campanhaId) continue // já vinculado no passo 6
       const combina =
@@ -913,7 +925,7 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
     // reflete em memória para o webhook do passo 8 usar o status correto.
     const leadIdsAutoVinculados = [...new Set(paresParaVincular.map((p) => p.leadId))]
     await prisma.lead.updateMany({
-      where: { id: { in: leadIdsAutoVinculados }, status: { not: "respondeu" } },
+      where: { id: { in: leadIdsAutoVinculados }, status: { notIn: STATUS_PRESERVADOS_NA_VINCULACAO } },
       data: { status: "em_campanha" },
     })
     const autoVinculadosSet = new Set(leadIdsAutoVinculados)
@@ -1010,10 +1022,24 @@ async function vincularLeadsExistentesEmLote(
   })
   const chaves = new Set(vinculosAtuais.map((v) => `${v.leadId}:${v.campanhaId}`))
 
+  // Leads “Não contatar” não podem entrar em campanha: a linha é recusada.
+  const bloqueados = new Set(
+    (
+      await prisma.lead.findMany({
+        where: { id: { in: leadIds }, status: "nao_contatar" },
+        select: { id: true },
+      })
+    ).map((l) => l.id),
+  )
+
   const novos: PedidoVinculoLote[] = []
   for (const pedido of pedidos) {
     if (!nomeCampanhaPorId.has(pedido.campanhaId)) {
       resultados.push({ index: pedido.index, ok: false, motivo: "Campanha não encontrada." })
+      continue
+    }
+    if (bloqueados.has(pedido.leadId)) {
+      resultados.push({ index: pedido.index, ok: false, motivo: MSG_LEAD_NAO_CONTATAR })
       continue
     }
     const chave = `${pedido.leadId}:${pedido.campanhaId}`
@@ -1059,7 +1085,7 @@ async function vincularLeadsExistentesEmLote(
 
   // Quem já respondeu não é reaberto.
   await prisma.lead.updateMany({
-    where: { id: { in: idsVinculados }, status: { not: "respondeu" } },
+    where: { id: { in: idsVinculados }, status: { notIn: STATUS_PRESERVADOS_NA_VINCULACAO } },
     data: { status: "em_campanha" },
   })
 
@@ -1092,6 +1118,26 @@ async function vincularLeadsExistentesEmLote(
 }
 
 /**
+ * Status que NUNCA são sobrescritos por uma vinculação ou remoção de campanha:
+ *  - `respondeu`: definitivo (responder tira o lead de toda campanha);
+ *  - `nao_contatar`: o lead não pode entrar em campanha alguma, então nenhuma
+ *    rotina de campanha (vincular, remover, encerrar) mexe nesse status —
+ *    só uma troca explícita de status o libera.
+ */
+export const STATUS_PRESERVADOS_NA_VINCULACAO: LeadStatus[] = ["respondeu", "nao_contatar"]
+
+/** Mensagem padrão quando algo tenta vincular um lead “Não contatar” a uma campanha. */
+export const MSG_LEAD_NAO_CONTATAR = "Leads com status “Não contatar” não podem ser vinculados a campanhas."
+
+/** Lançado quando se tenta vincular a uma campanha um lead com status “Não contatar”. */
+export class LeadNaoContatarError extends Error {
+  constructor(nome?: string) {
+    super(nome ? `${nome} está com status “Não contatar” e não pode ser vinculado a campanhas.` : MSG_LEAD_NAO_CONTATAR)
+    this.name = "LeadNaoContatarError"
+  }
+}
+
+/**
  * Concentra os eventos derivados de uma troca de status para que toda mutação de
  * lead notifique o mesmo par de eventos, sem repetir a regra em cada função.
  */
@@ -1111,7 +1157,7 @@ async function emitirStatus(lead: Lead, anterior: LeadStatus | null) {
  * reabrir esse estado.
  */
 export function statusAoVincularCampanha(statusAtual: LeadStatus): LeadStatus {
-  return statusAtual === "respondeu" ? statusAtual : "em_campanha"
+  return STATUS_PRESERVADOS_NA_VINCULACAO.includes(statusAtual) ? statusAtual : "em_campanha"
 }
 
 /**
@@ -1123,12 +1169,27 @@ export function statusAoVincularCampanha(statusAtual: LeadStatus): LeadStatus {
  * status é definitivo e não deve ser rebaixado por uma remoção posterior.
  */
 export function statusAoRemoverDaCampanha(statusAtual: LeadStatus): LeadStatus {
-  return statusAtual === "respondeu" ? statusAtual : "sem_campanha"
+  return STATUS_PRESERVADOS_NA_VINCULACAO.includes(statusAtual) ? statusAtual : "sem_campanha"
 }
 
 export async function updateLead(id: string, input: LeadInput): Promise<Lead | null> {
   const atual = await prisma.lead.findUnique({ where: { id }, select: { campanhaId: true, status: true } })
   if (!atual) return null
+
+  // Status “Não contatar”: o lead não pode entrar em campanha nenhuma. Tentar ADICIONAR uma
+  // campanha é recusado; as campanhas em que ele já estava são encerradas para ele (sai de
+  // todas), como acontece ao marcá-lo por qualquer outro caminho (ver `setLeadStatus`).
+  let saiuDeCampanhasPorNaoContatar = 0
+  if (input.status === "nao_contatar") {
+    const vinculosAtuais = await prisma.leadCampaign.findMany({ where: { leadId: id }, select: { campanhaId: true } })
+    const atuaisIds = new Set(vinculosAtuais.map((v) => v.campanhaId))
+    const pedidas = [...new Set([...(input.campanhasIds ?? []), ...(input.campanhaId ? [input.campanhaId] : [])])]
+    if (pedidas.some((campanhaId) => !atuaisIds.has(campanhaId) && campanhaId !== atual.campanhaId)) {
+      throw new LeadValidationError({ campanhasIds: MSG_LEAD_NAO_CONTATAR })
+    }
+    saiuDeCampanhasPorNaoContatar = atuaisIds.size
+    input = { ...input, campanhaId: null, campanhasIds: [] }
+  }
 
   // Mesmas regras da criação, ignorando o próprio lead na checagem de duplicidade.
   const telefoneNormalizado = await validarUnicidadeEtelefone(input.nome, input.telefone, id)
@@ -1199,6 +1260,21 @@ export async function updateLead(id: string, input: LeadInput): Promise<Lead | n
 
     if (paraRemover.length > 0) {
       await prisma.leadCampaign.deleteMany({ where: { leadId: id, campanhaId: { in: paraRemover } } })
+    }
+    if (saiuDeCampanhasPorNaoContatar > 0) {
+      await prisma.timelineEvent.create({
+        data: {
+          leadId: id,
+          campanhaId: atual.campanhaId,
+          tipo: "removido_campanha",
+          descricao:
+            saiuDeCampanhasPorNaoContatar > 1
+              ? `Lead removido de ${saiuDeCampanhasPorNaoContatar} campanhas ao ser marcado como Não contatar.`
+              : "Lead removido da campanha ao ser marcado como Não contatar.",
+          data: agora,
+          sucesso: true,
+        },
+      })
     }
     if (paraAdicionar.length > 0) {
       await prisma.leadCampaign.createMany({ data: paraAdicionar.map((campanhaId) => ({ leadId: id, campanhaId })) })
@@ -1307,6 +1383,9 @@ async function dispararMensagemInicialDaCampanha(leadId: string, campanhaId: str
  * campanhas já vinculadas ao lead não geram efeito.
  */
 async function vincularLeadACampanhasCompativeis(lead: Lead): Promise<void> {
+  // “Não contatar” nunca entra em campanha, nem por filtro automático.
+  if (lead.status === "nao_contatar") return
+
   const campanhas = await prisma.campaign.findMany({
     where: {
       status: { not: "encerrada" },
@@ -1352,7 +1431,7 @@ async function vincularLeadACampanhasCompativeis(lead: Lead): Promise<void> {
   // pausada ou rascunho. `updateMany` com o filtro de status evita reabrir
   // esse estado para quem já respondeu.
   await prisma.lead.updateMany({
-    where: { id: lead.id, status: { not: "respondeu" } },
+    where: { id: lead.id, status: { notIn: STATUS_PRESERVADOS_NA_VINCULACAO } },
     data: { status: "em_campanha" },
   })
 }
@@ -1363,6 +1442,9 @@ export async function assignCampaign(leadId: string, campanhaId: string | null, 
     select: { campanhaId: true, status: true, campanha: { select: { nome: true } } },
   })
   if (!lead) return null
+
+  // Lead “Não contatar” não entra em campanha (remover da campanha continua permitido).
+  if (campanhaId && lead.status === "nao_contatar") throw new LeadNaoContatarError()
 
   const agora = new Date()
   const novaCampanha = campanhaId
@@ -1423,6 +1505,8 @@ export async function assignCampaign(leadId: string, campanhaId: string | null, 
 
 export interface AssignCampaignBulkResult {
   atualizados: number
+  /** Leads “Não contatar” que ficaram de fora porque não podem ser vinculados a campanhas. */
+  bloqueados: number
 }
 
 /**
@@ -1450,8 +1534,8 @@ export async function assignCampaignBulk(
   campanhaId: string | null,
   mensagemIndividual?: string | null,
 ): Promise<AssignCampaignBulkResult> {
-  const idsUnicos = [...new Set(leadIds)].filter(Boolean)
-  if (idsUnicos.length === 0) return { atualizados: 0 }
+  const idsPedidos = [...new Set(leadIds)].filter(Boolean)
+  if (idsPedidos.length === 0) return { atualizados: 0, bloqueados: 0 }
 
   const agora = new Date()
 
@@ -1462,24 +1546,24 @@ export async function assignCampaignBulk(
   // a uma remoção).
   if (!campanhaId) {
     const leadsExistentes = await prisma.lead.findMany({
-      where: { id: { in: idsUnicos } },
+      where: { id: { in: idsPedidos } },
       select: { id: true },
     })
-    if (leadsExistentes.length === 0) return { atualizados: 0 }
+    if (leadsExistentes.length === 0) return { atualizados: 0, bloqueados: 0 }
 
-    await prisma.leadCampaign.deleteMany({ where: { leadId: { in: idsUnicos } } })
+    await prisma.leadCampaign.deleteMany({ where: { leadId: { in: idsPedidos } } })
     await prisma.lead.updateMany({
-      where: { id: { in: idsUnicos } },
+      where: { id: { in: idsPedidos } },
       data: { campanhaId: null, entradaCampanhaEm: null },
     })
     // Remoção manual reflete no status como "sem_campanha" — ver
     // `statusAoRemoverDaCampanha`. Quem já respondeu nunca é rebaixado.
     await prisma.lead.updateMany({
-      where: { id: { in: idsUnicos }, status: { not: "respondeu" } },
+      where: { id: { in: idsPedidos }, status: { notIn: STATUS_PRESERVADOS_NA_VINCULACAO } },
       data: { status: "sem_campanha" },
     })
 
-    return { atualizados: leadsExistentes.length }
+    return { atualizados: leadsExistentes.length, bloqueados: 0 }
   }
 
   // --- Vincular (mover para campanha) em massa -------------------------------
@@ -1487,13 +1571,19 @@ export async function assignCampaignBulk(
     where: { id: campanhaId },
     select: { nome: true, status: true, tipo: true },
   })
-  if (!campanha) return { atualizados: 0 }
+  if (!campanha) return { atualizados: 0, bloqueados: 0 }
 
-  const leadsAntes = await prisma.lead.findMany({
-    where: { id: { in: idsUnicos } },
+  const leadsSelecionados = await prisma.lead.findMany({
+    where: { id: { in: idsPedidos } },
     select: { id: true, campanhaId: true, status: true },
   })
-  if (leadsAntes.length === 0) return { atualizados: 0 }
+  if (leadsSelecionados.length === 0) return { atualizados: 0, bloqueados: 0 }
+
+  // Leads “Não contatar” ficam de fora: não podem ser vinculados a campanha alguma.
+  const leadsAntes = leadsSelecionados.filter((l) => l.status !== "nao_contatar")
+  const bloqueados = leadsSelecionados.length - leadsAntes.length
+  if (leadsAntes.length === 0) return { atualizados: 0, bloqueados }
+  const idsUnicos = leadsAntes.map((l) => l.id)
 
   // Quem já tem um vínculo com ESTA campanha específica (reimportar/reeditar a
   // mensagem individual de quem já está vinculado não deve duplicar a linha).
@@ -1532,7 +1622,7 @@ export async function assignCampaignBulk(
 
   // Status "em_campanha" para todo o lote (quem já respondeu não é reaberto).
   await prisma.lead.updateMany({
-    where: { id: { in: idsUnicos }, status: { not: "respondeu" } },
+    where: { id: { in: idsUnicos }, status: { notIn: STATUS_PRESERVADOS_NA_VINCULACAO } },
     data: { status: "em_campanha" },
   })
 
@@ -1572,7 +1662,7 @@ export async function assignCampaignBulk(
     }
   }
 
-  return { atualizados: idsUnicos.length }
+  return { atualizados: idsUnicos.length, bloqueados }
 }
 
 export async function setLeadStatus(id: string, status: LeadStatus, resposta?: string | null): Promise<Lead | null> {
@@ -1587,7 +1677,10 @@ export async function setLeadStatus(id: string, status: LeadStatus, resposta?: s
   // marcado como respondido aqui continuava vinculado em `LeadCampaign` e a
   // engine (que decide quem recebe mensagem só por esse vínculo, sem olhar o
   // status) seguia disparando a sequência normalmente para ele.
-  const saiDaCampanha = status === "respondeu"
+  //
+  // “Não contatar” faz o mesmo: o lead não pode ficar em campanha nenhuma, então sai de todas
+  // (mas o chat segue normal — só as campanhas deixam de enxergá-lo).
+  const saiDaCampanha = status === "respondeu" || status === "nao_contatar"
   const campanhasVinculadas = saiDaCampanha
     ? await prisma.leadCampaign.findMany({
         where: { leadId: id },
@@ -1635,7 +1728,21 @@ export async function setLeadStatus(id: string, status: LeadStatus, resposta?: s
               ]
             : []),
         ]
-      : []
+      : status === "nao_contatar" && campanhasVinculadas.length > 0
+        ? [
+            {
+              campanhaId: lead.campanhaId,
+              tipo: "removido_campanha" as const,
+              descricao:
+                campanhasVinculadas.length > 1
+                  ? `Lead removido de ${campanhasVinculadas.length} campanhas ao ser marcado como Não contatar.`
+                  : `Lead removido da campanha ${campanhasVinculadas[0].campanha.nome} ao ser marcado como Não contatar.`,
+              detalhes: null,
+              data: agora,
+              sucesso: true,
+            },
+          ]
+        : []
 
   const atualizado = await prisma.lead.update({
     where: { id },

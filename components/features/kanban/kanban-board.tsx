@@ -53,6 +53,7 @@ const COR_COLUNA: Record<LeadStatus, { ponto: string; topo: string }> = {
   sem_campanha: { ponto: "bg-chart-4", topo: "border-t-chart-4" },
   respondeu: { ponto: "bg-chart-3", topo: "border-t-chart-3" },
   encerrado: { ponto: "bg-secondary-foreground/60", topo: "border-t-secondary-foreground/50" },
+  nao_contatar: { ponto: "bg-destructive", topo: "border-t-destructive" },
 }
 
 const DISTANCIA_MOUSE = 5

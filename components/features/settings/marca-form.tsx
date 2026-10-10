@@ -156,7 +156,7 @@ export function MarcaForm({ inicial }: { inicial: { nome: string; logo: string |
             <img src={logo ?? LOGO_PADRAO} alt="" className="size-8 rounded-lg object-cover" />
             <div className="flex min-w-0 flex-col">
               <span className="truncate text-sm font-semibold leading-tight">{nome.trim() || "Medical Spin"}</span>
-              <span className="truncate text-xs leading-tight text-muted-foreground">Follow-up WhatsApp v1.13.1</span>
+              <span className="truncate text-xs leading-tight text-muted-foreground">Follow-up WhatsApp v1.15.4</span>
             </div>
           </div>
         </div>
