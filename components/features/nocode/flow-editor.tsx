@@ -67,11 +67,14 @@ export function FlowEditor({
   totalExecucoes,
   atendentes = [],
   campanhas = [],
+  crmAtivo = false,
 }: {
   /** Atendentes ativos do CRM (para o bloco "Transferir para atendente"). */
   atendentes?: { id: string; nome: string }[]
   /** Campanhas não encerradas (para o bloco "Enviar lead para campanha"). */
   campanhas?: { id: string; nome: string; status: string }[]
+  /** Plugin CRM ativo (libera status exclusivos dele no bloco "Alterar status do lead"). */
+  crmAtivo?: boolean
   fluxo: FlowRow
   execucoesIniciais: ExecutionRow[]
   totalExecucoes: number
@@ -393,6 +396,7 @@ export function FlowEditor({
                 variaveis={variaveis}
                 atendentes={atendentes}
                 campanhas={campanhas}
+                crmAtivo={crmAtivo}
                 onNome={(valor) =>
                   setNodes((atual) => atual.map((n) => (n.id === noSelecionado.id ? { ...n, name: valor } : n)))
                 }

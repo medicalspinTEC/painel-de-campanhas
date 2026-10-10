@@ -5,8 +5,8 @@ import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { recordAppLog } from "@/services/app-logs"
 import { assignCampaignBulk, setLeadStatus } from "@/services/leads"
-import { getKanbanPluginAtivo } from "@/services/settings"
-import { LEAD_STATUS_LABEL, type LeadStatus } from "@/types"
+import { getCrmPluginAtivo, getKanbanPluginAtivo } from "@/services/settings"
+import { LEAD_STATUS_LABEL, LEAD_STATUS_SOMENTE_CRM, type LeadStatus } from "@/types"
 import { assertSecao } from "@/lib/session"
 
 const MAX_MENSAGEM_INDIVIDUAL = 4096
@@ -34,6 +34,9 @@ export async function moveKanbanLeadAction(leadId: string, status: LeadStatus, o
   }
   if (!(await getKanbanPluginAtivo())) {
     return { ok: false, message: "O plugin Kanban está desativado." }
+  }
+  if (LEAD_STATUS_SOMENTE_CRM.includes(status) && !(await getCrmPluginAtivo().catch(() => false))) {
+    return { ok: false, message: `O status “${LEAD_STATUS_LABEL[status]}” só existe com o plugin CRM ativo.` }
   }
 
   try {

@@ -7,7 +7,9 @@ import {
   textoDaRespostaEmArquivo,
 } from "@/services/arquivo-recebido"
 import { detalhesDaRespostaEmAudio, guardarAudioRecebido, textoDaRespostaEmAudio } from "@/services/audio-recebido"
+import { getCrmPluginAtivo } from "@/services/settings"
 import { emitWebhookEvent } from "@/services/webhooks"
+import type { LeadStatus } from "@/types"
 
 /**
  * Processamento do evento externo "RespostaLead".
@@ -358,9 +360,15 @@ export async function processarRespostaLead(payload: unknown): Promise<RespostaL
   await prisma.leadCampaign.deleteMany({ where: { leadId: lead.id } })
 
   const statusAnterior = lead.status
+  // Com o plugin CRM, quem escreve por conta própria (sem nunca ter estado em campanha) não está
+  // “respondendo” a nada: é um contato iniciado pelo lead e continua assim nas próximas mensagens.
+  const crmAtivo = await getCrmPluginAtivo().catch(() => false)
+  const semCampanha = campanhaIds.length === 0 && !lead.campanhaId
+  const contatoIniciadoPeloLead = crmAtivo && semCampanha && (statusAnterior === "novo" || statusAnterior === "contato_iniciado")
   // Quem está como “Não contatar” continua assim ao responder: a marca só sai por troca explícita
   // de status, senão a resposta reabriria o lead para campanhas sem ninguém decidir isso.
-  const statusNovo = statusAnterior === "nao_contatar" ? "nao_contatar" : "respondeu"
+  const statusNovo: LeadStatus =
+    statusAnterior === "nao_contatar" ? "nao_contatar" : contatoIniciadoPeloLead ? "contato_iniciado" : "respondeu"
   const leadAtualizado = await prisma.lead.update({
     where: { id: lead.id },
     data: {

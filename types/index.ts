@@ -1,4 +1,4 @@
-export type LeadStatus = "novo" | "em_campanha" | "sem_campanha" | "respondeu" | "encerrado" | "nao_contatar"
+export type LeadStatus = "novo" | "contato_iniciado" | "em_campanha" | "sem_campanha" | "respondeu" | "encerrado" | "nao_contatar"
 
 export type CampaignStatus = "ativa" | "pausada" | "encerrada" | "rascunho"
 
@@ -118,11 +118,25 @@ export interface Kpis {
 
 export const LEAD_STATUS_LABEL: Record<LeadStatus, string> = {
   novo: "Novo",
+  contato_iniciado: "Contato iniciado",
   em_campanha: "Em campanha",
   sem_campanha: "Sem campanha",
   respondeu: "Respondeu",
   encerrado: "Encerrado",
   nao_contatar: "Não contatar",
+}
+
+/** Status que só existem com o plugin CRM ativo (não aparecem nem podem ser aplicados sem ele). */
+export const LEAD_STATUS_SOMENTE_CRM: LeadStatus[] = ["contato_iniciado"]
+
+/**
+ * Status que o usuário pode escolher agora, na ordem padrão. Sem o CRM, os status exclusivos dele
+ * saem da lista; `manter` preserva o status que o lead já tem (para o select não ficar vazio).
+ */
+export function statusDisponiveis(crmAtivo: boolean, manter?: LeadStatus | null): LeadStatus[] {
+  return (Object.keys(LEAD_STATUS_LABEL) as LeadStatus[]).filter(
+    (s) => crmAtivo || !LEAD_STATUS_SOMENTE_CRM.includes(s) || s === manter,
+  )
 }
 
 export const CAMPAIGN_TIPO_LABEL: Record<CampaignTipo, string> = {

@@ -15,6 +15,10 @@ datasource db {
 
 enum LeadStatus {
   novo
+  /// Lead que iniciou a conversa por conta própria (escreveu no WhatsApp antes de receber
+  /// qualquer campanha). Só existe com o plugin CRM ativo: sem ele o status não aparece nem
+  /// pode ser aplicado.
+  contato_iniciado
   em_campanha
   /// Lead que já esteve em alguma campanha e foi removido manualmente dela
   /// (ação "Remover da campanha"), sem ter respondido. Diferente de `novo`

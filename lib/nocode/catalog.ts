@@ -50,7 +50,7 @@ export const PLUGINS_VERIFICAVEIS: PluginKey[] = ["chat", "kanban", "assistente"
  * propósito: esse status é consequência de o lead estar vinculado a uma campanha (use o bloco
  * “Enviar lead para campanha”), e aplicá-lo à mão deixaria o lead marcado sem campanha nenhuma.
  */
-export const STATUS_ALTERAVEIS_NO_FLUXO: LeadStatus[] = ["novo", "sem_campanha", "respondeu", "encerrado", "nao_contatar"]
+export const STATUS_ALTERAVEIS_NO_FLUXO: LeadStatus[] = ["novo", "contato_iniciado", "sem_campanha", "respondeu", "encerrado", "nao_contatar"]
 
 /** Gatilho de cada tipo de fluxo. */
 export function gatilhoDoTipo(kind: FlowKind): NodeType {
@@ -462,7 +462,7 @@ export const NODE_CATALOG: Record<NodeType, NodeDef> = {
     type: "alterar_status_lead",
     label: "Alterar status do lead",
     descricao:
-      "Troca o status do lead. “Não contatar” e “Respondeu” também tiram o lead de todas as campanhas; com “Não contatar” ele deixa de poder entrar em campanhas, mas segue conversando no chat normalmente.",
+      "Troca o status do lead. “Contato iniciado” só existe com o plugin CRM ativo. “Não contatar” e “Respondeu” também tiram o lead de todas as campanhas; com “Não contatar” ele deixa de poder entrar em campanhas, mas segue conversando no chat normalmente.",
     categoria: "Ação",
     icone: "Tag",
     cor: "bg-sky-500/15 text-sky-600 dark:text-sky-400",

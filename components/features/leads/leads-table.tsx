@@ -59,7 +59,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { formatNumber, formatRelative } from "@/lib/format"
 import type { InstanceOption } from "@/services/evolution"
 import type { LeadRow } from "@/services/leads"
-import { LEAD_STATUS_LABEL, type LeadStatus } from "@/types"
+import { LEAD_STATUS_LABEL, statusDisponiveis, type LeadStatus } from "@/types"
 
 const TODOS = "todos"
 const OPCOES_POR_PAGINA = [10, 25, 50, 100].map((quantidade) => ({
@@ -67,16 +67,21 @@ const OPCOES_POR_PAGINA = [10, 25, 50, 100].map((quantidade) => ({
   label: `${quantidade}`,
 }))
 
-const OPCOES_STATUS = [
-  { value: TODOS, label: "Todos os status" },
-  ...(Object.keys(LEAD_STATUS_LABEL) as LeadStatus[]).map((s) => ({ value: s, label: LEAD_STATUS_LABEL[s] })),
-]
+/** Opções do filtro de status. Status exclusivos do CRM só aparecem com o plugin ativo. */
+function opcoesStatusFiltro(crmAtivo: boolean, selecionado: string) {
+  return [
+    { value: TODOS, label: "Todos os status" },
+    ...statusDisponiveis(crmAtivo, selecionado === TODOS ? null : (selecionado as LeadStatus)).map((s) => ({
+      value: s,
+      label: LEAD_STATUS_LABEL[s],
+    })),
+  ]
+}
 
 /** Mesmas opções, sem "Todos os status" — usada no select de troca rápida por linha. */
-const OPCOES_STATUS_LEAD = (Object.keys(LEAD_STATUS_LABEL) as LeadStatus[]).map((s) => ({
-  value: s,
-  label: LEAD_STATUS_LABEL[s],
-}))
+function opcoesStatusLead(crmAtivo: boolean, atual: LeadStatus) {
+  return statusDisponiveis(crmAtivo, atual).map((s) => ({ value: s, label: LEAD_STATUS_LABEL[s] }))
+}
 
 export function LeadsTable({
   leads,
@@ -86,6 +91,7 @@ export function LeadsTable({
   personas = [],
   regioes = [],
   instancias = [],
+  crmAtivo = false,
 }: {
   leads: LeadRow[]
   campanhas: CampanhaOpcao[]
@@ -96,6 +102,8 @@ export function LeadsTable({
   regioes?: string[]
   /** Instâncias do WhatsApp disponíveis para o envio de mensagem avulsa em massa. */
   instancias?: InstanceOption[]
+  /** Plugin CRM ativo: libera os status exclusivos dele (ex.: “Contato iniciado”). */
+  crmAtivo?: boolean
 }) {
   const [busca, setBusca] = useState("")
   const [status, setStatus] = useState(TODOS)
@@ -322,7 +330,7 @@ export function LeadsTable({
             <SelectField
               value={status}
               onValueChange={resetPagina(setStatus)}
-              opcoes={OPCOES_STATUS}
+              opcoes={opcoesStatusFiltro(crmAtivo, status)}
               className="w-full"
             />
             <SelectField
@@ -473,7 +481,7 @@ export function LeadsTable({
                     <SelectField
                       value={lead.status}
                       onValueChange={(valor) => alterarStatus(lead, valor as LeadStatus)}
-                      opcoes={OPCOES_STATUS_LEAD}
+                      opcoes={opcoesStatusLead(crmAtivo, lead.status)}
                       size="sm"
                       className="w-36"
                       disabled={alterandoStatusId === lead.id}
@@ -583,6 +591,7 @@ export function LeadsTable({
         lead={leadEditando}
         campanhas={campanhas}
         valoresExistentes={valoresExistentes}
+        crmAtivo={crmAtivo}
       />
 
       <LeadsImportDialog open={importarAberto} onOpenChange={setImportarAberto} />

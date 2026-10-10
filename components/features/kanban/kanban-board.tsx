@@ -44,11 +44,11 @@ import { cn } from "@/lib/utils"
 import type { KanbanBoardData, KanbanLead } from "@/services/kanban"
 import { CAMPAIGN_STATUS_LABEL, LEAD_STATUS_LABEL, type LeadStatus } from "@/types"
 
-const COLUNAS = Object.keys(LEAD_STATUS_LABEL) as LeadStatus[]
 
 /** Cor de cada coluna, alinhada aos badges de status que já existem no painel. */
 const COR_COLUNA: Record<LeadStatus, { ponto: string; topo: string }> = {
   novo: { ponto: "bg-muted-foreground", topo: "border-t-muted-foreground/60" },
+  contato_iniciado: { ponto: "bg-chart-1", topo: "border-t-chart-1" },
   em_campanha: { ponto: "bg-chart-2", topo: "border-t-chart-2" },
   sem_campanha: { ponto: "bg-chart-4", topo: "border-t-chart-4" },
   respondeu: { ponto: "bg-chart-3", topo: "border-t-chart-3" },
@@ -320,10 +320,12 @@ type CartaoProps = {
   fantasma?: boolean
   onGesto?: (evento: ReactPointerEvent<HTMLElement>, lead: KanbanLead) => void
   onMover?: (leadId: string, destino: LeadStatus) => void
+  /** Colunas disponíveis para o menu "Mover para" (depende dos plugins ativos). */
+  colunas?: LeadStatus[]
   acabouDeArrastarRef?: RefObject<boolean>
 }
 
-const Cartao = memo(function Cartao({ lead, arrastando, fantasma, onGesto, onMover, acabouDeArrastarRef }: CartaoProps) {
+const Cartao = memo(function Cartao({ lead, arrastando, fantasma, onGesto, onMover, colunas = [], acabouDeArrastarRef }: CartaoProps) {
   const [primeiraCampanha, ...outras] = lead.campanhasNomes
 
   return (
@@ -371,7 +373,7 @@ const Cartao = memo(function Cartao({ lead, arrastando, fantasma, onGesto, onMov
                 <ArrowRightLeft className="size-3.5" />
                 Mover para
               </DropdownMenuLabel>
-              {COLUNAS.filter((status) => status !== lead.status).map((status) => (
+              {colunas.filter((status) => status !== lead.status).map((status) => (
                 <DropdownMenuItem key={status} onClick={() => onMover(lead.id, status)}>
                   <span className={cn("size-2 rounded-full", COR_COLUNA[status].ponto)} aria-hidden />
                   {LEAD_STATUS_LABEL[status]}
@@ -454,6 +456,7 @@ type ColunaProps = {
   destacada: boolean
   onGesto: CartaoProps["onGesto"]
   onMover: (leadId: string, destino: LeadStatus) => void
+  colunas: LeadStatus[]
   acabouDeArrastarRef: RefObject<boolean>
 }
 
@@ -467,6 +470,7 @@ const Coluna = memo(function Coluna({
   destacada,
   onGesto,
   onMover,
+  colunas,
   acabouDeArrastarRef,
 }: ColunaProps) {
   const cor = COR_COLUNA[status]
@@ -501,6 +505,7 @@ const Coluna = memo(function Coluna({
               arrastando={arrastandoId === lead.id}
               onGesto={onGesto}
               onMover={onMover}
+              colunas={colunas}
               acabouDeArrastarRef={acabouDeArrastarRef}
             />
           ))
@@ -683,8 +688,10 @@ export function KanbanBoard({ inicial }: { inicial: KanbanBoardData }) {
   }, [router])
 
   const termo = busca.trim().toLowerCase()
+  // Colunas do quadro: os status exclusivos do plugin CRM só entram com ele ativo.
+  const colunasVisiveis = inicial.colunas
   const colunas = useMemo(() => {
-    const agrupado = Object.fromEntries(COLUNAS.map((status) => [status, [] as KanbanLead[]])) as Record<
+    const agrupado = Object.fromEntries(colunasVisiveis.map((status) => [status, [] as KanbanLead[]])) as Record<
       LeadStatus,
       KanbanLead[]
     >
@@ -692,11 +699,11 @@ export function KanbanBoard({ inicial }: { inicial: KanbanBoardData }) {
       if (termo && !`${lead.nome} ${lead.telefone} ${lead.produto} ${lead.marca}`.toLowerCase().includes(termo)) continue
       agrupado[lead.status].push(lead)
     }
-    for (const status of COLUNAS) {
+    for (const status of colunasVisiveis) {
       agrupado[status].sort((a, b) => b.atualizadoEm.localeCompare(a.atualizadoEm))
     }
     return agrupado
-  }, [leads, termo])
+  }, [leads, termo, colunasVisiveis])
 
   return (
     <div className="flex h-[calc(100dvh-5.5rem)] min-h-[420px] flex-col md:h-[calc(100dvh-6.5rem)]">
@@ -733,7 +740,7 @@ export function KanbanBoard({ inicial }: { inicial: KanbanBoardData }) {
           !arrasto && "snap-x snap-mandatory md:snap-none",
         )}
       >
-        {COLUNAS.map((status) => (
+        {colunasVisiveis.map((status) => (
           <Coluna
             key={status}
             status={status}
@@ -745,6 +752,7 @@ export function KanbanBoard({ inicial }: { inicial: KanbanBoardData }) {
             destacada={arrasto !== null && arrasto.sobre === status && arrasto.lead.status !== status}
             onGesto={iniciarGesto}
             onMover={pedirMover}
+            colunas={colunasVisiveis}
             acabouDeArrastarRef={acabouDeArrastarRef}
           />
         ))}

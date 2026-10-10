@@ -10,7 +10,8 @@ import { mimeDoArquivo, nomeSeguro, tipoPorMime } from "@/lib/arquivo-storage"
 import { sendWhatsAppAudio, sendWhatsAppMedia, sendWhatsAppText } from "@/services/evolution"
 import { garantirProduto } from "@/services/produtos"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
-import type { Lead, LeadStatus, TimelineEvent } from "@/types"
+import { getCrmPluginAtivo } from "@/services/settings"
+import { LEAD_STATUS_LABEL, LEAD_STATUS_SOMENTE_CRM, type Lead, type LeadStatus, type TimelineEvent } from "@/types"
 
 /**
  * Cadastra automaticamente no catálogo de segmentação quaisquer valores de
@@ -393,8 +394,10 @@ export async function cadastrarLeadPorMensagem(input: {
   }
   if (!nome) return null
 
+  // Quem escreveu primeiro nasce como “Contato iniciado” (status do plugin CRM); sem o CRM, segue “Novo”.
+  const status: LeadStatus = (await getCrmPluginAtivo().catch(() => false)) ? "contato_iniciado" : "novo"
   const lead = await prisma.lead.create({
-    data: { nome, telefone, produto: "", marca: "", persona: "", regiao: "", status: "novo" },
+    data: { nome, telefone, produto: "", marca: "", persona: "", regiao: "", status },
   })
   await prisma.chatInternalNote.create({
     data: { leadId: lead.id, texto: "Lead cadastrado automaticamente a partir de uma mensagem recebida no WhatsApp." },
@@ -429,6 +432,16 @@ function normalizarAtividade(atividade: string | null | undefined): string | nul
  * chamadoras (server actions e API REST) capturam e convertem em erros de
  * formulário sem precisar repetir a regra de negócio.
  */
+/**
+ * Status exclusivos do plugin CRM (ex.: “Contato iniciado”) não podem ser aplicados com o CRM
+ * desativado, por nenhum caminho (painel, API, importação, MCP, No Code).
+ */
+export async function validarStatusDisponivel(status: LeadStatus | null | undefined): Promise<void> {
+  if (!status || !LEAD_STATUS_SOMENTE_CRM.includes(status)) return
+  if (await getCrmPluginAtivo().catch(() => false)) return
+  throw new LeadValidationError({ status: `O status “${LEAD_STATUS_LABEL[status]}” só está disponível com o plugin CRM ativo.` })
+}
+
 export class LeadValidationError extends Error {
   errors: Record<string, string>
   constructor(errors: Record<string, string>) {
@@ -502,6 +515,7 @@ async function validarUnicidadeEtelefone(
 
 export async function createLead(input: LeadInput): Promise<Lead> {
   const agora = new Date()
+  await validarStatusDisponivel(input.status)
 
   // Lead “Não contatar” nasce sem campanha: não aceita vínculo algum.
   if (input.status === "nao_contatar" && (input.campanhaId || input.campanhasIds?.length)) {
@@ -679,6 +693,7 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
 
   const agora = new Date()
   const resultados: LeadBulkOutcome[] = []
+  const crmAtivo = await getCrmPluginAtivo().catch(() => false)
 
   // 1) Nomes e telefones já cadastrados, carregados uma única vez para todo o
   // lote (evita a consulta O(total de leads) por linha).
@@ -735,6 +750,12 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
         campanhaId: input.campanhaId,
         mensagemIndividual: input.mensagemIndividual?.trim() || null,
       })
+      continue
+    }
+
+    // Status exclusivo do CRM (ex.: “Contato iniciado”) não vale com o plugin desativado.
+    if (!crmAtivo && LEAD_STATUS_SOMENTE_CRM.includes(input.status)) {
+      resultados.push({ index, ok: false, motivo: `O status “${LEAD_STATUS_LABEL[input.status]}” só está disponível com o plugin CRM ativo.` })
       continue
     }
 
@@ -1175,6 +1196,7 @@ export function statusAoRemoverDaCampanha(statusAtual: LeadStatus): LeadStatus {
 export async function updateLead(id: string, input: LeadInput): Promise<Lead | null> {
   const atual = await prisma.lead.findUnique({ where: { id }, select: { campanhaId: true, status: true } })
   if (!atual) return null
+  if (input.status !== atual.status) await validarStatusDisponivel(input.status)
 
   // Status “Não contatar”: o lead não pode entrar em campanha nenhuma. Tentar ADICIONAR uma
   // campanha é recusado; as campanhas em que ele já estava são encerradas para ele (sai de
@@ -1668,6 +1690,7 @@ export async function assignCampaignBulk(
 export async function setLeadStatus(id: string, status: LeadStatus, resposta?: string | null): Promise<Lead | null> {
   const lead = await prisma.lead.findUnique({ where: { id }, select: { campanhaId: true, status: true } })
   if (!lead) return null
+  if (status !== lead.status) await validarStatusDisponivel(status)
 
   const agora = new Date()
 

@@ -265,6 +265,7 @@ export type InternoMensagem = $Result.DefaultSelection<Prisma.$InternoMensagemPa
 export namespace $Enums {
   export const LeadStatus: {
   novo: 'novo',
+  contato_iniciado: 'contato_iniciado',
   em_campanha: 'em_campanha',
   sem_campanha: 'sem_campanha',
   respondeu: 'respondeu',

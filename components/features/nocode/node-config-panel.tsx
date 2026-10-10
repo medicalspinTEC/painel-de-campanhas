@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { gerarToken, NODE_CATALOG, type FlowNode, type NodeConfig } from "@/lib/nocode/catalog"
 import { cn } from "@/lib/utils"
+import { LEAD_STATUS_SOMENTE_CRM, type LeadStatus } from "@/types"
 
 async function copiar(texto: string, mensagem: string) {
   try {
@@ -28,6 +29,7 @@ export function NodeConfigPanel({
   variaveis,
   atendentes = [],
   campanhas = [],
+  crmAtivo = false,
   onNome,
   onConfig,
   onExcluir,
@@ -39,6 +41,8 @@ export function NodeConfigPanel({
   atendentes?: { id: string; nome: string }[]
   /** Campanhas não encerradas, para o campo "campanha". */
   campanhas?: { id: string; nome: string; status: string }[]
+  /** Plugin CRM ativo: libera status exclusivos dele no bloco "Alterar status do lead". */
+  crmAtivo?: boolean
   onNome: (nome: string) => void
   onConfig: (patch: NodeConfig) => void
   onExcluir: () => void
@@ -114,7 +118,7 @@ export function NodeConfigPanel({
                 id={id}
                 value={String(valor ?? "")}
                 onValueChange={(v) => onConfig({ [campo.key]: v })}
-                opcoes={campo.options ?? []}
+                opcoes={(campo.options ?? []).filter((o) => crmAtivo || !LEAD_STATUS_SOMENTE_CRM.includes(o.value as LeadStatus) || o.value === valor)}
               />
             ) : null}
             {campo.kind === "atendente" ? (

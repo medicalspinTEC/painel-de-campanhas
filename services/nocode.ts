@@ -29,7 +29,7 @@ import { processarRespostaLead, telefonesBatem } from "@/services/lead-response"
 import { CrmError, transferirConversaPorBot, transferirParaAtendentePorBot } from "@/services/crm"
 import { enviarLeadParaCampanha } from "@/services/lead-campanha"
 import { setLeadStatus } from "@/services/leads"
-import { LEAD_STATUS_LABEL, type LeadStatus } from "@/types"
+import { LEAD_STATUS_LABEL, LEAD_STATUS_SOMENTE_CRM, type LeadStatus } from "@/types"
 import { mensagemPluginDesativado, type PluginKey } from "@/lib/plugins"
 import { exigirPlugin, getPluginsAtivos } from "@/services/settings"
 
@@ -620,6 +620,8 @@ async function executarBloco(no: FlowNode, ctx: Contexto, simulacao: boolean): P
       const leadId = String(resolverCampo(texto("leadId") || "{{lead.id}}", ctx) ?? "").trim()
       if (simulacao) return { saida: "main", status: "simulado", resumo: { leadId: leadId || null, status } }
       if (!leadId) return { saida: "nao_alterado", resumo: { motivo: "Nenhum lead para alterar (lead não encontrado)." } }
+      // Status exclusivos do CRM (ex.: “Contato iniciado”) exigem o plugin ativo.
+      if (LEAD_STATUS_SOMENTE_CRM.includes(status)) await exigirPlugin("crm")
 
       const atual = await prisma.lead.findUnique({ where: { id: leadId }, select: { nome: true, status: true } })
       if (!atual) return { saida: "nao_alterado", resumo: { motivo: "Lead não encontrado." } }

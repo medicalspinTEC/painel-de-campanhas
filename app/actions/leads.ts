@@ -19,7 +19,7 @@ export interface ActionState {
   errors?: Record<string, string>
 }
 
-const STATUS_VALIDOS: LeadStatus[] = ["novo", "em_campanha", "respondeu", "encerrado", "nao_contatar"]
+const STATUS_VALIDOS: LeadStatus[] = ["novo", "contato_iniciado", "em_campanha", "respondeu", "encerrado", "nao_contatar"]
 
 /** Tamanho máximo para as dimensões de segmentação (texto livre). */
 const MAX_SEGMENTO = 60
@@ -177,6 +177,9 @@ export async function setLeadStatusAction(id: string, status: LeadStatus, respos
   try {
     await setLeadStatus(id, status, resposta)
   } catch (error) {
+    if (error instanceof LeadValidationError) {
+      return { ok: false, message: Object.values(error.errors)[0] ?? "Status inválido." }
+    }
     await recordAppLog({ origem: "leads", mensagem: `Falha ao atualizar status do lead id=${id} para "${status}".`, detalhes: error })
     return { ok: false, message: "Não foi possível atualizar o status." }
   }

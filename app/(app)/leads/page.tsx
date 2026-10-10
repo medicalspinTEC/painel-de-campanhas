@@ -5,6 +5,7 @@ import { listCampaigns } from "@/services/campaigns"
 import { listInstanceOptions } from "@/services/evolution"
 import { listLeads } from "@/services/leads"
 import { listNomesProdutosAtivos } from "@/services/produtos"
+import { getCrmPluginAtivo } from "@/services/settings"
 import { requireSecao } from "@/lib/session"
 
 export const metadata = {
@@ -14,7 +15,7 @@ export const metadata = {
 
 export default async function LeadsPage() {
   await requireSecao("leads")
-  const [leads, campanhas, produtos, marcas, personas, regioes, instancias] = await Promise.all([
+  const [leads, campanhas, produtos, marcas, personas, regioes, instancias, crmAtivo] = await Promise.all([
     listLeads(),
     listCampaigns(),
     listNomesProdutosAtivos(),
@@ -22,6 +23,7 @@ export default async function LeadsPage() {
     servicoPersonas.listarNomesAtivos(),
     servicoRegioes.listarNomesAtivos(),
     listInstanceOptions(),
+    getCrmPluginAtivo().catch(() => false),
   ])
 
   return (
@@ -38,6 +40,7 @@ export default async function LeadsPage() {
         personas={personas}
         regioes={regioes}
         instancias={instancias}
+        crmAtivo={crmAtivo}
       />
     </div>
   )

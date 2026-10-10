@@ -117,7 +117,7 @@ import type { CampaignStatus, LeadStatus } from "@/types"
  * O texto que treina a IA vem de `lib/mcp/prompt-treinamento.ts`.
  */
 
-const STATUS_LEAD_VALORES: [LeadStatus, ...LeadStatus[]] = ["novo", "em_campanha", "sem_campanha", "respondeu", "encerrado", "nao_contatar"]
+const STATUS_LEAD_VALORES: [LeadStatus, ...LeadStatus[]] = ["novo", "contato_iniciado", "em_campanha", "sem_campanha", "respondeu", "encerrado", "nao_contatar"]
 
 const STATUS_CAMPANHA_VALORES: [CampaignStatus, ...CampaignStatus[]] = ["rascunho", "ativa", "pausada", "encerrada"]
 
@@ -517,7 +517,14 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
       resposta: z.string().optional().describe("Texto opcional do que o lead respondeu."),
     },
     async ({ id, status, resposta }) => {
-      const lead = await setLeadStatus(id, status, resposta ?? null)
+      let lead
+      try {
+        lead = await setLeadStatus(id, status, resposta ?? null)
+      } catch (error) {
+        // Ex.: “contato_iniciado” com o plugin CRM desativado.
+        if (error instanceof LeadValidationError) return errorResult(Object.values(error.errors)[0] ?? "Status inválido.")
+        throw error
+      }
       if (!lead) return errorResult("Lead não encontrado.")
       return jsonResult({ ok: true, lead: (await getLead(lead.id)) ?? lead })
     },

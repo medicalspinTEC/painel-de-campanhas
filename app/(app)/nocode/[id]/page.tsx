@@ -19,6 +19,7 @@ export default async function NoCodeEditorPage({ params }: { params: Promise<{ i
   const fluxo = await getFlow(id).catch(() => null)
   if (!fluxo) notFound()
 
+  const crmAtivo = await getCrmPluginAtivo().catch(() => false)
   const [execucoes, total, atendentes, campanhas] = await Promise.all([
     listExecutions(id).catch(() => []),
     contarExecucoes(id).catch(() => 0),
@@ -29,5 +30,5 @@ export default async function NoCodeEditorPage({ params }: { params: Promise<{ i
     listCampanhasAbertas().catch(() => []),
   ])
 
-  return <FlowEditor fluxo={fluxo} execucoesIniciais={execucoes} totalExecucoes={total} atendentes={atendentes} campanhas={campanhas} />
+  return <FlowEditor fluxo={fluxo} execucoesIniciais={execucoes} totalExecucoes={total} atendentes={atendentes} campanhas={campanhas} crmAtivo={crmAtivo} />
 }

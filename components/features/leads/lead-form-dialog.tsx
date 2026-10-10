@@ -21,6 +21,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import {
   LEAD_STATUS_LABEL,
+  statusDisponiveis,
   type LeadStatus,
   type Lead,
   type CampaignTipo,
@@ -28,10 +29,10 @@ import {
 
 const estadoInicial: ActionState = { ok: false, message: "" }
 
-const OPCOES_STATUS = (Object.keys(LEAD_STATUS_LABEL) as LeadStatus[]).map((s) => ({
-  value: s,
-  label: LEAD_STATUS_LABEL[s],
-}))
+/** Status exclusivos do CRM só entram com o plugin ativo (o status atual do lead sempre fica). */
+function opcoesStatus(crmAtivo: boolean, atual?: LeadStatus | null) {
+  return statusDisponiveis(crmAtivo, atual).map((s) => ({ value: s, label: LEAD_STATUS_LABEL[s] }))
+}
 
 export interface CampanhaOpcao {
   id: string
@@ -54,12 +55,14 @@ export function LeadFormDialog({
   lead,
   campanhas,
   valoresExistentes,
+  crmAtivo = false,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   lead?: Lead | null
   campanhas: CampanhaOpcao[]
   valoresExistentes?: ValoresSegmentacao
+  crmAtivo?: boolean
 }) {
   const editando = Boolean(lead)
   const [state, formAction, pending] = useActionState(
@@ -261,7 +264,7 @@ export function LeadFormDialog({
                 name="status"
                 value={status}
                 onValueChange={setStatus}
-                opcoes={OPCOES_STATUS}
+                opcoes={opcoesStatus(crmAtivo, lead?.status)}
                 className="w-full"
               />
             </Field>

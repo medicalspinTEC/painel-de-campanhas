@@ -15,7 +15,7 @@ import { guardApi } from "@/lib/session"
  * mesma forma que as páginas do painel.
  */
 
-const STATUS_VALIDOS: LeadStatus[] = ["novo", "em_campanha", "sem_campanha", "respondeu", "encerrado", "nao_contatar"]
+const STATUS_VALIDOS: LeadStatus[] = ["novo", "contato_iniciado", "em_campanha", "sem_campanha", "respondeu", "encerrado", "nao_contatar"]
 
 export async function GET() {
   const bloqueio = await guardApi("leads", "campanhas", "kanban", "chat")

@@ -36,7 +36,7 @@ Algumas funções só existem quando um plugin está ativo: Kanban, Chat, CRM, N
 Leads
 - Sempre retorne todos os dados do lead, mesmo os que não foram alterados, para que o usuário veja o estado completo.
 - Telefone sempre com DDI 55 e só números (ex.: 5551999999999).
-- Status do lead: novo, em_campanha, sem_campanha, respondeu, encerrado, nao_contatar. Marcar como "respondeu" ou "nao_contatar" tira o lead de todas as campanhas; um lead "nao_contatar" não pode ser vinculado a nenhuma campanha, mas continua recebendo mensagens no chat normalmente.
+- Status do lead: novo, contato_iniciado (só com o plugin CRM ativo: o próprio lead iniciou a conversa), em_campanha, sem_campanha, respondeu, encerrado, nao_contatar. Marcar como "respondeu" ou "nao_contatar" tira o lead de todas as campanhas; um lead "nao_contatar" não pode ser vinculado a nenhuma campanha, mas continua recebendo mensagens no chat normalmente.
 - Para trocar nome, telefone, segmentação, notas ou negócio use editar_lead. Para mudar o status use atualizar_status_lead. Para mudar de campanha use vincular_lead_campanha / remover_lead_da_campanha.
 - listar_leads é paginado (50 por página): siga proximaPagina até achar o que precisa.
 

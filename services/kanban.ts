@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { assignCampaignBulk, setLeadStatus } from "@/services/leads"
-import { LEAD_STATUS_LABEL, type CampaignStatus, type CampaignTipo, type LeadStatus } from "@/types"
+import { getCrmPluginAtivo } from "@/services/settings"
+import { LEAD_STATUS_LABEL, LEAD_STATUS_SOMENTE_CRM, statusDisponiveis, type CampaignStatus, type CampaignTipo, type LeadStatus } from "@/types"
 
 /** Ordem das colunas: a mesma ordem dos status já existentes na plataforma. */
 export const KANBAN_COLUNAS = Object.keys(LEAD_STATUS_LABEL) as LeadStatus[]
@@ -31,10 +32,13 @@ export type KanbanBoardData = {
   leads: KanbanLead[]
   campanhas: KanbanCampanha[]
   totais: Record<LeadStatus, number>
+  /** Colunas exibidas, na ordem: os status exclusivos do plugin CRM só aparecem com ele ativo. */
+  colunas: LeadStatus[]
   limitePorColuna: number
 }
 
 export async function getKanbanBoard(): Promise<KanbanBoardData> {
+  const colunas = statusDisponiveis(await getCrmPluginAtivo().catch(() => false))
   const [contagens, campanhas, porColuna] = await Promise.all([
     prisma.lead.groupBy({ by: ["status"], _count: { _all: true } }),
     // Campanhas encerradas não recebem leads novos.
@@ -44,7 +48,7 @@ export async function getKanbanBoard(): Promise<KanbanBoardData> {
       orderBy: { criadoEm: "desc" },
     }),
     Promise.all(
-      KANBAN_COLUNAS.map((status) =>
+      colunas.map((status) =>
         prisma.lead.findMany({
           where: { status },
           select: {
@@ -85,7 +89,7 @@ export async function getKanbanBoard(): Promise<KanbanBoardData> {
     atualizadoEm: lead.atualizadoEm.toISOString(),
   }))
 
-  return { leads, campanhas, totais, limitePorColuna: KANBAN_LIMITE_POR_COLUNA }
+  return { leads, campanhas, totais, colunas, limitePorColuna: KANBAN_LIMITE_POR_COLUNA }
 }
 
 const KANBAN_MAX_MENSAGEM_INDIVIDUAL = 4096
@@ -112,6 +116,9 @@ export async function moverLeadKanban(
   opcoes: MoverKanbanOpcoes = {},
 ): Promise<{ ok: boolean; message: string }> {
   if (!leadId || !Object.hasOwn(LEAD_STATUS_LABEL, status)) return { ok: false, message: "Status inválido." }
+  if (LEAD_STATUS_SOMENTE_CRM.includes(status) && !(await getCrmPluginAtivo().catch(() => false))) {
+    return { ok: false, message: `O status “${LEAD_STATUS_LABEL[status]}” só existe com o plugin CRM ativo.` }
+  }
 
   if (status === "em_campanha") {
     const campanhaId = opcoes.campanhaId?.trim()

@@ -47,7 +47,7 @@ export type EndpointDoc = {
 
 /** Valores permitidos, reaproveitados nas descrições. */
 export const ENUMS = {
-  leadStatus: ["novo", "em_campanha", "sem_campanha", "respondeu", "encerrado", "nao_contatar"],
+  leadStatus: ["novo", "contato_iniciado", "em_campanha", "sem_campanha", "respondeu", "encerrado", "nao_contatar"],
   campaignStatus: ["rascunho", "ativa", "pausada", "encerrada"],
   campaignTipo: ["padrao", "individual"],
   messageKind: ["enviada", "falha", "resposta", "agendada"],
