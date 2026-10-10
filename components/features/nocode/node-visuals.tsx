@@ -12,6 +12,7 @@ import {
   Tag,
   Timer,
   UserCheck,
+  UserPlus,
   UserSearch,
   Webhook,
   type LucideIcon,
@@ -25,6 +26,7 @@ export const ICONES: Record<NodeDef["icone"], LucideIcon> = {
   Webhook,
   Phone,
   GitBranch,
+  UserPlus,
   UserSearch,
   MessageSquareReply,
   Send,
@@ -69,6 +71,11 @@ export function resumoDoNo(no: FlowNode): string {
       return cfg.modo === "especifico" ? "Atendente específico" : "Distribuir entre atendentes"
     case "enviar_lead_campanha":
       return String(cfg.campanhaNome ?? "").trim() || (cfg.campanhaId ? "Campanha escolhida" : "(escolha a campanha)")
+    case "cadastrar_lead": {
+      const nome = String(cfg.nome ?? "").trim()
+      const status = LEAD_STATUS_LABEL[cfg.status as LeadStatus]
+      return [nome || "Novo lead", status].filter(Boolean).join(" · ")
+    }
     case "alterar_status_lead":
       return LEAD_STATUS_LABEL[cfg.status as LeadStatus] ?? "(escolha o status)"
     case "transferir_departamento":

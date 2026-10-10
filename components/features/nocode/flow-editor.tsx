@@ -107,12 +107,14 @@ export function FlowEditor({
     const campanha = [
       ...(nodes.some((n) => n.type === "enviar_lead_campanha") ? VARIAVEIS_CAMPANHA : []),
       ...(nodes.some((n) => n.type === "alterar_status_lead") ? VARIAVEIS_STATUS_LEAD : []),
+      // “Cadastrar lead” deixa o lead (novo ou já existente) disponível como {{lead.*}}.
+      ...(nodes.some((n) => n.type === "cadastrar_lead") ? VARIAVEIS_LEAD : []),
     ]
-    if (bot) return [...VARIAVEIS_BOT, ...(nodes.some((n) => n.type === "menu") ? VARIAVEIS_MENU : []), ...campanha]
+    if (bot) return [...new Set([...VARIAVEIS_BOT, ...(nodes.some((n) => n.type === "menu") ? VARIAVEIS_MENU : []), ...campanha])]
     const lista = [...VARIAVEIS_WEBHOOK]
     if (nodes.some((n) => n.type === "extrair_telefone")) lista.push("telefone")
     if (nodes.some((n) => n.type === "buscar_lead")) lista.push(...VARIAVEIS_LEAD)
-    return [...lista, ...campanha]
+    return [...new Set([...lista, ...campanha])]
   }, [nodes, bot])
 
   // Avisa antes de sair com alterações não salvas.

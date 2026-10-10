@@ -14,6 +14,8 @@ export type NodeType =
   | "extrair_telefone"
   | "condicao"
   | "buscar_lead"
+  // Cadastra um lead novo (ação do app, não depende de plugin; “Contato iniciado” exige o CRM).
+  | "cadastrar_lead"
   | "registrar_resposta"
   | "enviar_mensagem"
   | "aguardar"
@@ -51,6 +53,9 @@ export const PLUGINS_VERIFICAVEIS: PluginKey[] = ["chat", "kanban", "assistente"
  * “Enviar lead para campanha”), e aplicá-lo à mão deixaria o lead marcado sem campanha nenhuma.
  */
 export const STATUS_ALTERAVEIS_NO_FLUXO: LeadStatus[] = ["novo", "contato_iniciado", "sem_campanha", "respondeu", "encerrado", "nao_contatar"]
+
+/** Status inicial que o bloco “Cadastrar lead” pode dar ao lead (sem vínculo com campanha). */
+export const STATUS_CADASTRO_NO_FLUXO: LeadStatus[] = ["novo", "contato_iniciado", "nao_contatar"]
 
 /** Gatilho de cada tipo de fluxo. */
 export function gatilhoDoTipo(kind: FlowKind): NodeType {
@@ -100,6 +105,7 @@ export interface NodeDef {
     | "Phone"
     | "GitBranch"
     | "UserSearch"
+    | "UserPlus"
     | "MessageSquareReply"
     | "Send"
     | "Timer"
@@ -254,6 +260,69 @@ export const NODE_CATALOG: Record<NodeType, NodeDef> = {
       },
     ],
     padrao: { telefone: "{{telefone}}" },
+  },
+  cadastrar_lead: {
+    type: "cadastrar_lead",
+    label: "Cadastrar lead",
+    descricao:
+      "Cria um lead no app. Se já existir um lead com esse telefone, não cria outro e segue por “Já existe”. “Contato iniciado” só existe com o plugin CRM ativo.",
+    categoria: "Ação",
+    icone: "UserPlus",
+    cor: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+    temEntrada: true,
+    saidas: [
+      { id: "main", label: "Cadastrado" },
+      { id: "ja_existe", label: "Já existe" },
+      { id: "nao_cadastrado", label: "Não cadastrado" },
+    ],
+    campos: [
+      {
+        key: "nome",
+        label: "Nome",
+        kind: "text",
+        placeholder: "{{webhook.data.pushName}}",
+        help: "Aceita variáveis {{...}}. Vazio vira “Contato <telefone>”; se o nome já estiver em uso, o fim do telefone é acrescentado.",
+      },
+      {
+        key: "telefone",
+        label: "Telefone",
+        kind: "text",
+        placeholder: "{{telefone}}",
+        help: "Num fluxo de webhook, use antes o bloco “Extrair telefone”. Precisa ser um telefone válido (com DDD).",
+      },
+      {
+        key: "status",
+        label: "Status inicial",
+        kind: "select",
+        options: STATUS_CADASTRO_NO_FLUXO.map((value) => ({ value, label: LEAD_STATUS_LABEL[value] })),
+      },
+      { key: "produto", label: "Produto", kind: "text", placeholder: "(opcional)" },
+      { key: "marca", label: "Marca", kind: "text", placeholder: "(opcional)" },
+      { key: "persona", label: "Persona", kind: "text", placeholder: "(opcional)" },
+      { key: "regiao", label: "Região", kind: "text", placeholder: "(opcional)" },
+      { key: "notas", label: "Notas", kind: "textarea", placeholder: "(opcional)" },
+      { key: "negocio", label: "Negócio", kind: "text", placeholder: "(opcional)" },
+      { key: "atividade", label: "Atividade", kind: "text", placeholder: "(opcional)" },
+      {
+        key: "vincularCampanhas",
+        label: "Vincular a campanhas compatíveis",
+        kind: "switch",
+        help: "Desligado: o lead nasce sem campanha. Ligado: entra nas campanhas cujos filtros de público ele atende (como no cadastro manual).",
+      },
+    ],
+    padrao: {
+      nome: "{{webhook.data.pushName}}",
+      telefone: "{{telefone}}",
+      status: "novo",
+      produto: "",
+      marca: "",
+      persona: "",
+      regiao: "",
+      notas: "",
+      negocio: "",
+      atividade: "",
+      vincularCampanhas: false,
+    },
   },
   registrar_resposta: {
     type: "registrar_resposta",
@@ -640,6 +709,9 @@ export function validarGrafo(
     }
     if (no.type === "alterar_status_lead" && !STATUS_ALTERAVEIS_NO_FLUXO.includes(no.config?.status as LeadStatus)) {
       return `Escolha o status do bloco “${no.name}”.`
+    }
+    if (no.type === "cadastrar_lead" && !STATUS_CADASTRO_NO_FLUXO.includes(no.config?.status as LeadStatus)) {
+      return `Escolha o status inicial do bloco “${no.name}”.`
     }
     if (no.type === "plugin_ativo" && !PLUGINS_VERIFICAVEIS.includes(no.config?.plugin as PluginKey)) {
       return `Escolha o plugin do bloco “${no.name}”.`

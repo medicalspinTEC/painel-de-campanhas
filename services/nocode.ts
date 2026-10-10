@@ -12,6 +12,7 @@ import {
   OPERADORES_SEM_VALOR,
   PLUGINS_VERIFICAVEIS,
   STATUS_ALTERAVEIS_NO_FLUXO,
+  STATUS_CADASTRO_NO_FLUXO,
   validarGrafo,
   type FlowEdge,
   type FlowKind,
@@ -28,7 +29,7 @@ import { configurarWebhookEvolution, sendWhatsAppText } from "@/services/evoluti
 import { processarRespostaLead, telefonesBatem } from "@/services/lead-response"
 import { CrmError, transferirConversaPorBot, transferirParaAtendentePorBot } from "@/services/crm"
 import { enviarLeadParaCampanha } from "@/services/lead-campanha"
-import { setLeadStatus } from "@/services/leads"
+import { createLead, LeadValidationError, setLeadStatus } from "@/services/leads"
 import { LEAD_STATUS_LABEL, LEAD_STATUS_SOMENTE_CRM, type LeadStatus } from "@/types"
 import { mensagemPluginDesativado, type PluginKey } from "@/lib/plugins"
 import { exigirPlugin, getPluginsAtivos } from "@/services/settings"
@@ -507,6 +508,80 @@ async function executarBloco(no: FlowNode, ctx: Contexto, simulacao: boolean): P
         temCampanha: campanhasIds.length > 0,
       }
       return { saida: "main", vars: { lead: saida }, resumo: saida }
+    }
+
+    case "cadastrar_lead": {
+      const telefone = digitos(renderizar(texto("telefone") || "{{telefone}}", ctx))
+      if (!telefone) throw new Error("Telefone vazio para cadastrar o lead.")
+      const status = (texto("status") || "novo") as LeadStatus
+      if (!STATUS_CADASTRO_NO_FLUXO.includes(status)) throw new Error("Escolha o status inicial do lead.")
+      const campo = (chave: string) => renderizar(texto(chave), ctx).trim()
+      const nomeInformado = campo("nome")
+      if (simulacao) {
+        return { saida: "main", status: "simulado", resumo: { telefone, nome: nomeInformado || null, status } }
+      }
+      // Status exclusivos do CRM (ex.: “Contato iniciado”) exigem o plugin ativo.
+      if (LEAD_STATUS_SOMENTE_CRM.includes(status)) await exigirPlugin("crm")
+
+      // Mesmo telefone (ignorando país e 9º dígito) = mesmo lead: não duplica.
+      const candidatos = await prisma.lead.findMany({
+        where: { telefone: { contains: telefone.slice(-8) } },
+        select: { id: true, nome: true, telefone: true, status: true, campanhaId: true, campanhas: { select: { campanhaId: true } } },
+      })
+      const existente = candidatos.find((c) => telefonesBatem(c.telefone, telefone))
+      if (existente) {
+        const campanhasIds = [...new Set([...(existente.campanhaId ? [existente.campanhaId] : []), ...existente.campanhas.map((c) => c.campanhaId)])]
+        const saida = {
+          encontrado: true,
+          id: existente.id,
+          nome: existente.nome,
+          status: existente.status,
+          campanhasIds,
+          temCampanha: campanhasIds.length > 0,
+        }
+        return { saida: "ja_existe", vars: { lead: saida }, resumo: { ...saida, motivo: "Já existe um lead com este telefone." } }
+      }
+
+      // Nomes são únicos: se o nome já está em uso, acrescenta o fim do telefone.
+      let nome = nomeInformado.slice(0, 80) || `Contato ${telefone}`
+      const nomeEmUso = await prisma.lead.findFirst({ where: { nome: { equals: nome, mode: "insensitive" } }, select: { id: true } })
+      if (nomeEmUso) nome = `${nome} (${telefone.slice(-4)})`
+
+      let lead
+      try {
+        lead = await createLead({
+          nome,
+          telefone,
+          status,
+          produto: campo("produto"),
+          marca: campo("marca"),
+          persona: campo("persona"),
+          regiao: campo("regiao"),
+          notas: campo("notas") || null,
+          negocio: campo("negocio") || null,
+          atividade: campo("atividade") || null,
+          campanhaId: null,
+          campanhasIds: [],
+          semVinculoAutomatico: cfg.vincularCampanhas !== true,
+        })
+      } catch (error) {
+        // Dado inválido (telefone fora do padrão, texto longo…): o fluxo decide pela saída.
+        if (error instanceof LeadValidationError) {
+          return { saida: "nao_cadastrado", resumo: { motivo: Object.values(error.errors)[0] ?? "Dados do lead inválidos.", erros: error.errors } }
+        }
+        throw error
+      }
+
+      const bot = botDe(ctx)
+      try {
+        await prisma.chatInternalNote.create({
+          data: { leadId: lead.id, texto: `Lead cadastrado por ${bot ? `o bot “${bot.flowNome}”` : "um fluxo No Code"}.` },
+        })
+      } catch (error) {
+        console.error("[nocode] falha ao registrar a nota interna do cadastro do lead", error)
+      }
+      const saida = { encontrado: true, id: lead.id, nome: lead.nome, status: lead.status, campanhasIds: [] as string[], temCampanha: false }
+      return { saida: "main", vars: { lead: saida }, resumo: { lead: lead.nome, id: lead.id, status: lead.status } }
     }
 
     case "registrar_resposta": {

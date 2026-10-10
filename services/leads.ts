@@ -361,6 +361,8 @@ export type LeadInput = Pick<Lead, "nome" | "telefone" | "status"> & {
   atividade?: string | null
   campanhaId: string | null
   campanhasIds?: string[]
+  /** Não vincula o lead novo a campanhas compatíveis pelos filtros (uso interno, ex.: No Code). */
+  semVinculoAutomatico?: boolean
 }
 
 /**
@@ -617,7 +619,7 @@ export async function createLead(input: LeadInput): Promise<Lead> {
 
   // Vincula o lead recém-criado a qualquer campanha ativa/pausada/rascunho cujos
   // filtros ele já atenda, sem depender de seleção manual na campanha.
-  await vincularLeadACampanhasCompativeis(criado)
+  if (!input.semVinculoAutomatico) await vincularLeadACampanhasCompativeis(criado)
 
   return criado
 }
