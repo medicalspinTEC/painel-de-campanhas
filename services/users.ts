@@ -211,7 +211,6 @@ export async function createUser(input: UserInput, ator: Ator, contexto: Context
     return toUsuario(row)
   }
 
-  const settings = await prisma.settings.findUnique({ where: { workspaceId: ator.workspaceId }, select: { temaApp: true } }).catch(() => null)
   const row = await prisma.user.create({
     data: {
       username,
@@ -221,7 +220,9 @@ export async function createUser(input: UserInput, ator: Ator, contexto: Context
       secoes,
       poderes,
       ativo: input.ativo,
-      temaApp: temaOuPadrao(settings?.temaApp ?? TEMA_PADRAO),
+      // Todo usuário novo começa no tema padrão (Oceano). Não herda `Settings.temaApp`: o tema é
+      // preferência pessoal e esse campo, nas instâncias antigas, ficou gravado como "esmeralda".
+      temaApp: TEMA_PADRAO,
       workspaceId: ator.workspaceId, // o filtro de instância grava o mesmo valor
     },
   })
@@ -444,7 +445,6 @@ export async function autenticar(usernameBruto: string, senha: string): Promise<
     if (username !== normalizarUsername(env.username) || senha !== env.password) return null
     const workspaceId = await workspacePrincipalId()
     if (!workspaceId) return null
-    const settings = await prismaGlobal.settings.findUnique({ where: { workspaceId }, select: { temaApp: true } }).catch(() => null)
     const criado = await prismaGlobal.user.create({
       data: {
         workspaceId,
@@ -455,7 +455,7 @@ export async function autenticar(usernameBruto: string, senha: string): Promise<
         secoes: [],
         poderes: [],
         ativo: true,
-        temaApp: temaOuPadrao(settings?.temaApp ?? TEMA_PADRAO),
+        temaApp: TEMA_PADRAO,
       },
     })
     return toUsuario(criado)
