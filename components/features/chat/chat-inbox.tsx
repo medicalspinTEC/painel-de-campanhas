@@ -53,6 +53,8 @@ const LARGURA_CONVERSA_MIN = 360
 const DURACAO_MAXIMA_AUDIO_S = 300
 /** Imagem/arquivo: o servidor aceita até 16 MB (lib/arquivo-storage.ts). */
 const LIMITE_ARQUIVO_BYTES = 16 * 1024 * 1024
+/** Quantos arquivos podem ser escolhidos de uma vez no clipe do chat. */
+const MAXIMO_ARQUIVOS_POR_ENVIO = 10
 const TIPOS_DE_AUDIO = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"]
 const EMOJIS = [
   "😀", "😃", "😄", "😁", "😅", "😂", "🙂", "😉",
@@ -508,36 +510,68 @@ export function ChatInbox({
     }
   }
 
-  async function enviarArquivo(arquivo: File) {
+  /**
+   * Envia um ou vários arquivos/imagens, um depois do outro (na ordem escolhida). O texto digitado
+   * vai como legenda só do primeiro; um arquivo que falha não impede os seguintes.
+   */
+  async function enviarArquivos(arquivos: File[]) {
     const leadId = conversaAtiva?.id
-    if (!leadId || enviando) return
+    if (!leadId || enviando || arquivos.length === 0) return
     if (envioBloqueado) {
       toast.error(permissoes?.motivo ?? "Você não pode enviar mensagens nesta conversa.")
       return
     }
-    if (arquivo.size > LIMITE_ARQUIVO_BYTES) {
-      toast.error(`O arquivo é muito grande (máximo de ${LIMITE_ARQUIVO_BYTES / 1024 / 1024} MB).`)
+    if (arquivos.length > MAXIMO_ARQUIVOS_POR_ENVIO) {
+      toast.error(`Escolha no máximo ${MAXIMO_ARQUIVOS_POR_ENVIO} arquivos por vez.`)
+      return
+    }
+    const grandes = arquivos.filter((arquivo) => arquivo.size > LIMITE_ARQUIVO_BYTES)
+    if (grandes.length > 0) {
+      toast.error(
+        grandes.length === 1
+          ? `"${grandes[0].name}" é muito grande (máximo de ${LIMITE_ARQUIVO_BYTES / 1024 / 1024} MB). Nada foi enviado.`
+          : `${grandes.length} arquivos passam do limite de ${LIMITE_ARQUIVO_BYTES / 1024 / 1024} MB. Nada foi enviado.`,
+      )
       return
     }
 
     setEnviando(true)
-    const dados = new FormData()
-    dados.append("arquivo", arquivo)
-    dados.append("legenda", texto.trim())
-    dados.append("instancia", instancia)
-    const resultado = await sendChatFileAction(leadId, dados).catch(() => ({
-      ok: false,
-      message: "Não foi possível enviar o arquivo. Verifique a conexão e tente de novo.",
-    }))
+    const legenda = texto.trim()
+    const toastId = toast.loading(arquivos.length > 1 ? `Enviando 1 de ${arquivos.length}…` : "Enviando arquivo…")
+    let enviados = 0
+    let legendaUsada = false
+    const falhas: string[] = []
+
+    for (let i = 0; i < arquivos.length; i += 1) {
+      const arquivo = arquivos[i]
+      if (arquivos.length > 1) toast.loading(`Enviando ${i + 1} de ${arquivos.length}…`, { id: toastId })
+      const dados = new FormData()
+      dados.append("arquivo", arquivo)
+      dados.append("legenda", i === 0 ? legenda : "")
+      dados.append("instancia", instancia)
+      const resultado = await sendChatFileAction(leadId, dados).catch(() => ({
+        ok: false,
+        message: "Não foi possível enviar o arquivo. Verifique a conexão e tente de novo.",
+      }))
+      if (resultado.ok) {
+        enviados += 1
+        if (i === 0) legendaUsada = true
+      } else {
+        falhas.push(arquivos.length > 1 ? `${arquivo.name}: ${resultado.message}` : resultado.message)
+      }
+    }
     setEnviando(false)
 
-    if (!resultado.ok) {
-      toast.error(resultado.message)
-      return
+    if (legendaUsada) setTexto("")
+    if (falhas.length === 0) {
+      toast.success(enviados > 1 ? `${enviados} arquivos enviados.` : "Arquivo enviado.", { id: toastId })
+    } else if (enviados === 0) {
+      toast.error(falhas.length === 1 ? falhas[0] : `Nenhum arquivo foi enviado. ${falhas[0]}`, { id: toastId })
+    } else {
+      toast.error(`${enviados} de ${arquivos.length} enviados. Falhou: ${falhas.join(" | ")}`, { id: toastId })
     }
 
-    setTexto("")
-    toast.success(resultado.message)
+    if (enviados === 0) return
     pertoDoFimRef.current = true
     try {
       const snapshot = await refreshChatInboxAction(leadId)
@@ -1481,11 +1515,12 @@ export function ChatInbox({
                             <input
                               ref={inputArquivoRef}
                               type="file"
+                              multiple
                               className="hidden"
                               onChange={(event) => {
-                                const arquivo = event.target.files?.[0]
+                                const arquivos = Array.from((event.target.files ?? []) as ArrayLike<File>)
                                 event.target.value = ""
-                                if (arquivo) void enviarArquivo(arquivo)
+                                if (arquivos.length > 0) void enviarArquivos(arquivos)
                               }}
                             />
                             <Button
@@ -1495,8 +1530,8 @@ export function ChatInbox({
                               className="size-14 shrink-0 rounded-full"
                               onClick={() => inputArquivoRef.current?.click()}
                               disabled={enviando || instancias.length === 0}
-                              aria-label="Enviar imagem ou arquivo"
-                              title="Enviar imagem ou arquivo (o texto digitado vai como legenda)"
+                              aria-label="Enviar imagens ou arquivos"
+                              title="Enviar imagens ou arquivos, um ou vários (o texto digitado vai como legenda do primeiro)"
                             >
                               <Paperclip className="size-6" />
                             </Button>

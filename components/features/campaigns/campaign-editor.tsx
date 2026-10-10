@@ -57,8 +57,6 @@ interface MensagemRascunho {
 
 /** Mesmo limite do servidor (`CAMPANHA_ANEXO_TAMANHO_MAXIMO`): avisa antes de subir um arquivo grande demais. */
 const ANEXO_MAX_MB = 20
-const ACEITA_ANEXO =
-  "image/jpeg,image/png,image/webp,image/gif,video/mp4,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip"
 
 function tamanhoLegivel(bytes: number): string {
   if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
@@ -547,7 +545,6 @@ export function CampaignEditor({
                   <input
                     id={`anexo-${mensagem.key}`}
                     type="file"
-                    accept={ACEITA_ANEXO}
                     className="hidden"
                     onChange={(e) => {
                       void anexarArquivo(index, e.target.files?.[0])

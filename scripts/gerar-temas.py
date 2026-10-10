@@ -114,8 +114,8 @@ def bloco(nome, escuro):
     return "\n".join(linhas)
 
 css = ["/* ───────── Temas prontos (gerado por scripts/gerar-temas.py) ─────────",
-       "   Cada tema redefine os tokens para o modo claro e o escuro. O padrão",
-       "   (esmeralda) já está em :root/.dark acima; os demais são ativados pelo",
+       "   Cada tema redefine os tokens para o modo claro e o escuro. Os tokens base",
+       "   (esmeralda) estão em :root/.dark acima; os demais são ativados pelo",
        "   atributo data-tema no <html>. */"]
 for nome in TEMAS:
     if nome == "esmeralda": continue

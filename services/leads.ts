@@ -6,7 +6,7 @@ import { validarTelefoneBR, apenasDigitos } from "@/lib/telefone"
 import { recordAppLog } from "@/services/app-logs"
 import { emitWebhookEvent } from "@/services/webhooks"
 import { removerAudio, salvarAudio } from "@/lib/audio-storage"
-import { mimeLimpo, nomeSeguro } from "@/lib/arquivo-storage"
+import { mimeDoArquivo, nomeSeguro, tipoPorMime } from "@/lib/arquivo-storage"
 import { sendWhatsAppAudio, sendWhatsAppMedia, sendWhatsAppText } from "@/services/evolution"
 import { garantirProduto } from "@/services/produtos"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
@@ -1853,8 +1853,8 @@ export async function sendLeadAudio(
  * Envia uma imagem ou um arquivo avulso para um lead.
  *
  * Nada é guardado no app: o conteúdo segue direto para a Evolution e a timeline registra só o
- * nome do arquivo (e a legenda, se houver). Imagens (jpeg/png/webp/gif) chegam como foto no
- * WhatsApp; qualquer outro tipo chega como arquivo para baixar.
+ * nome do arquivo (e a legenda, se houver). Imagens .jpg/.jpeg/.png/.webp chegam como foto no
+ * WhatsApp; qualquer outro tipo chega como documento (nome e extensão originais) para baixar.
  */
 export async function sendLeadFile(
   leadId: string,
@@ -1868,9 +1868,11 @@ export async function sendLeadFile(
   })
   if (!lead) return { ok: false, message: "Lead não encontrado." }
 
-  const mime = mimeLimpo(arquivo.mime)
-  const ehImagem = /^image\/(jpeg|png|webp|gif)$/.test(mime)
-  const tipo = ehImagem ? "imagem" : "documento"
+  // .jpg/.jpeg/.png/.webp vão como foto; qualquer outro tipo vai como documento, com o nome e a
+  // extensão originais.
+  const mime = mimeDoArquivo(arquivo.mime, arquivo.nome)
+  const tipo = tipoPorMime(mime)
+  const ehImagem = tipo === "imagem"
   const nome = nomeSeguro(arquivo.nome, ehImagem ? "imagem" : "arquivo")
   const texto = legenda?.trim() || null
 

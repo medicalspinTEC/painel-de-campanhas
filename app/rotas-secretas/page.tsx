@@ -30,11 +30,29 @@ function grupoDe(urlPath: string): string {
     eventos: "Eventos",
     cron: "Cron / Engine",
     webhook: "Webhooks",
+    chat: "Chat",
+    usuarios: "Usuários",
+    backup: "Backup",
+    nocode: "No Code",
+    mcp: "MCP",
   }
   return LABELS[seg] ?? (urlPath.startsWith("/api") ? "Outras rotas de API" : "Páginas")
 }
 
-const ORDEM_GRUPOS = ["Leads", "Campanhas", "Mensagens", "Eventos", "Cron / Engine", "Webhooks", "Outras rotas de API"]
+const ORDEM_GRUPOS = [
+  "Leads",
+  "Campanhas",
+  "Mensagens",
+  "Eventos",
+  "Chat",
+  "Usuários",
+  "Cron / Engine",
+  "Webhooks",
+  "No Code",
+  "Backup",
+  "MCP",
+  "Outras rotas de API",
+]
 
 export default async function RotasSecretasPage({
   searchParams,

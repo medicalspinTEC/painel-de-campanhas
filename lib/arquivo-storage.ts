@@ -57,8 +57,11 @@ export function nomeSeguro(nome: string | null | undefined, padrao: string): str
     .replace(/[\\/\r\n\t;"]+/g, "_")
     .replace(/[\u0000-\u001f]/g, "")
     .trim()
-    .slice(0, 120)
-  return limpo || padrao
+  if (limpo.length <= 120) return limpo || padrao
+  // Nome longo: corta o miolo, mas mantém a extensão original (senão o arquivo chega sem "tipo").
+  const m = /\.[a-z0-9]{1,8}$/i.exec(limpo)
+  const ext = m ? m[0] : ""
+  return `${limpo.slice(0, 120 - ext.length)}${ext}`
 }
 
 export function extensaoDoNome(nome: string): string {
@@ -71,8 +74,53 @@ const EXTENSAO_POR_MIME: Record<string, string> = {
   "image/png": "png",
   "image/webp": "webp",
   "image/gif": "gif",
+  "image/heic": "heic",
+  "image/bmp": "bmp",
+  "image/svg+xml": "svg",
   "video/mp4": "mp4",
+  "video/quicktime": "mov",
+  "video/3gpp": "3gp",
+  "video/webm": "webm",
   "application/pdf": "pdf",
+  "application/zip": "zip",
+  "text/plain": "txt",
+  "text/csv": "csv",
+  "application/msword": "doc",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+  "application/vnd.ms-excel": "xls",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+  "application/vnd.ms-powerpoint": "ppt",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
+}
+
+/**
+ * Só estas imagens vão/chegam como FOTO no WhatsApp (.jpg, .jpeg, .png e .webp). Qualquer outro
+ * tipo — gif, heic, vídeo, pdf, planilha… — vai e chega como DOCUMENTO, com o nome e a extensão
+ * originais.
+ */
+const IMAGENS_COMO_FOTO = new Set(["image/jpeg", "image/png", "image/webp"])
+
+const MIME_POR_EXTENSAO: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+}
+
+/** Tipo de envio/recebimento: foto para jpg/jpeg/png/webp, documento para todo o resto. */
+export function tipoPorMime(mime: string | null | undefined): "imagem" | "documento" {
+  return IMAGENS_COMO_FOTO.has(mimeLimpo(mime)) ? "imagem" : "documento"
+}
+
+/**
+ * Mime do arquivo escolhido. Alguns navegadores/celulares não informam o tipo (ou mandam
+ * `image/jpg`): nesse caso vale a extensão do nome para jpg/jpeg/png/webp.
+ */
+export function mimeDoArquivo(mime: string | null | undefined, nome: string | null | undefined): string {
+  const limpo = mimeLimpo(mime)
+  if (limpo === "image/jpg" || limpo === "image/pjpeg") return "image/jpeg"
+  if (limpo !== "application/octet-stream") return limpo
+  return MIME_POR_EXTENSAO[extensaoDoNome(String(nome ?? ""))] ?? limpo
 }
 
 export function extensaoDoMimeArquivo(mime: string | null | undefined): string {

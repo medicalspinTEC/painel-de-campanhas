@@ -1,5 +1,12 @@
-import { prisma } from "@/lib/prisma"
-import { copiarAnexoCampanha, removerAnexoCampanha } from "@/lib/campanha-anexo-storage"
+import { prisma, prismaGlobal } from "@/lib/prisma"
+import { mimeDoArquivo, nomeSeguro } from "@/lib/arquivo-storage"
+import {
+  copiarAnexoCampanha,
+  idDeAnexoValido,
+  removerAnexoCampanha,
+  tamanhoDoAnexoCampanha,
+  tipoDoAnexo,
+} from "@/lib/campanha-anexo-storage"
 import { decidirCiclo } from "@/lib/campaign-engine-schedule"
 import { recordAppLog } from "@/services/app-logs"
 import { sendCampaignMessageToLead } from "@/services/evolution"
@@ -79,6 +86,40 @@ function dadosDoAnexo(a: CampanhaAnexo | null | undefined) {
     anexoNome: a?.nome ?? null,
     anexoTamanho: a?.tamanho ?? null,
   }
+}
+
+/**
+ * Saneia o `anexo` de cada mensagem vindo de FORA (painel ou API): o chamador só informa a
+ * referência; tipo, mime, nome e tamanho são refeitos a partir do arquivo que de fato está no
+ * servidor. Regras:
+ *  - `anexo` ausente (undefined) fica como está: significa "não mexer no anexo atual";
+ *  - `null`, referência inválida ou arquivo que não existe mais => sem anexo;
+ *  - o arquivo só é aceito se estiver livre (upload recém-feito) ou já for desta mesma mensagem —
+ *    nunca o de outra mensagem/campanha/instância.
+ */
+export async function sanearAnexosDaCampanha<T extends { id?: string; anexo?: CampanhaAnexo | null }>(
+  mensagens: T[],
+): Promise<T[]> {
+  return Promise.all(
+    mensagens.map(async (m) => {
+      if (m.anexo === undefined) return m
+      const anexo = m.anexo
+      if (!anexo || typeof anexo.id !== "string" || !idDeAnexoValido(anexo.id)) return { ...m, anexo: null }
+      const tamanho = await tamanhoDoAnexoCampanha(anexo.id)
+      if (tamanho === null) return { ...m, anexo: null }
+      const dono = await prismaGlobal.campaignMessage.findFirst({ where: { anexoId: anexo.id }, select: { id: true } })
+      if (dono && dono.id !== m.id) return { ...m, anexo: null }
+      const mime = mimeDoArquivo(anexo.mime, anexo.nome)
+      const limpo: CampanhaAnexo = {
+        id: anexo.id,
+        tipo: tipoDoAnexo(mime),
+        mime,
+        nome: nomeSeguro(anexo.nome, "arquivo"),
+        tamanho,
+      }
+      return { ...m, anexo: limpo }
+    }),
+  )
 }
 
 const mensagemSelect = {
@@ -625,8 +666,10 @@ async function sincronizarLeadsDaCampanha(campanhaId: string, leadIds: string[] 
   }
 }
 
-export async function createCampaign(input: CampaignInput): Promise<Campaign> {
-  const tipo = input.tipo ?? "padrao"
+export async function createCampaign(entrada: CampaignInput): Promise<Campaign> {
+  const tipo = entrada.tipo ?? "padrao"
+  // Vale para o painel e para a API: ninguém referencia o arquivo de outra mensagem.
+  const input: CampaignInput = { ...entrada, mensagens: await sanearAnexosDaCampanha(entrada.mensagens) }
   const campanha = await prisma.campaign.create({
     data: {
       ...toCampaignData(input),
@@ -660,9 +703,22 @@ export async function createCampaign(input: CampaignInput): Promise<Campaign> {
   return criada
 }
 
-export async function updateCampaign(id: string, input: CampaignInput): Promise<Campaign | null> {
+export async function updateCampaign(id: string, entrada: CampaignInput): Promise<Campaign | null> {
   const existe = await prisma.campaign.findUnique({ where: { id }, select: { id: true, status: true } })
   if (!existe) return null
+
+  // Ids que de fato são desta campanha: um `id` de mensagem de outra campanha não pode ser alterado por aqui.
+  const existentes = await prisma.campaignMessage.findMany({
+    where: { campanhaId: id },
+    select: { id: true, anexoId: true },
+  })
+  const idsDaCampanha = new Set(existentes.map((m) => m.id))
+  const input: CampaignInput = {
+    ...entrada,
+    mensagens: (await sanearAnexosDaCampanha(entrada.mensagens)).map((m) =>
+      m.id && !idsDaCampanha.has(m.id) ? { ...m, id: undefined } : m,
+    ),
+  }
 
   /*
    * A sequência é substituída por completo. Removemos apenas as mensagens que
@@ -677,10 +733,7 @@ export async function updateCampaign(id: string, input: CampaignInput): Promise<
 
   // Arquivos que deixam de ser usados (mensagem removida, anexo trocado ou retirado) são apagados
   // do servidor depois que a edição for salva com sucesso.
-  const anexosAntes = await prisma.campaignMessage.findMany({
-    where: { campanhaId: id, anexoId: { not: null } },
-    select: { id: true, anexoId: true },
-  })
+  const anexosAntes = existentes.filter((m) => m.anexoId)
 
   const campanha = await prisma.$transaction(async (tx) => {
     await tx.campaignMessage.deleteMany({
@@ -689,7 +742,13 @@ export async function updateCampaign(id: string, input: CampaignInput): Promise<
     for (const m of mantidas) {
       await tx.campaignMessage.update({
         where: { id: m.id },
-        data: { dia: m.dia, horario: m.horario, texto: m.texto, ...dadosDoAnexo(m.anexo) },
+        // `anexo` omitido = mantém o anexo atual; `null` = remove; objeto = troca.
+        data: {
+          dia: m.dia,
+          horario: m.horario,
+          texto: m.texto,
+          ...(m.anexo === undefined ? {} : dadosDoAnexo(m.anexo)),
+        },
       })
     }
     return tx.campaign.update({

@@ -32,7 +32,7 @@ export const TEMAS_APP = [
   {
     id: "esmeralda",
     nome: "Esmeralda",
-    descricao: "Verde clínico, o visual padrão do painel.",
+    descricao: "Verde clínico, o visual original do painel.",
     previa: {
       claro: { background: "oklch(0.995 0.002 165)", card: "oklch(1 0 0)", primary: "oklch(0.53 0.121 165)", primary_foreground: "oklch(0.985 0.008 165)", accent: "oklch(0.955 0.026 165)", foreground: "oklch(0.19 0.012 165)", muted: "oklch(0.965 0.006 165)", chart_2: "oklch(0.64 0.11 185)", chart_3: "oklch(0.72 0.14 75)" },
       escuro: { background: "oklch(0.165 0.012 165)", card: "oklch(0.215 0.014 165)", primary: "oklch(0.7 0.128 165)", primary_foreground: "oklch(0.18 0.03 165)", accent: "oklch(0.31 0.04 165)", foreground: "oklch(0.965 0.006 165)", muted: "oklch(0.27 0.016 165)", chart_2: "oklch(0.74 0.1 185)", chart_3: "oklch(0.8 0.14 75)" },
@@ -41,7 +41,7 @@ export const TEMAS_APP = [
   {
     id: "oceano",
     nome: "Oceano",
-    descricao: "Azul sereno, ideal para um painel mais corporativo.",
+    descricao: "Azul sereno e corporativo, o visual padrão do painel.",
     previa: {
       claro: { background: "oklch(0.995 0.002 250)", card: "oklch(1 0 0)", primary: "oklch(0.52 0.15 250)", primary_foreground: "oklch(0.985 0.008 250)", accent: "oklch(0.955 0.026 250)", foreground: "oklch(0.19 0.012 250)", muted: "oklch(0.965 0.006 250)", chart_2: "oklch(0.64 0.11 210)", chart_3: "oklch(0.72 0.14 75)" },
       escuro: { background: "oklch(0.165 0.012 250)", card: "oklch(0.215 0.014 250)", primary: "oklch(0.72 0.13 250)", primary_foreground: "oklch(0.18 0.03 250)", accent: "oklch(0.31 0.04 250)", foreground: "oklch(0.965 0.006 250)", muted: "oklch(0.27 0.016 250)", chart_2: "oklch(0.74 0.1 210)", chart_3: "oklch(0.8 0.14 75)" },

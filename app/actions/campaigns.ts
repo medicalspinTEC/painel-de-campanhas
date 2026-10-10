@@ -7,6 +7,7 @@ import {
   createFollowUpCampaign,
   deleteCampaign,
   duplicateCampaign,
+  sanearAnexosDaCampanha,
   setCampaignStatus,
   skipToNextMessage,
   updateCampaign,
@@ -16,15 +17,7 @@ import { recordAppLog } from "@/services/app-logs"
 import type { CampanhaAnexo, CampaignStatus } from "@/types"
 import { assertSecao } from "@/lib/session"
 import { prismaGlobal } from "@/lib/prisma"
-import { mimeLimpo, nomeSeguro } from "@/lib/arquivo-storage"
-import {
-  CAMPANHA_ANEXO_TAMANHO_MAXIMO,
-  idDeAnexoValido,
-  removerAnexoCampanha,
-  salvarAnexoCampanha,
-  tamanhoDoAnexoCampanha,
-  tipoDoAnexo,
-} from "@/lib/campanha-anexo-storage"
+import { CAMPANHA_ANEXO_TAMANHO_MAXIMO, removerAnexoCampanha, salvarAnexoCampanha } from "@/lib/campanha-anexo-storage"
 
 export interface CampaignActionResult {
   ok: boolean
@@ -79,29 +72,9 @@ function validar(input: CampaignInput) {
   return errors
 }
 
-/**
- * O navegador só informa a referência do anexo; tipo, mime, nome e tamanho são refeitos aqui a
- * partir do que de fato está no servidor. Referência inválida ou arquivo sumido => sem anexo.
- */
+/** O saneamento do anexo (tipo/mime/nome/tamanho refeitos no servidor) fica em `sanearAnexosDaCampanha`. */
 async function sanearAnexos(input: CampaignInput): Promise<CampaignInput> {
-  const mensagens = await Promise.all(
-    input.mensagens.map(async (m) => {
-      const anexo = m.anexo
-      if (!anexo || !idDeAnexoValido(anexo.id)) return { ...m, anexo: null }
-      const tamanho = await tamanhoDoAnexoCampanha(anexo.id)
-      if (tamanho === null) return { ...m, anexo: null }
-      const mime = mimeLimpo(anexo.mime)
-      const limpo: CampanhaAnexo = {
-        id: anexo.id,
-        tipo: tipoDoAnexo(mime),
-        mime,
-        nome: nomeSeguro(anexo.nome, "arquivo"),
-        tamanho,
-      }
-      return { ...m, anexo: limpo }
-    }),
-  )
-  return { ...input, mensagens }
+  return { ...input, mensagens: await sanearAnexosDaCampanha(input.mensagens) }
 }
 
 /**

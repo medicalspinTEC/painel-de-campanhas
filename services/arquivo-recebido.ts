@@ -87,9 +87,10 @@ async function baixarEGuardar(msg: MensagemRecebida): Promise<ResultadoArquivoRe
 
   const mimeFinal = mimeLimpo(mime)
   const ext = extensaoDoMimeArquivo(mimeFinal)
-  const padrao = `${ROTULOS[arquivo.tipo].toLowerCase()}${ext ? `.${ext}` : ""}`
+  // Nome e extensão originais; se o WhatsApp não mandou nome (foto, vídeo), usa o tipo de origem.
+  const padrao = `${ROTULOS[arquivo.origem].toLowerCase()}${ext ? `.${ext}` : ""}`
   let nome = nomeSeguro(arquivo.nome ?? nomeEvolution, padrao)
-  if (ext && !extensaoDoNome(nome) && arquivo.tipo !== "documento") nome = `${nome}.${ext}`
+  if (ext && !extensaoDoNome(nome)) nome = `${nome}.${ext}`
 
   try {
     const id = await salvarArquivo(dados)

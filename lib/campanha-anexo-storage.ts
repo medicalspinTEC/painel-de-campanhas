@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto"
 import { mkdir, readdir, readFile, stat, unlink, writeFile, copyFile } from "node:fs/promises"
 import path from "node:path"
 
-import { extensaoDoNome, mimeLimpo, nomeSeguro } from "@/lib/arquivo-storage"
+import { extensaoDoNome, mimeDoArquivo, nomeSeguro, tipoPorMime } from "@/lib/arquivo-storage"
 import type { CampanhaAnexo } from "@/types"
 
 /**
@@ -54,11 +54,9 @@ function caminhoDoAnexo(id: string): string | null {
   return idDeAnexoValido(id) ? path.join(pastaDeAnexosCampanha(), id) : null
 }
 
-/** Imagem (jpeg/png/webp/gif) vai como foto; mp4 como vídeo; o resto chega como arquivo para baixar. */
+/** Mesma regra do chat: .jpg/.jpeg/.png/.webp vão como foto; todo o resto como documento (nome e extensão originais). */
 export function tipoDoAnexo(mime: string): CampanhaAnexo["tipo"] {
-  if (/^image\/(jpeg|png|webp|gif)$/.test(mime)) return "imagem"
-  if (mime === "video/mp4") return "video"
-  return "documento"
+  return tipoPorMime(mime)
 }
 
 export async function salvarAnexoCampanha(
@@ -70,11 +68,10 @@ export async function salvarAnexoCampanha(
   const id = randomUUID()
   await writeFile(path.join(pasta, id), dados, { flag: "wx" })
 
-  const mime = mimeLimpo(arquivo.mime)
+  const mime = mimeDoArquivo(arquivo.mime, arquivo.nome)
   const tipo = tipoDoAnexo(mime)
-  const padrao = tipo === "imagem" ? "imagem" : tipo === "video" ? "video" : "arquivo"
-  let nome = nomeSeguro(arquivo.nome, padrao)
-  if (!extensaoDoNome(nome) && tipo !== "documento") nome = `${nome}.${mime.split("/")[1] ?? ""}`.replace(/\.$/, "")
+  let nome = nomeSeguro(arquivo.nome, tipo === "imagem" ? "imagem" : "arquivo")
+  if (!extensaoDoNome(nome) && tipo === "imagem") nome = `${nome}.${mime === "image/jpeg" ? "jpg" : mime.split("/")[1]}`
   return { id, tipo, mime, nome, tamanho: dados.length }
 }
 

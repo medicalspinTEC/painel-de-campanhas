@@ -1,3 +1,4 @@
+import { tipoPorMime } from "@/lib/arquivo-storage"
 import { prisma } from "@/lib/prisma"
 import { recordAppLog } from "@/services/app-logs"
 import {
@@ -82,7 +83,10 @@ export interface MensagemRecebida {
   audio: { mimetype: string | null; segundos: number | null; base64: string | null } | null
   /** Preenchido quando a mensagem é uma imagem, um vídeo ou um arquivo (documento). */
   arquivo: {
+    /** Como o painel trata: foto só para jpg/jpeg/png/webp; todo o resto é documento. */
     tipo: "imagem" | "documento" | "video"
+    /** O que a mensagem era no WhatsApp (só para dar um nome padrão quando o arquivo não vem com nome). */
+    origem: "imagem" | "documento" | "video"
     mimetype: string | null
     nome: string | null
     legenda: string | null
@@ -173,7 +177,13 @@ export function extrairMensagem(payload: unknown): MensagemRecebida {
       : null,
     arquivo: midia
       ? {
-          tipo: midia.tipo,
+          // Mesma regra do envio: foto só para jpg/jpeg/png/webp (ou imagem sem mime informado, que
+          // no WhatsApp é jpeg); vídeos, gifs, heic e documentos chegam como documento.
+          tipo:
+            midia.tipo === "imagem" && (!midia.m?.mimetype || tipoPorMime(midia.m.mimetype) === "imagem")
+              ? "imagem"
+              : "documento",
+          origem: midia.tipo,
           mimetype: typeof midia.m?.mimetype === "string" && midia.m.mimetype ? midia.m.mimetype : null,
           nome: typeof (midia.m?.fileName ?? midia.m?.title) === "string" ? String(midia.m.fileName ?? midia.m.title) : null,
           legenda: typeof midia.m?.caption === "string" && midia.m.caption.trim() ? midia.m.caption : null,

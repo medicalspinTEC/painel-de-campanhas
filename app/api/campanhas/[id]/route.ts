@@ -1,7 +1,11 @@
 /**
  * Campanhas — item. Detalha uma campanha com estatísticas (GET), atualiza a
  * campanha por completo (PUT), altera apenas o status (PATCH) e remove a
- * campanha e seus vínculos (DELETE).
+ * campanha, seus vínculos e os arquivos anexados às mensagens (DELETE).
+ *
+ * O `tipo` (padrao/individual) não muda depois da criação: o PUT mantém o da campanha. Campos que
+ * o PUT não envia e que não são "do corpo todo" — `instanciaNome`, e o `anexo` de cada mensagem —
+ * continuam como estão quando omitidos.
  */
 import { NextResponse } from "next/server"
 import {
@@ -55,17 +59,28 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (!Array.isArray(body.mensagens)) {
     return NextResponse.json({ erro: "O campo 'mensagens' deve ser uma lista." }, { status: 400 })
   }
+  if (body.leadMensagens !== undefined && (typeof body.leadMensagens !== "object" || body.leadMensagens === null || Array.isArray(body.leadMensagens))) {
+    return NextResponse.json({ erro: "O campo 'leadMensagens' deve ser um objeto { leadId: texto }." }, { status: 400 })
+  }
 
   try {
+    // O tipo e a instância vêm da campanha: sem isso, todo PUT viraria "padrao" e apagaria a instância.
+    const atual = await getCampaign(id)
+    if (!atual) {
+      return NextResponse.json({ erro: "Campanha não encontrada." }, { status: 404 })
+    }
     const campanha = await updateCampaign(id, {
       nome: body.nome.trim(),
       descricao: body.descricao,
       status: body.status,
+      tipo: atual.tipo,
       recorrenciaDias: body.recorrenciaDias ?? 0,
       dataFinal: body.dataFinal ?? null,
+      instanciaNome: "instanciaNome" in body ? (body.instanciaNome ?? null) : atual.instanciaNome,
       filtros: body.filtros ?? { produto: null, marca: null, persona: null, regiao: null },
       leadIds: body.leadIds,
       mensagens: body.mensagens,
+      leadMensagens: body.leadMensagens,
     })
     if (!campanha) {
       return NextResponse.json({ erro: "Campanha não encontrada." }, { status: 404 })
