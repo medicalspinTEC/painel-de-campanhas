@@ -115,6 +115,12 @@ model Lead {
   // Identificador da atividade associado ao lead. Opcional.
   atividade String?
 
+  /// Plugin CRM: CNPJ do lead (só dígitos, 14). Opcional; a consulta na Receita é manual.
+  cnpj             String?
+  /// Resultado da última consulta do CNPJ (dados estruturados, ver `lib/cnpj.ts`). Limpo se o CNPJ mudar.
+  cnpjDados        Json?
+  cnpjConsultadoEm DateTime?
+
   campanhaId String?
   campanha   Campaign? @relation(fields: [campanhaId], references: [id], onDelete: SetNull)
 

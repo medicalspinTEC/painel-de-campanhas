@@ -5168,6 +5168,8 @@ export namespace Prisma {
     notas: string | null
     negocio: string | null
     atividade: string | null
+    cnpj: string | null
+    cnpjConsultadoEm: Date | null
     campanhaId: string | null
     entradaCampanhaEm: Date | null
     criadoEm: Date | null
@@ -5187,6 +5189,8 @@ export namespace Prisma {
     notas: string | null
     negocio: string | null
     atividade: string | null
+    cnpj: string | null
+    cnpjConsultadoEm: Date | null
     campanhaId: string | null
     entradaCampanhaEm: Date | null
     criadoEm: Date | null
@@ -5206,6 +5210,9 @@ export namespace Prisma {
     notas: number
     negocio: number
     atividade: number
+    cnpj: number
+    cnpjDados: number
+    cnpjConsultadoEm: number
     campanhaId: number
     entradaCampanhaEm: number
     criadoEm: number
@@ -5227,6 +5234,8 @@ export namespace Prisma {
     notas?: true
     negocio?: true
     atividade?: true
+    cnpj?: true
+    cnpjConsultadoEm?: true
     campanhaId?: true
     entradaCampanhaEm?: true
     criadoEm?: true
@@ -5246,6 +5255,8 @@ export namespace Prisma {
     notas?: true
     negocio?: true
     atividade?: true
+    cnpj?: true
+    cnpjConsultadoEm?: true
     campanhaId?: true
     entradaCampanhaEm?: true
     criadoEm?: true
@@ -5265,6 +5276,9 @@ export namespace Prisma {
     notas?: true
     negocio?: true
     atividade?: true
+    cnpj?: true
+    cnpjDados?: true
+    cnpjConsultadoEm?: true
     campanhaId?: true
     entradaCampanhaEm?: true
     criadoEm?: true
@@ -5357,6 +5371,9 @@ export namespace Prisma {
     notas: string | null
     negocio: string | null
     atividade: string | null
+    cnpj: string | null
+    cnpjDados: JsonValue | null
+    cnpjConsultadoEm: Date | null
     campanhaId: string | null
     entradaCampanhaEm: Date | null
     criadoEm: Date
@@ -5393,6 +5410,9 @@ export namespace Prisma {
     notas?: boolean
     negocio?: boolean
     atividade?: boolean
+    cnpj?: boolean
+    cnpjDados?: boolean
+    cnpjConsultadoEm?: boolean
     campanhaId?: boolean
     entradaCampanhaEm?: boolean
     criadoEm?: boolean
@@ -5422,6 +5442,9 @@ export namespace Prisma {
     notas?: boolean
     negocio?: boolean
     atividade?: boolean
+    cnpj?: boolean
+    cnpjDados?: boolean
+    cnpjConsultadoEm?: boolean
     campanhaId?: boolean
     entradaCampanhaEm?: boolean
     criadoEm?: boolean
@@ -5442,6 +5465,9 @@ export namespace Prisma {
     notas?: boolean
     negocio?: boolean
     atividade?: boolean
+    cnpj?: boolean
+    cnpjDados?: boolean
+    cnpjConsultadoEm?: boolean
     campanhaId?: boolean
     entradaCampanhaEm?: boolean
     criadoEm?: boolean
@@ -5462,13 +5488,16 @@ export namespace Prisma {
     notas?: boolean
     negocio?: boolean
     atividade?: boolean
+    cnpj?: boolean
+    cnpjDados?: boolean
+    cnpjConsultadoEm?: boolean
     campanhaId?: boolean
     entradaCampanhaEm?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
   }
 
-  export type LeadOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "telefone" | "produto" | "marca" | "persona" | "regiao" | "status" | "notas" | "negocio" | "atividade" | "campanhaId" | "entradaCampanhaEm" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["lead"]>
+  export type LeadOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "telefone" | "produto" | "marca" | "persona" | "regiao" | "status" | "notas" | "negocio" | "atividade" | "cnpj" | "cnpjDados" | "cnpjConsultadoEm" | "campanhaId" | "entradaCampanhaEm" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["lead"]>
   export type LeadInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     campanha?: boolean | Lead$campanhaArgs<ExtArgs>
     campanhas?: boolean | Lead$campanhasArgs<ExtArgs>
@@ -5523,6 +5552,15 @@ export namespace Prisma {
       notas: string | null
       negocio: string | null
       atividade: string | null
+      /**
+       * Plugin CRM: CNPJ do lead (só dígitos, 14). Opcional; a consulta na Receita é manual.
+       */
+      cnpj: string | null
+      /**
+       * Resultado da última consulta do CNPJ (dados estruturados, ver `lib/cnpj.ts`). Limpo se o CNPJ mudar.
+       */
+      cnpjDados: Prisma.JsonValue | null
+      cnpjConsultadoEm: Date | null
       campanhaId: string | null
       entradaCampanhaEm: Date | null
       criadoEm: Date
@@ -5971,6 +6009,9 @@ export namespace Prisma {
     readonly notas: FieldRef<"Lead", 'String'>
     readonly negocio: FieldRef<"Lead", 'String'>
     readonly atividade: FieldRef<"Lead", 'String'>
+    readonly cnpj: FieldRef<"Lead", 'String'>
+    readonly cnpjDados: FieldRef<"Lead", 'Json'>
+    readonly cnpjConsultadoEm: FieldRef<"Lead", 'DateTime'>
     readonly campanhaId: FieldRef<"Lead", 'String'>
     readonly entradaCampanhaEm: FieldRef<"Lead", 'DateTime'>
     readonly criadoEm: FieldRef<"Lead", 'DateTime'>
@@ -52238,6 +52279,9 @@ export namespace Prisma {
     notas: 'notas',
     negocio: 'negocio',
     atividade: 'atividade',
+    cnpj: 'cnpj',
+    cnpjDados: 'cnpjDados',
+    cnpjConsultadoEm: 'cnpjConsultadoEm',
     campanhaId: 'campanhaId',
     entradaCampanhaEm: 'entradaCampanhaEm',
     criadoEm: 'criadoEm',
@@ -52886,19 +52930,19 @@ export namespace Prisma {
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
-  export const JsonNullValueInput: {
-    JsonNull: typeof JsonNull
-  };
-
-  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
-
-
   export const NullableJsonNullValueInput: {
     DbNull: typeof DbNull,
     JsonNull: typeof JsonNull
   };
 
   export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
   export const QueryMode: {
@@ -52909,14 +52953,6 @@ export namespace Prisma {
   export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
 
-  export const NullsOrder: {
-    first: 'first',
-    last: 'last'
-  };
-
-  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
-
-
   export const JsonNullValueFilter: {
     DbNull: typeof DbNull,
     JsonNull: typeof JsonNull,
@@ -52924,6 +52960,14 @@ export namespace Prisma {
   };
 
   export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
+
+
+  export const NullsOrder: {
+    first: 'first',
+    last: 'last'
+  };
+
+  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
   /**
@@ -52956,6 +53000,20 @@ export namespace Prisma {
    * Reference to a field of type 'LeadStatus[]'
    */
   export type ListEnumLeadStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeadStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -53065,20 +53123,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Json'
-   */
-  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
-    
-
-
-  /**
-   * Reference to a field of type 'QueryMode'
-   */
-  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
-    
-
-
-  /**
    * Reference to a field of type 'UserRole'
    */
   export type EnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserRole'>
@@ -53139,6 +53183,9 @@ export namespace Prisma {
     notas?: StringNullableFilter<"Lead"> | string | null
     negocio?: StringNullableFilter<"Lead"> | string | null
     atividade?: StringNullableFilter<"Lead"> | string | null
+    cnpj?: StringNullableFilter<"Lead"> | string | null
+    cnpjDados?: JsonNullableFilter<"Lead">
+    cnpjConsultadoEm?: DateTimeNullableFilter<"Lead"> | Date | string | null
     campanhaId?: StringNullableFilter<"Lead"> | string | null
     entradaCampanhaEm?: DateTimeNullableFilter<"Lead"> | Date | string | null
     criadoEm?: DateTimeFilter<"Lead"> | Date | string
@@ -53167,6 +53214,9 @@ export namespace Prisma {
     notas?: SortOrderInput | SortOrder
     negocio?: SortOrderInput | SortOrder
     atividade?: SortOrderInput | SortOrder
+    cnpj?: SortOrderInput | SortOrder
+    cnpjDados?: SortOrderInput | SortOrder
+    cnpjConsultadoEm?: SortOrderInput | SortOrder
     campanhaId?: SortOrderInput | SortOrder
     entradaCampanhaEm?: SortOrderInput | SortOrder
     criadoEm?: SortOrder
@@ -53198,6 +53248,9 @@ export namespace Prisma {
     notas?: StringNullableFilter<"Lead"> | string | null
     negocio?: StringNullableFilter<"Lead"> | string | null
     atividade?: StringNullableFilter<"Lead"> | string | null
+    cnpj?: StringNullableFilter<"Lead"> | string | null
+    cnpjDados?: JsonNullableFilter<"Lead">
+    cnpjConsultadoEm?: DateTimeNullableFilter<"Lead"> | Date | string | null
     campanhaId?: StringNullableFilter<"Lead"> | string | null
     entradaCampanhaEm?: DateTimeNullableFilter<"Lead"> | Date | string | null
     criadoEm?: DateTimeFilter<"Lead"> | Date | string
@@ -53226,6 +53279,9 @@ export namespace Prisma {
     notas?: SortOrderInput | SortOrder
     negocio?: SortOrderInput | SortOrder
     atividade?: SortOrderInput | SortOrder
+    cnpj?: SortOrderInput | SortOrder
+    cnpjDados?: SortOrderInput | SortOrder
+    cnpjConsultadoEm?: SortOrderInput | SortOrder
     campanhaId?: SortOrderInput | SortOrder
     entradaCampanhaEm?: SortOrderInput | SortOrder
     criadoEm?: SortOrder
@@ -53251,6 +53307,9 @@ export namespace Prisma {
     notas?: StringNullableWithAggregatesFilter<"Lead"> | string | null
     negocio?: StringNullableWithAggregatesFilter<"Lead"> | string | null
     atividade?: StringNullableWithAggregatesFilter<"Lead"> | string | null
+    cnpj?: StringNullableWithAggregatesFilter<"Lead"> | string | null
+    cnpjDados?: JsonNullableWithAggregatesFilter<"Lead">
+    cnpjConsultadoEm?: DateTimeNullableWithAggregatesFilter<"Lead"> | Date | string | null
     campanhaId?: StringNullableWithAggregatesFilter<"Lead"> | string | null
     entradaCampanhaEm?: DateTimeNullableWithAggregatesFilter<"Lead"> | Date | string | null
     criadoEm?: DateTimeWithAggregatesFilter<"Lead"> | Date | string
@@ -56516,6 +56575,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
@@ -56543,6 +56605,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     campanhaId?: string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
@@ -56570,6 +56635,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -56597,6 +56665,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -56624,6 +56695,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     campanhaId?: string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
@@ -56643,6 +56717,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -56661,6 +56738,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -60344,6 +60424,29 @@ export namespace Prisma {
     mode?: QueryMode
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type DateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
@@ -60455,6 +60558,9 @@ export namespace Prisma {
     notas?: SortOrder
     negocio?: SortOrder
     atividade?: SortOrder
+    cnpj?: SortOrder
+    cnpjDados?: SortOrder
+    cnpjConsultadoEm?: SortOrder
     campanhaId?: SortOrder
     entradaCampanhaEm?: SortOrder
     criadoEm?: SortOrder
@@ -60474,6 +60580,8 @@ export namespace Prisma {
     notas?: SortOrder
     negocio?: SortOrder
     atividade?: SortOrder
+    cnpj?: SortOrder
+    cnpjConsultadoEm?: SortOrder
     campanhaId?: SortOrder
     entradaCampanhaEm?: SortOrder
     criadoEm?: SortOrder
@@ -60493,6 +60601,8 @@ export namespace Prisma {
     notas?: SortOrder
     negocio?: SortOrder
     atividade?: SortOrder
+    cnpj?: SortOrder
+    cnpjConsultadoEm?: SortOrder
     campanhaId?: SortOrder
     entradaCampanhaEm?: SortOrder
     criadoEm?: SortOrder
@@ -60543,6 +60653,32 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -61681,29 +61817,6 @@ export namespace Prisma {
   export type BotConversaSumOrderByAggregateInput = {
     tentativas?: SortOrder
   }
-  export type JsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type NoCodeFlowScalarRelationFilter = {
     is?: NoCodeFlowWhereInput
@@ -61765,32 +61878,6 @@ export namespace Prisma {
   export type NoCodeExecutionSumOrderByAggregateInput = {
     duracaoMs?: SortOrder
     webhookTentativas?: SortOrder
-  }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type BackupConfigCountOrderByAggregateInput = {
@@ -64837,6 +64924,29 @@ export namespace Prisma {
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
@@ -65025,29 +65135,6 @@ export namespace Prisma {
     | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
 
   export type NestedJsonFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
-  export type NestedJsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
     equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
     path?: string[]
     mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
@@ -65684,6 +65771,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
@@ -65710,6 +65800,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     campanhaId?: string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
@@ -65752,6 +65845,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65778,6 +65874,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65840,6 +65939,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
@@ -65866,6 +65968,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
@@ -66015,6 +66120,9 @@ export namespace Prisma {
     notas?: StringNullableFilter<"Lead"> | string | null
     negocio?: StringNullableFilter<"Lead"> | string | null
     atividade?: StringNullableFilter<"Lead"> | string | null
+    cnpj?: StringNullableFilter<"Lead"> | string | null
+    cnpjDados?: JsonNullableFilter<"Lead">
+    cnpjConsultadoEm?: DateTimeNullableFilter<"Lead"> | Date | string | null
     campanhaId?: StringNullableFilter<"Lead"> | string | null
     entradaCampanhaEm?: DateTimeNullableFilter<"Lead"> | Date | string | null
     criadoEm?: DateTimeFilter<"Lead"> | Date | string
@@ -66066,6 +66174,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
@@ -66092,6 +66203,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     campanhaId?: string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
@@ -66185,6 +66299,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66211,6 +66328,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66448,6 +66568,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
@@ -66474,6 +66597,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     campanhaId?: string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
@@ -66516,6 +66642,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66542,6 +66671,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66568,6 +66700,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
@@ -66594,6 +66729,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     campanhaId?: string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
@@ -66718,6 +66856,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66744,6 +66885,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67079,6 +67223,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
@@ -67105,6 +67252,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     campanhaId?: string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
@@ -67190,6 +67340,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67216,6 +67369,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68469,6 +68625,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
@@ -68495,6 +68654,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     campanhaId?: string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
@@ -68593,6 +68755,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68619,6 +68784,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68713,6 +68881,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
@@ -68739,6 +68910,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     campanhaId?: string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
@@ -68781,6 +68955,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68807,6 +68984,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69216,6 +69396,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
@@ -69242,6 +69425,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     campanhaId?: string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
@@ -69309,6 +69495,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69335,6 +69524,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70210,6 +70402,9 @@ export namespace Prisma {
     notas?: string | null
     negocio?: string | null
     atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
     entradaCampanhaEm?: Date | string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
@@ -70287,6 +70482,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70313,6 +70511,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70339,6 +70540,9 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     negocio?: NullableStringFieldUpdateOperationsInput | string | null
     atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string

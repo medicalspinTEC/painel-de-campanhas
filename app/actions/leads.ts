@@ -12,6 +12,9 @@ import { type LeadStatus } from "@/types"
 import { assertSecao } from "@/lib/session"
 import { filtrarLeadsParaEnvio, pausarBotComNota } from "@/services/crm"
 import { getCrmPluginAtivo } from "@/services/settings"
+import { cnpjApenasDigitos, cnpjValido, type CnpjDados } from "@/lib/cnpj"
+import { consultarCnpjDoLead } from "@/services/cnpj"
+import { PluginDesativadoError } from "@/lib/plugins"
 
 export interface ActionState {
   ok: boolean
@@ -43,6 +46,8 @@ function parseLead(formData: FormData) {
   // Negócio é opcional: ID de texto livre digitado pelo usuário (ex.: CRM externo).
   const negocio = formData.has("negocio") ? String(formData.get("negocio") ?? "").trim() : null
   const atividade = formData.has("atividade") ? String(formData.get("atividade") ?? "").trim() : null
+  // CNPJ só chega com o plugin CRM ativo (o campo não existe no formulário sem ele).
+  const cnpjBruto = formData.has("cnpj") ? String(formData.get("cnpj") ?? "").trim() : null
   const status = String(formData.get("status") ?? "novo")
   const campanhasIdsRaw = String(formData.get("campanhasIds") ?? "")
   const campanhasIds = campanhasIdsRaw
@@ -67,6 +72,8 @@ function parseLead(formData: FormData) {
   if (negocio != null && negocio.length > MAX_NEGOCIO) errors.negocio = `Use no máximo ${MAX_NEGOCIO} caracteres.`
   if (atividade != null && atividade.length > MAX_ATIVIDADE) errors.atividade = `Use no máximo ${MAX_ATIVIDADE} caracteres.`
 
+  if (cnpjBruto && !cnpjValido(cnpjBruto)) errors.cnpj = "CNPJ inválido. Confira os 14 dígitos."
+
   const input: LeadInput = {
     nome,
     telefone,
@@ -77,6 +84,7 @@ function parseLead(formData: FormData) {
     notas,
     negocio,
     atividade,
+    cnpj: cnpjBruto == null ? undefined : cnpjApenasDigitos(cnpjBruto),
     status: (STATUS_VALIDOS.includes(status as LeadStatus) ? status : "novo") as LeadStatus,
     campanhaId: campanhasIds[0] ?? null,
     campanhasIds,
@@ -98,6 +106,8 @@ export async function createLeadAction(_prev: ActionState | undefined, formData:
   if (Object.keys(errors).length > 0) {
     return { ok: false, message: "Corrija os campos destacados.", errors }
   }
+  // CNPJ é um recurso do plugin CRM: com ele desativado, o valor enviado é ignorado.
+  if (input.cnpj !== undefined && !(await getCrmPluginAtivo().catch(() => false))) delete input.cnpj
   try {
     await createLead(input)
   } catch (error) {
@@ -118,6 +128,7 @@ export async function updateLeadAction(_prev: ActionState | undefined, formData:
   if (Object.keys(errors).length > 0) {
     return { ok: false, message: "Corrija os campos destacados.", errors }
   }
+  if (input.cnpj !== undefined && !(await getCrmPluginAtivo().catch(() => false))) delete input.cnpj
   try {
     const atualizado = await updateLead(id, input)
     if (!atualizado) return { ok: false, message: "Lead não encontrado." }
@@ -131,6 +142,23 @@ export async function updateLeadAction(_prev: ActionState | undefined, formData:
   revalidarLeads()
   revalidatePath(`/leads/${id}`)
   return { ok: true, message: `Lead ${input.nome} atualizado.` }
+}
+
+/** Consulta manual do CNPJ do lead na Receita (ReceitaWS). O resultado fica salvo como nota do lead. */
+export async function consultarCnpjLeadAction(
+  leadId: string,
+): Promise<{ ok: true; message: string; dados: CnpjDados; consultadoEm: string } | { ok: false; message: string }> {
+  await assertSecao("leads", "campanhas", "kanban", "chat")
+  try {
+    const resultado = await consultarCnpjDoLead(leadId)
+    if (!resultado.ok) return { ok: false, message: resultado.erro }
+    revalidatePath(`/leads/${leadId}`)
+    return { ok: true, message: "CNPJ consultado. A nota foi atualizada.", dados: resultado.dados, consultadoEm: resultado.consultadoEm }
+  } catch (error) {
+    if (error instanceof PluginDesativadoError) return { ok: false, message: error.message }
+    await recordAppLog({ origem: "leads", mensagem: `Falha ao consultar o CNPJ do lead id=${leadId}.`, detalhes: error })
+    return { ok: false, message: "Não foi possível consultar o CNPJ agora." }
+  }
 }
 
 export async function deleteLeadAction(id: string) {

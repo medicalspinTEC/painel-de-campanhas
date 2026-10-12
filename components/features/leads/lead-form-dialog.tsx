@@ -18,6 +18,7 @@ import {
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import { cnpjMascara } from "@/lib/cnpj"
 import { Textarea } from "@/components/ui/textarea"
 import {
   LEAD_STATUS_LABEL,
@@ -78,6 +79,7 @@ export function LeadFormDialog({
   const [notas, setNotas] = useState(lead?.notas ?? "")
   const [negocio, setNegocio] = useState(lead?.negocio ?? "")
   const [atividade, setAtividade] = useState(lead?.atividade ?? "")
+  const [cnpj, setCnpj] = useState(cnpjMascara(lead?.cnpj ?? ""))
   const [campanhasSelecionadas, setCampanhasSelecionadas] = useState<string[]>(() => (lead ? [lead.campanhaId].filter(Boolean) as string[] : []))
 
   useEffect(() => {
@@ -89,6 +91,7 @@ export function LeadFormDialog({
     setNotas(lead?.notas ?? "")
     setNegocio(lead?.negocio ?? "")
     setAtividade(lead?.atividade ?? "")
+    setCnpj(cnpjMascara(lead?.cnpj ?? ""))
     setCampanhasSelecionadas(lead ? [lead.campanhaId].filter(Boolean) as string[] : [])
   }, [lead])
 
@@ -256,6 +259,29 @@ export function LeadFormDialog({
               />
               {erros.atividade ? <FieldError>{erros.atividade}</FieldError> : null}
             </Field>
+
+            {/* CNPJ: só com o plugin CRM ativo. A consulta na Receita é feita depois, nos detalhes do lead. */}
+            {crmAtivo ? (
+              <Field data-invalid={Boolean(erros.cnpj)}>
+                <FieldLabel htmlFor="cnpj">CNPJ</FieldLabel>
+                <Input
+                  id="cnpj"
+                  name="cnpj"
+                  value={cnpj}
+                  onChange={(event) => setCnpj(cnpjMascara(event.target.value))}
+                  placeholder="00.000.000/0000-00 (opcional)"
+                  inputMode="numeric"
+                  maxLength={18}
+                  autoComplete="off"
+                  aria-invalid={Boolean(erros.cnpj)}
+                />
+                {erros.cnpj ? (
+                  <FieldError>{erros.cnpj}</FieldError>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Os dados da empresa são consultados nos detalhes do lead.</p>
+                )}
+              </Field>
+            ) : null}
 
             <Field>
               <FieldLabel htmlFor="status">Status</FieldLabel>

@@ -43,6 +43,10 @@ export interface Lead {
   negocio: string | null
   /** ID da atividade, texto livre opcional digitado no cadastro. */
   atividade: string | null
+  /** Plugin CRM: CNPJ (só dígitos). Os dados da consulta ficam fora daqui (ver `lerNotaCnpj`). */
+  cnpj?: string | null
+  /** Quando o CNPJ foi consultado na Receita pela última vez. */
+  cnpjConsultadoEm?: string | null
   criadoEm: string
   entradaCampanhaEm: string | null
 }

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto"
 
+import { Prisma } from "@/lib/generated/prisma/client"
 import { prisma } from "@/lib/prisma"
 import { renderTemplate } from "@/lib/format"
 import { validarTelefoneBR, apenasDigitos } from "@/lib/telefone"
@@ -11,6 +12,7 @@ import { sendWhatsAppAudio, sendWhatsAppMedia, sendWhatsAppText } from "@/servic
 import { garantirProduto } from "@/services/produtos"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
 import { getCrmPluginAtivo } from "@/services/settings"
+import { cnpjApenasDigitos, cnpjValido } from "@/lib/cnpj"
 import { LEAD_STATUS_LABEL, LEAD_STATUS_SOMENTE_CRM, type Lead, type LeadStatus, type TimelineEvent } from "@/types"
 
 /**
@@ -93,6 +95,8 @@ type LeadRecord = {
   notas: string | null
   negocio: string | null
   atividade: string | null
+  cnpj?: string | null
+  cnpjConsultadoEm?: Date | null
   campanhaId: string | null
   entradaCampanhaEm: Date | null
   criadoEm: Date
@@ -114,6 +118,8 @@ function toLead(record: LeadRecord): Lead {
     notas: record.notas ?? null,
     negocio: record.negocio ?? null,
     atividade: record.atividade ?? null,
+    cnpj: record.cnpj ?? null,
+    cnpjConsultadoEm: record.cnpjConsultadoEm?.toISOString() ?? null,
     campanhaId: record.campanhaId,
     criadoEm: record.criadoEm.toISOString(),
     entradaCampanhaEm: record.entradaCampanhaEm?.toISOString() ?? null,
@@ -137,6 +143,8 @@ const leadRowSelect = {
   notas: true,
   negocio: true,
   atividade: true,
+  cnpj: true,
+  cnpjConsultadoEm: true,
   campanhaId: true,
   entradaCampanhaEm: true,
   criadoEm: true,
@@ -359,6 +367,8 @@ export type LeadInput = Pick<Lead, "nome" | "telefone" | "status"> & {
   negocio?: string | null
   // ID da atividade, texto livre opcional. `null`/"" limpam o campo.
   atividade?: string | null
+  // CNPJ (plugin CRM), texto livre com ou sem máscara; guardado só com dígitos. `null`/"" limpam o campo.
+  cnpj?: string | null
   campanhaId: string | null
   campanhasIds?: string[]
   /** Não vincula o lead novo a campanhas compatíveis pelos filtros (uso interno, ex.: No Code). */
@@ -427,6 +437,18 @@ function normalizarAtividade(atividade: string | null | undefined): string | nul
   if (atividade == null) return null
   const limpo = atividade.trim()
   return limpo.length > 0 ? limpo : null
+}
+
+/** CNPJ recebido: vazio vira `null`; com valor, precisa ser um CNPJ válido (só os dígitos são gravados). */
+function normalizarCnpj(cnpj: string | null | undefined): string | null {
+  if (cnpj == null) return null
+  const digitos = cnpjApenasDigitos(cnpj)
+  return digitos.length > 0 ? digitos : null
+}
+
+function validarCnpjInput(cnpj: string | null | undefined): void {
+  const digitos = normalizarCnpj(cnpj)
+  if (digitos && !cnpjValido(digitos)) throw new LeadValidationError({ cnpj: "CNPJ inválido. Confira os 14 dígitos." })
 }
 
 /**
@@ -526,6 +548,7 @@ export async function createLead(input: LeadInput): Promise<Lead> {
 
   // Impede telefone sem país 55 e cadastros duplicados de nome/telefone.
   // Devolve o telefone normalizado (só dígitos) que será gravado.
+  validarCnpjInput(input.cnpj)
   const telefoneNormalizado = await validarUnicidadeEtelefone(input.nome, input.telefone)
 
   // Cadastra automaticamente no catálogo qualquer produto/marca/persona/região
@@ -574,6 +597,7 @@ export async function createLead(input: LeadInput): Promise<Lead> {
       notas: normalizarNotas(input.notas),
       negocio: normalizarNegocio(input.negocio),
       atividade: normalizarAtividade(input.atividade),
+      cnpj: normalizarCnpj(input.cnpj),
       campanhaId: input.campanhaId,
       entradaCampanhaEm: input.campanhaId ? agora : null,
       campanhas: {
@@ -1196,9 +1220,10 @@ export function statusAoRemoverDaCampanha(statusAtual: LeadStatus): LeadStatus {
 }
 
 export async function updateLead(id: string, input: LeadInput): Promise<Lead | null> {
-  const atual = await prisma.lead.findUnique({ where: { id }, select: { campanhaId: true, status: true } })
+  const atual = await prisma.lead.findUnique({ where: { id }, select: { campanhaId: true, status: true, cnpj: true } })
   if (!atual) return null
   if (input.status !== atual.status) await validarStatusDisponivel(input.status)
+  validarCnpjInput(input.cnpj)
 
   // Status “Não contatar”: o lead não pode entrar em campanha nenhuma. Tentar ADICIONAR uma
   // campanha é recusado; as campanhas em que ele já estava são encerradas para ele (sai de
@@ -1260,6 +1285,10 @@ export async function updateLead(id: string, input: LeadInput): Promise<Lead | n
       ...(input.negocio !== undefined ? { negocio: normalizarNegocio(input.negocio) } : {}),
       // Atividade também é opcional: só atualiza quando a chave veio no corpo.
       ...(input.atividade !== undefined ? { atividade: normalizarAtividade(input.atividade) } : {}),
+      // CNPJ (plugin CRM): só muda quando a chave veio. Trocar o CNPJ descarta a consulta antiga (seria de outra empresa).
+      ...(input.cnpj !== undefined && normalizarCnpj(input.cnpj) !== (atual.cnpj ?? null)
+        ? { cnpj: normalizarCnpj(input.cnpj), cnpjDados: Prisma.DbNull, cnpjConsultadoEm: null }
+        : {}),
       ...(trocouCampanha ? { entradaCampanhaEm: input.campanhaId ? agora : null } : {}),
       ...(trocouCampanha && input.campanhaId
         ? {

@@ -1,8 +1,9 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, MessageCircleReply, NotebookPen, Send, Sparkles } from "lucide-react"
+import { ArrowLeft, Landmark, MessageCircleReply, NotebookPen, Send, Sparkles } from "lucide-react"
 
 import { LeadMessageDialog } from "@/components/features/leads/lead-message-dialog"
+import { LeadCnpjNota } from "@/components/features/leads/lead-cnpj-nota"
 import { LeadNotes } from "@/components/features/leads/lead-notes"
 import { LeadTimeline } from "@/components/features/leads/lead-timeline"
 import { LinkButton } from "@/components/shared/link-button"
@@ -10,16 +11,26 @@ import { LeadStatusBadge } from "@/components/shared/status-badges"
 import { LeadAvatar } from "@/components/shared/lead-avatar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { cnpjMascara } from "@/lib/cnpj"
 import { formatDateTime, formatRelative, initials } from "@/lib/format"
 import { listInstanceOptions } from "@/services/evolution"
 import { getLead, getLeadTimeline } from "@/services/leads"
 import { requireSecao } from "@/lib/session"
+import { lerNotaCnpj } from "@/services/cnpj"
+import { getCrmPluginAtivo } from "@/services/settings"
 
 export default async function LeadDetalhePage({ params }: { params: Promise<{ id: string }> }) {
   await requireSecao("leads")
   const { id } = await params
-  const [lead, eventos, instancias] = await Promise.all([getLead(id), getLeadTimeline(id), listInstanceOptions()])
+  const [lead, eventos, instancias, crmAtivo] = await Promise.all([
+    getLead(id),
+    getLeadTimeline(id),
+    listInstanceOptions(),
+    getCrmPluginAtivo().catch(() => false),
+  ])
   if (!lead) notFound()
+  // Nota do CNPJ (consulta na Receita): só existe com o plugin CRM ativo.
+  const notaCnpj = crmAtivo ? await lerNotaCnpj(id).catch(() => null) : null
 
   const atributos = [
     { label: "Produto", valor: lead.produto },
@@ -28,6 +39,7 @@ export default async function LeadDetalhePage({ params }: { params: Promise<{ id
     { label: "Região", valor: lead.regiao },
     { label: "Negócio", valor: lead.negocio ?? "—" },
     { label: "Atividade", valor: lead.atividade ?? "—" },
+    ...(crmAtivo ? [{ label: "CNPJ", valor: lead.cnpj ? cnpjMascara(lead.cnpj) : "—" }] : []),
     { label: "Telefone", valor: lead.telefone },
     { label: "Cadastrado em", valor: formatDateTime(lead.criadoEm) },
   ]
@@ -122,6 +134,29 @@ export default async function LeadDetalhePage({ params }: { params: Promise<{ id
               <LeadNotes leadId={lead.id} notas={lead.notas} />
             </CardContent>
           </Card>
+
+          {crmAtivo && notaCnpj ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Landmark className="size-4 text-primary" />
+                  Nota do CNPJ
+                </CardTitle>
+                <CardDescription>
+                  Dados da empresa na Receita Federal. A consulta é manual: use o botão para buscar ou atualizar.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <LeadCnpjNota
+                  key={`${notaCnpj.cnpj ?? "sem"}-${notaCnpj.consultadoEm ?? "nunca"}`}
+                  leadId={lead.id}
+                  cnpj={notaCnpj.cnpj}
+                  dadosIniciais={notaCnpj.dados}
+                  consultadoEmInicial={notaCnpj.consultadoEm}
+                />
+              </CardContent>
+            </Card>
+          ) : null}
 
           <Card>
             <CardHeader>
