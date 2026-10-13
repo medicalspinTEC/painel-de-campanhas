@@ -71,26 +71,38 @@ export async function getEvent(id: string): Promise<EventRow | null> {
   return evento ? toEventRow(evento, false) : null
 }
 
+function filtroRespostas(leadId?: string, campanhaId?: string) {
+  return {
+    tipo: "resposta" as const,
+    ...(leadId ? { leadId } : {}),
+    ...(campanhaId ? { campanhaId } : {}),
+  }
+}
+
+export async function countLeadResponses({ leadId, campanhaId }: { leadId?: string; campanhaId?: string } = {}): Promise<number> {
+  return prisma.timelineEvent.count({ where: filtroRespostas(leadId, campanhaId) })
+}
+
 export async function listLeadResponses({
   limit = 50,
+  offset = 0,
   leadId,
   campanhaId,
 }: {
   limit?: number
+  /** Quantas respostas pular (paginação). */
+  offset?: number
   leadId?: string
   campanhaId?: string
 } = {}) {
   const respostas = await prisma.timelineEvent.findMany({
-    where: {
-      tipo: "resposta",
-      ...(leadId ? { leadId } : {}),
-      ...(campanhaId ? { campanhaId } : {}),
-    },
+    where: filtroRespostas(leadId, campanhaId),
     include: {
       lead: true,
       campanha: { select: { id: true, nome: true } },
     },
-    orderBy: { data: "desc" },
+    orderBy: [{ data: "desc" }, { id: "desc" }],
+    skip: offset,
     take: limit,
   })
 
@@ -108,11 +120,17 @@ export async function listLeadResponses({
   }))
 }
 
-export async function listEvents(limit?: number): Promise<EventRow[]> {
+export async function countEvents(): Promise<number> {
+  return prisma.timelineEvent.count()
+}
+
+export async function listEvents(limit?: number, offset = 0): Promise<EventRow[]> {
   const eventos = await prisma.timelineEvent.findMany({
     select: eventSelect,
-    orderBy: { data: "desc" },
+    // `id` desempata eventos com a mesma data, para a paginação não repetir nem pular itens.
+    orderBy: [{ data: "desc" }, { id: "desc" }],
     // Pagina no banco: sem `take` o feed carregaria todo o histórico.
+    ...(offset > 0 ? { skip: offset } : {}),
     ...(limit ? { take: limit } : {}),
   })
   return eventos.map(toEventRow)

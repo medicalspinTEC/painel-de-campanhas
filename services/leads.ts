@@ -335,10 +335,16 @@ export async function getLead(id: string): Promise<LeadRow | null> {
   return toLeadRow(lead, respostas, ultimoContato?.data ?? null, campanhasRespondidas.get(id))
 }
 
-export async function getLeadTimeline(id: string): Promise<TimelineEvent[]> {
+export async function countLeadTimeline(id: string): Promise<number> {
+  return prisma.timelineEvent.count({ where: { leadId: id } })
+}
+
+export async function getLeadTimeline(id: string, opcoes: { skip?: number; take?: number } = {}): Promise<TimelineEvent[]> {
   const eventos = await prisma.timelineEvent.findMany({
     where: { leadId: id },
-    orderBy: { data: "desc" },
+    orderBy: [{ data: "desc" }, { id: "desc" }],
+    ...(opcoes.skip ? { skip: opcoes.skip } : {}),
+    ...(opcoes.take ? { take: opcoes.take } : {}),
   })
   return eventos.map((e) => ({
     id: e.id,
@@ -351,6 +357,33 @@ export async function getLeadTimeline(id: string): Promise<TimelineEvent[]> {
     data: e.data.toISOString(),
     sucesso: e.sucesso,
   }))
+}
+
+/**
+ * Timelines de vários leads em UMA consulta (em vez de uma por lead). Usada pelo MCP, que devolve até
+ * 600 leads por lote: evita centenas de consultas simultâneas e o esgotamento do pool de conexões.
+ */
+export async function getTimelinesDosLeads(ids: readonly string[]): Promise<Map<string, TimelineEvent[]>> {
+  const porLead = new Map<string, TimelineEvent[]>(ids.map((id) => [id, []]))
+  if (ids.length === 0) return porLead
+  const eventos = await prisma.timelineEvent.findMany({
+    where: { leadId: { in: [...ids] } },
+    orderBy: [{ data: "desc" }, { id: "desc" }],
+  })
+  for (const e of eventos) {
+    porLead.get(e.leadId)?.push({
+      id: e.id,
+      leadId: e.leadId,
+      campanhaId: e.campanhaId,
+      mensagemId: e.mensagemId,
+      tipo: e.tipo,
+      descricao: e.descricao,
+      detalhes: e.detalhes ?? undefined,
+      data: e.data.toISOString(),
+      sucesso: e.sucesso,
+    })
+  }
+  return porLead
 }
 
 export type LeadInput = Pick<Lead, "nome" | "telefone" | "status"> & {

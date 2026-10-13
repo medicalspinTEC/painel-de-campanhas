@@ -325,6 +325,17 @@ export async function listExecutions(
   return rows.map(paraExecucao)
 }
 
+/** Página de execuções por deslocamento (skip/take), usada pela paginação em lotes do MCP. */
+export async function listExecutionsPaginadas(flowId: string, opcoes: { skip: number; take: number }): Promise<ExecutionRow[]> {
+  const rows = await prisma.noCodeExecution.findMany({
+    where: await filtroExecucoesVisiveis(flowId),
+    orderBy: [{ iniciadoEm: "desc" }, { id: "desc" }],
+    skip: Math.max(opcoes.skip, 0),
+    take: Math.max(opcoes.take, 1),
+  })
+  return rows.map(paraExecucao)
+}
+
 export async function contarExecucoes(flowId: string): Promise<number> {
   return prisma.noCodeExecution.count({ where: await filtroExecucoesVisiveis(flowId) })
 }

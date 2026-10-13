@@ -199,7 +199,9 @@ async function ultimasMensagensPorLead(): Promise<Map<string, ChatMessage>> {
 }
 
 /** Histórico completo de um lead (mensagens + notas internas), em paralelo. */
-export async function getChatMessages(leadId: string): Promise<ChatMessage[]> {
+export async function getChatMessages(leadId: string, opcoes: { semLimite?: boolean } = {}): Promise<ChatMessage[]> {
+  // `semLimite` (usado pelo MCP, que pagina em lotes): traz o histórico inteiro em vez das últimas N.
+  const limite = opcoes.semLimite ? undefined : LIMITE_MENSAGENS_CONVERSA
   const [eventos, notas] = await Promise.all([
     prisma.timelineEvent.findMany({
       where: { leadId, tipo: { in: [...TIPOS_DE_MENSAGEM] } },
@@ -211,13 +213,13 @@ export async function getChatMessages(leadId: string): Promise<ChatMessage[]> {
         campanha: { select: { nome: true } },
       },
       orderBy: { data: "desc" },
-      take: LIMITE_MENSAGENS_CONVERSA,
+      ...(limite ? { take: limite } : {}),
     }),
     prisma.chatInternalNote.findMany({
       where: { leadId },
       select: { id: true, texto: true, data: true, autor: true },
       orderBy: { data: "desc" },
-      take: LIMITE_MENSAGENS_CONVERSA,
+      ...(limite ? { take: limite } : {}),
     }),
   ])
 

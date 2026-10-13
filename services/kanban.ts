@@ -92,6 +92,55 @@ export async function getKanbanBoard(): Promise<KanbanBoardData> {
   return { leads, campanhas, totais, colunas, limitePorColuna: KANBAN_LIMITE_POR_COLUNA }
 }
 
+/**
+ * Leads do Kanban por deslocamento (skip/take), sem o limite por coluna do painel. Usado pelo MCP, que
+ * pagina em lotes até devolver todos os leads. Com `status`, só aquela coluna; sem, todas as colunas
+ * disponíveis (as exclusivas do plugin CRM só com ele ativo).
+ */
+export async function listKanbanLeadsPaginado(opcoes: {
+  status?: LeadStatus
+  skip: number
+  take: number
+}): Promise<{ total: number; leads: KanbanLead[] }> {
+  const colunas = statusDisponiveis(await getCrmPluginAtivo().catch(() => false))
+  const where = opcoes.status ? { status: opcoes.status } : { status: { in: colunas } }
+  const [total, rows] = await Promise.all([
+    prisma.lead.count({ where }),
+    prisma.lead.findMany({
+      where,
+      select: {
+        id: true,
+        nome: true,
+        telefone: true,
+        produto: true,
+        marca: true,
+        status: true,
+        atualizadoEm: true,
+        campanha: { select: { nome: true } },
+        campanhas: { select: { campanha: { select: { nome: true } } } },
+      },
+      orderBy: [{ atualizadoEm: "desc" }, { id: "desc" }],
+      skip: opcoes.skip,
+      take: opcoes.take,
+    }),
+  ])
+  const leads: KanbanLead[] = rows.map((lead) => ({
+    id: lead.id,
+    nome: lead.nome,
+    telefone: lead.telefone,
+    produto: lead.produto,
+    marca: lead.marca,
+    status: lead.status,
+    campanhasNomes: [
+      ...new Set(
+        [lead.campanha?.nome, ...lead.campanhas.map((vinculo) => vinculo.campanha.nome)].filter((nome): nome is string => Boolean(nome)),
+      ),
+    ],
+    atualizadoEm: lead.atualizadoEm.toISOString(),
+  }))
+  return { total, leads }
+}
+
 const KANBAN_MAX_MENSAGEM_INDIVIDUAL = 4096
 const KANBAN_MAX_RESPOSTA_LEAD = 4096
 
