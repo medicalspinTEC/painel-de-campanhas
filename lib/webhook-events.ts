@@ -138,7 +138,7 @@ export const WEBHOOK_EVENTS: WebhookEventDef[] = [
   {
     key: "mcp.acao_executada",
     label: "Ação MCP executada",
-    descricao: "Uma ferramenta MCP foi executada, com registro do resultado.",
+    descricao: "Uma ferramenta MCP foi executada, com registro do resultado e a resposta completa que o MCP devolveu.",
     grupo: "Sistema",
   },
 ]

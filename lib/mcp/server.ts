@@ -122,7 +122,8 @@ import type { CampaignStatus, LeadStatus } from "@/types"
  *  2. Função que depende de plugin (`lib/mcp/catalogo.ts`) NÃO executa com o plugin desativado: devolve
  *     `codigo: "PLUGIN_DESATIVADO"` com uma mensagem clara para repassar ao usuário. A checagem roda a
  *     cada chamada, então vale mesmo que o plugin seja desligado com a IA já conectada.
- *  3. Toda execução é auditada (log + webhook `mcp.acao_executada`), com a chave de API oculta.
+ *  3. Toda execução é auditada (log + webhook `mcp.acao_executada`), com a chave de API oculta. O webhook
+ *     leva também a `resposta` completa que a ferramenta devolveu à IA.
  *
  * Paginação: TODA consulta que devolve coleção usa o modelo de `lib/mcp/paginacao.ts` — lotes de até 600 itens,
  * divididos em páginas de 50; o parâmetro `lote` pede o próximo lote até `temProximoLote` ser false.
@@ -187,7 +188,39 @@ function ehErroDeRegra(error: unknown): error is Error {
   )
 }
 
-async function registrarAuditoriaMcp(ferramenta: string, argumentos: unknown, sucesso: boolean, erro?: string): Promise<void> {
+/** Texto do resultado de uma tool MCP, já convertido de volta em JSON quando possível. */
+function extrairRespostaMcp(resultado: unknown): unknown {
+  const conteudo = (resultado as { content?: Array<{ type?: string; text?: string }> } | null)?.content
+  if (!Array.isArray(conteudo)) return null
+  const texto = conteudo
+    .filter((bloco) => bloco?.type === "text" && typeof bloco.text === "string")
+    .map((bloco) => bloco.text)
+    .join("\n")
+  if (!texto) return null
+  try {
+    return JSON.parse(texto)
+  } catch {
+    return texto
+  }
+}
+
+/** Cópia da resposta com chaves de API ocultas, pronta para sair no webhook. */
+function respostaSemSegredos(resposta: unknown): unknown {
+  if (resposta === null || resposta === undefined) return null
+  try {
+    return JSON.parse(JSON.stringify(resposta, (chave, valor) => (chave === "apiKey" ? "[oculto]" : valor)))
+  } catch {
+    return "[resposta não serializável]"
+  }
+}
+
+async function registrarAuditoriaMcp(
+  ferramenta: string,
+  argumentos: unknown,
+  sucesso: boolean,
+  erro?: string,
+  resposta?: unknown,
+): Promise<void> {
   const executadoEm = new Date().toISOString()
   let argumentosJson = "{}"
   try {
@@ -205,6 +238,10 @@ async function registrarAuditoriaMcp(ferramenta: string, argumentos: unknown, su
     executadoEm,
   }
 
+  // O webhook leva a resposta COMPLETA que o MCP devolveu (a que a IA consultou); o log do painel guarda
+  // só o resumo acima, para não inflar o banco com lotes de até 600 itens.
+  const dadosWebhook = resposta === undefined ? dados : { ...dados, resposta: respostaSemSegredos(resposta) }
+
   try {
     await Promise.all([
       recordAppLog({
@@ -213,7 +250,7 @@ async function registrarAuditoriaMcp(ferramenta: string, argumentos: unknown, su
         mensagem: `Ferramenta MCP ${ferramenta} executada${sucesso ? "" : " com falha"}.`,
         detalhes: dados,
       }),
-      emitWebhookEvent("mcp.acao_executada", dados),
+      emitWebhookEvent("mcp.acao_executada", dadosWebhook),
     ])
   } catch (error) {
     console.error("[mcp] Falha ao registrar auditoria da ferramenta:", error)
@@ -254,13 +291,20 @@ function registrar<const Args extends z.ZodRawShape>(
     // Estado atual dos plugins: vale para esta chamada, mesmo que tenha mudado depois da conexão.
     const faltando = pluginsFaltando(def, await getPluginsAtivos())
     if (faltando.length > 0) {
-      await registrarAuditoriaMcp(nome, args, false, "Plugin desativado: função não executada.")
-      return bloqueioPorPlugin(def, faltando)
+      const bloqueio = bloqueioPorPlugin(def, faltando)
+      await registrarAuditoriaMcp(nome, args, false, "Plugin desativado: função não executada.", extrairRespostaMcp(bloqueio))
+      return bloqueio
     }
 
     try {
       const resultado = await chamar(args, extra)
-      await registrarAuditoriaMcp(nome, args, !resultado.isError, resultado.isError ? "A ferramenta retornou erro." : undefined)
+      await registrarAuditoriaMcp(
+        nome,
+        args,
+        !resultado.isError,
+        resultado.isError ? "A ferramenta retornou erro." : undefined,
+        extrairRespostaMcp(resultado),
+      )
       return resultado
     } catch (error) {
       const mensagem = error instanceof Error ? error.message : String(error)
