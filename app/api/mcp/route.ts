@@ -2,7 +2,7 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 
 import { createAppMcpServer } from "@/lib/mcp/server"
 import { runInWorkspace } from "@/lib/workspace-context"
-import { workspaceDoTokenMcp } from "@/services/mcp-token"
+import { type McpAcesso, workspaceDoTokenMcp } from "@/services/mcp-token"
 
 /**
  * Endpoint MCP (Model Context Protocol) do painel.
@@ -54,11 +54,15 @@ export async function POST(request: Request) {
   if (!acesso) return naoAutorizado("Token do MCP inválido, desativado ou removido.")
 
   // Tudo abaixo roda dentro da instância dona do token, só com as funções que ele liberou.
-  return runInWorkspace(acesso.workspaceId, () => processarMcp(request, acesso.ferramentas))
+  return runInWorkspace(acesso.workspaceId, () => processarMcp(request, acesso))
 }
 
-async function processarMcp(request: Request, ferramentas: readonly string[]) {
-  const server = await createAppMcpServer({ ferramentas })
+async function processarMcp(request: Request, acesso: McpAcesso) {
+  const server = await createAppMcpServer({
+    ferramentas: acesso.ferramentas,
+    workspaceId: acesso.workspaceId,
+    tokenPrefixo: acesso.tokenPrefixo,
+  })
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,

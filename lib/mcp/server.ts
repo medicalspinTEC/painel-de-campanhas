@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto"
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { z } from "zod"
@@ -214,13 +216,98 @@ function respostaSemSegredos(resposta: unknown): unknown {
   }
 }
 
-async function registrarAuditoriaMcp(
-  ferramenta: string,
-  argumentos: unknown,
-  sucesso: boolean,
-  erro?: string,
-  resposta?: unknown,
-): Promise<void> {
+/** Quem chamou: instância dona do token, token (só o prefixo) e dados da requisição HTTP. */
+type ClienteMcp = {
+  workspaceId: string | null
+  tokenPrefixo: string | null
+  /** O MCP não tem login de pessoa: as ações rodam como este executor interno. */
+  usuario: { tipo: "mcp"; id: string }
+  agenteUsuario: string | null
+  ip: string | null
+}
+
+type ExtraMcp = {
+  requestInfo?: { headers?: Record<string, string | string[] | undefined> }
+}
+
+function cabecalhoDaRequisicao(extra: unknown, nome: string): string | null {
+  const valor = (extra as ExtraMcp | null)?.requestInfo?.headers?.[nome]
+  const texto = Array.isArray(valor) ? valor[0] : valor
+  return texto?.trim() ? texto.trim() : null
+}
+
+/**
+ * Correlation ID da chamada: aproveita o que o cliente mandou em `x-correlation-id` / `x-request-id`
+ * (se for um valor seguro) para casar com os logs dele; senão gera um UUID. Sai no webhook, no log
+ * do painel e na resposta da ferramenta (`_meta.correlationId`).
+ */
+function gerarCorrelationId(extra: unknown): string {
+  const recebido = cabecalhoDaRequisicao(extra, "x-correlation-id") ?? cabecalhoDaRequisicao(extra, "x-request-id")
+  return recebido && /^[\w.:-]{1,128}$/.test(recebido) ? recebido : randomUUID()
+}
+
+function montarClienteMcp(acesso: AcessoMcp, extra: unknown): ClienteMcp {
+  const encaminhado = cabecalhoDaRequisicao(extra, "x-forwarded-for")?.split(",")[0]?.trim()
+  return {
+    workspaceId: acesso.workspaceId ?? null,
+    tokenPrefixo: acesso.tokenPrefixo ?? null,
+    usuario: { tipo: "mcp", id: EXECUTOR_MCP.id },
+    agenteUsuario: cabecalhoDaRequisicao(extra, "user-agent")?.slice(0, 300) ?? null,
+    ip: encaminhado || cabecalhoDaRequisicao(extra, "x-real-ip"),
+  }
+}
+
+const CHAVE_DE_ID = /^id$|Id$|Ids$/
+const MAX_IDS_POR_CHAVE = 100
+
+/**
+ * IDs envolvidos na chamada: os informados nos argumentos (`leadId`, `campanhaId`, `id`...) e, nas
+ * respostas de um único registro, os do próprio registro (`lead.id` vira `leadId`). Em listas paginadas
+ * os IDs já estão em `resultado`, então não são repetidos aqui.
+ */
+function coletarIdsEnvolvidos(argumentos: unknown, resposta: unknown): Record<string, string | string[]> {
+  const encontrados = new Map<string, Set<string>>()
+  const adicionar = (chave: string, valor: unknown) => {
+    const valores = Array.isArray(valor) ? valor : [valor]
+    for (const item of valores.slice(0, MAX_IDS_POR_CHAVE)) {
+      if (typeof item !== "string" || !item || item.length > 200) continue
+      if (!encontrados.has(chave)) encontrados.set(chave, new Set())
+      encontrados.get(chave)?.add(item)
+    }
+  }
+  const ehObjeto = (valor: unknown): valor is Record<string, unknown> =>
+    typeof valor === "object" && valor !== null && !Array.isArray(valor)
+
+  if (ehObjeto(argumentos)) {
+    for (const [chave, valor] of Object.entries(argumentos)) if (CHAVE_DE_ID.test(chave)) adicionar(chave, valor)
+  }
+  if (ehObjeto(resposta) && !("paginas" in resposta)) {
+    for (const [chave, valor] of Object.entries(resposta)) {
+      if (CHAVE_DE_ID.test(chave)) adicionar(chave, valor)
+      else if (ehObjeto(valor) && typeof valor.id === "string") adicionar(`${chave}Id`, valor.id)
+    }
+  }
+
+  const ids: Record<string, string | string[]> = {}
+  for (const [chave, valores] of encontrados) {
+    const lista = [...valores]
+    ids[chave] = lista.length === 1 ? lista[0] : lista
+  }
+  return ids
+}
+
+type EntradaAuditoria = {
+  ferramenta: string
+  argumentos: unknown
+  sucesso: boolean
+  correlationId: string
+  cliente: ClienteMcp
+  erro?: string
+  resposta?: unknown
+}
+
+async function registrarAuditoriaMcp(entrada: EntradaAuditoria): Promise<void> {
+  const { ferramenta, argumentos, sucesso, correlationId, cliente, erro, resposta } = entrada
   const executadoEm = new Date().toISOString()
   let argumentosJson = "{}"
   try {
@@ -231,23 +318,26 @@ async function registrarAuditoriaMcp(
   }
   const argumentosLimitados = argumentosJson.length > 4000 ? `${argumentosJson.slice(0, 4000)} [truncado]` : argumentosJson
   const dados = {
+    correlationId,
+    executadoEm,
     ferramenta,
+    cliente,
+    idsEnvolvidos: coletarIdsEnvolvidos(argumentos, resposta),
     argumentos: argumentosLimitados,
     sucesso,
-    ...(erro ? { erro: erro.slice(0, 1000) } : {}),
-    executadoEm,
+    erro: erro ? erro.slice(0, 1000) : null,
   }
 
-  // O webhook leva a resposta COMPLETA que o MCP devolveu (a que a IA consultou); o log do painel guarda
-  // só o resumo acima, para não inflar o banco com lotes de até 600 itens.
-  const dadosWebhook = resposta === undefined ? dados : { ...dados, resposta: respostaSemSegredos(resposta) }
+  // O webhook leva também o `resultado` COMPLETO que o MCP devolveu (o que a IA consultou); o log do
+  // painel guarda só o resumo acima, para não inflar o banco com lotes de até 600 itens.
+  const dadosWebhook = { ...dados, resultado: respostaSemSegredos(resposta) }
 
   try {
     await Promise.all([
       recordAppLog({
         nivel: sucesso ? "info" : "aviso",
         origem: "mcp",
-        mensagem: `Ferramenta MCP ${ferramenta} executada${sucesso ? "" : " com falha"}.`,
+        mensagem: `Ferramenta MCP ${ferramenta} executada${sucesso ? "" : " com falha"} [${correlationId}].`,
         detalhes: dados,
       }),
       emitWebhookEvent("mcp.acao_executada", dadosWebhook),
@@ -257,7 +347,10 @@ async function registrarAuditoriaMcp(
   }
 }
 
+type AcessoMcp = { workspaceId?: string; tokenPrefixo?: string }
+
 type Contexto = {
+  acesso: AcessoMcp
   server: McpServer
   permitidas: ReadonlySet<string>
   plugins: PluginsAtivos
@@ -287,34 +380,53 @@ function registrar<const Args extends z.ZodRawShape>(
   // `ToolCallback` é um tipo condicional: tratamos como função genérica para poder chamá-la daqui.
   const chamar = callback as unknown as (args: unknown, extra: unknown) => Promise<{ isError?: boolean }>
 
+  /** Devolve o resultado com o correlation ID em `_meta`, para quem chamou casar com a auditoria. */
+  const comCorrelationId = <R extends object>(resultado: R, correlationId: string): R => ({
+    ...resultado,
+    _meta: { ...((resultado as { _meta?: object })._meta ?? {}), correlationId },
+  })
+
   const executar = async (args: unknown, extra: unknown) => {
+    const correlationId = gerarCorrelationId(extra)
+    const cliente = montarClienteMcp(ctx.acesso, extra)
+
     // Estado atual dos plugins: vale para esta chamada, mesmo que tenha mudado depois da conexão.
     const faltando = pluginsFaltando(def, await getPluginsAtivos())
     if (faltando.length > 0) {
       const bloqueio = bloqueioPorPlugin(def, faltando)
-      await registrarAuditoriaMcp(nome, args, false, "Plugin desativado: função não executada.", extrairRespostaMcp(bloqueio))
-      return bloqueio
+      await registrarAuditoriaMcp({
+        ferramenta: nome,
+        argumentos: args,
+        sucesso: false,
+        correlationId,
+        cliente,
+        erro: "Plugin desativado: função não executada.",
+        resposta: extrairRespostaMcp(bloqueio),
+      })
+      return comCorrelationId(bloqueio, correlationId)
     }
 
     try {
       const resultado = await chamar(args, extra)
-      await registrarAuditoriaMcp(
-        nome,
-        args,
-        !resultado.isError,
-        resultado.isError ? "A ferramenta retornou erro." : undefined,
-        extrairRespostaMcp(resultado),
-      )
-      return resultado
+      await registrarAuditoriaMcp({
+        ferramenta: nome,
+        argumentos: args,
+        sucesso: !resultado.isError,
+        correlationId,
+        cliente,
+        erro: resultado.isError ? "A ferramenta retornou erro." : undefined,
+        resposta: extrairRespostaMcp(resultado),
+      })
+      return comCorrelationId(resultado, correlationId)
     } catch (error) {
       const mensagem = error instanceof Error ? error.message : String(error)
-      await registrarAuditoriaMcp(nome, args, false, mensagem)
+      await registrarAuditoriaMcp({ ferramenta: nome, argumentos: args, sucesso: false, correlationId, cliente, erro: mensagem })
 
       if (error instanceof PluginDesativadoError) {
         const ampliada: McpFerramentaDef = { ...def, plugins: [...new Set([...def.plugins, error.plugin])] }
-        return bloqueioPorPlugin(ampliada, [error.plugin])
+        return comCorrelationId(bloqueioPorPlugin(ampliada, [error.plugin]), correlationId)
       }
-      if (ehErroDeRegra(error)) return errorResult(error.message)
+      if (ehErroDeRegra(error)) return comCorrelationId(errorResult(error.message), correlationId)
       throw error
     }
   }
@@ -351,7 +463,7 @@ function textoOuNull(valor: string | null | undefined): string | null {
   return limpo ? limpo : null
 }
 
-export async function createAppMcpServer(opcoes: { ferramentas: readonly string[] }): Promise<McpServer> {
+export async function createAppMcpServer(opcoes: { ferramentas: readonly string[] } & AcessoMcp): Promise<McpServer> {
   const permitidas = new Set(opcoes.ferramentas)
   const plugins = await getPluginsAtivos()
 
@@ -363,7 +475,7 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
     },
     { instructions: montarInstrucoes(permitidas, plugins) },
   )
-  const ctx: Contexto = { server, permitidas, plugins }
+  const ctx: Contexto = { acesso: { workspaceId: opcoes.workspaceId, tokenPrefixo: opcoes.tokenPrefixo }, server, permitidas, plugins }
 
   server.registerPrompt(
     "treinamento_painel",

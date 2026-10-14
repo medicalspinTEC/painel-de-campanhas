@@ -101,6 +101,8 @@ export interface McpAcesso {
   workspaceId: string
   /** Funções que este token pode executar. */
   ferramentas: string[]
+  /** Início do token (ex.: `mcp_1a2b3c4d`): identifica o cliente nas auditorias, sem expor o token. */
+  tokenPrefixo: string
 }
 
 /**
@@ -120,5 +122,5 @@ export async function workspaceDoTokenMcp(token: string): Promise<McpAcesso | nu
   if (!row.ultimoUsoEm || Date.now() - row.ultimoUsoEm.getTime() > 60_000) {
     void prismaGlobal.mcpToken.update({ where: { id: row.id }, data: { ultimoUsoEm: new Date() } }).catch(() => undefined)
   }
-  return { workspaceId: row.workspaceId, ferramentas: normalizarFerramentas(row.ferramentas) }
+  return { workspaceId: row.workspaceId, ferramentas: normalizarFerramentas(row.ferramentas), tokenPrefixo: row.prefixo }
 }
