@@ -144,3 +144,50 @@ export async function listFailures(): Promise<EventRow[]> {
   })
   return eventos.map(toEventRow)
 }
+
+/** Resultado do disparo: `enviado` = mensagem entregue ao provedor; `falha` = o disparo falhou. */
+export type ResultadoEnvio = "enviado" | "falha"
+
+export interface FiltrosEnvios {
+  campanhaId?: string
+  leadId?: string
+  resultado?: ResultadoEnvio
+  /** Início do período (inclusive). */
+  de?: Date
+  /** Fim do período (inclusive). */
+  ate?: Date
+}
+
+function filtroEnvios({ campanhaId, leadId, resultado, de, ate }: FiltrosEnvios) {
+  return {
+    tipo: resultado === "enviado" ? ("mensagem_enviada" as const) : resultado === "falha" ? ("falha" as const) : { in: ["mensagem_enviada", "falha"] as ("mensagem_enviada" | "falha")[] },
+    ...(campanhaId ? { campanhaId } : {}),
+    ...(leadId ? { leadId } : {}),
+    ...(de || ate ? { data: { ...(de ? { gte: de } : {}), ...(ate ? { lte: ate } : {}) } } : {}),
+  }
+}
+
+export async function countEnvios(filtros: FiltrosEnvios = {}): Promise<number> {
+  return prisma.timelineEvent.count({ where: filtroEnvios(filtros) })
+}
+
+/** Envios de mensagem (enviados e falhas), do mais recente para o mais antigo, já paginados no banco. */
+export async function listEnvios(filtros: FiltrosEnvios = {}, { skip = 0, take = 50 }: { skip?: number; take?: number } = {}): Promise<EventRow[]> {
+  const eventos = await prisma.timelineEvent.findMany({
+    where: filtroEnvios(filtros),
+    select: eventSelect,
+    orderBy: [{ data: "desc" }, { id: "desc" }],
+    skip,
+    take,
+  })
+  return eventos.map(toEventRow)
+}
+
+/** Existência de lead/campanha: usada pelo MCP para recusar filtros com ID inexistente em vez de devolver lista vazia. */
+export async function leadExiste(id: string): Promise<boolean> {
+  return (await prisma.lead.count({ where: { id } })) > 0
+}
+
+export async function campanhaExiste(id: string): Promise<boolean> {
+  return (await prisma.campaign.count({ where: { id } })) > 0
+}

@@ -86,6 +86,7 @@ export const MCP_FERRAMENTAS: readonly McpFerramentaDef[] = [
   // Indicadores e eventos
   f("obter_indicadores", "Obter indicadores do painel", "Indicadores e eventos", "leitura"),
   f("listar_respostas_lead", "Listar respostas recebidas", "Indicadores e eventos", "leitura"),
+  f("listar_envios", "Listar envios (filtros por campanha, período, lead e resultado)", "Indicadores e eventos", "leitura"),
   f("obter_envio", "Obter envio", "Indicadores e eventos", "leitura"),
   f("listar_eventos_recentes", "Listar eventos recentes", "Indicadores e eventos", "leitura"),
 

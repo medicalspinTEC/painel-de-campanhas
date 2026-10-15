@@ -12,12 +12,14 @@ import {
   pluginsFaltando,
   type McpFerramentaDef,
 } from "@/lib/mcp/catalogo"
+import { DependenciaSimuladaError, falhaSimuladaPara, lerDataFiltro, McpEntradaInvalidaError } from "@/lib/mcp/erros"
 import {
-  inicioDoLote,
+  inicioDaPagina,
   LOTE_SCHEMA,
   MCP_TAMANHO_LOTE,
   MCP_TAMANHO_PAGINA,
-  normalizarLote,
+  normalizarCursor,
+  PAGINA_SCHEMA,
   paginarEmMemoria,
   paginarPorBanco,
   resultadoPaginado,
@@ -68,7 +70,17 @@ import {
   transferirConversa,
   updateDepartamento,
 } from "@/services/crm"
-import { countEvents, countLeadResponses, getEvent, listEvents, listLeadResponses } from "@/services/events"
+import {
+  campanhaExiste,
+  countEnvios,
+  countEvents,
+  countLeadResponses,
+  getEvent,
+  leadExiste,
+  listEnvios,
+  listEvents,
+  listLeadResponses,
+} from "@/services/events"
 import { getKanbanBoard, listKanbanLeadsPaginado, moverLeadKanban } from "@/services/kanban"
 import { enviarLeadParaCampanha } from "@/services/lead-campanha"
 import {
@@ -127,8 +139,8 @@ import type { CampaignStatus, LeadStatus } from "@/types"
  *  3. Toda execução é auditada (log + webhook `mcp.acao_executada`), com a chave de API oculta. O webhook
  *     leva também a `resposta` completa que a ferramenta devolveu à IA.
  *
- * Paginação: TODA consulta que devolve coleção usa o modelo de `lib/mcp/paginacao.ts` — lotes de até 600 itens,
- * divididos em páginas de 50; o parâmetro `lote` pede o próximo lote até `temProximoLote` ser false.
+ * Paginação: TODA consulta que devolve coleção usa o modelo de `lib/mcp/paginacao.ts` — cada chamada devolve SOMENTE a página pedida
+ * (até 50 itens; parâmetros `lote` e `pagina`), com totalRegistros, temProximaPagina/proximo e temProximoLote/proximoLote.
  *
  * A conexão em si (autenticação, transporte HTTP) fica em `app/api/mcp/route.ts`. Uma instância nova
  * é criada a cada requisição (modo stateless): este módulo não guarda estado entre chamadas.
@@ -163,6 +175,16 @@ function errorResult(mensagem: string, extra?: Record<string, unknown>) {
     content: [{ type: "text" as const, text: JSON.stringify({ ok: false, erro: mensagem, ...extra }, null, 2) }],
     isError: true as const,
   }
+}
+
+/** Resposta estruturada de falha técnica: sem stack, host, SQL ou qualquer detalhe interno. */
+function respostaErroTecnico(def: McpFerramentaDef, correlationId: string) {
+  return errorResult(
+    `A função “${def.titulo}” não pôde ser concluída por uma falha técnica temporária. ${
+      def.tipo === "leitura" ? "Nenhum registro foi alterado." : "Confira o estado do registro antes de repetir a ação."
+    } Tente novamente em instantes; se persistir, informe o código ${correlationId} ao suporte.`,
+    { codigo: "ERRO_TECNICO", funcao: def.nome, tentarNovamente: true, correlationId },
+  )
 }
 
 /** Resposta padrão quando a função não roda por falta de plugin. */
@@ -303,11 +325,13 @@ type EntradaAuditoria = {
   correlationId: string
   cliente: ClienteMcp
   erro?: string
+  /** Detalhe técnico: vai SÓ para o log do painel, nunca para o webhook nem para o cliente MCP. */
+  erroInterno?: string
   resposta?: unknown
 }
 
 async function registrarAuditoriaMcp(entrada: EntradaAuditoria): Promise<void> {
-  const { ferramenta, argumentos, sucesso, correlationId, cliente, erro, resposta } = entrada
+  const { ferramenta, argumentos, sucesso, correlationId, cliente, erro, erroInterno, resposta } = entrada
   const executadoEm = new Date().toISOString()
   let argumentosJson = "{}"
   try {
@@ -338,7 +362,7 @@ async function registrarAuditoriaMcp(entrada: EntradaAuditoria): Promise<void> {
         nivel: sucesso ? "info" : "aviso",
         origem: "mcp",
         mensagem: `Ferramenta MCP ${ferramenta} executada${sucesso ? "" : " com falha"} [${correlationId}].`,
-        detalhes: dados,
+        detalhes: erroInterno ? { ...dados, erroInterno: erroInterno.slice(0, 1000) } : dados,
       }),
       emitWebhookEvent("mcp.acao_executada", dadosWebhook),
     ])
@@ -407,6 +431,7 @@ function registrar<const Args extends z.ZodRawShape>(
     }
 
     try {
+      if (falhaSimuladaPara(nome)) throw new DependenciaSimuladaError()
       const resultado = await chamar(args, extra)
       await registrarAuditoriaMcp({
         ferramenta: nome,
@@ -420,14 +445,34 @@ function registrar<const Args extends z.ZodRawShape>(
       return comCorrelationId(resultado, correlationId)
     } catch (error) {
       const mensagem = error instanceof Error ? error.message : String(error)
-      await registrarAuditoriaMcp({ ferramenta: nome, argumentos: args, sucesso: false, correlationId, cliente, erro: mensagem })
+      const tecnico = !(error instanceof PluginDesativadoError) && !(error instanceof McpEntradaInvalidaError) && !ehErroDeRegra(error)
+      // Falha técnica: webhook/cliente recebem só um texto genérico; o detalhe interno fica no log do servidor.
+      const erroExterno = tecnico ? "Falha técnica interna (detalhes no log do servidor)." : mensagem
+      const resposta = tecnico ? respostaErroTecnico(def, correlationId) : null
+      if (tecnico) console.error(`[mcp] Falha técnica em ${nome} [${correlationId}]:`, error)
+      await registrarAuditoriaMcp({
+        ferramenta: nome,
+        argumentos: args,
+        sucesso: false,
+        correlationId,
+        cliente,
+        erro: erroExterno,
+        erroInterno: tecnico ? mensagem : undefined,
+        resposta: resposta ? extrairRespostaMcp(resposta) : undefined,
+      })
 
+      if (resposta) return comCorrelationId(resposta, correlationId)
+      if (error instanceof McpEntradaInvalidaError) {
+        return comCorrelationId(
+          errorResult(error.message, { codigo: "ENTRADA_INVALIDA", campo: error.campo, naoExecutado: true, ...(error.dica ? { dica: error.dica } : {}) }),
+          correlationId,
+        )
+      }
       if (error instanceof PluginDesativadoError) {
         const ampliada: McpFerramentaDef = { ...def, plugins: [...new Set([...def.plugins, error.plugin])] }
         return comCorrelationId(bloqueioPorPlugin(ampliada, [error.plugin]), correlationId)
       }
-      if (ehErroDeRegra(error)) return comCorrelationId(errorResult(error.message), correlationId)
-      throw error
+      return comCorrelationId(errorResult(mensagem), correlationId)
     }
   }
 
@@ -463,6 +508,18 @@ function textoOuNull(valor: string | null | undefined): string | null {
   return limpo ? limpo : null
 }
 
+async function exigirCampanha(id: string): Promise<void> {
+  if (!id.trim() || !(await campanhaExiste(id))) {
+    throw new McpEntradaInvalidaError("campanhaId", `Campanha "${id}" não encontrada. Use listar_campanhas para ver os IDs válidos.`)
+  }
+}
+
+async function exigirLead(id: string): Promise<void> {
+  if (!id.trim() || !(await leadExiste(id))) {
+    throw new McpEntradaInvalidaError("leadId", `Lead "${id}" não encontrado. Use listar_leads para ver os IDs válidos.`)
+  }
+}
+
 export async function createAppMcpServer(opcoes: { ferramentas: readonly string[] } & AcessoMcp): Promise<McpServer> {
   const permitidas = new Set(opcoes.ferramentas)
   const plugins = await getPluginsAtivos()
@@ -494,11 +551,11 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
     {
       title: "Consultar status do MCP",
       description:
-        "Mostra quais plugins estão ativos e quais funções este token pode executar, indicando as que estão indisponíveis agora por falta de plugin. Resultado paginado em lotes (parâmetro lote).",
-      inputSchema: { lote: LOTE_SCHEMA },
+        "Mostra quais plugins estão ativos e quais funções este token pode executar, indicando as que estão indisponíveis agora por falta de plugin. Resultado paginado (parâmetros lote e pagina; só a página pedida).",
+      inputSchema: { lote: LOTE_SCHEMA, pagina: PAGINA_SCHEMA },
       annotations: { readOnlyHint: true },
     },
-    async ({ lote }) => {
+    async ({ lote, pagina }) => {
       const ativos = await getPluginsAtivos()
       const funcoes = [...permitidas]
         .map((nome) => MCP_FERRAMENTA_POR_NOME.get(nome))
@@ -518,7 +575,7 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
       return jsonResult({
         ok: true,
         plugins: (Object.keys(PLUGIN_NOME) as (keyof PluginsAtivos)[]).map((p) => ({ plugin: PLUGIN_NOME[p], ativo: ativos[p] })),
-        funcoesLiberadas: paginarEmMemoria(funcoes, lote),
+        funcoesLiberadas: paginarEmMemoria(funcoes, { lote, pagina }),
       })
     },
   )
@@ -530,17 +587,20 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
   registrar(
     ctx,
     "listar_leads",
-    `Lista os leads com agregações de mensagens e respostas, em lotes de até ${MCP_TAMANHO_LOTE} leads divididos em páginas de ${MCP_TAMANHO_PAGINA}. Informe lote (padrão: 1); enquanto a resposta trouxer temProximoLote=true, chame de novo com lote=proximoLote até receber todos os leads. Aceita filtros por campanha, status e termo de busca por nome ou telefone.`,
+    `Lista os leads com agregações de mensagens e respostas, paginados: cada chamada devolve SOMENTE a página pedida (até ${MCP_TAMANHO_PAGINA} leads; parâmetros lote e pagina, lotes de ${MCP_TAMANHO_LOTE}); siga o campo proximo até temProximaPagina=false. Aceita filtros por campanha, status e termo de busca por nome ou telefone.`,
     {
       campanhaId: z.string().optional().describe("Filtra leads associados à campanha, incluindo histórico de eventos."),
       status: z.enum(STATUS_LEAD_VALORES).optional().describe("Filtra pelo status do lead."),
       busca: z.string().optional().describe("Filtra por nome ou telefone contendo este texto."),
       lote: LOTE_SCHEMA,
+      pagina: PAGINA_SCHEMA,
     },
-    async ({ campanhaId, status, busca, lote }) => {
-      const filtros = { campanhaId, status, busca }
+    async ({ campanhaId, status, busca, lote, pagina }) => {
+      if (campanhaId !== undefined) await exigirCampanha(campanhaId)
+      if (busca !== undefined && !busca.trim()) throw new McpEntradaInvalidaError("busca", 'O filtro "busca" não pode ser vazio. Omita o filtro para listar todos os leads.')
+      const filtros = { campanhaId, status, busca: busca?.trim() }
       const resultado = await paginarPorBanco(
-        lote,
+        { lote, pagina },
         () => countLeads(filtros),
         (skip, take) => listLeads({ ...filtros, pagina: Math.floor(skip / take) + 1, limite: take }),
       )
@@ -551,14 +611,14 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
   registrar(
     ctx,
     "buscar_negocio_bdr",
-    "Localiza no cadastro do painel os leads cujo campo negocio corresponde exatamente ao identificador informado e retorna cada perfil completo com sua timeline, em lotes (parâmetro lote; siga proximoLote até temProximoLote=false). Não consulta um BDR externo; usa o vínculo local registrado no lead.",
-    { negocio: z.string().min(1).describe("ID do negócio registrado no campo negocio do lead."), lote: LOTE_SCHEMA },
-    async ({ negocio, lote }) => {
+    "Localiza no cadastro do painel os leads cujo campo negocio corresponde exatamente ao identificador informado e retorna cada perfil completo com sua timeline, paginado (parâmetros lote e pagina; devolve só a página pedida; siga o campo proximo até temProximaPagina=false). Não consulta um BDR externo; usa o vínculo local registrado no lead.",
+    { negocio: z.string().min(1).describe("ID do negócio registrado no campo negocio do lead."), lote: LOTE_SCHEMA, pagina: PAGINA_SCHEMA },
+    async ({ negocio, lote, pagina }) => {
       const negocioId = negocio.trim()
       if (!negocioId) return errorResult("Informe o ID do negócio.")
       const filtros = { negocio: negocioId }
       const resultado = await paginarPorBanco(
-        lote,
+        { lote, pagina },
         () => countLeads(filtros),
         async (skip, take) => {
           const leads = await listLeads({ ...filtros, pagina: Math.floor(skip / take) + 1, limite: take })
@@ -574,13 +634,13 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
   registrar(
     ctx,
     "obter_lead",
-    "Busca um lead específico pelo ID, incluindo sua linha do tempo de eventos. A timeline é paginada em lotes (parâmetro lote; siga proximoLote até temProximoLote=false).",
-    { id: z.string().describe("ID do lead."), lote: LOTE_SCHEMA },
-    async ({ id, lote }) => {
+    "Busca um lead específico pelo ID, incluindo sua linha do tempo de eventos. A timeline é paginada paginado (parâmetros lote e pagina; devolve só a página pedida; siga o campo proximo até temProximaPagina=false).",
+    { id: z.string().describe("ID do lead."), lote: LOTE_SCHEMA, pagina: PAGINA_SCHEMA },
+    async ({ id, lote, pagina }) => {
       const lead = await getLead(id)
       if (!lead) return errorResult("Lead não encontrado.")
       const timeline = await paginarPorBanco(
-        lote,
+        { lote, pagina },
         () => countLeadTimeline(id),
         (skip, take) => getLeadTimeline(id, { skip, take }),
       )
@@ -790,12 +850,12 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
   registrar(
     ctx,
     "listar_campanhas",
-    "Lista as campanhas com suas estatísticas de desempenho, em lotes (parâmetro lote; siga proximoLote até temProximoLote=false). Aceita filtro opcional por status.",
-    { status: z.enum(STATUS_CAMPANHA_VALORES).optional(), lote: LOTE_SCHEMA },
-    async ({ status, lote }) => {
+    "Lista as campanhas com suas estatísticas de desempenho, paginado (parâmetros lote e pagina; devolve só a página pedida; siga o campo proximo até temProximaPagina=false). Aceita filtro opcional por status.",
+    { status: z.enum(STATUS_CAMPANHA_VALORES).optional(), lote: LOTE_SCHEMA, pagina: PAGINA_SCHEMA },
+    async ({ status, lote, pagina }) => {
       let campanhas = await listCampaigns()
       if (status) campanhas = campanhas.filter((campanha) => campanha.status === status)
-      return jsonResult({ ok: true, ...paginarEmMemoria(campanhas, lote) })
+      return jsonResult({ ok: true, ...paginarEmMemoria(campanhas, { lote, pagina }) })
     },
   )
 
@@ -989,11 +1049,11 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
   registrar(
     ctx,
     "listar_produtos",
-    "Lista o catálogo de produtos cadastrados para segmentação de leads e campanhas, em lotes (parâmetro lote; siga proximoLote até temProximoLote=false).",
-    { lote: LOTE_SCHEMA },
-    async ({ lote }) => {
+    "Lista o catálogo de produtos cadastrados para segmentação de leads e campanhas, paginado (parâmetros lote e pagina; devolve só a página pedida; siga o campo proximo até temProximaPagina=false).",
+    { lote: LOTE_SCHEMA, pagina: PAGINA_SCHEMA },
+    async ({ lote, pagina }) => {
       const produtos = await listProdutos()
-      return jsonResult({ ok: true, ...paginarEmMemoria(produtos, lote) })
+      return jsonResult({ ok: true, ...paginarEmMemoria(produtos, { lote, pagina }) })
     },
   )
 
@@ -1054,11 +1114,11 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
   registrar(
     ctx,
     "listar_segmentacao",
-    "Lista as marcas, personas ou regiões cadastradas (use o parâmetro tipo), em lotes (parâmetro lote; siga proximoLote até temProximoLote=false).",
-    { tipo: TIPO_SEGMENTACAO, lote: LOTE_SCHEMA },
-    async ({ tipo, lote }) => {
+    "Lista as marcas, personas ou regiões cadastradas (use o parâmetro tipo), paginado (parâmetros lote e pagina; devolve só a página pedida; siga o campo proximo até temProximaPagina=false).",
+    { tipo: TIPO_SEGMENTACAO, lote: LOTE_SCHEMA, pagina: PAGINA_SCHEMA },
+    async ({ tipo, lote, pagina }) => {
       const itens = await SERVICOS_SEGMENTACAO[tipo].listar()
-      return jsonResult({ ok: true, tipo, ...paginarEmMemoria(itens, lote) })
+      return jsonResult({ ok: true, tipo, ...paginarEmMemoria(itens, { lote, pagina }) })
     },
   )
 
@@ -1135,20 +1195,54 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
   registrar(
     ctx,
     "listar_respostas_lead",
-    "Lista as respostas recebidas dos leads (da mais recente para a mais antiga), incluindo o perfil completo do lead, campanha, data e hora, e o conteúdo da resposta quando disponível. Pode filtrar por lead ou campanha. Resultado em lotes (parâmetro lote; siga proximoLote até temProximoLote=false).",
+    "Lista as respostas recebidas dos leads (da mais recente para a mais antiga), incluindo o perfil completo do lead, campanha, data e hora, e o conteúdo da resposta quando disponível. Pode filtrar por lead ou campanha (IDs inexistentes geram erro, não lista vazia). Devolve SOMENTE a página pedida (lote/pagina); mantenha os filtros ao paginar e siga o campo proximo até temProximaPagina=false.",
     {
       leadId: z.string().optional().describe("Filtra pelo ID do lead."),
       campanhaId: z.string().optional().describe("Filtra pelo ID da campanha."),
       lote: LOTE_SCHEMA,
+      pagina: PAGINA_SCHEMA,
     },
-    async ({ leadId, campanhaId, lote }) => {
+    async ({ leadId, campanhaId, lote, pagina }) => {
+      if (leadId !== undefined) await exigirLead(leadId)
+      if (campanhaId !== undefined) await exigirCampanha(campanhaId)
       const filtros = { leadId, campanhaId }
       const resultado = await paginarPorBanco(
-        lote,
+        { lote, pagina },
         () => countLeadResponses(filtros),
         (skip, take) => listLeadResponses({ ...filtros, offset: skip, limit: take }),
       )
       return jsonResult({ ok: true, ...resultado })
+    },
+  )
+
+  registrar(
+    ctx,
+    "listar_envios",
+    "Lista os envios (disparos) de mensagem, do mais recente para o mais antigo, com filtros combináveis: campanhaId, leadId, período (de/ate, AAAA-MM-DD ou ISO 8601; datas só com dia incluem o dia inteiro) e resultado (enviado ou falha). Cada item traz o id do evento, que pode ser usado em obter_envio. Filtros inválidos (ID inexistente, data malformada, período invertido) geram erro legível, nunca lista vazia. Devolve SOMENTE a página pedida (lote/pagina); mantenha os filtros ao paginar e siga o campo proximo até temProximaPagina=false.",
+    {
+      campanhaId: z.string().optional().describe("Só envios desta campanha."),
+      leadId: z.string().optional().describe("Só envios para este lead."),
+      de: z.string().optional().describe("Início do período, inclusive (AAAA-MM-DD ou ISO 8601)."),
+      ate: z.string().optional().describe("Fim do período, inclusive (AAAA-MM-DD ou ISO 8601)."),
+      resultado: z.enum(["enviado", "falha"]).optional().describe("Resultado do disparo: enviado ou falha."),
+      lote: LOTE_SCHEMA,
+      pagina: PAGINA_SCHEMA,
+    },
+    async ({ campanhaId, leadId, de, ate, resultado, lote, pagina }) => {
+      const inicio = lerDataFiltro("de", de, false)
+      const fim = lerDataFiltro("ate", ate, true)
+      if (inicio && fim && inicio > fim) {
+        throw new McpEntradaInvalidaError("de", `Período invertido: "de" (${de}) é posterior a "ate" (${ate}).`)
+      }
+      if (campanhaId !== undefined) await exigirCampanha(campanhaId)
+      if (leadId !== undefined) await exigirLead(leadId)
+      const filtros = { campanhaId, leadId, resultado, de: inicio, ate: fim }
+      const dados = await paginarPorBanco(
+        { lote, pagina },
+        () => countEnvios(filtros),
+        (skip, take) => listEnvios(filtros, { skip, take }),
+      )
+      return jsonResult({ ok: true, filtros: { campanhaId, leadId, de, ate, resultado }, ...dados })
     },
   )
 
@@ -1167,10 +1261,10 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
   registrar(
     ctx,
     "listar_eventos_recentes",
-    "Lista os eventos da linha do tempo, do mais recente para o mais antigo (mensagens enviadas, falhas, respostas, entradas/saídas de campanha), em lotes (parâmetro lote; siga proximoLote até temProximoLote=false).",
-    { lote: LOTE_SCHEMA },
-    async ({ lote }) => {
-      const resultado = await paginarPorBanco(lote, () => countEvents(), (skip, take) => listEvents(take, skip))
+    "Lista os eventos da linha do tempo, do mais recente para o mais antigo (mensagens enviadas, falhas, respostas, entradas/saídas de campanha), paginado (parâmetros lote e pagina; devolve só a página pedida; siga o campo proximo até temProximaPagina=false).",
+    { lote: LOTE_SCHEMA, pagina: PAGINA_SCHEMA },
+    async ({ lote, pagina }) => {
+      const resultado = await paginarPorBanco({ lote, pagina }, () => countEvents(), (skip, take) => listEvents(take, skip))
       return jsonResult({ ok: true, ...resultado })
     },
   )
@@ -1182,22 +1276,23 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
   registrar(
     ctx,
     "obter_quadro_kanban",
-    "Mostra o quadro Kanban: total de leads por coluna (a coluna é o status do lead), as campanhas que aceitam novos leads e TODOS os leads do quadro (cada um com seu status), do mais recente para o mais antigo, em lotes (parâmetro lote; siga proximoLote até temProximoLote=false). Totais e campanhas vêm em todo lote.",
+    "Mostra o quadro Kanban: total de leads por coluna (a coluna é o status do lead), as campanhas que aceitam novos leads e TODOS os leads do quadro (cada um com seu status), do mais recente para o mais antigo, paginado (parâmetros lote e pagina; devolve só a página pedida; siga o campo proximo até temProximaPagina=false). Totais e campanhas vêm em todo lote.",
     {
       status: z.enum(STATUS_LEAD_VALORES).optional().describe("Mostra só esta coluna."),
       lote: LOTE_SCHEMA,
+      pagina: PAGINA_SCHEMA,
     },
-    async ({ status, lote }) => {
-      const loteAtual = normalizarLote(lote)
-      const [quadro, pagina] = await Promise.all([
+    async ({ status, lote, pagina }) => {
+      const cursor = normalizarCursor({ lote, pagina })
+      const [quadro, leadsDaPagina] = await Promise.all([
         getKanbanBoard(),
-        listKanbanLeadsPaginado({ status, skip: inicioDoLote(loteAtual), take: MCP_TAMANHO_LOTE }),
+        listKanbanLeadsPaginado({ status, skip: inicioDaPagina(cursor.lote, cursor.pagina), take: MCP_TAMANHO_PAGINA }),
       ])
       return jsonResult({
         ok: true,
         totais: quadro.totais,
         campanhasDisponiveis: quadro.campanhas,
-        ...resultadoPaginado(pagina.leads, pagina.total, loteAtual),
+        ...resultadoPaginado(leadsDaPagina.leads, leadsDaPagina.total, cursor),
       })
     },
   )
@@ -1227,13 +1322,20 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
   registrar(
     ctx,
     "listar_conversas_chat",
-    "Lista as conversas do chat (o id da conversa é o id do lead), da mais recente para a mais antiga, com a última mensagem e o responsável (se o CRM estiver ativo). Resultado em lotes (parâmetro lote; siga proximoLote até temProximoLote=false).",
+    "Lista as conversas do chat (o id da conversa é o id do lead), da mais recente para a mais antiga, com a última mensagem e o responsável (se o CRM estiver ativo). Resultado paginado (parâmetros lote e pagina; devolve só a página pedida; siga o campo proximo até temProximaPagina=false).",
     {
       busca: z.string().optional().describe("Filtra por nome ou telefone."),
       departamentoId: z.string().optional().describe("Só conversas deste departamento (plugin CRM)."),
       lote: LOTE_SCHEMA,
+      pagina: PAGINA_SCHEMA,
     },
-    async ({ busca, departamentoId, lote }) => {
+    async ({ busca, departamentoId, lote, pagina }) => {
+      if (departamentoId !== undefined) {
+        const crm = await getCrmData({ id: EXECUTOR_MCP.id, role: EXECUTOR_MCP.role })
+        if (!crm.departamentos.some((d) => d.id === departamentoId)) {
+          throw new McpEntradaInvalidaError("departamentoId", `Departamento "${departamentoId}" não encontrado. Use listar_departamentos para ver os IDs válidos.`)
+        }
+      }
       const { conversas } = await getChatInbox(null, { semMensagens: true })
       const termo = busca?.trim().toLowerCase()
       const filtradas = conversas.filter((conversa) => {
@@ -1241,23 +1343,24 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
         if (!termo) return true
         return conversa.nome.toLowerCase().includes(termo) || conversa.telefone.includes(termo)
       })
-      return jsonResult({ ok: true, ...paginarEmMemoria(filtradas, lote) })
+      return jsonResult({ ok: true, ...paginarEmMemoria(filtradas, { lote, pagina }) })
     },
   )
 
   registrar(
     ctx,
     "obter_mensagens_chat",
-    "Lê o histórico COMPLETO de uma conversa (mensagens enviadas, respostas e notas internas), em ordem cronológica (da mais antiga para a mais recente), em lotes (parâmetro lote; siga proximoLote até temProximoLote=false).",
+    "Lê o histórico COMPLETO de uma conversa (mensagens enviadas, respostas e notas internas), em ordem cronológica (da mais antiga para a mais recente), paginado (parâmetros lote e pagina; devolve só a página pedida; siga o campo proximo até temProximaPagina=false).",
     {
       leadId: z.string().describe("ID do lead (= id da conversa)."),
       lote: LOTE_SCHEMA,
+      pagina: PAGINA_SCHEMA,
     },
-    async ({ leadId, lote }) => {
+    async ({ leadId, lote, pagina }) => {
       const lead = await prisma.lead.findUnique({ where: { id: leadId }, select: { id: true, nome: true } })
       if (!lead) return errorResult("Lead não encontrado.")
       const mensagens = await getChatMessages(leadId, { semLimite: true })
-      return jsonResult({ ok: true, lead, ...paginarEmMemoria(mensagens, lote) })
+      return jsonResult({ ok: true, lead, ...paginarEmMemoria(mensagens, { lote, pagina }) })
     },
   )
 
@@ -1281,14 +1384,19 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
   registrar(
     ctx,
     "listar_departamentos",
-    "Lista os departamentos (com atendentes, conversas, bots e agente de IA vinculado) e os bots de entrada, em lotes (parâmetro lote). Os departamentos ficam no nível principal da resposta e os bots de entrada em botsEntrada, com a mesma estrutura de lotes; siga proximoLote enquanto um dos dois indicar temProximoLote=true.",
-    { lote: LOTE_SCHEMA },
-    async ({ lote }) => {
+    "Lista os departamentos (com atendentes, conversas, bots e agente de IA vinculado) e os bots de entrada, em lotes (parâmetro lote). Os departamentos ficam no nível principal da resposta (parâmetros lote/pagina) e os bots de entrada em botsEntrada (parâmetros independentes loteBots/paginaBots), cada um com a sua paginação e o seu total.",
+    {
+      lote: LOTE_SCHEMA,
+      pagina: PAGINA_SCHEMA,
+      loteBots: LOTE_SCHEMA.describe("Lote dos bots de entrada (cursor independente dos departamentos); padrão: 1."),
+      paginaBots: PAGINA_SCHEMA.describe("Página dos bots de entrada (cursor independente dos departamentos); padrão: 1."),
+    },
+    async ({ lote, pagina, loteBots, paginaBots }) => {
       const dados = await getCrmData({ id: EXECUTOR_MCP.id, role: EXECUTOR_MCP.role })
       return jsonResult({
         ok: true,
-        ...paginarEmMemoria(dados.departamentos, lote),
-        botsEntrada: paginarEmMemoria(dados.botsEntrada, lote),
+        ...paginarEmMemoria(dados.departamentos, { lote, pagina }),
+        botsEntrada: paginarEmMemoria(dados.botsEntrada, { lote: loteBots, pagina: paginaBots }),
         agenteIaEntradaId: dados.agenteIaEntradaId,
       })
     },
@@ -1341,11 +1449,11 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
   registrar(
     ctx,
     "listar_atendentes",
-    "Lista os atendentes (perfil de atendimento dos usuários), com departamentos e quantidade de conversas, em lotes (parâmetro lote; siga proximoLote até temProximoLote=false).",
-    { lote: LOTE_SCHEMA },
-    async ({ lote }) => {
+    "Lista os atendentes (perfil de atendimento dos usuários), com departamentos e quantidade de conversas, paginado (parâmetros lote e pagina; devolve só a página pedida; siga o campo proximo até temProximaPagina=false).",
+    { lote: LOTE_SCHEMA, pagina: PAGINA_SCHEMA },
+    async ({ lote, pagina }) => {
       const dados = await getCrmData({ id: EXECUTOR_MCP.id, role: EXECUTOR_MCP.role })
-      return jsonResult({ ok: true, ...paginarEmMemoria(dados.atendentes, lote) })
+      return jsonResult({ ok: true, ...paginarEmMemoria(dados.atendentes, { lote, pagina }) })
     },
   )
 
@@ -1439,11 +1547,11 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
   registrar(
     ctx,
     "listar_fluxos_nocode",
-    "Lista os fluxos do No Code (automações e bots) em resumo, sem os blocos, em lotes (parâmetro lote; siga proximoLote até temProximoLote=false).",
-    { lote: LOTE_SCHEMA },
-    async ({ lote }) => {
+    "Lista os fluxos do No Code (automações e bots) em resumo, sem os blocos, paginado (parâmetros lote e pagina; devolve só a página pedida; siga o campo proximo até temProximaPagina=false).",
+    { lote: LOTE_SCHEMA, pagina: PAGINA_SCHEMA },
+    async ({ lote, pagina }) => {
       const fluxos = await listFlows()
-      return jsonResult({ ok: true, ...paginarEmMemoria(fluxos.map(resumoFluxo), lote) })
+      return jsonResult({ ok: true, ...paginarEmMemoria(fluxos.map(resumoFluxo), { lote, pagina }) })
     },
   )
 
@@ -1462,13 +1570,13 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
   registrar(
     ctx,
     "listar_execucoes_fluxo",
-    "Lista as execuções de um fluxo, da mais recente para a mais antiga (no fluxo de resposta, só as últimas 24h), em lotes (parâmetro lote; siga proximoLote até temProximoLote=false).",
-    { flowId: z.string(), lote: LOTE_SCHEMA },
-    async ({ flowId, lote }) => {
+    "Lista as execuções de um fluxo, da mais recente para a mais antiga (no fluxo de resposta, só as últimas 24h), paginado (parâmetros lote e pagina; devolve só a página pedida; siga o campo proximo até temProximaPagina=false).",
+    { flowId: z.string(), lote: LOTE_SCHEMA, pagina: PAGINA_SCHEMA },
+    async ({ flowId, lote, pagina }) => {
       const fluxo = await getFlow(flowId)
       if (!fluxo) return errorResult("Fluxo não encontrado.")
       const resultado = await paginarPorBanco(
-        lote,
+        { lote, pagina },
         () => contarExecucoes(flowId),
         (skip, take) => listExecutionsPaginadas(flowId, { skip, take }),
       )
@@ -1573,11 +1681,11 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
   registrar(
     ctx,
     "listar_agentes_ia",
-    "Lista os agentes de IA (provedor, modelo, prompt, departamentos vinculados), em lotes (parâmetro lote; siga proximoLote até temProximoLote=false). A chave de API nunca é devolvida inteira, só o final.",
-    { lote: LOTE_SCHEMA },
-    async ({ lote }) => {
+    "Lista os agentes de IA (provedor, modelo, prompt, departamentos vinculados), paginado (parâmetros lote e pagina; devolve só a página pedida; siga o campo proximo até temProximaPagina=false). A chave de API nunca é devolvida inteira, só o final.",
+    { lote: LOTE_SCHEMA, pagina: PAGINA_SCHEMA },
+    async ({ lote, pagina }) => {
       const agentes = await listarAgentes()
-      return jsonResult({ ok: true, ...paginarEmMemoria(agentes, lote) })
+      return jsonResult({ ok: true, ...paginarEmMemoria(agentes, { lote, pagina }) })
     },
   )
 
