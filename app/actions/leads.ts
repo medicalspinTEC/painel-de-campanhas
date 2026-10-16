@@ -15,6 +15,7 @@ import { getCrmPluginAtivo } from "@/services/settings"
 import { cnpjApenasDigitos, cnpjValido, type CnpjDados } from "@/lib/cnpj"
 import { consultarCnpjDoLead } from "@/services/cnpj"
 import { PluginDesativadoError } from "@/lib/plugins"
+import { resolverCampanhasDaLinha } from "@/lib/importacao-campanhas"
 
 export interface ActionState {
   ok: boolean
@@ -342,7 +343,10 @@ export interface LeadImportRow {
   /** ID do negócio (CRM externo), texto livre opcional. */
   negocio?: string
   atividade?: string
-  /** Nome da campanha a vincular (opcional). Resolvido para ID no servidor. */
+  /**
+   * Campanha(s) a vincular (opcional): ID de importação ou nome. Para várias campanhas na mesma linha, separe
+   * por ponto e vírgula, ex.: `{20};{21}`. Resolvido para IDs no servidor.
+   */
   campanha?: string
   /**
    * Texto individual a enviar automaticamente ao lead (opcional). Só é
@@ -365,6 +369,11 @@ export interface ImportLeadsResult {
    * da linha, sem sair das campanhas em que já estavam.
    */
   vinculados: number
+  /**
+   * Total de vínculos lead-campanha feitos pela importação (um lead em 3 campanhas conta 3). Só vem quando alguma
+   * linha trouxe mais de uma campanha.
+   */
+  vinculosEmCampanhas?: number
   /** Linhas que não puderam ser cadastradas, com o motivo. */
   erros: Array<{ linha: number; nome: string; motivo: string }>
 }
@@ -444,7 +453,8 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
   // Linha (para a mensagem de erro) e nome de cada candidato, indexados pela
   // mesma posição enviada a `createLeadsBulk` — o serviço não precisa saber de
   // "número de linha da planilha", só devolve o índice de volta.
-  const contextoPorIndice = new Map<number, { linha: number; nome: string }>()
+  // `grupo` identifica a linha da planilha (várias campanhas geram vários candidatos); `rotulo` é a campanha do candidato.
+  const contextoPorIndice = new Map<number, { linha: number; nome: string; grupo: number; rotulo: string | null }>()
   const candidatos: Array<{ index: number; input: LeadBulkInput }> = []
 
   for (let i = 0; i < linhas.length; i++) {
@@ -491,17 +501,28 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
       continue
     }
 
-    // A coluna "campanha" é opcional. Se preenchida, precisa casar (sem
-    // diferenciar maiúsculas) com o ID de importação ou o nome de uma campanha
-    // existente.
-    let campanhaId: string | null = null
+    // A coluna "campanha" é opcional e aceita uma ou várias campanhas ("{20};{21}"). Cada item precisa casar
+    // (sem diferenciar maiúsculas) com o ID de importação ou o nome de uma campanha existente; se qualquer item
+    // falhar, a linha inteira é rejeitada para não importar o lead só em parte das campanhas.
+    let campanhaIds: string[] = []
+    let campanhaRotulos: string[] = []
     if (campanhaBruta.length > 0) {
-      const encontrada = mapaCampanhas.get(campanhaBruta.toLowerCase())
-      if (!encontrada) {
-        erros.push({ linha: numeroLinha, nome, motivo: `Campanha "${campanhaBruta}" não encontrada (use o ID de importação ou o nome exato).` })
+      const resolvidas = resolverCampanhasDaLinha(campanhaBruta, mapaCampanhas)
+      if (resolvidas.naoEncontradas.length > 0) {
+        const lista = resolvidas.naoEncontradas.map((item) => `"${item}"`).join(", ")
+        erros.push({
+          linha: numeroLinha,
+          nome,
+          motivo: `${resolvidas.naoEncontradas.length > 1 ? "Campanhas" : "Campanha"} ${lista} não encontrada${resolvidas.naoEncontradas.length > 1 ? "s" : ""} (use o ID de importação ou o nome exato; várias campanhas separadas por ";", ex.: {20};{21}).`,
+        })
         continue
       }
-      campanhaId = encontrada
+      if (resolvidas.ids.length === 0) {
+        erros.push({ linha: numeroLinha, nome, motivo: 'A coluna "campanha" não tem nenhuma campanha válida (ex.: {20};{21}).' })
+        continue
+      }
+      campanhaIds = resolvidas.ids
+      campanhaRotulos = resolvidas.rotulos
     }
 
     // A coluna "mensagem" só se aplica junto com uma campanha do tipo
@@ -509,12 +530,18 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
     // "mensagem" vem preenchida, senão o texto não teria onde ser gravado.
     let mensagemIndividual: string | null = null
     if (mensagemBruta.length > 0) {
-      if (!campanhaId) {
+      if (campanhaIds.length === 0) {
         erros.push({ linha: numeroLinha, nome, motivo: 'Coluna "mensagem" preenchida sem uma campanha individual na coluna "campanha".' })
         continue
       }
-      if (tipoCampanhaPorId.get(campanhaId) !== "individual") {
-        erros.push({ linha: numeroLinha, nome, motivo: `A campanha "${campanhaBruta}" não é do tipo individual, então a coluna "mensagem" não pode ser usada com ela.` })
+      // Com várias campanhas, o mesmo texto vale para todas; por isso todas precisam ser individuais.
+      const naoIndividual = campanhaIds.findIndex((id) => tipoCampanhaPorId.get(id) !== "individual")
+      if (naoIndividual !== -1) {
+        erros.push({
+          linha: numeroLinha,
+          nome,
+          motivo: `A campanha "${campanhaRotulos[naoIndividual]}" não é do tipo individual, então a coluna "mensagem" não pode ser usada com ela${campanhaIds.length > 1 ? " (com várias campanhas, todas precisam ser individuais)" : ""}.`,
+        })
         continue
       }
       if (mensagemBruta.length > MAX_MENSAGEM_INDIVIDUAL) {
@@ -524,24 +551,29 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
       mensagemIndividual = mensagemBruta
     }
 
-    const index = candidatos.length
-    contextoPorIndice.set(index, { linha: numeroLinha, nome })
-    candidatos.push({
-      index,
-      input: {
-        nome,
-        telefone,
-        produto,
-        marca,
-        persona,
-        regiao,
-        notas: notasBruta.length > 0 ? notasBruta : null,
-        negocio: negocioBruto.length > 0 ? negocioBruto : null,
-        atividade: atividadeBruta.length > 0 ? atividadeBruta : null,
-        status: (STATUS_VALIDOS.includes(statusBruto as LeadStatus) ? statusBruto : "novo") as LeadStatus,
-        campanhaId,
-        mensagemIndividual,
-      },
+    // Uma entrada por campanha (ou uma só, sem campanha). A primeira cria o lead; as demais têm o mesmo telefone
+    // e, pela regra de `createLeadsBulk`, só adicionam o lead à campanha, sem duplicá-lo.
+    const campanhasDaLinha: Array<string | null> = campanhaIds.length > 0 ? campanhaIds : [null]
+    campanhasDaLinha.forEach((campanhaId, posicao) => {
+      const index = candidatos.length
+      contextoPorIndice.set(index, { linha: numeroLinha, nome, grupo: i, rotulo: campanhaId ? campanhaRotulos[posicao] : null })
+      candidatos.push({
+        index,
+        input: {
+          nome,
+          telefone,
+          produto,
+          marca,
+          persona,
+          regiao,
+          notas: notasBruta.length > 0 ? notasBruta : null,
+          negocio: negocioBruto.length > 0 ? negocioBruto : null,
+          atividade: atividadeBruta.length > 0 ? atividadeBruta : null,
+          status: (STATUS_VALIDOS.includes(statusBruto as LeadStatus) ? statusBruto : "novo") as LeadStatus,
+          campanhaId,
+          mensagemIndividual,
+        },
+      })
     })
   }
 
@@ -550,21 +582,43 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
   // de uma vez ser rápida.
   let criados = 0
   let vinculados = 0
+  let totalVinculos = 0
+  let linhaComVariasCampanhas = false
   if (candidatos.length > 0) {
     try {
       const resultados = await createLeadsBulk(candidatos)
-      for (const resultado of resultados) {
+      // Consolida por linha da planilha: uma linha com várias campanhas conta UM lead (criado se a linha o
+      // cadastrou; vinculado se ele já existia), e cada campanha que deu certo conta como um vínculo.
+      const porGrupo = new Map<number, { ok: Array<"criado" | "vinculado">; falhas: Array<{ linha: number; nome: string; rotulo: string | null; motivo: string }> }>()
+      for (const resultado of [...resultados].sort((a, b) => a.index - b.index)) {
         const contexto = contextoPorIndice.get(resultado.index)
-        if (resultado.ok) {
-          if (resultado.tipo === "vinculado") vinculados++
-          else criados++
-        } else {
-          erros.push({
+        const grupo = porGrupo.get(contexto?.grupo ?? -resultado.index - 1) ?? { ok: [], falhas: [] }
+        porGrupo.set(contexto?.grupo ?? -resultado.index - 1, grupo)
+        if (resultado.ok) grupo.ok.push(resultado.tipo === "vinculado" ? "vinculado" : "criado")
+        else {
+          grupo.falhas.push({
             linha: contexto?.linha ?? 0,
             nome: contexto?.nome ?? "(desconhecido)",
+            rotulo: contexto?.rotulo ?? null,
             motivo: resultado.motivo ?? "Dados inválidos.",
           })
         }
+      }
+      for (const grupo of porGrupo.values()) {
+        if (grupo.ok.length > 0) {
+          if (grupo.ok.includes("criado")) criados++
+          else vinculados++
+          totalVinculos += grupo.ok.length
+          // Linha parcialmente importada: informa cada campanha que falhou.
+          for (const falha of grupo.falhas) {
+            erros.push({ linha: falha.linha, nome: falha.nome, motivo: falha.rotulo ? `Campanha "${falha.rotulo}": ${falha.motivo}` : falha.motivo })
+          }
+        } else if (grupo.falhas.length > 0) {
+          // Nada deu certo na linha: o motivo costuma ser o mesmo para todas as campanhas; mostra uma vez.
+          const falha = grupo.falhas[0]
+          erros.push({ linha: falha.linha, nome: falha.nome, motivo: falha.motivo })
+        }
+        if (grupo.ok.length + grupo.falhas.length > 1) linhaComVariasCampanhas = true
       }
     } catch (error) {
       await recordAppLog({ origem: "leads", mensagem: `Falha ao importar lote de ${candidatos.length} lead(s).`, detalhes: error })
@@ -589,12 +643,13 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
   const partes: string[] = []
   if (criados > 0) partes.push(`${criados} lead(s) importado(s)`)
   if (vinculados > 0) partes.push(`${vinculados} lead(s) já existente(s) adicionado(s) à campanha`)
+  if (linhaComVariasCampanhas && totalVinculos > 0) partes.push(`${totalVinculos} vínculo(s) com campanhas`)
   if (erros.length > 0) partes.push(`${erros.length} com erro`)
 
   const message =
     processados === 0 ? "Nenhum lead foi importado. Revise os erros e tente novamente." : `${partes.join(" · ")}.`
 
-  return { ok: processados > 0, message, total: linhas.length, criados, vinculados, erros }
+  return { ok: processados > 0, message, total: linhas.length, criados, vinculados, ...(linhaComVariasCampanhas ? { vinculosEmCampanhas: totalVinculos } : {}), erros }
 }
 
 export async function assignCampaignAction(leadIds: string[], campanhaId: string | null, mensagemIndividual?: string | null) {

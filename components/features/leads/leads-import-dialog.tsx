@@ -220,6 +220,13 @@ export function LeadsImportDialog({
               página Campanhas) ou o nome exato dela. O telefone deve incluir o país 55 (ex.: 5511988887777).
             </p>
             <p className="text-muted-foreground">
+              Para adicionar o mesmo lead a <strong className="text-foreground">várias campanhas de uma vez</strong>,
+              separe os IDs com ponto e vírgula na coluna campanha, por exemplo{" "}
+              <code className="rounded bg-muted px-1 py-0.5 text-foreground">{"{20};{21}"}</code>. Se algum item não for
+              encontrado, a linha inteira é rejeitada. Com a coluna mensagem, todas as campanhas da linha precisam ser
+              individuais.
+            </p>
+            <p className="text-muted-foreground">
               A coluna <strong className="text-foreground">negocio</strong> é opcional e aceita qualquer texto — use
               para registrar o ID do negócio em um CRM externo, quando houver.
             </p>
