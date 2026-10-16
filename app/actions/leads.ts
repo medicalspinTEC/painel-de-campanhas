@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 
-import { assignCampaignBulk, createLead, createLeadsBulk, deleteLead, deleteLeads, LeadValidationError, scheduleLeadMessage, scheduleLeadsMessage, sendLeadMessage, sendLeadsMessage, setLeadStatus, updateLead, updateLeadNotes, type LeadBulkInput, type LeadInput } from "@/services/leads"
+import { assignCampaignBulk, createLead, createLeadsBulk, deleteLead, deleteLeads, LeadValidationError, scheduleLeadMessage, scheduleLeadsMessage, sendLeadMessage, sendLeadsMessage, setLeadStatus, sobrescreverLeadImportado, updateLead, updateLeadNotes, type LeadBulkInput, type LeadInput } from "@/services/leads"
 import { mapProdutosPorIdImportacao } from "@/services/produtos"
 import { prisma } from "@/lib/prisma"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
@@ -16,6 +16,7 @@ import { cnpjApenasDigitos, cnpjValido, type CnpjDados } from "@/lib/cnpj"
 import { consultarCnpjDoLead } from "@/services/cnpj"
 import { PluginDesativadoError } from "@/lib/plugins"
 import { resolverCampanhasDaLinha } from "@/lib/importacao-campanhas"
+import { diferencasLeadImportacao, type CampoImportavel, type DiferencaImportacao } from "@/lib/importacao-conflitos"
 
 export interface ActionState {
   ok: boolean
@@ -357,8 +358,31 @@ export interface LeadImportRow {
   mensagem?: string
 }
 
+/** Lead que já existe (mesmo telefone) e cuja linha da planilha traz dados diferentes dos salvos. */
+export interface ConflitoImportacao {
+  linha: number
+  leadId: string
+  /** Nome salvo na plataforma. */
+  nome: string
+  telefone: string
+  diferencas: DiferencaImportacao[]
+}
+
+/** Escolha do usuário para os leads existentes com dados diferentes. */
+export type DecisaoConflitosImportacao = "sobrescrever" | "manter"
+
 export interface ImportLeadsResult {
   ok: boolean
+  /**
+   * `true` quando NADA foi importado porque há leads existentes com dados diferentes e o usuário ainda não escolheu
+   * entre sobrescrever e manter os dados da plataforma. `conflitos` traz o que mudou; repita a chamada com a decisão.
+   */
+  precisaDecisao?: boolean
+  conflitos?: ConflitoImportacao[]
+  /** Leads existentes cujos dados foram sobrescritos (o que mudou ficou registrado nas notas do lead). */
+  atualizados?: number
+  /** Leads existentes com dados diferentes que foram mantidos como estão na plataforma. */
+  mantidos?: number
   message: string
   /** Total de linhas recebidas do arquivo. */
   total: number
@@ -389,8 +413,15 @@ const MAX_IMPORTACAO = 2000
  * lead e a linha traz uma campanha, o lead não é recriado: apenas entra nessa
  * campanha, mantendo as que já tem. Erros por linha não interrompem o lote:
  * o resultado reporta quantos foram criados/vinculados e o motivo de cada falha.
+ *
+ * Lead existente com dados DIFERENTES dos da planilha (ex.: negócio 203 na plataforma, 204 na planilha): nada é
+ * importado até o usuário decidir (`opcoes.conflitos`): "manter" segue com os dados da plataforma; "sobrescrever"
+ * grava os da planilha e registra nas notas do lead o que mudou (ver `sobrescreverLeadImportado`).
  */
-export async function importLeadsAction(linhas: LeadImportRow[]): Promise<ImportLeadsResult> {
+export async function importLeadsAction(
+  linhas: LeadImportRow[],
+  opcoes?: { conflitos?: DecisaoConflitosImportacao },
+): Promise<ImportLeadsResult> {
   await assertSecao("leads", "campanhas", "kanban", "chat")
   if (!Array.isArray(linhas) || linhas.length === 0) {
     return { ok: false, message: "Nenhuma linha encontrada no arquivo.", total: 0, criados: 0, vinculados: 0, erros: [] }
@@ -448,6 +479,20 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
   /** Resolve o valor da planilha por ID de importação; se não casar, mantém o texto original. */
   const resolver = (valor: string, mapa: Map<string, string>) =>
     mapa.get(valor.trim().toLowerCase()) ?? valor
+
+  // Leads já cadastrados, por telefone (só dígitos), para detectar dados diferentes na planilha.
+  const leadsExistentes = new Map<string, { id: string; nome: string; produto: string; marca: string; persona: string; regiao: string; notas: string | null; negocio: string | null; atividade: string | null }>()
+  try {
+    const todos = await prisma.lead.findMany({
+      select: { id: true, nome: true, telefone: true, produto: true, marca: true, persona: true, regiao: true, notas: true, negocio: true, atividade: true },
+    })
+    for (const lead of todos) leadsExistentes.set(lead.telefone.replace(/\D/g, ""), lead)
+  } catch (error) {
+    await recordAppLog({ origem: "leads", mensagem: "Falha ao carregar leads existentes para comparar a importação.", detalhes: error })
+  }
+  const conflitos: ConflitoImportacao[] = []
+  // Leads a sobrescrever (um por lead; se aparecer em várias linhas vale a primeira).
+  const sobrescritasPorLead = new Map<string, { linha: number; nome: string; dados: Partial<Record<CampoImportavel, string>> }>()
 
   const erros: ImportLeadsResult["erros"] = []
   // Linha (para a mensagem de erro) e nome de cada candidato, indexados pela
@@ -551,6 +596,27 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
       mensagemIndividual = mensagemBruta
     }
 
+    // Lead que já existe (mesmo telefone) com dados diferentes dos da planilha: vira conflito para o usuário decidir.
+    const existente = leadsExistentes.get(resultadoTelefone.normalizado.replace(/\D/g, ""))
+    let apenasSobrescrever = false
+    if (existente) {
+      const dadosPlanilha = { nome, produto, marca, persona, regiao, notas: notasBruta, negocio: negocioBruto, atividade: atividadeBruta }
+      const diferencas = diferencasLeadImportacao(existente, dadosPlanilha)
+      if (diferencas.length > 0) {
+        conflitos.push({ linha: numeroLinha, leadId: existente.id, nome: existente.nome, telefone, diferencas })
+        if (opcoes?.conflitos === "sobrescrever") {
+          if (sobrescritasPorLead.has(existente.id)) {
+            erros.push({ linha: numeroLinha, nome, motivo: "Este lead aparece em outra linha do arquivo com dados diferentes; só a primeira foi aplicada." })
+          } else {
+            sobrescritasPorLead.set(existente.id, { linha: numeroLinha, nome, dados: dadosPlanilha })
+          }
+          // Sem campanha na linha não há mais nada a fazer com ela (não é duplicidade a barrar: é uma atualização).
+          if (campanhaIds.length === 0) apenasSobrescrever = true
+        }
+      }
+    }
+    if (apenasSobrescrever) continue
+
     // Uma entrada por campanha (ou uma só, sem campanha). A primeira cria o lead; as demais têm o mesmo telefone
     // e, pela regra de `createLeadsBulk`, só adicionam o lead à campanha, sem duplicá-lo.
     const campanhasDaLinha: Array<string | null> = campanhaIds.length > 0 ? campanhaIds : [null]
@@ -575,6 +641,21 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
         },
       })
     })
+  }
+
+  // Há leads existentes com dados diferentes e o usuário ainda não escolheu: não grava nada, devolve o que mudou.
+  if (conflitos.length > 0 && !opcoes?.conflitos) {
+    const quantidade = new Set(conflitos.map((c) => c.leadId)).size
+    return {
+      ok: false,
+      precisaDecisao: true,
+      conflitos,
+      message: `${quantidade} lead(s) já cadastrado(s) têm dados diferentes da planilha. Escolha entre sobrescrever ou manter os dados da plataforma.`,
+      total: linhas.length,
+      criados: 0,
+      vinculados: 0,
+      erros: [],
+    }
   }
 
   // Todo o lote é criado em uma única passagem (checagens em lote em vez de
@@ -633,23 +714,39 @@ export async function importLeadsAction(linhas: LeadImportRow[]): Promise<Import
     }
   }
 
+  // Sobrescritas escolhidas pelo usuário: grava os dados da planilha e registra nas notas do lead o que mudou.
+  let atualizados = 0
+  for (const [leadId, { linha, nome, dados }] of sobrescritasPorLead) {
+    try {
+      const resultado = await sobrescreverLeadImportado(leadId, dados)
+      if (resultado.ok) atualizados++
+      else erros.push({ linha, nome, motivo: resultado.motivo })
+    } catch (error) {
+      await recordAppLog({ origem: "leads", mensagem: `Falha ao sobrescrever dados do lead id=${leadId} na importação.`, detalhes: error })
+      erros.push({ linha, nome, motivo: "Erro inesperado ao sobrescrever os dados do lead. Nenhuma alteração foi registrada." })
+    }
+  }
+  const mantidos = opcoes?.conflitos === "manter" ? new Set(conflitos.map((c) => c.leadId)).size : 0
+
   // Erros por linha não vêm necessariamente na ordem original (a validação de
   // formato roda antes do lote, e o lote devolve seus resultados por índice).
   erros.sort((a, b) => a.linha - b.linha)
 
-  const processados = criados + vinculados
+  const processados = criados + vinculados + atualizados
   if (processados > 0) revalidarLeads()
 
   const partes: string[] = []
   if (criados > 0) partes.push(`${criados} lead(s) importado(s)`)
   if (vinculados > 0) partes.push(`${vinculados} lead(s) já existente(s) adicionado(s) à campanha`)
+  if (atualizados > 0) partes.push(`${atualizados} lead(s) existente(s) sobrescrito(s) (o que mudou ficou registrado nas notas do lead)`)
+  if (mantidos > 0) partes.push(`${mantidos} lead(s) existente(s) mantido(s) com os dados da plataforma`)
   if (linhaComVariasCampanhas && totalVinculos > 0) partes.push(`${totalVinculos} vínculo(s) com campanhas`)
   if (erros.length > 0) partes.push(`${erros.length} com erro`)
 
   const message =
     processados === 0 ? "Nenhum lead foi importado. Revise os erros e tente novamente." : `${partes.join(" · ")}.`
 
-  return { ok: processados > 0, message, total: linhas.length, criados, vinculados, ...(linhaComVariasCampanhas ? { vinculosEmCampanhas: totalVinculos } : {}), erros }
+  return { ok: processados > 0, message, total: linhas.length, criados, vinculados, ...(atualizados > 0 ? { atualizados } : {}), ...(mantidos > 0 ? { mantidos } : {}), ...(linhaComVariasCampanhas ? { vinculosEmCampanhas: totalVinculos } : {}), erros }
 }
 
 export async function assignCampaignAction(leadIds: string[], campanhaId: string | null, mensagemIndividual?: string | null) {

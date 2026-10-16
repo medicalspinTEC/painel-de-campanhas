@@ -5,7 +5,7 @@ import { AlertTriangle, CheckCircle2, Download, FileSpreadsheet, Upload, X } fro
 import { toast } from "sonner"
 import * as XLSX from "xlsx"
 
-import { importLeadsAction, type ImportLeadsResult, type LeadImportRow } from "@/app/actions/leads"
+import { importLeadsAction, type ConflitoImportacao, type DecisaoConflitosImportacao, type ImportLeadsResult, type LeadImportRow } from "@/app/actions/leads"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import {
@@ -101,6 +101,8 @@ export function LeadsImportDialog({
   const [linhas, setLinhas] = useState<LeadImportRow[]>([])
   const [erroLeitura, setErroLeitura] = useState<string | null>(null)
   const [resultado, setResultado] = useState<ImportLeadsResult | null>(null)
+  // Leads existentes com dados diferentes da planilha: a importação espera o usuário escolher o que fazer.
+  const [conflitos, setConflitos] = useState<ConflitoImportacao[] | null>(null)
   const [pending, startTransition] = useTransition()
   const [importando, setImportando] = useState(false)
 
@@ -109,6 +111,7 @@ export function LeadsImportDialog({
     setLinhas([])
     setErroLeitura(null)
     setResultado(null)
+    setConflitos(null)
     setImportando(false)
     if (inputRef.current) inputRef.current.value = ""
   }
@@ -161,7 +164,7 @@ export function LeadsImportDialog({
     XLSX.writeFile(workbook, "modelo-importacao-leads.xlsx")
   }
 
-  function importar() {
+  function importar(decisao?: DecisaoConflitosImportacao) {
     if (linhas.length === 0 || importando) return
 
     const loadingToastId = toast.loading(
@@ -174,11 +177,19 @@ export function LeadsImportDialog({
 
     setImportando(true)
     setResultado(null)
+    setConflitos(null)
     onOpenChange(false)
 
     startTransition(async () => {
       try {
-        const res = await importLeadsAction(linhas)
+        const res = await importLeadsAction(linhas, decisao ? { conflitos: decisao } : undefined)
+        if (res.precisaDecisao && res.conflitos?.length) {
+          // Nada foi importado ainda: mostra o que mudou e pede a escolha do usuário.
+          toast.dismiss(loadingToastId)
+          setConflitos(res.conflitos)
+          onOpenChange(true)
+          return
+        }
         setResultado(res)
         toast.loading(<ImportProgressToast total={linhas.length} concluido />, {
           id: loadingToastId,
@@ -243,8 +254,9 @@ export function LeadsImportDialog({
             <p className="text-muted-foreground">
               Se o telefone já pertencer a um lead cadastrado e a linha tiver uma{" "}
               <strong className="text-foreground">campanha</strong>, o lead não é duplicado: ele é apenas
-              adicionado a essa campanha, sem sair das que já participa. Nesse caso os demais campos da linha
-              são ignorados.
+              adicionado a essa campanha, sem sair das que já participa. Se os demais campos da linha forem
+              diferentes dos salvos (ex.: negócio), você escolhe entre manter os dados da plataforma ou sobrescrever;
+              ao sobrescrever, o que mudou fica registrado nas notas do lead.
             </p>
             <div>
               <Button type="button" variant="outline" size="sm" onClick={baixarModelo}>
@@ -334,6 +346,55 @@ export function LeadsImportDialog({
             </div>
           ) : null}
 
+          {conflitos ? (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2.5 text-sm">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" aria-hidden />
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium">
+                    {new Set(conflitos.map((c) => c.leadId)).size} lead(s) já cadastrado(s) têm dados diferentes da planilha.
+                  </span>
+                  <span className="text-muted-foreground">
+                    Nada foi importado ainda. <strong className="text-foreground">Sobrescrever</strong> grava os dados da
+                    planilha e registra nas notas do lead o que foi alterado (com os valores anteriores).{" "}
+                    <strong className="text-foreground">Manter dados da plataforma</strong> não altera os leads existentes e
+                    importa o restante normalmente.
+                  </span>
+                </div>
+              </div>
+              <div className="max-h-72 overflow-y-auto rounded-lg border border-border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-14">Linha</TableHead>
+                      <TableHead>Lead</TableHead>
+                      <TableHead>Campo</TableHead>
+                      <TableHead>Na plataforma</TableHead>
+                      <TableHead>Na planilha</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {conflitos.flatMap((conflito) =>
+                      conflito.diferencas.map((diferenca, posicao) => (
+                        <TableRow key={`${conflito.leadId}-${conflito.linha}-${diferenca.campo}`}>
+                          <TableCell className="tabular-nums">{posicao === 0 ? conflito.linha : ""}</TableCell>
+                          <TableCell>{posicao === 0 ? conflito.nome : ""}</TableCell>
+                          <TableCell>{diferenca.rotulo}</TableCell>
+                          <TableCell className="max-w-48 truncate text-muted-foreground" title={diferenca.atual ?? ""}>
+                            {diferenca.atual ?? "(vazio)"}
+                          </TableCell>
+                          <TableCell className="max-w-48 truncate font-medium" title={diferenca.planilha}>
+                            {diferenca.planilha}
+                          </TableCell>
+                        </TableRow>
+                      )),
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          ) : null}
+
           {resultado ? (
             <div className="flex flex-col gap-3">
               <div
@@ -364,8 +425,8 @@ export function LeadsImportDialog({
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {resultado.erros.map((erro) => (
-                          <TableRow key={erro.linha}>
+                        {resultado.erros.map((erro, indice) => (
+                          <TableRow key={`${erro.linha}-${indice}`}>
                             <TableCell className="tabular-nums">{erro.linha}</TableCell>
                             <TableCell>{erro.nome}</TableCell>
                             <TableCell className="text-muted-foreground">{erro.motivo}</TableCell>
@@ -385,12 +446,24 @@ export function LeadsImportDialog({
             <Button type="button" onClick={() => fechar(false)}>
               Concluir
             </Button>
+          ) : conflitos ? (
+            <>
+              <Button type="button" variant="outline" onClick={() => fechar(false)} disabled={pending || importando}>
+                Cancelar importação
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => importar("manter")} disabled={pending || importando}>
+                Manter dados da plataforma
+              </Button>
+              <Button type="button" onClick={() => importar("sobrescrever")} disabled={pending || importando}>
+                Sobrescrever e importar
+              </Button>
+            </>
           ) : (
             <>
               <Button type="button" variant="outline" onClick={() => fechar(false)}>
                 Cancelar
               </Button>
-              <Button type="button" onClick={importar} disabled={pending || importando || linhas.length === 0}>
+              <Button type="button" onClick={() => importar()} disabled={pending || importando || linhas.length === 0}>
                 {pending || importando ? <Spinner /> : <Upload className="size-4" />}
                 Importar {linhas.length > 0 ? `${linhas.length} lead(s)` : ""}
               </Button>

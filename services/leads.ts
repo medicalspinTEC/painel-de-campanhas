@@ -13,6 +13,7 @@ import { garantirProduto } from "@/services/produtos"
 import { servicoMarcas, servicoPersonas, servicoRegioes } from "@/services/catalogo-segmentacao"
 import { getCrmPluginAtivo } from "@/services/settings"
 import { cnpjApenasDigitos, cnpjValido } from "@/lib/cnpj"
+import { diferencasLeadImportacao, montarNotaDeSobrescrita, type CampoImportavel } from "@/lib/importacao-conflitos"
 import { LEAD_STATUS_LABEL, LEAD_STATUS_SOMENTE_CRM, type Lead, type LeadStatus, type TimelineEvent } from "@/types"
 
 /**
@@ -1862,6 +1863,63 @@ export async function updateLeadNotes(id: string, notas: string): Promise<Lead |
   })
 
   return toLead(lead)
+}
+
+export type SobrescreverLeadImportadoResultado =
+  | { ok: true; alterados: CampoImportavel[] }
+  | { ok: false; motivo: string }
+
+/**
+ * Reimportação de lead existente com dados diferentes: grava os valores da planilha nos campos que mudaram
+ * (nome, produto, marca, persona, região, notas, negócio, atividade) e registra nas NOTAS do lead exatamente o que
+ * foi alterado, com os valores anteriores, para que nada se perca. A comparação é refeita aqui contra o cadastro
+ * atual (que pode ter mudado desde a análise). Telefone, status e campanhas não são tocados.
+ *
+ * Tudo ou nada: se o novo nome já pertencer a outro lead, nada é alterado e o motivo é devolvido.
+ */
+export async function sobrescreverLeadImportado(
+  leadId: string,
+  planilha: Partial<Record<CampoImportavel, string>>,
+): Promise<SobrescreverLeadImportadoResultado> {
+  const atual = await prisma.lead.findUnique({ where: { id: leadId } })
+  if (!atual) return { ok: false, motivo: "Lead não encontrado." }
+
+  const diferencas = diferencasLeadImportacao(atual, planilha)
+  if (diferencas.length === 0) return { ok: true, alterados: [] }
+
+  const novoNome = diferencas.find((d) => d.campo === "nome")
+  if (novoNome) {
+    const outro = await prisma.lead.findFirst({
+      where: { id: { not: leadId }, nome: { equals: novoNome.planilha, mode: "insensitive" } },
+      select: { id: true },
+    })
+    if (outro) return { ok: false, motivo: `Não foi possível sobrescrever: já existe outro lead com o nome "${novoNome.planilha}".` }
+  }
+
+  const dados: Record<string, string | null> = {}
+  for (const d of diferencas) if (d.campo !== "notas") dados[d.campo] = d.planilha
+
+  // Notas: a planilha vira o texto principal (se mudou) e o registro da alteração é acrescentado ao final,
+  // guardando as notas anteriores. Sem mudança nas notas, o registro é só acrescentado às existentes.
+  const novasNotas = diferencas.find((d) => d.campo === "notas")?.planilha ?? (atual.notas ?? "").trim()
+  const registro = montarNotaDeSobrescrita(diferencas)
+  dados.notas = novasNotas ? `${novasNotas}\n\n${registro}` : registro
+
+  const lead = await prisma.lead.update({ where: { id: leadId }, data: dados as Prisma.LeadUpdateInput })
+
+  await garantirDimensoesSegmentacao({
+    produto: dados.produto,
+    marca: dados.marca,
+    persona: dados.persona,
+    regiao: dados.regiao,
+  })
+
+  const atualizado = toLead(lead)
+  await emitWebhookEvent("lead.atualizado", { lead: atualizado })
+  // Segmentação nova pode fazer o lead passar a atender os filtros de outras campanhas (mesma regra de `updateLead`).
+  if (["produto", "marca", "persona", "regiao"].some((campo) => campo in dados)) await vincularLeadACampanhasCompativeis(atualizado)
+
+  return { ok: true, alterados: diferencas.map((d) => d.campo) }
 }
 
 export interface SendLeadMessageResult {
