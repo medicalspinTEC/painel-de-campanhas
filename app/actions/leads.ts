@@ -408,8 +408,8 @@ const MAX_IMPORTACAO = 2000
 /**
  * Cria em lote os leads recebidos de um arquivo importado. Cada linha passa
  * pela mesma validação e regras de negócio de `createLead` (telefone com país
- * 55, unicidade de nome/telefone, cadastro automático de segmentação e
- * vinculação a campanhas compatíveis). Se o telefone da linha já pertence a um
+ * 55, unicidade de nome/telefone e cadastro automático de segmentação; o lead
+ * NÃO entra em campanhas por filtro: só nas informadas na linha). Se o telefone da linha já pertence a um
  * lead e a linha traz uma campanha, o lead não é recriado: apenas entra nessa
  * campanha, mantendo as que já tem. Erros por linha não interrompem o lote:
  * o resultado reporta quantos foram criados/vinculados e o motivo de cada falha.

@@ -665,7 +665,7 @@ export function CampaignEditor({
             <CardDescription>
               {leadIdsSelecionados.length > 0
                 ? "Ignorados: há leads selecionados manualmente ao lado, e a vinculação manual manda."
-                : "Leads são incluídos automaticamente quando atendem aos filtros."}
+                : "Ao salvar a campanha, entram os leads que já atendem aos filtros. Leads cadastrados depois não entram sozinhos."}
             </CardDescription>
           </CardHeader>
           <CardContent className={cn("flex flex-col gap-3", leadIdsSelecionados.length > 0 && "opacity-50")}>

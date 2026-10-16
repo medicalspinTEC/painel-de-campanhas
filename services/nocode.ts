@@ -573,7 +573,6 @@ async function executarBloco(no: FlowNode, ctx: Contexto, simulacao: boolean): P
           atividade: campo("atividade") || null,
           campanhaId: null,
           campanhasIds: [],
-          semVinculoAutomatico: cfg.vincularCampanhas !== true,
         })
       } catch (error) {
         // Dado inválido (telefone fora do padrão, texto longo…): o fluxo decide pela saída.

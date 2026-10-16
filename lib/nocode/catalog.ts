@@ -303,12 +303,6 @@ export const NODE_CATALOG: Record<NodeType, NodeDef> = {
       { key: "notas", label: "Notas", kind: "textarea", placeholder: "(opcional)" },
       { key: "negocio", label: "Negócio", kind: "text", placeholder: "(opcional)" },
       { key: "atividade", label: "Atividade", kind: "text", placeholder: "(opcional)" },
-      {
-        key: "vincularCampanhas",
-        label: "Vincular a campanhas compatíveis",
-        kind: "switch",
-        help: "Desligado: o lead nasce sem campanha. Ligado: entra nas campanhas cujos filtros de público ele atende (como no cadastro manual).",
-      },
     ],
     padrao: {
       nome: "{{webhook.data.pushName}}",
@@ -321,7 +315,6 @@ export const NODE_CATALOG: Record<NodeType, NodeDef> = {
       notas: "",
       negocio: "",
       atividade: "",
-      vincularCampanhas: false,
     },
   },
   registrar_resposta: {

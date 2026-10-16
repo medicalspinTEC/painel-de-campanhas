@@ -405,8 +405,6 @@ export type LeadInput = Pick<Lead, "nome" | "telefone" | "status"> & {
   cnpj?: string | null
   campanhaId: string | null
   campanhasIds?: string[]
-  /** Não vincula o lead novo a campanhas compatíveis pelos filtros (uso interno, ex.: No Code). */
-  semVinculoAutomatico?: boolean
 }
 
 /**
@@ -675,10 +673,8 @@ export async function createLead(input: LeadInput): Promise<Lead> {
   }
   await emitirStatus(criado, "novo")
 
-  // Vincula o lead recém-criado a qualquer campanha ativa/pausada/rascunho cujos
-  // filtros ele já atenda, sem depender de seleção manual na campanha.
-  if (!input.semVinculoAutomatico) await vincularLeadACampanhasCompativeis(criado)
-
+  // Os filtros de público das campanhas só valem NA CRIAÇÃO da campanha (ver `leadsFinaisDaCampanha`): cadastrar
+  // um lead não o vincula a campanhas por filtro. Só entra em campanha se ela for informada explicitamente.
   return criado
 }
 
@@ -967,62 +963,11 @@ export async function createLeadsBulk(itens: Array<{ index: number; input: LeadB
   const vinculo = await vincularLeadsExistentesEmLote(pedidosVinculo, statusCampanhaExplicitaPorId, nomeCampanhaPorId, agora)
   resultados.push(...vinculo.resultados)
 
-  // 7) Vincula automaticamente a campanhas compatíveis: mesma regra de
-  // `vincularLeadACampanhasCompativeis`, mas com as campanhas carregadas UMA
-  // vez e o cruzamento com cada lead feito em memória, em vez de uma consulta
-  // de campanhas (e outra de vínculo já existente) por lead. Só vale para leads
-  // novos: quem já existia já passou por essa regra quando foi cadastrado.
-  const campanhasElegiveis =
-    aceitos.length > 0
-      ? await prisma.campaign.findMany({
-          where: { status: { not: "encerrada" } },
-          select: { id: true, nome: true, status: true, filtroProduto: true, filtroMarca: true, filtroPersona: true, filtroRegiao: true },
-        })
-      : []
-
-  const paresParaVincular: Array<{ leadId: string; campanhaId: string }> = []
-  let entrouEmCampanhaAtiva =
+  // 7) Sem vinculação automática por filtro: os filtros de público só valem na criação da campanha. Os leads
+  // novos só entram nas campanhas informadas explicitamente na importação (passo 6).
+  const entrouEmCampanhaAtiva =
     vinculo.entrouEmCampanhaAtiva ||
     comCampanhaExplicita.some((l) => statusCampanhaExplicitaPorId.get(l.campanhaId) === "ativa")
-  for (const l of aceitos) {
-    if (l.status === "nao_contatar") continue // nunca entra em campanha, nem por filtro
-    for (const c of campanhasElegiveis) {
-      if (c.id === l.campanhaId) continue // já vinculado no passo 6
-      const combina =
-        (c.filtroProduto == null || c.filtroProduto === l.produto) &&
-        (c.filtroMarca == null || c.filtroMarca === l.marca) &&
-        (c.filtroPersona == null || c.filtroPersona === l.persona) &&
-        (c.filtroRegiao == null || c.filtroRegiao === l.regiao)
-      if (!combina) continue
-      paresParaVincular.push({ leadId: l.id, campanhaId: c.id })
-      if (c.status === "ativa") entrouEmCampanhaAtiva = true
-    }
-  }
-  if (paresParaVincular.length > 0) {
-    await prisma.leadCampaign.createMany({ data: paresParaVincular, skipDuplicates: true })
-
-    // Mesma regra para quem foi vinculado automaticamente por filtro (e
-    // ainda não tinha campanha explícita no passo 6): grava no banco e
-    // reflete em memória para o webhook do passo 8 usar o status correto.
-    const leadIdsAutoVinculados = [...new Set(paresParaVincular.map((p) => p.leadId))]
-    await prisma.lead.updateMany({
-      where: { id: { in: leadIdsAutoVinculados }, status: { notIn: STATUS_PRESERVADOS_NA_VINCULACAO } },
-      data: { status: "em_campanha" },
-    })
-    const autoVinculadosSet = new Set(leadIdsAutoVinculados)
-    for (const l of aceitos) {
-      if (autoVinculadosSet.has(l.id)) l.status = statusAoVincularCampanha(l.status)
-    }
-    for (const par of paresParaVincular) {
-      const lead = aceitos.find((item) => item.id === par.leadId)
-      const campanha = campanhasElegiveis.find((item) => item.id === par.campanhaId)
-      if (!lead || !campanha) continue
-      void emitWebhookEvent("lead.entrou_em_campanha", {
-        lead: toLead({ ...lead, criadoEm: agora, entradaCampanhaEm: agora }),
-        campanha: { id: campanha.id, nome: campanha.nome },
-      })
-    }
-  }
 
   // 8) Notifica os webhooks assinados. `emitWebhookEvent` apenas agenda a
   // entrega (roda depois da resposta), então disparar um por lead aqui não
@@ -1394,11 +1339,7 @@ export async function updateLead(id: string, input: LeadInput): Promise<Lead | n
   }
   await emitirStatus(atualizado, atual.status)
 
-  // Como as dimensões de segmentação podem ter mudado, revalida a vinculação
-  // automática: o lead entra em qualquer campanha não encerrada cujos filtros
-  // ele passou a atender.
-  await vincularLeadACampanhasCompativeis(atualizado)
-
+  // Editar o lead não o vincula a campanhas por filtro (isso só acontece na criação da campanha).
   return atualizado
 }
 
@@ -1459,68 +1400,6 @@ async function dispararMensagemInicialDaCampanha(leadId: string, campanhaId: str
       detalhes: error,
     })
   }
-}
-
-/**
- * Vincula automaticamente o lead a todas as campanhas ainda não encerradas cujos
- * filtros de público ele atende. Um filtro nulo na campanha ("qualquer") não
- * restringe a dimensão — uma campanha com todos os filtros "qualquer" captura
- * qualquer lead. As campanhas ativas recém-vinculadas disparam a mensagem
- * inicial (a dedupe do envio evita reenvios). O vínculo é idempotente, então
- * campanhas já vinculadas ao lead não geram efeito.
- */
-async function vincularLeadACampanhasCompativeis(lead: Lead): Promise<void> {
-  // “Não contatar” nunca entra em campanha, nem por filtro automático.
-  if (lead.status === "nao_contatar") return
-
-  const campanhas = await prisma.campaign.findMany({
-    where: {
-      status: { not: "encerrada" },
-      AND: [
-        { OR: [{ filtroProduto: null }, { filtroProduto: lead.produto }] },
-        { OR: [{ filtroMarca: null }, { filtroMarca: lead.marca }] },
-        { OR: [{ filtroPersona: null }, { filtroPersona: lead.persona }] },
-        { OR: [{ filtroRegiao: null }, { filtroRegiao: lead.regiao }] },
-      ],
-    },
-    select: { id: true, nome: true, status: true },
-  })
-  if (campanhas.length === 0) return
-
-  for (const campanha of campanhas) {
-    const jaVinculado = await prisma.leadCampaign.findUnique({
-      where: { leadId_campanhaId: { leadId: lead.id, campanhaId: campanha.id } },
-      select: { id: true },
-    })
-    if (!jaVinculado) {
-      await prisma.leadCampaign.create({ data: { leadId: lead.id, campanhaId: campanha.id } })
-      await prisma.timelineEvent.create({
-        data: {
-          leadId: lead.id,
-          campanhaId: campanha.id,
-          tipo: "campanha_iniciada",
-          descricao: "Lead entrou na campanha automaticamente (filtro compatível).",
-          sucesso: true,
-        },
-      })
-      await emitWebhookEvent("lead.entrou_em_campanha", {
-        lead: { ...lead, status: statusAoVincularCampanha(lead.status) },
-        campanha: { id: campanha.id, nome: campanha.nome },
-      })
-    }
-    if (campanha.status === "ativa") {
-      await dispararMensagemInicialDaCampanha(lead.id, campanha.id)
-    }
-  }
-
-  // Vinculação automática por filtro: reflete no status como "em_campanha",
-  // independente do status das campanhas encontradas acima serem ativa,
-  // pausada ou rascunho. `updateMany` com o filtro de status evita reabrir
-  // esse estado para quem já respondeu.
-  await prisma.lead.updateMany({
-    where: { id: lead.id, status: { notIn: STATUS_PRESERVADOS_NA_VINCULACAO } },
-    data: { status: "em_campanha" },
-  })
 }
 
 export async function assignCampaign(leadId: string, campanhaId: string | null, mensagemIndividual?: string | null): Promise<Lead | null> {
@@ -1916,9 +1795,7 @@ export async function sobrescreverLeadImportado(
 
   const atualizado = toLead(lead)
   await emitWebhookEvent("lead.atualizado", { lead: atualizado })
-  // Segmentação nova pode fazer o lead passar a atender os filtros de outras campanhas (mesma regra de `updateLead`).
-  if (["produto", "marca", "persona", "regiao"].some((campo) => campo in dados)) await vincularLeadACampanhasCompativeis(atualizado)
-
+  // Sobrescrever dados não vincula o lead a campanhas por filtro (isso só acontece na criação da campanha).
   return { ok: true, alterados: diferencas.map((d) => d.campo) }
 }
 

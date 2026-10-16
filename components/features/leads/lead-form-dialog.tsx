@@ -136,7 +136,7 @@ export function LeadFormDialog({
         <DialogHeader>
           <DialogTitle>{editando ? "Editar lead" : "Novo lead"}</DialogTitle>
           <DialogDescription>
-            Os atributos abaixo definem em quais campanhas o lead pode ser incluído automaticamente.
+            Os atributos abaixo servem para segmentar o lead. Os filtros das campanhas só são aplicados quando a campanha é criada.
           </DialogDescription>
         </DialogHeader>
 
