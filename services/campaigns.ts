@@ -895,6 +895,8 @@ export interface CampaignLeadSchedule {
   aguardandoRecorrencia: boolean
   /** false quando a campanha não tem mensagens (pular não faz sentido). */
   temMensagens: boolean
+  /** Quantas mensagens da sequência o lead já recebeu no ciclo atual (etapa do kanban da campanha). */
+  enviadosNoCiclo: number
 }
 
 /**
@@ -956,6 +958,8 @@ export async function getCampaignSchedule(campanhaId: string): Promise<Record<st
       (e) => e.leadId === vinculo.leadId && e.mensagemId && e.data.getTime() >= cycleAnchor.getTime(),
     )
     const enviadosIds = new Set(eventosDoCiclo.map((e) => e.mensagemId as string))
+    // Só conta mensagens que ainda existem na campanha (uma mensagem apagada não é etapa).
+    const enviadosNoCiclo = campanha.mensagens.filter((m) => enviadosIds.has(m.id)).length
     // Momento real do último envio deste ciclo — base para contar a recorrência.
     const ultimoEnvioEm = eventosDoCiclo.length
       ? new Date(Math.max(...eventosDoCiclo.map((e) => e.data.getTime())))
@@ -995,6 +999,7 @@ export async function getCampaignSchedule(campanhaId: string): Promise<Record<st
       proximaMensagemEm: proxima?.toISOString() ?? null,
       aguardandoRecorrencia,
       temMensagens,
+      enviadosNoCiclo,
     }
   }
 

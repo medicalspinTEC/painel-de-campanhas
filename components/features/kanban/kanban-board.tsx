@@ -18,6 +18,7 @@ import { toast } from "sonner"
 import { ArrowRightLeft, Megaphone, MoreHorizontal, Phone, Search, X } from "lucide-react"
 
 import { moveKanbanLeadAction } from "@/app/actions/kanban"
+import { KanbanModoToggle } from "@/components/features/kanban/kanban-modo-toggle"
 import { LeadRespostaDialog } from "@/components/shared/lead-resposta-dialog"
 import { PageHeader } from "@/components/shared/page-header"
 import { SelectField, type OpcaoSelect } from "@/components/shared/select-field"
@@ -41,6 +42,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { useArrastoDeCards, type EstadoArrasto } from "@/components/features/kanban/use-arrasto-de-cards"
 import type { KanbanBoardData, KanbanLead } from "@/services/kanban"
 import { CAMPAIGN_STATUS_LABEL, LEAD_STATUS_LABEL, type LeadStatus } from "@/types"
 
@@ -54,248 +56,6 @@ const COR_COLUNA: Record<LeadStatus, { ponto: string; topo: string }> = {
   respondeu: { ponto: "bg-chart-3", topo: "border-t-chart-3" },
   encerrado: { ponto: "bg-secondary-foreground/60", topo: "border-t-secondary-foreground/50" },
   nao_contatar: { ponto: "bg-destructive", topo: "border-t-destructive" },
-}
-
-const DISTANCIA_MOUSE = 5
-const DISTANCIA_TOQUE = 10
-const ESPERA_TOQUE_MS = 280
-const BORDA_ROLAGEM = 56
-
-/* ------------------------------------------------------------------ */
-/* Arrasto por eventos de ponteiro (mouse, caneta e toque, sem biblioteca) */
-/* ------------------------------------------------------------------ */
-
-type EstadoArrasto = {
-  lead: KanbanLead
-  largura: number
-  x: number
-  y: number
-  dx: number
-  dy: number
-  sobre: LeadStatus | null
-}
-
-type Sessao = {
-  lead: KanbanLead
-  pointerId: number
-  tipo: string
-  x: number
-  y: number
-  x0: number
-  y0: number
-  dx: number
-  dy: number
-  largura: number
-  ativo: boolean
-  timer: number | null
-  raf: number | null
-}
-
-type OpcoesArrasto = {
-  aoSoltar: (leadId: string, destino: LeadStatus) => void
-}
-
-function colunaSob(x: number, y: number): LeadStatus | null {
-  const coluna = document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-coluna]")
-  const status = coluna?.dataset.coluna
-  return status && Object.hasOwn(LEAD_STATUS_LABEL, status) ? (status as LeadStatus) : null
-}
-
-function useArrastoDeCards(scrollRef: RefObject<HTMLDivElement | null>, opcoes: OpcoesArrasto) {
-  const [arrasto, setArrasto] = useState<EstadoArrasto | null>(null)
-  const fantasmaRef = useRef<HTMLDivElement | null>(null)
-  const opcoesRef = useRef(opcoes)
-  const acabouDeArrastarRef = useRef(false)
-
-  useEffect(() => {
-    opcoesRef.current = opcoes
-  })
-
-  // O motor vive fora do ciclo de render: os listeners precisam de identidade
-  // estável para serem removidos, e a posição do cartão não pode causar render.
-  const [motor] = useState(() => {
-    let sessao: Sessao | null = null
-    let sobreAtual: LeadStatus | null = null
-    let estiloAnterior = { userSelect: "", cursor: "" }
-
-    function posicionarFantasma() {
-      const s = sessao
-      const el = fantasmaRef.current
-      if (!s || !el) return
-      el.style.transform = `translate3d(${s.x - s.dx}px, ${s.y - s.dy}px, 0) rotate(2deg)`
-    }
-
-    function atualizarSobre() {
-      const s = sessao
-      if (!s) return
-      const novo = colunaSob(s.x, s.y)
-      if (novo === sobreAtual) return
-      sobreAtual = novo
-      setArrasto((atual) => (atual ? { ...atual, sobre: novo } : atual))
-    }
-
-    function loopRolagem() {
-      const s = sessao
-      if (!s || !s.ativo) return
-
-      const quadro = scrollRef.current
-      if (quadro) {
-        const r = quadro.getBoundingClientRect()
-        if (s.x < r.left + BORDA_ROLAGEM) {
-          quadro.scrollLeft -= Math.ceil(((r.left + BORDA_ROLAGEM - s.x) / BORDA_ROLAGEM) * 18)
-        } else if (s.x > r.right - BORDA_ROLAGEM) {
-          quadro.scrollLeft += Math.ceil(((s.x - (r.right - BORDA_ROLAGEM)) / BORDA_ROLAGEM) * 18)
-        }
-      }
-
-      const corpo = document.elementFromPoint(s.x, s.y)?.closest<HTMLElement>("[data-coluna-corpo]")
-      if (corpo) {
-        const r = corpo.getBoundingClientRect()
-        if (s.y < r.top + BORDA_ROLAGEM) corpo.scrollTop -= Math.ceil(((r.top + BORDA_ROLAGEM - s.y) / BORDA_ROLAGEM) * 14)
-        else if (s.y > r.bottom - BORDA_ROLAGEM) corpo.scrollTop += Math.ceil(((s.y - (r.bottom - BORDA_ROLAGEM)) / BORDA_ROLAGEM) * 14)
-      }
-
-      atualizarSobre()
-      s.raf = requestAnimationFrame(loopRolagem)
-    }
-
-    function ativar() {
-      const s = sessao
-      if (!s || s.ativo) return
-      s.ativo = true
-      sobreAtual = colunaSob(s.x, s.y)
-      estiloAnterior = { userSelect: document.body.style.userSelect, cursor: document.body.style.cursor }
-      document.body.style.userSelect = "none"
-      document.body.style.cursor = "grabbing"
-      if (s.tipo === "touch") navigator.vibrate?.(10)
-      setArrasto({
-        lead: s.lead,
-        largura: s.largura,
-        x: s.x,
-        y: s.y,
-        dx: s.dx,
-        dy: s.dy,
-        sobre: sobreAtual,
-      })
-      s.raf = requestAnimationFrame(loopRolagem)
-    }
-
-    function limpar() {
-      const s = sessao
-      if (s?.timer != null) window.clearTimeout(s.timer)
-      if (s?.raf != null) cancelAnimationFrame(s.raf)
-      if (s?.ativo) {
-        document.body.style.userSelect = estiloAnterior.userSelect
-        document.body.style.cursor = estiloAnterior.cursor
-      }
-      window.removeEventListener("pointermove", aoMover)
-      window.removeEventListener("pointerup", aoSoltar)
-      window.removeEventListener("pointercancel", aoCancelar)
-      window.removeEventListener("keydown", aoTecla)
-      window.removeEventListener("touchmove", bloquearRolagem)
-      sessao = null
-      sobreAtual = null
-      setArrasto(null)
-    }
-
-    function aoMover(evento: PointerEvent) {
-      const s = sessao
-      if (!s || evento.pointerId !== s.pointerId) return
-      s.x = evento.clientX
-      s.y = evento.clientY
-
-      if (!s.ativo) {
-        const distancia = Math.hypot(s.x - s.x0, s.y - s.y0)
-        if (s.tipo === "touch") {
-          // Moveu antes do toque longo: é uma rolagem, não um arrasto.
-          if (distancia > DISTANCIA_TOQUE) limpar()
-        } else if (distancia > DISTANCIA_MOUSE) {
-          ativar()
-          posicionarFantasma()
-        }
-        return
-      }
-      posicionarFantasma()
-    }
-
-    function aoSoltar(evento: PointerEvent) {
-      const s = sessao
-      if (!s || evento.pointerId !== s.pointerId) return
-      const estavaArrastando = s.ativo
-      const leadId = s.lead.id
-      const destino = estavaArrastando ? (colunaSob(evento.clientX, evento.clientY) ?? sobreAtual) : null
-      limpar()
-      if (!estavaArrastando) return
-
-      // O "click" que o navegador dispara ao soltar não deve abrir o lead.
-      acabouDeArrastarRef.current = true
-      window.setTimeout(() => {
-        acabouDeArrastarRef.current = false
-      }, 0)
-      if (destino) opcoesRef.current.aoSoltar(leadId, destino)
-    }
-
-    function aoCancelar(evento: PointerEvent) {
-      if (sessao && evento.pointerId === sessao.pointerId) limpar()
-    }
-
-    function aoTecla(evento: KeyboardEvent) {
-      if (evento.key === "Escape") limpar()
-    }
-
-    // Depois do toque longo a rolagem da página precisa ser travada, senão o
-    // dedo arrasta a tela em vez do cartão.
-    function bloquearRolagem(evento: TouchEvent) {
-      if (sessao?.ativo && evento.cancelable) evento.preventDefault()
-    }
-
-    function iniciar(evento: ReactPointerEvent<HTMLElement>, lead: KanbanLead) {
-      if (sessao) return
-      if (evento.pointerType === "mouse" && evento.button !== 0) return
-      if ((evento.target as HTMLElement).closest("[data-sem-arrasto]")) return
-
-      const caixa = evento.currentTarget.getBoundingClientRect()
-      const s: Sessao = {
-        lead,
-        pointerId: evento.pointerId,
-        tipo: evento.pointerType,
-        x: evento.clientX,
-        y: evento.clientY,
-        x0: evento.clientX,
-        y0: evento.clientY,
-        dx: evento.clientX - caixa.left,
-        dy: evento.clientY - caixa.top,
-        largura: caixa.width,
-        ativo: false,
-        timer: null,
-        raf: null,
-      }
-      sessao = s
-
-      if (s.tipo === "touch") {
-        s.timer = window.setTimeout(() => {
-          s.timer = null
-          if (sessao === s) {
-            ativar()
-            posicionarFantasma()
-          }
-        }, ESPERA_TOQUE_MS)
-      }
-
-      window.addEventListener("pointermove", aoMover)
-      window.addEventListener("pointerup", aoSoltar)
-      window.addEventListener("pointercancel", aoCancelar)
-      window.addEventListener("keydown", aoTecla)
-      window.addEventListener("touchmove", bloquearRolagem, { passive: false })
-    }
-
-    return { iniciar, cancelar: limpar }
-  })
-
-  // Se o quadro sair da tela no meio de um arrasto, solta tudo.
-  useEffect(() => motor.cancelar, [motor])
-
-  return { arrasto, fantasmaRef, acabouDeArrastarRef, iniciarGesto: motor.iniciar }
 }
 
 /* ------------------------------------------------------------------ */
@@ -424,7 +184,7 @@ const Cartao = memo(function Cartao({ lead, arrastando, fantasma, onGesto, onMov
   )
 })
 
-type FantasmaProps = { estado: EstadoArrasto; fantasmaRef: RefObject<HTMLDivElement | null> }
+type FantasmaProps = { estado: EstadoArrasto<KanbanLead, LeadStatus>; fantasmaRef: RefObject<HTMLDivElement | null> }
 
 /** Cópia do cartão que acompanha o ponteiro. Fica fora da árvore do quadro (portal). */
 const Fantasma = memo(function Fantasma({ estado, fantasmaRef }: FantasmaProps) {
@@ -640,7 +400,10 @@ export function KanbanBoard({ inicial }: { inicial: KanbanBoardData }) {
     [mover],
   )
 
-  const { arrasto, fantasmaRef, acabouDeArrastarRef, iniciarGesto } = useArrastoDeCards(scrollRef, { aoSoltar: pedirMover })
+  const { arrasto, fantasmaRef, acabouDeArrastarRef, iniciarGesto } = useArrastoDeCards<KanbanLead, LeadStatus>(scrollRef, {
+    aoSoltar: pedirMover,
+    colunaValida: (valor) => Object.hasOwn(LEAD_STATUS_LABEL, valor),
+  })
 
   const opcoesCampanha: OpcaoSelect[] = useMemo(
     () =>
@@ -709,8 +472,9 @@ export function KanbanBoard({ inicial }: { inicial: KanbanBoardData }) {
     <div className="flex h-[calc(100dvh-5.5rem)] min-h-[420px] flex-col md:h-[calc(100dvh-6.5rem)]">
       <PageHeader
         titulo="Kanban"
-        descricao="Os leads organizados pelo status. Arraste um cartão para outra coluna para mudar o status."
+        descricao="Os leads organizados pelo status. Arraste um cartão para outra coluna para mudar o status. Para gerir as etapas de uma campanha, escolha-a no seletor ao lado."
       >
+        <KanbanModoToggle campanhas={campanhas} campanhaAtualId={null} />
         <div className="relative w-full md:w-64">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input

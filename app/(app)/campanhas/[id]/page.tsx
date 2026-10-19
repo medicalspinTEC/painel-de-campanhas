@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, CalendarClock, Hourglass, MessageSquare, Send, Users } from "lucide-react"
+import { ArrowLeft, CalendarClock, Hourglass, MessageSquare, SquareKanban, Send, Users } from "lucide-react"
 
 import { CampaignExportMenu } from "@/components/features/campaigns/campaign-export-menu"
 import { CampaignFollowUpButton } from "@/components/features/campaigns/campaign-follow-up-button"
@@ -16,12 +16,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { formatDate, formatNumber, formatPercent, renderTemplate } from "@/lib/format"
 import { getCampaign, getCampaignFormerLeads, getCampaignResponders, getCampaignResponses, getCampaignSchedule, getIndividualLeadMessages } from "@/services/campaigns"
 import { listLeads } from "@/services/leads"
+import { getKanbanPluginAtivo } from "@/services/settings"
+import { podeAcessar } from "@/lib/permissoes"
 import { requireSecao } from "@/lib/session"
 
 export default async function CampanhaPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireSecao("campanhas")
+  const usuario = await requireSecao("campanhas")
   const { id } = await params
-  const [campanha, leads, agenda, respostas, respondentes, saidosSemResponder] = await Promise.all([
+  // Com o plugin Kanban ativo (e acesso à aba), as etapas da campanha também podem ser geridas por lá.
+  const [kanbanAtivo, campanha, leads, agenda, respostas, respondentes, saidosSemResponder] = await Promise.all([
+    podeAcessar(usuario, "kanban") ? getKanbanPluginAtivo().catch(() => false) : Promise.resolve(false),
     getCampaign(id),
     listLeads(),
     getCampaignSchedule(id),
@@ -68,6 +72,12 @@ export default async function CampanhaPage({ params }: { params: Promise<{ id: s
           />
           {campanha.status === "encerrada" && saidosSemResponder.length > 0 ? (
             <CampaignFollowUpButton campanhaId={campanha.id} totalSaidos={saidosSemResponder.length} />
+          ) : null}
+          {kanbanAtivo ? (
+            <LinkButton variant="outline" href={`/kanban?campanha=${encodeURIComponent(campanha.id)}`}>
+              <SquareKanban className="size-4" aria-hidden />
+              Gerir no Kanban
+            </LinkButton>
           ) : null}
           <LinkButton variant="outline" href={`/campanhas/${campanha.id}/editar`}>
             Editar campanha
@@ -184,7 +194,8 @@ export default async function CampanhaPage({ params }: { params: Promise<{ id: s
         <CardHeader>
           <CardTitle>Leads vinculados</CardTitle>
           <CardDescription>
-            {leadsDaCampanha.length} leads recebendo esta sequência. Use “Pular” para antecipar o próximo disparo.
+            {leadsDaCampanha.length} leads recebendo esta sequência. Use “Pular” para antecipar o próximo disparo
+            {kanbanAtivo ? " ou gerencie as etapas arrastando os leads no Kanban." : "."}
           </CardDescription>
         </CardHeader>
         <CardContent>

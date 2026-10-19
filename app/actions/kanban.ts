@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 
 import { prisma } from "@/lib/prisma"
 import { recordAppLog } from "@/services/app-logs"
+import { skipToNextMessage } from "@/services/campaigns"
 import { assignCampaignBulk, setLeadStatus } from "@/services/leads"
 import { getCrmPluginAtivo, getKanbanPluginAtivo } from "@/services/settings"
 import { LEAD_STATUS_LABEL, LEAD_STATUS_SOMENTE_CRM, type LeadStatus } from "@/types"
@@ -104,4 +105,56 @@ function revalidarTelas(leadId: string) {
   revalidatePath("/dashboard")
   revalidatePath("/eventos")
   revalidatePath("/relatorios")
+}
+
+export type AvancarEtapaCampanhaResultado = {
+  ok: boolean
+  message: string
+  aguardandoRecorrencia?: boolean
+  proximaMensagemEm?: string | null
+}
+
+/**
+ * Avança um lead para a próxima etapa da campanha no kanban: envia agora a próxima mensagem da sequência
+ * (ou, com a sequência concluída, reinicia o ciclo e envia a primeira). É exatamente o botão "Pular" da
+ * tela de detalhes da campanha — mesma função de serviço, mesmos eventos, timeline e webhook
+ * `mensagem.pulada` —, só que acionada pelo arrasto do cartão.
+ */
+export async function avancarEtapaCampanhaKanbanAction(leadId: string, campanhaId: string): Promise<AvancarEtapaCampanhaResultado> {
+  await assertSecao("kanban")
+  if (!leadId || !campanhaId) return { ok: false, message: "Lead ou campanha inválidos." }
+  if (!(await getKanbanPluginAtivo())) return { ok: false, message: "O plugin Kanban está desativado." }
+
+  try {
+    const campanha = await prisma.campaign.findUnique({ where: { id: campanhaId }, select: { tipo: true, status: true } })
+    if (!campanha) return { ok: false, message: "Campanha não encontrada." }
+    if (campanha.tipo === "individual") {
+      return { ok: false, message: "Campanhas individuais enviam uma única mensagem por lead e não têm etapas para avançar." }
+    }
+    if (campanha.status === "encerrada") return { ok: false, message: "A campanha está encerrada." }
+
+    const resultado = await skipToNextMessage(leadId, campanhaId)
+    if (resultado.ok) {
+      // O próprio quadro já foi atualizado no cliente; /kanban fica de fora para não recarregar no meio de outro arrasto.
+      revalidatePath("/campanhas")
+      revalidatePath(`/campanhas/${campanhaId}`)
+      revalidatePath(`/leads/${leadId}`)
+      revalidatePath("/dashboard")
+      revalidatePath("/eventos")
+      revalidatePath("/relatorios")
+    }
+    return {
+      ok: resultado.ok,
+      message: resultado.message,
+      aguardandoRecorrencia: resultado.aguardandoRecorrencia,
+      proximaMensagemEm: resultado.proximaMensagemEm,
+    }
+  } catch (error) {
+    await recordAppLog({
+      origem: "campaigns",
+      mensagem: `Falha ao avançar a etapa do lead ${leadId} na campanha ${campanhaId} pelo kanban.`,
+      detalhes: error,
+    })
+    return { ok: false, message: "Não foi possível enviar a próxima mensagem." }
+  }
 }
