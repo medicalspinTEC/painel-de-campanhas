@@ -9,6 +9,7 @@ import {
   tipoDeAnexo,
 } from "@/lib/interno-storage"
 import { idDeArquivoValido, mimeLimpo } from "@/lib/arquivo-storage"
+import { extensaoDoMime } from "@/lib/audio-storage"
 import { toUsuario } from "@/services/users"
 
 /**
@@ -41,7 +42,7 @@ export interface InternoContato {
 
 export interface InternoAnexo {
   id: string
-  tipo: "imagem" | "documento" | "video"
+  tipo: "imagem" | "documento" | "video" | "audio"
   mime: string
   tamanho: number
   nome: string
@@ -249,6 +250,7 @@ export async function excluirGrupoInterno(userId: string, conversaId: string): P
 function previewDeAnexo(tipo: string | null): string {
   if (tipo === "imagem") return "📷 Imagem"
   if (tipo === "video") return "🎬 Vídeo"
+  if (tipo === "audio") return "🎤 Mensagem de voz"
   return "📎 Arquivo"
 }
 
@@ -421,7 +423,7 @@ export async function enviarMensagemInterna(
   userId: string,
   conversaId: string,
   texto: string,
-  anexo?: { dados: Buffer; nome: string; mime: string } | null,
+  anexo?: { dados: Buffer; nome: string; mime: string; /** Mensagem de voz gravada no navegador (tocada no próprio chat, sem baixar). */ voz?: boolean } | null,
 ): Promise<InternoMensagemDto> {
   await exigirParticipante(userId, conversaId)
 
@@ -430,6 +432,7 @@ export async function enviarMensagemInterna(
     throw new ChatInternoError(`A mensagem é muito longa (máximo de ${LIMITE_TEXTO_INTERNO} caracteres).`)
   }
   if (!textoLimpo && !anexo) throw new ChatInternoError("Escreva uma mensagem ou escolha um arquivo.")
+  if (anexo?.voz && !extensaoDoMime(anexo.mime)) throw new ChatInternoError("Formato de áudio não suportado por este navegador.")
   if (anexo && anexo.dados.length === 0) throw new ChatInternoError("O arquivo está vazio.")
   if (anexo && anexo.dados.length > ANEXO_INTERNO_TAMANHO_MAXIMO) {
     throw new ChatInternoError(`O arquivo é muito grande (máximo de ${Math.round(ANEXO_INTERNO_TAMANHO_MAXIMO / 1024 / 1024)} MB).`)
@@ -451,10 +454,10 @@ export async function enviarMensagemInterna(
           ...(anexo && anexoId && mime
             ? {
                 anexoId,
-                anexoTipo: tipoDeAnexo(mime),
+                anexoTipo: anexo.voz ? "audio" : tipoDeAnexo(mime),
                 anexoMime: mime,
                 anexoTamanho: anexo.dados.length,
-                anexoNome: nomeDoAnexo(anexo.nome, mime),
+                anexoNome: anexo.voz ? "Mensagem de voz" : nomeDoAnexo(anexo.nome, mime),
               }
             : {}),
         },
@@ -479,7 +482,7 @@ export async function enviarMensagemInterna(
 export interface DownloadInterno {
   mensagemId: string
   anexoId: string
-  meta: { mime: string; nome: string }
+  meta: { mime: string; nome: string; tipo: string | null }
   /** Quem baixa é o autor: não conta para a exclusão. */
   ehAutor: boolean
   workspaceId: string
@@ -490,14 +493,14 @@ export async function prepararDownloadInterno(userId: string, anexoId: string): 
   if (!idDeArquivoValido(anexoId)) return null
   const mensagem = await prisma.internoMensagem.findFirst({
     where: { anexoId },
-    select: { id: true, conversaId: true, autorId: true, anexoMime: true, anexoNome: true, conversa: { select: { workspaceId: true } } },
+    select: { id: true, conversaId: true, autorId: true, anexoMime: true, anexoNome: true, anexoTipo: true, conversa: { select: { workspaceId: true } } },
   })
   if (!mensagem) return null
   if (!(await participanteDe(userId, mensagem.conversaId))) return null
   return {
     mensagemId: mensagem.id,
     anexoId,
-    meta: { mime: mensagem.anexoMime ?? "application/octet-stream", nome: mensagem.anexoNome ?? "arquivo" },
+    meta: { mime: mensagem.anexoMime ?? "application/octet-stream", nome: mensagem.anexoNome ?? "arquivo", tipo: mensagem.anexoTipo },
     ehAutor: mensagem.autorId === userId,
     workspaceId: mensagem.conversa.workspaceId,
   }

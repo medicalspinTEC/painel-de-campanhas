@@ -1,6 +1,7 @@
 "use server"
 
 import { ANEXO_INTERNO_TAMANHO_MAXIMO } from "@/lib/interno-storage"
+import { extensaoDoMime } from "@/lib/audio-storage"
 import { assertSecao } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
 import {
@@ -151,13 +152,18 @@ export async function enviarMensagemInternaAction(conversaId: string, formData: 
     return { ok: false as const, message: `O arquivo é muito grande (máximo de ${Math.round(ANEXO_INTERNO_TAMANHO_MAXIMO / 1024 / 1024)} MB).` }
   }
 
+  const voz = formData.get("voz") === "1"
+  if (voz && (!temArquivo || !extensaoDoMime(arquivo.type))) {
+    return { ok: false as const, message: "Formato de áudio não suportado por este navegador." }
+  }
+
   return executar(
     async () => ({
       mensagem: await enviarMensagemInterna(
         usuario.id,
         conversaId,
         texto,
-        temArquivo ? { dados: Buffer.from(await arquivo.arrayBuffer()), nome: arquivo.name, mime: arquivo.type } : null,
+        temArquivo ? { dados: Buffer.from(await arquivo.arrayBuffer()), nome: arquivo.name, mime: arquivo.type, voz } : null,
       ),
     }),
     "Não foi possível enviar a mensagem.",

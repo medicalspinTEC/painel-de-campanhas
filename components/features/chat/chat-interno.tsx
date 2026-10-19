@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from "react"
 import { toast } from "sonner"
-import { ArrowLeft, CheckCheck, Download, FileText, ImageIcon, LogOut, MessageCircle, Paperclip, Pencil, Plus, Search, Send, Settings, Trash2, UserMinus, UserPlus, Users, X } from "lucide-react"
+import { ArrowLeft, CheckCheck, Download, FileText, ImageIcon, LogOut, MessageCircle, Mic, Paperclip, Pencil, Plus, Search, Send, Settings, Trash2, UserMinus, UserPlus, Users, X } from "lucide-react"
 
 import {
   abrirConversaInternaAction,
@@ -32,6 +32,18 @@ const INTERVALO_ATUALIZACAO = 5000
 const LIMITE_TEXTO = 4096
 /** Igual ao limite do servidor (lib/interno-storage.ts). */
 const LIMITE_ARQUIVO_BYTES = 16 * 1024 * 1024
+/** Mensagem de voz: o envio é automático ao chegar nesse tempo (igual ao chat com leads). */
+const DURACAO_MAXIMA_AUDIO_S = 300
+const TIPOS_DE_AUDIO = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"]
+
+function duracaoAudio(segundos: number) {
+  return `${Math.floor(segundos / 60)}:${String(segundos % 60).padStart(2, "0")}`
+}
+
+function tipoDeAudioSuportado() {
+  if (typeof MediaRecorder === "undefined") return ""
+  return TIPOS_DE_AUDIO.find((tipo) => MediaRecorder.isTypeSupported(tipo)) ?? ""
+}
 
 function iniciais(nome: string) {
   return nome.trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("") || "?"
@@ -125,6 +137,14 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
   const [texto, setTexto] = useState("")
   const [arquivo, setArquivo] = useState<File | null>(null)
   const [enviando, setEnviando] = useState(false)
+  const [gravando, setGravando] = useState(false)
+  const [segundosGravados, setSegundosGravados] = useState(0)
+  const gravadorRef = useRef<MediaRecorder | null>(null)
+  const pedacosAudioRef = useRef<Blob[]>([])
+  const streamAudioRef = useRef<MediaStream | null>(null)
+  const timerAudioRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const descartarAudioRef = useRef(false)
+  const destinoAudioRef = useRef<string | null>(null)
   const [novaAberta, setNovaAberta] = useState(false)
   const [configAberta, setConfigAberta] = useState(false)
   // Anexos que acabaram de ser baixados por mim (o servidor registra o fim do download).
@@ -346,6 +366,113 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
     }
   }
 
+  function liberarMicrofone() {
+    if (timerAudioRef.current) clearInterval(timerAudioRef.current)
+    timerAudioRef.current = null
+    streamAudioRef.current?.getTracks().forEach((faixa) => faixa.stop())
+    streamAudioRef.current = null
+    gravadorRef.current = null
+    setGravando(false)
+    setSegundosGravados(0)
+  }
+
+  /** Para a gravação: com `enviar` o áudio segue para a conversa, sem ele é descartado. */
+  function pararGravacao(enviarAudio: boolean) {
+    descartarAudioRef.current = !enviarAudio
+    const gravador = gravadorRef.current
+    if (gravador && gravador.state !== "inactive") gravador.stop()
+    else liberarMicrofone()
+  }
+
+  async function iniciarGravacao() {
+    const idDaConversa = selecionadaId
+    if (!idDaConversa || gravando || enviando) return
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      toast.error("Este navegador não permite gravar áudio. Use um navegador atualizado e acesse o painel por HTTPS.")
+      return
+    }
+
+    let stream: MediaStream
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    } catch (erro) {
+      const negado = erro instanceof DOMException && (erro.name === "NotAllowedError" || erro.name === "SecurityError")
+      toast.error(negado ? "Permita o uso do microfone no navegador para gravar a mensagem de voz." : "Não foi possível acessar o microfone.")
+      return
+    }
+
+    const tipo = tipoDeAudioSuportado()
+    const gravador = new MediaRecorder(stream, tipo ? { mimeType: tipo } : undefined)
+    pedacosAudioRef.current = []
+    descartarAudioRef.current = false
+    destinoAudioRef.current = idDaConversa
+    gravador.ondataavailable = (evento) => {
+      if (evento.data.size > 0) pedacosAudioRef.current.push(evento.data)
+    }
+    gravador.onstop = () => void finalizarGravacao(gravador.mimeType || tipo)
+    streamAudioRef.current = stream
+    gravadorRef.current = gravador
+    gravador.start()
+
+    const inicio = Date.now()
+    setSegundosGravados(0)
+    setGravando(true)
+    timerAudioRef.current = setInterval(() => {
+      const segundos = Math.floor((Date.now() - inicio) / 1000)
+      setSegundosGravados(segundos)
+      if (segundos >= DURACAO_MAXIMA_AUDIO_S) pararGravacao(true)
+    }, 500)
+  }
+
+  async function finalizarGravacao(mime: string) {
+    const descartar = descartarAudioRef.current
+    const idDaConversa = destinoAudioRef.current
+    const pedacos = pedacosAudioRef.current
+    pedacosAudioRef.current = []
+    destinoAudioRef.current = null
+    liberarMicrofone()
+    if (descartar || !idDaConversa || pedacos.length === 0) return
+
+    const audio = new Blob(pedacos, { type: mime || pedacos[0].type })
+    if (audio.size < 1000) {
+      toast.error("O áudio ficou muito curto. Grave um pouco mais e tente de novo.")
+      return
+    }
+    if (audio.size > LIMITE_ARQUIVO_BYTES) {
+      toast.error(`O áudio é muito grande (máximo de ${LIMITE_ARQUIVO_BYTES / 1024 / 1024} MB). Grave um áudio mais curto.`)
+      return
+    }
+
+    setEnviando(true)
+    const dados = new FormData()
+    dados.append("arquivo", new File([audio], "voz", { type: audio.type }))
+    dados.append("voz", "1")
+    try {
+      const resultado = await enviarMensagemInternaAction(idDaConversa, dados)
+      if (!resultado.ok) {
+        toast.error(resultado.message)
+        return
+      }
+      pertoDoFimRef.current = true
+      if (selecionadaRef.current === idDaConversa) {
+        setMensagens((atual) => (atual.some((m) => m.id === resultado.mensagem.id) ? atual : [...atual, resultado.mensagem]))
+      }
+      void refreshChatInternoAction(selecionadaRef.current, true).then((s) => aplicar(s, false)).catch(() => undefined)
+    } catch {
+      toast.error("Não foi possível enviar a mensagem de voz. Verifique a conexão e tente de novo.")
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  // Trocar de conversa (ou sair da tela) descarta uma gravação em andamento e solta o microfone.
+  useEffect(() => {
+    return () => {
+      if (gravadorRef.current) pararGravacao(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selecionadaId])
+
   function aoTeclar(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
       event.preventDefault()
@@ -529,7 +656,13 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
                           {!minha && conversaAtiva.tipo === "grupo" && inicioDoGrupo ? (
                             <span className="mb-0.5 block max-w-56 truncate text-xs font-semibold text-primary">{mensagem.autorNome}</span>
                           ) : null}
-                          {anexo ? (
+                          {anexo?.tipo === "audio" ? (
+                            anexo.disponivel ? (
+                              <audio controls preload="none" src={`/api/chat/interno/audio/${anexo.id}`} className="h-10 w-64 max-w-full" aria-label="Mensagem de voz" />
+                            ) : (
+                              <span className="flex items-center gap-1.5 text-sm italic text-muted-foreground"><Mic className="size-4 shrink-0" />Áudio expirado e removido do servidor</span>
+                            )
+                          ) : anexo ? (
                             <span className="flex flex-col gap-1.5">
                               <span className="flex items-center gap-2.5">
                                 <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-black/5 dark:bg-white/10">
@@ -592,6 +725,17 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
                 </div>
               ) : null}
               <div className="flex items-end gap-2">
+                {gravando ? (
+                  <div className="flex min-h-10 flex-1 items-center gap-3 rounded-2xl border border-input bg-muted/50 px-4" role="status" aria-live="polite">
+                    <span className="size-2.5 shrink-0 animate-pulse rounded-full bg-red-500" aria-hidden="true" />
+                    <span className="text-sm font-medium tabular-nums">{duracaoAudio(segundosGravados)}</span>
+                    <span className="min-w-0 truncate text-xs text-muted-foreground">Gravando mensagem de voz...</span>
+                    <Button type="button" variant="ghost" size="icon" className="ml-auto size-8 shrink-0 rounded-full" aria-label="Descartar gravação" title="Descartar gravação" onClick={() => pararGravacao(false)}>
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
+                ) : (
+                <>
                 <input
                   ref={inputArquivoRef}
                   type="file"
@@ -616,9 +760,21 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
                   className="max-h-40 min-h-10 flex-1 resize-none rounded-2xl"
                   disabled={enviando}
                 />
-                <Button type="button" size="icon" className="shrink-0 rounded-full" aria-label="Enviar" disabled={enviando || (!texto.trim() && !arquivo)} onClick={() => void enviar()}>
-                  <Send className="size-4" />
-                </Button>
+                </>
+                )}
+                {gravando ? (
+                  <Button type="button" size="icon" className="shrink-0 rounded-full" aria-label="Enviar mensagem de voz" title="Enviar mensagem de voz" onClick={() => pararGravacao(true)}>
+                    <Send className="size-4" />
+                  </Button>
+                ) : !texto.trim() && !arquivo ? (
+                  <Button type="button" size="icon" className="shrink-0 rounded-full" aria-label="Gravar mensagem de voz" title="Gravar mensagem de voz" disabled={enviando} onClick={() => void iniciarGravacao()}>
+                    <Mic className="size-4" />
+                  </Button>
+                ) : (
+                  <Button type="button" size="icon" className="shrink-0 rounded-full" aria-label="Enviar" disabled={enviando} onClick={() => void enviar()}>
+                    <Send className="size-4" />
+                  </Button>
+                )}
               </div>
             </footer>
           </section>
@@ -626,7 +782,7 @@ export function ChatInterno({ inicial, usuarioId }: { inicial: InternoSnapshot; 
           <div className="wa-wallpaper hidden flex-1 flex-col items-center justify-center gap-3 p-6 text-center lg:flex">
             <span className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary"><Users className="size-6" /></span>
             <p className="text-base font-medium">Chat da equipe</p>
-            <p className="max-w-xs text-sm text-muted-foreground">Converse com os colegas dentro da plataforma. Imagens e arquivos não ficam guardados: somem do servidor quando são baixados.</p>
+            <p className="max-w-xs text-sm text-muted-foreground">Converse com os colegas dentro da plataforma. Imagens e arquivos não ficam guardados: somem do servidor quando são baixados. Mensagens de voz ficam disponíveis por alguns dias.</p>
             {contatos.length ? <Button onClick={() => setNovaAberta(true)}><Plus className="size-4" />Nova conversa</Button> : null}
           </div>
         )}
