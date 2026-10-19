@@ -412,3 +412,128 @@ export async function removerLeadDoFunil(funilId: string, leadId: string, porUsu
     data: { leadId, funil: vinculo.funil.nome, deEtapa: vinculo.etapa.nome, paraEtapa: null, porUsuario },
   })
 }
+
+// ---------------------------------------------------------------------------
+// Pontos de entrada fora da aba Funis: detalhe do lead, chat e aba Leads
+// ---------------------------------------------------------------------------
+
+export type FunilParaAdicionar = {
+  id: string
+  nome: string
+  etapas: { id: string; nome: string }[]
+}
+
+/** Funis ativos com as etapas, para escolher onde colocar o(s) lead(s). */
+export async function listarFunisParaAdicionar(): Promise<FunilParaAdicionar[]> {
+  await exigirPlugin("crm")
+  const funis = await prisma.funil.findMany({
+    where: { ativo: true },
+    orderBy: [{ ordem: "asc" }, { nome: "asc" }],
+    select: { id: true, nome: true, etapas: { orderBy: { ordem: "asc" }, select: { id: true, nome: true } } },
+  })
+  return funis.filter((f) => f.etapas.length > 0)
+}
+
+const LEADS_POR_VEZ_MAX = 1000
+
+/** Coloca vários leads no funil de uma vez. Quem já está no funil é ignorado (e contado). */
+export async function adicionarLeadsAoFunil(
+  funilId: string,
+  leadIds: string[],
+  opcoes: { etapaId?: string | null; valor?: number | null },
+  porUsuario: string,
+): Promise<{ adicionados: number; jaNoFunil: number }> {
+  await exigirPlugin("crm")
+  const ids = [...new Set((Array.isArray(leadIds) ? leadIds : []).filter((id): id is string => typeof id === "string" && id.length > 0))]
+  if (ids.length === 0) throw new CrmError("Selecione pelo menos um lead.")
+  if (ids.length > LEADS_POR_VEZ_MAX) throw new CrmError(`Selecione no máximo ${LEADS_POR_VEZ_MAX} leads por vez.`)
+
+  const funil = await prisma.funil.findUnique({
+    where: { id: funilId },
+    select: { nome: true, ativo: true, etapas: { orderBy: { ordem: "asc" }, select: { id: true, nome: true } } },
+  })
+  if (!funil) throw new CrmError("Funil não encontrado.")
+  if (!funil.ativo) throw new CrmError("O funil está inativo. Ative-o para adicionar leads.")
+  const etapa = opcoes.etapaId ? funil.etapas.find((e) => e.id === opcoes.etapaId) : funil.etapas[0]
+  if (!etapa) throw new CrmError("Etapa não encontrada.")
+  const valor = validarValor(opcoes.valor)
+
+  const [leads, existentes] = await Promise.all([
+    prisma.lead.findMany({ where: { id: { in: ids } }, select: { id: true } }),
+    prisma.leadFunil.findMany({ where: { funilId, leadId: { in: ids } }, select: { leadId: true } }),
+  ])
+  if (leads.length === 0) throw new CrmError("Lead não encontrado.")
+  const jaEsta = new Set(existentes.map((e) => e.leadId))
+  const novos = leads.map((l) => l.id).filter((id) => !jaEsta.has(id))
+
+  if (novos.length > 0) {
+    await prisma.leadFunil.createMany({ data: novos.map((leadId) => ({ leadId, funilId, etapaId: etapa.id, valor })) })
+    await prisma.leadFunilMovimento.createMany({
+      data: novos.map((leadId) => ({ leadId, funil: funil.nome, deEtapa: null, paraEtapa: etapa.nome, porUsuario })),
+    })
+  }
+  return { adicionados: novos.length, jaNoFunil: leads.length - novos.length }
+}
+
+export type LeadFunilVinculo = {
+  funilId: string
+  funilNome: string
+  funilAtivo: boolean
+  etapaId: string
+  valor: number | null
+  movidoEm: string
+  etapas: { id: string; nome: string; cor: ReturnType<typeof funilCorValida>; tipo: FunilEtapaTipo }[]
+}
+
+export type LeadFunilMovimentoItem = {
+  id: string
+  funil: string
+  deEtapa: string | null
+  paraEtapa: string | null
+  porUsuario: string
+  data: string
+}
+
+/** Funis em que o lead está (com as etapas, para mover) e os últimos movimentos. Tela de detalhe do lead. */
+export async function getFunisDoLead(leadId: string): Promise<{ vinculos: LeadFunilVinculo[]; movimentos: LeadFunilMovimentoItem[] }> {
+  await exigirPlugin("crm")
+  const [vinculos, movimentos] = await Promise.all([
+    prisma.leadFunil.findMany({
+      where: { leadId },
+      orderBy: { criadoEm: "asc" },
+      select: {
+        funilId: true,
+        etapaId: true,
+        valor: true,
+        movidoEm: true,
+        funil: {
+          select: {
+            nome: true,
+            ativo: true,
+            etapas: { orderBy: { ordem: "asc" }, select: { id: true, nome: true, cor: true, tipo: true } },
+          },
+        },
+      },
+    }),
+    prisma.leadFunilMovimento.findMany({ where: { leadId }, orderBy: { data: "desc" }, take: 15 }),
+  ])
+  return {
+    vinculos: vinculos.map((v) => ({
+      funilId: v.funilId,
+      funilNome: v.funil.nome,
+      funilAtivo: v.funil.ativo,
+      etapaId: v.etapaId,
+      valor: v.valor,
+      movidoEm: v.movidoEm.toISOString(),
+      etapas: v.funil.etapas.map((e) => ({ id: e.id, nome: e.nome, cor: funilCorValida(e.cor), tipo: funilTipoValido(e.tipo) })),
+    })),
+    movimentos: movimentos.map((m) => ({
+      id: m.id,
+      funil: m.funil,
+      deEtapa: m.deEtapa,
+      paraEtapa: m.paraEtapa,
+      porUsuario: m.porUsuario,
+      data: m.data.toISOString(),
+    })),
+  }
+}

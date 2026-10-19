@@ -21,6 +21,7 @@ import { ChatTagBadge, ChatTagsDialog, ChatTagsPopover } from "@/components/feat
 import { ChatTemplatesDialog } from "@/components/features/chat/chat-templates-dialog"
 import { FollowUpChatDialog } from "@/components/features/chat/followup-chat-dialog"
 import { EnviarCampanhaDialog } from "@/components/features/crm/enviar-campanha-dialog"
+import { FunilAdicionarLeadsDialog } from "@/components/features/crm/funil-adicionar-leads-dialog"
 import { TransferirConversaDialog } from "@/components/features/crm/transferir-conversa-dialog"
 import { LeadAvatar } from "@/components/shared/lead-avatar"
 import { Badge } from "@/components/ui/badge"
@@ -159,6 +160,7 @@ export function ChatInbox({
   const [filtroAtendimento, setFiltroAtendimento] = useState(FILTRO_TODOS)
   const [transferirAberto, setTransferirAberto] = useState(false)
   const [campanhaAberta, setCampanhaAberta] = useState(false)
+  const [funilAberto, setFunilAberto] = useState(false)
   const [followUpAberto, setFollowUpAberto] = useState(false)
   const [modoEscolhido, setModoComposicao] = useState<"mensagem" | "nota" | "resposta">("mensagem")
   const [assumindo, setAssumindo] = useState(false)
@@ -1250,6 +1252,18 @@ export function ChatInbox({
                           <Megaphone className="size-4" />
                         </Button>
                       ) : null}
+                      {permissoes?.podeEnviar ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="rounded-full"
+                          aria-label="Adicionar ao funil de vendas"
+                          title="Adicionar ao funil de vendas"
+                          onClick={() => setFunilAberto(true)}
+                        >
+                          <Filter className="size-4" />
+                        </Button>
+                      ) : null}
                       {permissoes?.podeTransferir ? (
                         <Button
                           variant="ghost"
@@ -1722,6 +1736,15 @@ export function ChatInbox({
           campanhas={crm.campanhas}
           campanhasDoLead={conversaAtiva.campanhasNomes}
           onEnviado={() => void aoTransferir()}
+        />
+      ) : null}
+
+      {crm && conversaAtiva ? (
+        <FunilAdicionarLeadsDialog
+          open={funilAberto}
+          onOpenChange={setFunilAberto}
+          leadIds={[conversaAtiva.id]}
+          descricao={`Escolha o funil e a etapa em que ${conversaAtiva.nome} vai entrar.`}
         />
       ) : null}
 

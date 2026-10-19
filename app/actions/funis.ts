@@ -4,22 +4,25 @@ import { revalidatePath } from "next/cache"
 
 import type { FunilBoardData } from "@/lib/funis"
 import { PluginDesativadoError } from "@/lib/plugins"
-import { assertPoder, ForbiddenError } from "@/lib/session"
+import { assertPoder, assertSecao, ForbiddenError } from "@/lib/session"
 import { recordAppLog } from "@/services/app-logs"
 import { CrmError } from "@/services/crm"
 import {
   adicionarLeadAoFunil,
+  adicionarLeadsAoFunil,
   atualizarFunil,
   buscarLeadsParaFunil,
   criarFunil,
   definirValorNoFunil,
   excluirFunil,
   getFunilBoard,
+  listarFunisParaAdicionar,
   moverLeadNoFunil,
   removerLeadDoFunil,
   salvarEtapas,
   type EtapaInput,
   type FunilInput,
+  type FunilParaAdicionar,
 } from "@/services/funis"
 import { getCrmPluginAtivo } from "@/services/settings"
 
@@ -36,6 +39,17 @@ function falha(error: unknown, contexto: string): FunilActionResult {
 /** Funis fazem parte da gestão do CRM: root ou admin com o poder "Gerenciar o CRM", e só com o plugin ativo. */
 async function exigirGestaoCrm() {
   const usuario = await assertPoder("crm_gerenciar")
+  if (!(await getCrmPluginAtivo())) throw new CrmError("O plugin CRM está desativado.")
+  return usuario
+}
+
+/**
+ * Operações sobre UM lead no funil (colocar, mover, valor, remover): além de quem gerencia o CRM,
+ * liberadas a quem usa as telas de Leads ou Chat, que têm esses atalhos. Editar funis e etapas
+ * continua só com o poder "Gerenciar o CRM".
+ */
+async function exigirAcessoLeadFunil() {
+  const usuario = await assertSecao("leads", "chat")
   if (!(await getCrmPluginAtivo())) throw new CrmError("O plugin CRM está desativado.")
   return usuario
 }
@@ -123,7 +137,7 @@ export async function adicionarLeadAoFunilAction(
   opcoes: { etapaId?: string | null; valor?: number | null } = {},
 ): Promise<FunilActionResult> {
   try {
-    const usuario = await exigirGestaoCrm()
+    const usuario = await exigirAcessoLeadFunil()
     await adicionarLeadAoFunil(funilId, leadId, opcoes, usuario.nome)
   } catch (error) {
     return falha(error, "Não foi possível adicionar o lead ao funil.")
@@ -135,9 +149,10 @@ export async function adicionarLeadAoFunilAction(
 
 export async function moverLeadNoFunilAction(funilId: string, leadId: string, etapaId: string): Promise<FunilActionResult> {
   try {
-    const usuario = await exigirGestaoCrm()
+    const usuario = await exigirAcessoLeadFunil()
     const { etapaNome } = await moverLeadNoFunil(funilId, leadId, etapaId, usuario.nome)
     // O quadro já foi atualizado no cliente; /crm fica de fora para não recarregar no meio de outro arrasto.
+    revalidatePath(`/leads/${leadId}`)
     return { ok: true, message: `Lead movido para ${etapaNome}.` }
   } catch (error) {
     return falha(error, "Não foi possível mover o lead.")
@@ -146,7 +161,7 @@ export async function moverLeadNoFunilAction(funilId: string, leadId: string, et
 
 export async function definirValorFunilAction(funilId: string, leadId: string, valor: number | null): Promise<FunilActionResult> {
   try {
-    await exigirGestaoCrm()
+    await exigirAcessoLeadFunil()
     await definirValorNoFunil(funilId, leadId, valor)
     return { ok: true, message: valor === null ? "Valor removido." : "Valor atualizado." }
   } catch (error) {
@@ -156,7 +171,7 @@ export async function definirValorFunilAction(funilId: string, leadId: string, v
 
 export async function removerLeadDoFunilAction(funilId: string, leadId: string): Promise<FunilActionResult> {
   try {
-    const usuario = await exigirGestaoCrm()
+    const usuario = await exigirAcessoLeadFunil()
     await removerLeadDoFunil(funilId, leadId, usuario.nome)
   } catch (error) {
     return falha(error, "Não foi possível remover o lead do funil.")
@@ -164,4 +179,33 @@ export async function removerLeadDoFunilAction(funilId: string, leadId: string):
   revalidarFunis()
   revalidatePath(`/leads/${leadId}`)
   return { ok: true, message: "Lead removido do funil." }
+}
+
+export async function listarFunisParaAdicionarAction(): Promise<{ ok: boolean; message: string; funis: FunilParaAdicionar[] }> {
+  try {
+    await exigirAcessoLeadFunil()
+    return { ok: true, message: "", funis: await listarFunisParaAdicionar() }
+  } catch (error) {
+    return { ...falha(error, "Não foi possível carregar os funis."), funis: [] }
+  }
+}
+
+/** Coloca um ou vários leads no funil (chat, detalhe do lead e aba Leads). */
+export async function adicionarLeadsAoFunilAction(
+  funilId: string,
+  leadIds: string[],
+  opcoes: { etapaId?: string | null; valor?: number | null } = {},
+): Promise<FunilActionResult> {
+  try {
+    const usuario = await exigirAcessoLeadFunil()
+    const { adicionados, jaNoFunil } = await adicionarLeadsAoFunil(funilId, leadIds, opcoes, usuario.nome)
+    revalidarFunis()
+    revalidatePath("/leads")
+    for (const id of leadIds.slice(0, 20)) revalidatePath(`/leads/${id}`)
+    if (adicionados === 0) return { ok: false, message: jaNoFunil === 1 ? "Este lead já está no funil." : "Todos os leads selecionados já estão no funil." }
+    const base = adicionados === 1 ? "1 lead adicionado ao funil." : `${adicionados} leads adicionados ao funil.`
+    return { ok: true, message: jaNoFunil > 0 ? `${base} ${jaNoFunil} já ${jaNoFunil === 1 ? "estava" : "estavam"} nele.` : base }
+  } catch (error) {
+    return falha(error, "Não foi possível adicionar ao funil.")
+  }
 }

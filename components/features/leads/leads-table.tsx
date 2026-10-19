@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   MoreHorizontal,
+  Filter,
   Pencil,
   Plus,
   Search,
@@ -16,6 +17,7 @@ import {
 import { toast } from "sonner"
 
 import { assignCampaignAction, deleteLeadAction, deleteLeadsAction, setLeadStatusAction } from "@/app/actions/leads"
+import { FunilAdicionarLeadsDialog } from "@/components/features/crm/funil-adicionar-leads-dialog"
 import { LeadFormDialog, type CampanhaOpcao } from "@/components/features/leads/lead-form-dialog"
 import { LeadsExportMenu } from "@/components/features/leads/leads-export-menu"
 import { LeadsBulkMessageDialog } from "@/components/features/leads/leads-bulk-message-dialog"
@@ -119,6 +121,8 @@ export function LeadsTable({
   const [leadEditando, setLeadEditando] = useState<LeadRow | null>(null)
   const [alterandoStatusId, setAlterandoStatusId] = useState<string | null>(null)
   const [respostaAlvo, setRespostaAlvo] = useState<LeadRow | null>(null)
+  // Funis de vendas (plugin CRM): leads que serão adicionados a um funil.
+  const [funilAlvo, setFunilAlvo] = useState<{ ids: string[]; descricao: string } | null>(null)
   const [exclusao, setExclusao] = useState<{ tipo: "um"; lead: LeadRow } | { tipo: "lote"; ids: string[] } | null>(null)
   // Campanha individual precisa de uma mensagem por vínculo — abrimos este
   // card antes de vincular, em vez de mandar direto pelo select abaixo.
@@ -380,6 +384,17 @@ export function LeadsTable({
               size="sm"
               className="w-56"
             />
+            {crmAtivo ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFunilAlvo({ ids: selecionados, descricao: `${formatNumber(selecionados.length)} lead(s) selecionado(s) serão adicionados ao funil escolhido.` })}
+                disabled={pending}
+              >
+                <Filter className="size-4" />
+                Adicionar ao funil
+              </Button>
+            ) : null}
             <Button variant="destructive" size="sm" onClick={() => setExclusao({ tipo: "lote", ids: selecionados })} disabled={pending}>
               Excluir
             </Button>
@@ -516,6 +531,12 @@ export function LeadsTable({
                           <Pencil className="size-4" />
                           Editar
                         </DropdownMenuItem>
+                        {crmAtivo ? (
+                          <DropdownMenuItem onClick={() => setFunilAlvo({ ids: [lead.id], descricao: `Escolha o funil e a etapa em que ${lead.nome} vai entrar.` })}>
+                            <Filter className="size-4" />
+                            Adicionar ao funil
+                          </DropdownMenuItem>
+                        ) : null}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem variant="destructive" onClick={() => setExclusao({ tipo: "um", lead })}>
                           <Trash2 className="size-4" />
@@ -633,6 +654,18 @@ export function LeadsTable({
         onConfirmar={confirmarResposta}
         onCancelar={() => setRespostaAlvo(null)}
       />
+
+      {crmAtivo ? (
+        <FunilAdicionarLeadsDialog
+          open={funilAlvo !== null}
+          onOpenChange={(aberto) => !aberto && setFunilAlvo(null)}
+          leadIds={funilAlvo?.ids ?? []}
+          descricao={funilAlvo?.descricao ?? ""}
+          onAdicionado={() => {
+            if (funilAlvo && funilAlvo.ids.length > 1) setSelecionados([])
+          }}
+        />
+      ) : null}
 
       <AlertDialog open={Boolean(exclusao)} onOpenChange={(aberto) => !aberto && setExclusao(null)}>
         <AlertDialogContent>

@@ -1,8 +1,9 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, Landmark, MessageCircleReply, NotebookPen, Send, Sparkles } from "lucide-react"
+import { ArrowLeft, Filter, Landmark, MessageCircleReply, NotebookPen, Send, Sparkles } from "lucide-react"
 
 import { LeadMessageDialog } from "@/components/features/leads/lead-message-dialog"
+import { LeadFunisCard } from "@/components/features/leads/lead-funis-card"
 import { LeadCnpjNota } from "@/components/features/leads/lead-cnpj-nota"
 import { LeadNotes } from "@/components/features/leads/lead-notes"
 import { LeadTimeline } from "@/components/features/leads/lead-timeline"
@@ -14,6 +15,7 @@ import { Separator } from "@/components/ui/separator"
 import { cnpjMascara } from "@/lib/cnpj"
 import { formatDateTime, formatRelative, initials } from "@/lib/format"
 import { listInstanceOptions } from "@/services/evolution"
+import { getFunisDoLead } from "@/services/funis"
 import { getLead, getLeadTimeline } from "@/services/leads"
 import { requireSecao } from "@/lib/session"
 import { lerNotaCnpj } from "@/services/cnpj"
@@ -31,6 +33,8 @@ export default async function LeadDetalhePage({ params }: { params: Promise<{ id
   if (!lead) notFound()
   // Nota do CNPJ (consulta na Receita): só existe com o plugin CRM ativo.
   const notaCnpj = crmAtivo ? await lerNotaCnpj(id).catch(() => null) : null
+  // Funis de vendas: também só existem com o plugin CRM ativo.
+  const funisDoLead = crmAtivo ? await getFunisDoLead(id).catch(() => null) : null
 
   const atributos = [
     { label: "Produto", valor: lead.produto },
@@ -134,6 +138,21 @@ export default async function LeadDetalhePage({ params }: { params: Promise<{ id
               <LeadNotes leadId={lead.id} notas={lead.notas} />
             </CardContent>
           </Card>
+
+          {crmAtivo && funisDoLead ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Filter className="size-4 text-primary" />
+                  Funis de vendas
+                </CardTitle>
+                <CardDescription>Em que etapa este lead está em cada funil. Mude a etapa, defina o valor do negócio ou adicione o lead a outro funil.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <LeadFunisCard leadId={lead.id} leadNome={lead.nome} vinculos={funisDoLead.vinculos} movimentos={funisDoLead.movimentos} />
+              </CardContent>
+            </Card>
+          ) : null}
 
           {crmAtivo && notaCnpj ? (
             <Card>
