@@ -133,6 +133,8 @@ model Lead {
   eventos TimelineEvent[]
   mensagensAgendadas ScheduledMessage[]
   notasInternas ChatInternalNote[]
+  /// Etiquetas (tags) do chat aplicadas a este lead.
+  tagsChat ChatTagLead[]
   /// Plugin CRM: departamento/atendente responsável pela conversa (1:1, opcional).
   atendimento LeadAtendimento?
   transferencias AtendimentoTransferencia[]
@@ -156,6 +158,42 @@ model ChatInternalNote {
   lead   Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   @@index([leadId, data])
+}
+
+/// Etiqueta (tag) do chat. Criada no plugin de chat, vale para toda a instância e serve para
+/// classificar conversas e como filtro da lista. O nome é único por instância (sem diferenciar
+/// maiúsculas de minúsculas, conferido no serviço).
+model ChatTag {
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
+  nome        String
+  /// Uma das cores de `lib/chat-tags.ts` (ex.: "azul").
+  cor         String @default("azul")
+
+  criadoEm DateTime @default(now())
+
+  leads ChatTagLead[]
+
+  @@unique([workspaceId, nome])
+  @@index([workspaceId])
+}
+
+/// Vínculo entre uma etiqueta do chat e um lead.
+model ChatTagLead {
+  id String @id @default(cuid())
+
+  tagId String
+  tag   ChatTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  criadoEm DateTime @default(now())
+
+  @@unique([tagId, leadId])
+  @@index([leadId])
 }
 
 model Campaign {

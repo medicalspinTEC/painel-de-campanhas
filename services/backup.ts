@@ -84,6 +84,8 @@ function porId(delegate: unknown, opcoes: { tamanho?: number; omitir?: string[] 
 const LEITORES: Record<string, Leitor> = {
   Lead: porId(prisma.lead),
   ChatInternalNote: porId(prisma.chatInternalNote),
+  ChatTag: porId(prisma.chatTag),
+  ChatTagLead: porId(prisma.chatTagLead),
   Campaign: porId(prisma.campaign),
   CampaignMessage: porId(prisma.campaignMessage),
   LeadCampaign: porId(prisma.leadCampaign),

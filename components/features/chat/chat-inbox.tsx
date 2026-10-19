@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react"
 import { toast } from "sonner"
-import { ArrowLeft, ArrowRightLeft, Bot, Building2, Check, CheckCheck, ChevronLeft, ChevronRight, Clock, Download, FileText, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Mic, Paperclip, RefreshCw, Search, Send, Smile, Sparkles, StickyNote, Trash2, UserCheck, UserRound, X, Zap } from "lucide-react"
+import { ArrowLeft, ArrowRightLeft, Bot, Building2, Check, CheckCheck, ChevronLeft, ChevronRight, Clock, Download, FileText, Filter, Hand, Megaphone, MessageCircle, MessagesSquare, MessageSquareReply, Mic, Paperclip, RefreshCw, Search, Send, Smile, Sparkles, StickyNote, Tag, Trash2, UserCheck, UserRound, X, Zap } from "lucide-react"
 
 import { alternarBotConversaAction, assumirConversaAction } from "@/app/actions/crm"
 import { createChatInternalNoteAction, loadChatMessagesAction, refreshChatInboxAction, sendChatAudioAction, sendChatFileAction, sugerirRespostaAction } from "@/app/actions/chat"
@@ -17,6 +17,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { ChatExportMenu } from "@/components/features/chat/chat-export-menu"
+import { ChatTagBadge, ChatTagsDialog, ChatTagsPopover } from "@/components/features/chat/chat-tags"
 import { ChatTemplatesDialog } from "@/components/features/chat/chat-templates-dialog"
 import { FollowUpChatDialog } from "@/components/features/chat/followup-chat-dialog"
 import { EnviarCampanhaDialog } from "@/components/features/crm/enviar-campanha-dialog"
@@ -29,6 +30,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { SelectField } from "@/components/shared/select-field"
 import { Textarea } from "@/components/ui/textarea"
 import { MAX_SUGESTOES_POR_CONVERSA } from "@/lib/agentes-ia"
+import { CHAT_TAG_ESTILOS, type ChatTag } from "@/lib/chat-tags"
 import { gatilhoDeTemplate, type ChatTemplate } from "@/lib/chat-templates"
 import { avaliarAtendimento } from "@/lib/crm-permissoes"
 import { formatRelative } from "@/lib/format"
@@ -124,6 +126,7 @@ export function ChatInbox({
   identificarRemetenteInicial = false,
   crm = null,
   templatesIniciais = [],
+  podeGerenciarTags = false,
   topo = null,
 }: {
   inicial: ChatInboxSnapshot
@@ -134,6 +137,8 @@ export function ChatInbox({
   crm?: CrmChatOpcoes | null
   /** Templates de mensagem do usuário ("/nome" no campo de mensagem). */
   templatesIniciais?: ChatTemplate[]
+  /** Renomear, mudar a cor e excluir etiquetas (quem não é usuário padrão). Criar e aplicar é livre. */
+  podeGerenciarTags?: boolean
   /** Faixa acima do painel (abas Leads/Equipe). */
   topo?: ReactNode
 }) {
@@ -147,6 +152,10 @@ export function ChatInbox({
   const [arrastando, setArrastando] = useState(false)
   const painelRef = useRef<HTMLDivElement>(null)
   const [somenteRespostas, setSomenteRespostas] = useState(false)
+  // Etiquetas (tags): todas as da instância, as marcadas no filtro da lista e a tela de gerenciamento.
+  const [tags, setTags] = useState<ChatTag[]>(inicial.tags)
+  const [filtroTags, setFiltroTags] = useState<string[]>([])
+  const [tagsAberto, setTagsAberto] = useState(false)
   const [filtroAtendimento, setFiltroAtendimento] = useState(FILTRO_TODOS)
   const [transferirAberto, setTransferirAberto] = useState(false)
   const [campanhaAberta, setCampanhaAberta] = useState(false)
@@ -237,8 +246,12 @@ export function ChatInbox({
 
   const conversasVisiveis = conversas.filter((conversa) => {
     const correspondeBusca = `${conversa.nome} ${conversa.telefone} ${conversa.produto}`.toLowerCase().includes(busca.toLowerCase())
-    return correspondeBusca && (!somenteRespostas || conversa.ultimaMensagem?.lado === "lead") && correspondeAtendimento(conversa)
+    // Etiquetas: com várias marcadas, a conversa aparece se tiver qualquer uma delas.
+    const correspondeTags = filtroTags.length === 0 || conversa.tags.some((tag) => filtroTags.includes(tag.id))
+    return correspondeBusca && (!somenteRespostas || conversa.ultimaMensagem?.lado === "lead") && correspondeAtendimento(conversa) && correspondeTags
   })
+  const totalPorTag = new Map<string, number>()
+  for (const conversa of conversas) for (const tag of conversa.tags) totalPorTag.set(tag.id, (totalPorTag.get(tag.id) ?? 0) + 1)
   const totalComResposta = conversas.filter((conversa) => conversa.ultimaMensagem?.lado === "lead").length
   const opcoesFiltroAtendimento = crm
     ? [
@@ -407,7 +420,28 @@ export function ChatInbox({
     setMensagens(lista)
   }
 
+  /**
+   * Aplica uma lista nova de etiquetas: atualiza nome/cor nas conversas, tira as excluídas (e do filtro)
+   * e, se veio `tagsDoLead`, troca as etiquetas daquela conversa.
+   */
+  function atualizarEtiquetas(novas: ChatTag[], leadId?: string, tagsDoLead?: ChatTag[]) {
+    const porId = new Map(novas.map((tag) => [tag.id, tag]))
+    setTags(novas)
+    setFiltroTags((atual) => atual.filter((id) => porId.has(id)))
+    setConversas((atuais) =>
+      atuais.map((conversa) => {
+        if (leadId && tagsDoLead && conversa.id === leadId) return { ...conversa, tags: tagsDoLead }
+        return { ...conversa, tags: conversa.tags.filter((tag) => porId.has(tag.id)).map((tag) => porId.get(tag.id)!) }
+      }),
+    )
+  }
+
+  function alternarFiltroTag(id: string) {
+    setFiltroTags((atual) => (atual.includes(id) ? atual.filter((item) => item !== id) : [...atual, id]))
+  }
+
   function aplicarSnapshot(snapshot: ChatInboxSnapshot, comMensagens: boolean) {
+    setTags((atuais) => (JSON.stringify(atuais) === JSON.stringify(snapshot.tags) ? atuais : snapshot.tags))
     const assinatura = JSON.stringify(snapshot.conversas)
     if (assinatura !== assinaturaConversasRef.current) {
       assinaturaConversasRef.current = assinatura
@@ -886,6 +920,16 @@ export function ChatInbox({
             <div className="flex shrink-0 items-center gap-1">
               <ChatExportMenu conversaAtualId={conversaAtiva?.id ?? null} idsListados={conversasVisiveis.map((conversa) => conversa.id)} />
               <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full"
+                aria-label="Gerenciar etiquetas"
+                title="Gerenciar etiquetas"
+                onClick={() => setTagsAberto(true)}
+              >
+                <Tag className="size-4" />
+              </Button>
+              <Button
                 variant={somenteRespostas ? "secondary" : "ghost"}
                 size="icon"
                 className="rounded-full"
@@ -939,6 +983,35 @@ export function ChatInbox({
               />
             </div>
           ) : null}
+          {tags.length > 0 ? (
+            <div className="flex items-center gap-1.5 overflow-x-auto px-3 pb-2" role="group" aria-label="Filtrar por etiquetas" title="Mostra as conversas que tiverem qualquer uma das etiquetas marcadas">
+              {tags.map((tag) => {
+                const marcada = filtroTags.includes(tag.id)
+                return (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    aria-pressed={marcada}
+                    onClick={() => alternarFiltroTag(tag.id)}
+                    className={cn(
+                      "flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors",
+                      marcada ? "border-primary/30 bg-primary/15 text-primary" : "text-muted-foreground hover:bg-muted/60",
+                    )}
+                  >
+                    <span className={cn("size-2 rounded-full", CHAT_TAG_ESTILOS[tag.cor].ponto)} />
+                    <span className="max-w-28 truncate">{tag.nome}</span>
+                    <span className="tabular-nums">{totalPorTag.get(tag.id) ?? 0}</span>
+                  </button>
+                )
+              })}
+              {filtroTags.length > 0 ? (
+                <button type="button" onClick={() => setFiltroTags([])} className="flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-xs text-muted-foreground hover:text-foreground">
+                  <X className="size-3" />
+                  Limpar
+                </button>
+              ) : null}
+            </div>
+          ) : null}
           <div className="min-h-0 flex-1 overflow-y-auto">
             {conversasVisiveis.length ? conversasVisiveis.map((conversa) => {
               const respondeu = conversa.ultimaMensagem?.lado === "lead"
@@ -989,6 +1062,18 @@ export function ChatInbox({
                           <span className="flex min-w-0 items-center gap-1">
                             <UserRound className="size-3 shrink-0" />
                             <span className="truncate">{conversa.atendimento.atendenteNome}</span>
+                          </span>
+                        ) : null}
+                      </span>
+                    ) : null}
+                    {conversa.tags.length > 0 ? (
+                      <span className="mt-1.5 flex min-w-0 flex-wrap items-center gap-1">
+                        {conversa.tags.slice(0, 3).map((tag) => (
+                          <ChatTagBadge key={tag.id} tag={tag} />
+                        ))}
+                        {conversa.tags.length > 3 ? (
+                          <span className="text-[11px] text-muted-foreground" title={conversa.tags.slice(3).map((tag) => tag.nome).join(", ")}>
+                            +{conversa.tags.length - 3}
                           </span>
                         ) : null}
                       </span>
@@ -1068,8 +1153,23 @@ export function ChatInbox({
                       ) : null}
                     </div>
                   ) : null}
+                  {conversaAtiva.tags.length > 0 ? (
+                    <div className="hidden min-w-0 items-center gap-1 md:flex">
+                      {conversaAtiva.tags.slice(0, 2).map((tag) => (
+                        <ChatTagBadge key={tag.id} tag={tag} />
+                      ))}
+                      {conversaAtiva.tags.length > 2 ? <Badge variant="secondary">+{conversaAtiva.tags.length - 2}</Badge> : null}
+                    </div>
+                  ) : null}
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
+                  <ChatTagsPopover
+                    leadId={conversaAtiva.id}
+                    tags={tags}
+                    aplicadas={conversaAtiva.tags}
+                    onResultado={(resultado) => atualizarEtiquetas(resultado.tags, conversaAtiva.id, resultado.tagsDoLead)}
+                    onGerenciar={() => setTagsAberto(true)}
+                  />
                   {crm ? (
                     <>
                       {conversaAtiva.atendimento?.departamentoNome || conversaAtiva.atendimento?.atendenteNome ? (
@@ -1636,6 +1736,8 @@ export function ChatInbox({
           onTransferido={() => void aoTransferir()}
         />
       ) : null}
+
+      <ChatTagsDialog open={tagsAberto} onOpenChange={setTagsAberto} podeGerenciar={podeGerenciarTags} onTagsChange={(novas) => atualizarEtiquetas(novas)} />
 
       <ChatTemplatesDialog
         open={templatesAberto}

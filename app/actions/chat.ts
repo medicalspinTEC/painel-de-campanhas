@@ -11,7 +11,18 @@ import { recordAppLog } from "@/services/app-logs"
 import { AgenteIaError, sugerirRespostaAoAtendente } from "@/services/agentes-ia"
 import { addChatInternalNote, getChatInbox, getChatMessages, getChatsForExport } from "@/services/chat"
 import { CrmError, filtrarLeadsParaEnvio, pausarBotComNota } from "@/services/crm"
+import type { ChatTag, ChatTagComContagem } from "@/lib/chat-tags"
 import type { ChatTemplate } from "@/lib/chat-templates"
+import {
+  ChatTagError,
+  createChatTag,
+  deleteChatTag,
+  listChatTags,
+  listChatTagsComContagem,
+  listTagsDoLead,
+  setLeadChatTag,
+  updateChatTag,
+} from "@/services/chat-tags"
 import {
   ChatTemplateError,
   createChatTemplate,
@@ -267,4 +278,82 @@ export async function sugerirRespostaAction(
     void recordAppLog({ origem: "agentes-ia", mensagem: "Falha ao gerar sugestão de resposta.", detalhes: error instanceof Error ? error.message : String(error), contexto: { leadId: id } })
     return { ok: false, message: "Não foi possível gerar a sugestão agora. Tente de novo." }
   }
+}
+
+// ---------------------------------------------------------------------------
+// Etiquetas (tags) das conversas. Valem para toda a instância e também filtram a lista.
+// Qualquer pessoa com acesso ao chat cria e aplica; renomear, mudar a cor e excluir fica
+// com quem não é usuário padrão.
+// ---------------------------------------------------------------------------
+
+export type ChatTagResultado =
+  | { ok: true; message: string; tags: ChatTag[]; tagsDoLead?: ChatTag[] }
+  | { ok: false; message: string }
+
+const SO_ADMIN = "Somente administradores podem renomear, mudar a cor ou excluir etiquetas."
+
+async function executarTag(acao: () => Promise<Omit<Extract<ChatTagResultado, { ok: true }>, "ok" | "tags">>, falhaPadrao: string): Promise<ChatTagResultado> {
+  try {
+    const parcial = await acao()
+    return { ok: true, ...parcial, tags: await listChatTags() }
+  } catch (error) {
+    if (error instanceof ChatTagError) return { ok: false, message: error.message }
+    await recordAppLog({ origem: "chat", mensagem: "Falha ao alterar etiquetas do chat.", detalhes: error })
+    return { ok: false, message: falhaPadrao }
+  }
+}
+
+/** Etiquetas com a contagem de conversas (tela de gerenciamento). */
+export async function listChatTagsAction(): Promise<ChatTagComContagem[]> {
+  await assertSecao("chat")
+  return listChatTagsComContagem()
+}
+
+/** Cria uma etiqueta e, se `leadId` vier, já aplica na conversa. */
+export async function createChatTagAction(nome: string, cor: string, leadId?: string | null) {
+  await assertSecao("chat")
+  return executarTag(async () => {
+    const criada = await createChatTag(nome, cor)
+    if (!leadId) return { message: `Etiqueta "${criada.nome}" criada.` }
+    try {
+      const tagsDoLead = await setLeadChatTag(leadId, criada.id, true)
+      revalidatePath(`/leads/${leadId}`)
+      return { message: `Etiqueta "${criada.nome}" criada e aplicada.`, tagsDoLead }
+    } catch (error) {
+      if (!(error instanceof ChatTagError)) throw error
+      // A etiqueta já existe; só não coube nesta conversa.
+      return { message: `Etiqueta "${criada.nome}" criada. ${error.message}`, tagsDoLead: await listTagsDoLead(leadId) }
+    }
+  }, "Não foi possível criar a etiqueta.")
+}
+
+export async function updateChatTagAction(id: string, nome: string, cor: string) {
+  const usuario = await assertSecao("chat")
+  if (usuario.role === "padrao") return { ok: false as const, message: SO_ADMIN }
+  return executarTag(async () => {
+    const atualizada = await updateChatTag(id, nome, cor)
+    return { message: `Etiqueta "${atualizada.nome}" atualizada.` }
+  }, "Não foi possível atualizar a etiqueta.")
+}
+
+export async function deleteChatTagAction(id: string) {
+  const usuario = await assertSecao("chat")
+  if (usuario.role === "padrao") return { ok: false as const, message: SO_ADMIN }
+  return executarTag(async () => {
+    await deleteChatTag(id)
+    return { message: "Etiqueta excluída e removida das conversas." }
+  }, "Não foi possível excluir a etiqueta.")
+}
+
+/** Aplica (`aplicada: true`) ou remove a etiqueta da conversa. */
+export async function setLeadChatTagAction(leadId: string, tagId: string, aplicada: boolean) {
+  await assertSecao("chat")
+  const lead = typeof leadId === "string" ? leadId.trim() : ""
+  const tag = typeof tagId === "string" ? tagId.trim() : ""
+  if (!lead || !tag) return { ok: false as const, message: "Selecione uma conversa e uma etiqueta." }
+  return executarTag(async () => {
+    const tagsDoLead = await setLeadChatTag(lead, tag, Boolean(aplicada))
+    revalidatePath(`/leads/${lead}`)
+    return { message: aplicada ? "Etiqueta aplicada." : "Etiqueta removida.", tagsDoLead }
+  }, "Não foi possível alterar a etiqueta da conversa.")
 }

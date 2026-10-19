@@ -52,11 +52,13 @@ const DIRETOS = new Set([
   "AgenteIA",
   "User",
   "InternoConversa",
+  "ChatTag",
 ])
 
 /** Tabelas filhas: nome da relação que leva a uma tabela direta. */
 const FILHOS: Record<string, string> = {
   ChatInternalNote: "lead",
+  ChatTagLead: "lead",
   LeadCampaign: "lead",
   CampaignMessage: "campanha",
   ScheduledMessage: "lead",
@@ -89,6 +91,7 @@ const FK_MODELO: Record<string, string> = {
   agenteIaId: "AgenteIA",
   conversaId: "InternoConversa",
   autorId: "User",
+  tagId: "ChatTag",
 }
 
 /** Campo de relação (to-one) → modelo apontado, para `connect`. */
@@ -105,6 +108,7 @@ const RELACAO_MODELO: Record<string, string> = {
   agenteIa: "AgenteIA",
   conversa: "InternoConversa",
   autor: "User",
+  tag: "ChatTag",
 }
 
 /** Campos de relação (inclusive listas): só neles se procura escrita aninhada. Json fica de fora de propósito. */
@@ -117,6 +121,7 @@ const CAMPOS_RELACIONAIS = new Set([
   "eventos",
   "mensagensAgendadas",
   "notasInternas",
+  "tagsChat",
   "atendimento",
   "transferencias",
   "atendentes",

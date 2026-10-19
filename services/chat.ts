@@ -1,3 +1,5 @@
+import { listChatTags } from "@/services/chat-tags"
+import { ordenarTags, corValida, type ChatTag } from "@/lib/chat-tags"
 import { arquivoExiste, lerLinhaDeArquivo, type ArquivoMeta } from "@/lib/arquivo-storage"
 import { audioExiste } from "@/lib/audio-storage"
 import { listarEscoposDosAgentes } from "@/services/agentes-ia"
@@ -64,10 +66,14 @@ export interface ChatConversation {
    * desativado).
    */
   followUp: FollowUpResumo | null
+  /** Etiquetas (tags) aplicadas a esta conversa, em ordem alfabética. */
+  tags: ChatTag[]
 }
 
 export interface ChatInboxSnapshot {
   conversas: ChatConversation[]
+  /** Todas as etiquetas da instância (para filtrar a lista e aplicar na conversa). */
+  tags: ChatTag[]
   mensagens: ChatMessage[]
   conversaSelecionadaId: string | null
 }
@@ -234,7 +240,7 @@ export async function getChatInbox(
   // (antes era uma consulta depois da outra).
   const buscarJunto = conversaId && !opcoes.semMensagens ? conversaId : null
 
-  const [leads, ultimas, mensagensAdiantadas, atendimentos, bots, followUps, agentesIa] = await Promise.all([
+  const [leads, ultimas, mensagensAdiantadas, atendimentos, bots, followUps, agentesIa, todasTags] = await Promise.all([
     prisma.lead.findMany({
       select: {
         id: true,
@@ -250,6 +256,7 @@ export async function getChatInbox(
         atualizadoEm: true,
         campanha: { select: { nome: true } },
         campanhas: { select: { campanha: { select: { nome: true } } } },
+        tagsChat: { select: { tag: { select: { id: true, nome: true, cor: true } } } },
       },
       orderBy: { atualizadoEm: "desc" },
     }),
@@ -268,6 +275,8 @@ export async function getChatInbox(
     Promise.all([getCrmPluginAtivo(), getAgentesIaPluginAtivo()])
       .then(([crm, ia]) => (crm && ia ? listarEscoposDosAgentes() : null))
       .catch(() => null),
+    // Uma falha nas etiquetas nunca derruba o chat.
+    listChatTags().catch((): ChatTag[] => []),
   ])
 
   const conversas: ChatConversation[] = leads.map((lead) => {
@@ -294,12 +303,13 @@ export async function getChatInbox(
             : agentesIa.entrada) ?? null)
         : null,
       followUp: followUps?.get(lead.id) ?? null,
+      tags: ordenarTags(lead.tagsChat.map((vinculo) => ({ id: vinculo.tag.id, nome: vinculo.tag.nome, cor: corValida(vinculo.tag.cor) }))),
     }
   })
   conversas.sort((a, b) => new Date(b.atualizadoEm).getTime() - new Date(a.atualizadoEm).getTime())
 
   if (opcoes.semMensagens) {
-    return { conversas, mensagens: [], conversaSelecionadaId: null }
+    return { conversas, tags: todasTags, mensagens: [], conversaSelecionadaId: null }
   }
 
   const selecionada = conversas.find((conversa) => conversa.id === conversaId) ?? conversas[0] ?? null
@@ -309,7 +319,7 @@ export async function getChatInbox(
       ? mensagensAdiantadas
       : await getChatMessages(selecionada.id)
 
-  return { conversas, mensagens, conversaSelecionadaId: selecionada?.id ?? null }
+  return { conversas, tags: todasTags, mensagens, conversaSelecionadaId: selecionada?.id ?? null }
 }
 
 function nomesDasCampanhas(

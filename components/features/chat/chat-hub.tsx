@@ -44,6 +44,7 @@ async function ChatLeads({ usuario }: { usuario: Usuario }) {
       identificarRemetenteInicial={usuario.chatIdentificarRemetente}
       crm={crm}
       templatesIniciais={templates}
+      podeGerenciarTags={usuario.role !== "padrao"}
       topo={<ChatAbas />}
     />
   )

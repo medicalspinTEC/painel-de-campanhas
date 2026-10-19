@@ -19,8 +19,8 @@ export const SECOES_BACKUP: SecaoBackup[] = [
   {
     chave: "leads",
     nome: "Leads",
-    descricao: "Cadastro dos leads e as anotações internas do chat.",
-    tabelas: ["Lead", "ChatInternalNote"],
+    descricao: "Cadastro dos leads, as anotações internas do chat e as etiquetas (tags) do chat.",
+    tabelas: ["Lead", "ChatInternalNote", "ChatTag", "ChatTagLead"],
   },
   {
     chave: "campanhas",

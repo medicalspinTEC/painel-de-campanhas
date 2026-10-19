@@ -24,6 +24,18 @@ export type Lead = $Result.DefaultSelection<Prisma.$LeadPayload>
  */
 export type ChatInternalNote = $Result.DefaultSelection<Prisma.$ChatInternalNotePayload>
 /**
+ * Model ChatTag
+ * Etiqueta (tag) do chat. Criada no plugin de chat, vale para toda a instância e serve para
+ * classificar conversas e como filtro da lista. O nome é único por instância (sem diferenciar
+ * maiúsculas de minúsculas, conferido no serviço).
+ */
+export type ChatTag = $Result.DefaultSelection<Prisma.$ChatTagPayload>
+/**
+ * Model ChatTagLead
+ * Vínculo entre uma etiqueta do chat e um lead.
+ */
+export type ChatTagLead = $Result.DefaultSelection<Prisma.$ChatTagLeadPayload>
+/**
  * Model Campaign
  * 
  */
@@ -520,6 +532,26 @@ export class PrismaClient<
     * ```
     */
   get chatInternalNote(): Prisma.ChatInternalNoteDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.chatTag`: Exposes CRUD operations for the **ChatTag** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ChatTags
+    * const chatTags = await prisma.chatTag.findMany()
+    * ```
+    */
+  get chatTag(): Prisma.ChatTagDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.chatTagLead`: Exposes CRUD operations for the **ChatTagLead** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ChatTagLeads
+    * const chatTagLeads = await prisma.chatTagLead.findMany()
+    * ```
+    */
+  get chatTagLead(): Prisma.ChatTagLeadDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.campaign`: Exposes CRUD operations for the **Campaign** model.
@@ -1352,6 +1384,8 @@ export namespace Prisma {
   export const ModelName: {
     Lead: 'Lead',
     ChatInternalNote: 'ChatInternalNote',
+    ChatTag: 'ChatTag',
+    ChatTagLead: 'ChatTagLead',
     Campaign: 'Campaign',
     LeadCampaign: 'LeadCampaign',
     CampaignMessage: 'CampaignMessage',
@@ -1409,7 +1443,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "lead" | "chatInternalNote" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "botConversa" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "userFoto" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia" | "followUpBot" | "chatTemplate" | "followUpTemplate" | "followUpConversa" | "agenteIA" | "internoConversa" | "internoParticipante" | "internoMensagem" | "pushAssinatura" | "pushNotificacao"
+      modelProps: "lead" | "chatInternalNote" | "chatTag" | "chatTagLead" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "botConversa" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "userFoto" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia" | "followUpBot" | "chatTemplate" | "followUpTemplate" | "followUpConversa" | "agenteIA" | "internoConversa" | "internoParticipante" | "internoMensagem" | "pushAssinatura" | "pushNotificacao"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1558,6 +1592,154 @@ export namespace Prisma {
           count: {
             args: Prisma.ChatInternalNoteCountArgs<ExtArgs>
             result: $Utils.Optional<ChatInternalNoteCountAggregateOutputType> | number
+          }
+        }
+      }
+      ChatTag: {
+        payload: Prisma.$ChatTagPayload<ExtArgs>
+        fields: Prisma.ChatTagFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ChatTagFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ChatTagFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagPayload>
+          }
+          findFirst: {
+            args: Prisma.ChatTagFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ChatTagFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagPayload>
+          }
+          findMany: {
+            args: Prisma.ChatTagFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagPayload>[]
+          }
+          create: {
+            args: Prisma.ChatTagCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagPayload>
+          }
+          createMany: {
+            args: Prisma.ChatTagCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ChatTagCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagPayload>[]
+          }
+          delete: {
+            args: Prisma.ChatTagDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagPayload>
+          }
+          update: {
+            args: Prisma.ChatTagUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagPayload>
+          }
+          deleteMany: {
+            args: Prisma.ChatTagDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ChatTagUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ChatTagUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagPayload>[]
+          }
+          upsert: {
+            args: Prisma.ChatTagUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagPayload>
+          }
+          aggregate: {
+            args: Prisma.ChatTagAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateChatTag>
+          }
+          groupBy: {
+            args: Prisma.ChatTagGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ChatTagGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ChatTagCountArgs<ExtArgs>
+            result: $Utils.Optional<ChatTagCountAggregateOutputType> | number
+          }
+        }
+      }
+      ChatTagLead: {
+        payload: Prisma.$ChatTagLeadPayload<ExtArgs>
+        fields: Prisma.ChatTagLeadFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ChatTagLeadFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagLeadPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ChatTagLeadFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagLeadPayload>
+          }
+          findFirst: {
+            args: Prisma.ChatTagLeadFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagLeadPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ChatTagLeadFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagLeadPayload>
+          }
+          findMany: {
+            args: Prisma.ChatTagLeadFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagLeadPayload>[]
+          }
+          create: {
+            args: Prisma.ChatTagLeadCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagLeadPayload>
+          }
+          createMany: {
+            args: Prisma.ChatTagLeadCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ChatTagLeadCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagLeadPayload>[]
+          }
+          delete: {
+            args: Prisma.ChatTagLeadDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagLeadPayload>
+          }
+          update: {
+            args: Prisma.ChatTagLeadUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagLeadPayload>
+          }
+          deleteMany: {
+            args: Prisma.ChatTagLeadDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ChatTagLeadUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ChatTagLeadUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagLeadPayload>[]
+          }
+          upsert: {
+            args: Prisma.ChatTagLeadUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatTagLeadPayload>
+          }
+          aggregate: {
+            args: Prisma.ChatTagLeadAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateChatTagLead>
+          }
+          groupBy: {
+            args: Prisma.ChatTagLeadGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ChatTagLeadGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ChatTagLeadCountArgs<ExtArgs>
+            result: $Utils.Optional<ChatTagLeadCountAggregateOutputType> | number
           }
         }
       }
@@ -4537,6 +4719,8 @@ export namespace Prisma {
   export type GlobalOmitConfig = {
     lead?: LeadOmit
     chatInternalNote?: ChatInternalNoteOmit
+    chatTag?: ChatTagOmit
+    chatTagLead?: ChatTagLeadOmit
     campaign?: CampaignOmit
     leadCampaign?: LeadCampaignOmit
     campaignMessage?: CampaignMessageOmit
@@ -4674,6 +4858,7 @@ export namespace Prisma {
     eventos: number
     mensagensAgendadas: number
     notasInternas: number
+    tagsChat: number
     transferencias: number
   }
 
@@ -4682,6 +4867,7 @@ export namespace Prisma {
     eventos?: boolean | LeadCountOutputTypeCountEventosArgs
     mensagensAgendadas?: boolean | LeadCountOutputTypeCountMensagensAgendadasArgs
     notasInternas?: boolean | LeadCountOutputTypeCountNotasInternasArgs
+    tagsChat?: boolean | LeadCountOutputTypeCountTagsChatArgs
     transferencias?: boolean | LeadCountOutputTypeCountTransferenciasArgs
   }
 
@@ -4727,8 +4913,46 @@ export namespace Prisma {
   /**
    * LeadCountOutputType without action
    */
+  export type LeadCountOutputTypeCountTagsChatArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChatTagLeadWhereInput
+  }
+
+  /**
+   * LeadCountOutputType without action
+   */
   export type LeadCountOutputTypeCountTransferenciasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AtendimentoTransferenciaWhereInput
+  }
+
+
+  /**
+   * Count Type ChatTagCountOutputType
+   */
+
+  export type ChatTagCountOutputType = {
+    leads: number
+  }
+
+  export type ChatTagCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    leads?: boolean | ChatTagCountOutputTypeCountLeadsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * ChatTagCountOutputType without action
+   */
+  export type ChatTagCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTagCountOutputType
+     */
+    select?: ChatTagCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ChatTagCountOutputType without action
+   */
+  export type ChatTagCountOutputTypeCountLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChatTagLeadWhereInput
   }
 
 
@@ -5422,6 +5646,7 @@ export namespace Prisma {
     eventos?: boolean | Lead$eventosArgs<ExtArgs>
     mensagensAgendadas?: boolean | Lead$mensagensAgendadasArgs<ExtArgs>
     notasInternas?: boolean | Lead$notasInternasArgs<ExtArgs>
+    tagsChat?: boolean | Lead$tagsChatArgs<ExtArgs>
     atendimento?: boolean | Lead$atendimentoArgs<ExtArgs>
     transferencias?: boolean | Lead$transferenciasArgs<ExtArgs>
     botConversa?: boolean | Lead$botConversaArgs<ExtArgs>
@@ -5504,6 +5729,7 @@ export namespace Prisma {
     eventos?: boolean | Lead$eventosArgs<ExtArgs>
     mensagensAgendadas?: boolean | Lead$mensagensAgendadasArgs<ExtArgs>
     notasInternas?: boolean | Lead$notasInternasArgs<ExtArgs>
+    tagsChat?: boolean | Lead$tagsChatArgs<ExtArgs>
     atendimento?: boolean | Lead$atendimentoArgs<ExtArgs>
     transferencias?: boolean | Lead$transferenciasArgs<ExtArgs>
     botConversa?: boolean | Lead$botConversaArgs<ExtArgs>
@@ -5525,6 +5751,10 @@ export namespace Prisma {
       eventos: Prisma.$TimelineEventPayload<ExtArgs>[]
       mensagensAgendadas: Prisma.$ScheduledMessagePayload<ExtArgs>[]
       notasInternas: Prisma.$ChatInternalNotePayload<ExtArgs>[]
+      /**
+       * Etiquetas (tags) do chat aplicadas a este lead.
+       */
+      tagsChat: Prisma.$ChatTagLeadPayload<ExtArgs>[]
       /**
        * Plugin CRM: departamento/atendente responsável pela conversa (1:1, opcional).
        */
@@ -5964,6 +6194,7 @@ export namespace Prisma {
     eventos<T extends Lead$eventosArgs<ExtArgs> = {}>(args?: Subset<T, Lead$eventosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TimelineEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     mensagensAgendadas<T extends Lead$mensagensAgendadasArgs<ExtArgs> = {}>(args?: Subset<T, Lead$mensagensAgendadasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduledMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notasInternas<T extends Lead$notasInternasArgs<ExtArgs> = {}>(args?: Subset<T, Lead$notasInternasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatInternalNotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    tagsChat<T extends Lead$tagsChatArgs<ExtArgs> = {}>(args?: Subset<T, Lead$tagsChatArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatTagLeadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     atendimento<T extends Lead$atendimentoArgs<ExtArgs> = {}>(args?: Subset<T, Lead$atendimentoArgs<ExtArgs>>): Prisma__LeadAtendimentoClient<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     transferencias<T extends Lead$transferenciasArgs<ExtArgs> = {}>(args?: Subset<T, Lead$transferenciasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendimentoTransferenciaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     botConversa<T extends Lead$botConversaArgs<ExtArgs> = {}>(args?: Subset<T, Lead$botConversaArgs<ExtArgs>>): Prisma__BotConversaClient<$Result.GetResult<Prisma.$BotConversaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -6524,6 +6755,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ChatInternalNoteScalarFieldEnum | ChatInternalNoteScalarFieldEnum[]
+  }
+
+  /**
+   * Lead.tagsChat
+   */
+  export type Lead$tagsChatArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTagLead
+     */
+    select?: ChatTagLeadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTagLead
+     */
+    omit?: ChatTagLeadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagLeadInclude<ExtArgs> | null
+    where?: ChatTagLeadWhereInput
+    orderBy?: ChatTagLeadOrderByWithRelationInput | ChatTagLeadOrderByWithRelationInput[]
+    cursor?: ChatTagLeadWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ChatTagLeadScalarFieldEnum | ChatTagLeadScalarFieldEnum[]
   }
 
   /**
@@ -7681,6 +7936,2135 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ChatInternalNoteInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ChatTag
+   */
+
+  export type AggregateChatTag = {
+    _count: ChatTagCountAggregateOutputType | null
+    _min: ChatTagMinAggregateOutputType | null
+    _max: ChatTagMaxAggregateOutputType | null
+  }
+
+  export type ChatTagMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    nome: string | null
+    cor: string | null
+    criadoEm: Date | null
+  }
+
+  export type ChatTagMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    nome: string | null
+    cor: string | null
+    criadoEm: Date | null
+  }
+
+  export type ChatTagCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    nome: number
+    cor: number
+    criadoEm: number
+    _all: number
+  }
+
+
+  export type ChatTagMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    nome?: true
+    cor?: true
+    criadoEm?: true
+  }
+
+  export type ChatTagMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    nome?: true
+    cor?: true
+    criadoEm?: true
+  }
+
+  export type ChatTagCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    nome?: true
+    cor?: true
+    criadoEm?: true
+    _all?: true
+  }
+
+  export type ChatTagAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ChatTag to aggregate.
+     */
+    where?: ChatTagWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChatTags to fetch.
+     */
+    orderBy?: ChatTagOrderByWithRelationInput | ChatTagOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ChatTagWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChatTags from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChatTags.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ChatTags
+    **/
+    _count?: true | ChatTagCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ChatTagMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ChatTagMaxAggregateInputType
+  }
+
+  export type GetChatTagAggregateType<T extends ChatTagAggregateArgs> = {
+        [P in keyof T & keyof AggregateChatTag]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateChatTag[P]>
+      : GetScalarType<T[P], AggregateChatTag[P]>
+  }
+
+
+
+
+  export type ChatTagGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChatTagWhereInput
+    orderBy?: ChatTagOrderByWithAggregationInput | ChatTagOrderByWithAggregationInput[]
+    by: ChatTagScalarFieldEnum[] | ChatTagScalarFieldEnum
+    having?: ChatTagScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ChatTagCountAggregateInputType | true
+    _min?: ChatTagMinAggregateInputType
+    _max?: ChatTagMaxAggregateInputType
+  }
+
+  export type ChatTagGroupByOutputType = {
+    id: string
+    workspaceId: string
+    nome: string
+    cor: string
+    criadoEm: Date
+    _count: ChatTagCountAggregateOutputType | null
+    _min: ChatTagMinAggregateOutputType | null
+    _max: ChatTagMaxAggregateOutputType | null
+  }
+
+  type GetChatTagGroupByPayload<T extends ChatTagGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ChatTagGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ChatTagGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ChatTagGroupByOutputType[P]>
+            : GetScalarType<T[P], ChatTagGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ChatTagSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    nome?: boolean
+    cor?: boolean
+    criadoEm?: boolean
+    leads?: boolean | ChatTag$leadsArgs<ExtArgs>
+    _count?: boolean | ChatTagCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["chatTag"]>
+
+  export type ChatTagSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    nome?: boolean
+    cor?: boolean
+    criadoEm?: boolean
+  }, ExtArgs["result"]["chatTag"]>
+
+  export type ChatTagSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    nome?: boolean
+    cor?: boolean
+    criadoEm?: boolean
+  }, ExtArgs["result"]["chatTag"]>
+
+  export type ChatTagSelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    nome?: boolean
+    cor?: boolean
+    criadoEm?: boolean
+  }
+
+  export type ChatTagOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "cor" | "criadoEm", ExtArgs["result"]["chatTag"]>
+  export type ChatTagInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    leads?: boolean | ChatTag$leadsArgs<ExtArgs>
+    _count?: boolean | ChatTagCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type ChatTagIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type ChatTagIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $ChatTagPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ChatTag"
+    objects: {
+      leads: Prisma.$ChatTagLeadPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
+      nome: string
+      /**
+       * Uma das cores de `lib/chat-tags.ts` (ex.: "azul").
+       */
+      cor: string
+      criadoEm: Date
+    }, ExtArgs["result"]["chatTag"]>
+    composites: {}
+  }
+
+  type ChatTagGetPayload<S extends boolean | null | undefined | ChatTagDefaultArgs> = $Result.GetResult<Prisma.$ChatTagPayload, S>
+
+  type ChatTagCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ChatTagFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ChatTagCountAggregateInputType | true
+    }
+
+  export interface ChatTagDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ChatTag'], meta: { name: 'ChatTag' } }
+    /**
+     * Find zero or one ChatTag that matches the filter.
+     * @param {ChatTagFindUniqueArgs} args - Arguments to find a ChatTag
+     * @example
+     * // Get one ChatTag
+     * const chatTag = await prisma.chatTag.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ChatTagFindUniqueArgs>(args: SelectSubset<T, ChatTagFindUniqueArgs<ExtArgs>>): Prisma__ChatTagClient<$Result.GetResult<Prisma.$ChatTagPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ChatTag that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ChatTagFindUniqueOrThrowArgs} args - Arguments to find a ChatTag
+     * @example
+     * // Get one ChatTag
+     * const chatTag = await prisma.chatTag.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ChatTagFindUniqueOrThrowArgs>(args: SelectSubset<T, ChatTagFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ChatTagClient<$Result.GetResult<Prisma.$ChatTagPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ChatTag that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatTagFindFirstArgs} args - Arguments to find a ChatTag
+     * @example
+     * // Get one ChatTag
+     * const chatTag = await prisma.chatTag.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ChatTagFindFirstArgs>(args?: SelectSubset<T, ChatTagFindFirstArgs<ExtArgs>>): Prisma__ChatTagClient<$Result.GetResult<Prisma.$ChatTagPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ChatTag that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatTagFindFirstOrThrowArgs} args - Arguments to find a ChatTag
+     * @example
+     * // Get one ChatTag
+     * const chatTag = await prisma.chatTag.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ChatTagFindFirstOrThrowArgs>(args?: SelectSubset<T, ChatTagFindFirstOrThrowArgs<ExtArgs>>): Prisma__ChatTagClient<$Result.GetResult<Prisma.$ChatTagPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ChatTags that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatTagFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ChatTags
+     * const chatTags = await prisma.chatTag.findMany()
+     * 
+     * // Get first 10 ChatTags
+     * const chatTags = await prisma.chatTag.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const chatTagWithIdOnly = await prisma.chatTag.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ChatTagFindManyArgs>(args?: SelectSubset<T, ChatTagFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatTagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ChatTag.
+     * @param {ChatTagCreateArgs} args - Arguments to create a ChatTag.
+     * @example
+     * // Create one ChatTag
+     * const ChatTag = await prisma.chatTag.create({
+     *   data: {
+     *     // ... data to create a ChatTag
+     *   }
+     * })
+     * 
+     */
+    create<T extends ChatTagCreateArgs>(args: SelectSubset<T, ChatTagCreateArgs<ExtArgs>>): Prisma__ChatTagClient<$Result.GetResult<Prisma.$ChatTagPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ChatTags.
+     * @param {ChatTagCreateManyArgs} args - Arguments to create many ChatTags.
+     * @example
+     * // Create many ChatTags
+     * const chatTag = await prisma.chatTag.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ChatTagCreateManyArgs>(args?: SelectSubset<T, ChatTagCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ChatTags and returns the data saved in the database.
+     * @param {ChatTagCreateManyAndReturnArgs} args - Arguments to create many ChatTags.
+     * @example
+     * // Create many ChatTags
+     * const chatTag = await prisma.chatTag.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ChatTags and only return the `id`
+     * const chatTagWithIdOnly = await prisma.chatTag.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ChatTagCreateManyAndReturnArgs>(args?: SelectSubset<T, ChatTagCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatTagPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ChatTag.
+     * @param {ChatTagDeleteArgs} args - Arguments to delete one ChatTag.
+     * @example
+     * // Delete one ChatTag
+     * const ChatTag = await prisma.chatTag.delete({
+     *   where: {
+     *     // ... filter to delete one ChatTag
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ChatTagDeleteArgs>(args: SelectSubset<T, ChatTagDeleteArgs<ExtArgs>>): Prisma__ChatTagClient<$Result.GetResult<Prisma.$ChatTagPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ChatTag.
+     * @param {ChatTagUpdateArgs} args - Arguments to update one ChatTag.
+     * @example
+     * // Update one ChatTag
+     * const chatTag = await prisma.chatTag.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ChatTagUpdateArgs>(args: SelectSubset<T, ChatTagUpdateArgs<ExtArgs>>): Prisma__ChatTagClient<$Result.GetResult<Prisma.$ChatTagPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ChatTags.
+     * @param {ChatTagDeleteManyArgs} args - Arguments to filter ChatTags to delete.
+     * @example
+     * // Delete a few ChatTags
+     * const { count } = await prisma.chatTag.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ChatTagDeleteManyArgs>(args?: SelectSubset<T, ChatTagDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ChatTags.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatTagUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ChatTags
+     * const chatTag = await prisma.chatTag.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ChatTagUpdateManyArgs>(args: SelectSubset<T, ChatTagUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ChatTags and returns the data updated in the database.
+     * @param {ChatTagUpdateManyAndReturnArgs} args - Arguments to update many ChatTags.
+     * @example
+     * // Update many ChatTags
+     * const chatTag = await prisma.chatTag.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ChatTags and only return the `id`
+     * const chatTagWithIdOnly = await prisma.chatTag.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ChatTagUpdateManyAndReturnArgs>(args: SelectSubset<T, ChatTagUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatTagPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ChatTag.
+     * @param {ChatTagUpsertArgs} args - Arguments to update or create a ChatTag.
+     * @example
+     * // Update or create a ChatTag
+     * const chatTag = await prisma.chatTag.upsert({
+     *   create: {
+     *     // ... data to create a ChatTag
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ChatTag we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ChatTagUpsertArgs>(args: SelectSubset<T, ChatTagUpsertArgs<ExtArgs>>): Prisma__ChatTagClient<$Result.GetResult<Prisma.$ChatTagPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ChatTags.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatTagCountArgs} args - Arguments to filter ChatTags to count.
+     * @example
+     * // Count the number of ChatTags
+     * const count = await prisma.chatTag.count({
+     *   where: {
+     *     // ... the filter for the ChatTags we want to count
+     *   }
+     * })
+    **/
+    count<T extends ChatTagCountArgs>(
+      args?: Subset<T, ChatTagCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ChatTagCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ChatTag.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatTagAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ChatTagAggregateArgs>(args: Subset<T, ChatTagAggregateArgs>): Prisma.PrismaPromise<GetChatTagAggregateType<T>>
+
+    /**
+     * Group by ChatTag.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatTagGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ChatTagGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ChatTagGroupByArgs['orderBy'] }
+        : { orderBy?: ChatTagGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ChatTagGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetChatTagGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ChatTag model
+   */
+  readonly fields: ChatTagFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ChatTag.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ChatTagClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    leads<T extends ChatTag$leadsArgs<ExtArgs> = {}>(args?: Subset<T, ChatTag$leadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatTagLeadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ChatTag model
+   */
+  interface ChatTagFieldRefs {
+    readonly id: FieldRef<"ChatTag", 'String'>
+    readonly workspaceId: FieldRef<"ChatTag", 'String'>
+    readonly nome: FieldRef<"ChatTag", 'String'>
+    readonly cor: FieldRef<"ChatTag", 'String'>
+    readonly criadoEm: FieldRef<"ChatTag", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ChatTag findUnique
+   */
+  export type ChatTagFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTag
+     */
+    select?: ChatTagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTag
+     */
+    omit?: ChatTagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatTag to fetch.
+     */
+    where: ChatTagWhereUniqueInput
+  }
+
+  /**
+   * ChatTag findUniqueOrThrow
+   */
+  export type ChatTagFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTag
+     */
+    select?: ChatTagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTag
+     */
+    omit?: ChatTagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatTag to fetch.
+     */
+    where: ChatTagWhereUniqueInput
+  }
+
+  /**
+   * ChatTag findFirst
+   */
+  export type ChatTagFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTag
+     */
+    select?: ChatTagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTag
+     */
+    omit?: ChatTagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatTag to fetch.
+     */
+    where?: ChatTagWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChatTags to fetch.
+     */
+    orderBy?: ChatTagOrderByWithRelationInput | ChatTagOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ChatTags.
+     */
+    cursor?: ChatTagWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChatTags from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChatTags.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ChatTags.
+     */
+    distinct?: ChatTagScalarFieldEnum | ChatTagScalarFieldEnum[]
+  }
+
+  /**
+   * ChatTag findFirstOrThrow
+   */
+  export type ChatTagFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTag
+     */
+    select?: ChatTagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTag
+     */
+    omit?: ChatTagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatTag to fetch.
+     */
+    where?: ChatTagWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChatTags to fetch.
+     */
+    orderBy?: ChatTagOrderByWithRelationInput | ChatTagOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ChatTags.
+     */
+    cursor?: ChatTagWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChatTags from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChatTags.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ChatTags.
+     */
+    distinct?: ChatTagScalarFieldEnum | ChatTagScalarFieldEnum[]
+  }
+
+  /**
+   * ChatTag findMany
+   */
+  export type ChatTagFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTag
+     */
+    select?: ChatTagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTag
+     */
+    omit?: ChatTagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatTags to fetch.
+     */
+    where?: ChatTagWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChatTags to fetch.
+     */
+    orderBy?: ChatTagOrderByWithRelationInput | ChatTagOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ChatTags.
+     */
+    cursor?: ChatTagWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChatTags from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChatTags.
+     */
+    skip?: number
+    distinct?: ChatTagScalarFieldEnum | ChatTagScalarFieldEnum[]
+  }
+
+  /**
+   * ChatTag create
+   */
+  export type ChatTagCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTag
+     */
+    select?: ChatTagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTag
+     */
+    omit?: ChatTagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ChatTag.
+     */
+    data: XOR<ChatTagCreateInput, ChatTagUncheckedCreateInput>
+  }
+
+  /**
+   * ChatTag createMany
+   */
+  export type ChatTagCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ChatTags.
+     */
+    data: ChatTagCreateManyInput | ChatTagCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ChatTag createManyAndReturn
+   */
+  export type ChatTagCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTag
+     */
+    select?: ChatTagSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTag
+     */
+    omit?: ChatTagOmit<ExtArgs> | null
+    /**
+     * The data used to create many ChatTags.
+     */
+    data: ChatTagCreateManyInput | ChatTagCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ChatTag update
+   */
+  export type ChatTagUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTag
+     */
+    select?: ChatTagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTag
+     */
+    omit?: ChatTagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ChatTag.
+     */
+    data: XOR<ChatTagUpdateInput, ChatTagUncheckedUpdateInput>
+    /**
+     * Choose, which ChatTag to update.
+     */
+    where: ChatTagWhereUniqueInput
+  }
+
+  /**
+   * ChatTag updateMany
+   */
+  export type ChatTagUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ChatTags.
+     */
+    data: XOR<ChatTagUpdateManyMutationInput, ChatTagUncheckedUpdateManyInput>
+    /**
+     * Filter which ChatTags to update
+     */
+    where?: ChatTagWhereInput
+    /**
+     * Limit how many ChatTags to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ChatTag updateManyAndReturn
+   */
+  export type ChatTagUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTag
+     */
+    select?: ChatTagSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTag
+     */
+    omit?: ChatTagOmit<ExtArgs> | null
+    /**
+     * The data used to update ChatTags.
+     */
+    data: XOR<ChatTagUpdateManyMutationInput, ChatTagUncheckedUpdateManyInput>
+    /**
+     * Filter which ChatTags to update
+     */
+    where?: ChatTagWhereInput
+    /**
+     * Limit how many ChatTags to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ChatTag upsert
+   */
+  export type ChatTagUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTag
+     */
+    select?: ChatTagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTag
+     */
+    omit?: ChatTagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ChatTag to update in case it exists.
+     */
+    where: ChatTagWhereUniqueInput
+    /**
+     * In case the ChatTag found by the `where` argument doesn't exist, create a new ChatTag with this data.
+     */
+    create: XOR<ChatTagCreateInput, ChatTagUncheckedCreateInput>
+    /**
+     * In case the ChatTag was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ChatTagUpdateInput, ChatTagUncheckedUpdateInput>
+  }
+
+  /**
+   * ChatTag delete
+   */
+  export type ChatTagDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTag
+     */
+    select?: ChatTagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTag
+     */
+    omit?: ChatTagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagInclude<ExtArgs> | null
+    /**
+     * Filter which ChatTag to delete.
+     */
+    where: ChatTagWhereUniqueInput
+  }
+
+  /**
+   * ChatTag deleteMany
+   */
+  export type ChatTagDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ChatTags to delete
+     */
+    where?: ChatTagWhereInput
+    /**
+     * Limit how many ChatTags to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ChatTag.leads
+   */
+  export type ChatTag$leadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTagLead
+     */
+    select?: ChatTagLeadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTagLead
+     */
+    omit?: ChatTagLeadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagLeadInclude<ExtArgs> | null
+    where?: ChatTagLeadWhereInput
+    orderBy?: ChatTagLeadOrderByWithRelationInput | ChatTagLeadOrderByWithRelationInput[]
+    cursor?: ChatTagLeadWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ChatTagLeadScalarFieldEnum | ChatTagLeadScalarFieldEnum[]
+  }
+
+  /**
+   * ChatTag without action
+   */
+  export type ChatTagDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTag
+     */
+    select?: ChatTagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTag
+     */
+    omit?: ChatTagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ChatTagLead
+   */
+
+  export type AggregateChatTagLead = {
+    _count: ChatTagLeadCountAggregateOutputType | null
+    _min: ChatTagLeadMinAggregateOutputType | null
+    _max: ChatTagLeadMaxAggregateOutputType | null
+  }
+
+  export type ChatTagLeadMinAggregateOutputType = {
+    id: string | null
+    tagId: string | null
+    leadId: string | null
+    criadoEm: Date | null
+  }
+
+  export type ChatTagLeadMaxAggregateOutputType = {
+    id: string | null
+    tagId: string | null
+    leadId: string | null
+    criadoEm: Date | null
+  }
+
+  export type ChatTagLeadCountAggregateOutputType = {
+    id: number
+    tagId: number
+    leadId: number
+    criadoEm: number
+    _all: number
+  }
+
+
+  export type ChatTagLeadMinAggregateInputType = {
+    id?: true
+    tagId?: true
+    leadId?: true
+    criadoEm?: true
+  }
+
+  export type ChatTagLeadMaxAggregateInputType = {
+    id?: true
+    tagId?: true
+    leadId?: true
+    criadoEm?: true
+  }
+
+  export type ChatTagLeadCountAggregateInputType = {
+    id?: true
+    tagId?: true
+    leadId?: true
+    criadoEm?: true
+    _all?: true
+  }
+
+  export type ChatTagLeadAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ChatTagLead to aggregate.
+     */
+    where?: ChatTagLeadWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChatTagLeads to fetch.
+     */
+    orderBy?: ChatTagLeadOrderByWithRelationInput | ChatTagLeadOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ChatTagLeadWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChatTagLeads from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChatTagLeads.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ChatTagLeads
+    **/
+    _count?: true | ChatTagLeadCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ChatTagLeadMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ChatTagLeadMaxAggregateInputType
+  }
+
+  export type GetChatTagLeadAggregateType<T extends ChatTagLeadAggregateArgs> = {
+        [P in keyof T & keyof AggregateChatTagLead]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateChatTagLead[P]>
+      : GetScalarType<T[P], AggregateChatTagLead[P]>
+  }
+
+
+
+
+  export type ChatTagLeadGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChatTagLeadWhereInput
+    orderBy?: ChatTagLeadOrderByWithAggregationInput | ChatTagLeadOrderByWithAggregationInput[]
+    by: ChatTagLeadScalarFieldEnum[] | ChatTagLeadScalarFieldEnum
+    having?: ChatTagLeadScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ChatTagLeadCountAggregateInputType | true
+    _min?: ChatTagLeadMinAggregateInputType
+    _max?: ChatTagLeadMaxAggregateInputType
+  }
+
+  export type ChatTagLeadGroupByOutputType = {
+    id: string
+    tagId: string
+    leadId: string
+    criadoEm: Date
+    _count: ChatTagLeadCountAggregateOutputType | null
+    _min: ChatTagLeadMinAggregateOutputType | null
+    _max: ChatTagLeadMaxAggregateOutputType | null
+  }
+
+  type GetChatTagLeadGroupByPayload<T extends ChatTagLeadGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ChatTagLeadGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ChatTagLeadGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ChatTagLeadGroupByOutputType[P]>
+            : GetScalarType<T[P], ChatTagLeadGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ChatTagLeadSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tagId?: boolean
+    leadId?: boolean
+    criadoEm?: boolean
+    tag?: boolean | ChatTagDefaultArgs<ExtArgs>
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["chatTagLead"]>
+
+  export type ChatTagLeadSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tagId?: boolean
+    leadId?: boolean
+    criadoEm?: boolean
+    tag?: boolean | ChatTagDefaultArgs<ExtArgs>
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["chatTagLead"]>
+
+  export type ChatTagLeadSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tagId?: boolean
+    leadId?: boolean
+    criadoEm?: boolean
+    tag?: boolean | ChatTagDefaultArgs<ExtArgs>
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["chatTagLead"]>
+
+  export type ChatTagLeadSelectScalar = {
+    id?: boolean
+    tagId?: boolean
+    leadId?: boolean
+    criadoEm?: boolean
+  }
+
+  export type ChatTagLeadOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tagId" | "leadId" | "criadoEm", ExtArgs["result"]["chatTagLead"]>
+  export type ChatTagLeadInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tag?: boolean | ChatTagDefaultArgs<ExtArgs>
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }
+  export type ChatTagLeadIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tag?: boolean | ChatTagDefaultArgs<ExtArgs>
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }
+  export type ChatTagLeadIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tag?: boolean | ChatTagDefaultArgs<ExtArgs>
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }
+
+  export type $ChatTagLeadPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ChatTagLead"
+    objects: {
+      tag: Prisma.$ChatTagPayload<ExtArgs>
+      lead: Prisma.$LeadPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tagId: string
+      leadId: string
+      criadoEm: Date
+    }, ExtArgs["result"]["chatTagLead"]>
+    composites: {}
+  }
+
+  type ChatTagLeadGetPayload<S extends boolean | null | undefined | ChatTagLeadDefaultArgs> = $Result.GetResult<Prisma.$ChatTagLeadPayload, S>
+
+  type ChatTagLeadCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ChatTagLeadFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ChatTagLeadCountAggregateInputType | true
+    }
+
+  export interface ChatTagLeadDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ChatTagLead'], meta: { name: 'ChatTagLead' } }
+    /**
+     * Find zero or one ChatTagLead that matches the filter.
+     * @param {ChatTagLeadFindUniqueArgs} args - Arguments to find a ChatTagLead
+     * @example
+     * // Get one ChatTagLead
+     * const chatTagLead = await prisma.chatTagLead.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ChatTagLeadFindUniqueArgs>(args: SelectSubset<T, ChatTagLeadFindUniqueArgs<ExtArgs>>): Prisma__ChatTagLeadClient<$Result.GetResult<Prisma.$ChatTagLeadPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ChatTagLead that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ChatTagLeadFindUniqueOrThrowArgs} args - Arguments to find a ChatTagLead
+     * @example
+     * // Get one ChatTagLead
+     * const chatTagLead = await prisma.chatTagLead.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ChatTagLeadFindUniqueOrThrowArgs>(args: SelectSubset<T, ChatTagLeadFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ChatTagLeadClient<$Result.GetResult<Prisma.$ChatTagLeadPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ChatTagLead that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatTagLeadFindFirstArgs} args - Arguments to find a ChatTagLead
+     * @example
+     * // Get one ChatTagLead
+     * const chatTagLead = await prisma.chatTagLead.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ChatTagLeadFindFirstArgs>(args?: SelectSubset<T, ChatTagLeadFindFirstArgs<ExtArgs>>): Prisma__ChatTagLeadClient<$Result.GetResult<Prisma.$ChatTagLeadPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ChatTagLead that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatTagLeadFindFirstOrThrowArgs} args - Arguments to find a ChatTagLead
+     * @example
+     * // Get one ChatTagLead
+     * const chatTagLead = await prisma.chatTagLead.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ChatTagLeadFindFirstOrThrowArgs>(args?: SelectSubset<T, ChatTagLeadFindFirstOrThrowArgs<ExtArgs>>): Prisma__ChatTagLeadClient<$Result.GetResult<Prisma.$ChatTagLeadPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ChatTagLeads that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatTagLeadFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ChatTagLeads
+     * const chatTagLeads = await prisma.chatTagLead.findMany()
+     * 
+     * // Get first 10 ChatTagLeads
+     * const chatTagLeads = await prisma.chatTagLead.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const chatTagLeadWithIdOnly = await prisma.chatTagLead.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ChatTagLeadFindManyArgs>(args?: SelectSubset<T, ChatTagLeadFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatTagLeadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ChatTagLead.
+     * @param {ChatTagLeadCreateArgs} args - Arguments to create a ChatTagLead.
+     * @example
+     * // Create one ChatTagLead
+     * const ChatTagLead = await prisma.chatTagLead.create({
+     *   data: {
+     *     // ... data to create a ChatTagLead
+     *   }
+     * })
+     * 
+     */
+    create<T extends ChatTagLeadCreateArgs>(args: SelectSubset<T, ChatTagLeadCreateArgs<ExtArgs>>): Prisma__ChatTagLeadClient<$Result.GetResult<Prisma.$ChatTagLeadPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ChatTagLeads.
+     * @param {ChatTagLeadCreateManyArgs} args - Arguments to create many ChatTagLeads.
+     * @example
+     * // Create many ChatTagLeads
+     * const chatTagLead = await prisma.chatTagLead.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ChatTagLeadCreateManyArgs>(args?: SelectSubset<T, ChatTagLeadCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ChatTagLeads and returns the data saved in the database.
+     * @param {ChatTagLeadCreateManyAndReturnArgs} args - Arguments to create many ChatTagLeads.
+     * @example
+     * // Create many ChatTagLeads
+     * const chatTagLead = await prisma.chatTagLead.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ChatTagLeads and only return the `id`
+     * const chatTagLeadWithIdOnly = await prisma.chatTagLead.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ChatTagLeadCreateManyAndReturnArgs>(args?: SelectSubset<T, ChatTagLeadCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatTagLeadPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ChatTagLead.
+     * @param {ChatTagLeadDeleteArgs} args - Arguments to delete one ChatTagLead.
+     * @example
+     * // Delete one ChatTagLead
+     * const ChatTagLead = await prisma.chatTagLead.delete({
+     *   where: {
+     *     // ... filter to delete one ChatTagLead
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ChatTagLeadDeleteArgs>(args: SelectSubset<T, ChatTagLeadDeleteArgs<ExtArgs>>): Prisma__ChatTagLeadClient<$Result.GetResult<Prisma.$ChatTagLeadPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ChatTagLead.
+     * @param {ChatTagLeadUpdateArgs} args - Arguments to update one ChatTagLead.
+     * @example
+     * // Update one ChatTagLead
+     * const chatTagLead = await prisma.chatTagLead.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ChatTagLeadUpdateArgs>(args: SelectSubset<T, ChatTagLeadUpdateArgs<ExtArgs>>): Prisma__ChatTagLeadClient<$Result.GetResult<Prisma.$ChatTagLeadPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ChatTagLeads.
+     * @param {ChatTagLeadDeleteManyArgs} args - Arguments to filter ChatTagLeads to delete.
+     * @example
+     * // Delete a few ChatTagLeads
+     * const { count } = await prisma.chatTagLead.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ChatTagLeadDeleteManyArgs>(args?: SelectSubset<T, ChatTagLeadDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ChatTagLeads.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatTagLeadUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ChatTagLeads
+     * const chatTagLead = await prisma.chatTagLead.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ChatTagLeadUpdateManyArgs>(args: SelectSubset<T, ChatTagLeadUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ChatTagLeads and returns the data updated in the database.
+     * @param {ChatTagLeadUpdateManyAndReturnArgs} args - Arguments to update many ChatTagLeads.
+     * @example
+     * // Update many ChatTagLeads
+     * const chatTagLead = await prisma.chatTagLead.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ChatTagLeads and only return the `id`
+     * const chatTagLeadWithIdOnly = await prisma.chatTagLead.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ChatTagLeadUpdateManyAndReturnArgs>(args: SelectSubset<T, ChatTagLeadUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatTagLeadPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ChatTagLead.
+     * @param {ChatTagLeadUpsertArgs} args - Arguments to update or create a ChatTagLead.
+     * @example
+     * // Update or create a ChatTagLead
+     * const chatTagLead = await prisma.chatTagLead.upsert({
+     *   create: {
+     *     // ... data to create a ChatTagLead
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ChatTagLead we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ChatTagLeadUpsertArgs>(args: SelectSubset<T, ChatTagLeadUpsertArgs<ExtArgs>>): Prisma__ChatTagLeadClient<$Result.GetResult<Prisma.$ChatTagLeadPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ChatTagLeads.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatTagLeadCountArgs} args - Arguments to filter ChatTagLeads to count.
+     * @example
+     * // Count the number of ChatTagLeads
+     * const count = await prisma.chatTagLead.count({
+     *   where: {
+     *     // ... the filter for the ChatTagLeads we want to count
+     *   }
+     * })
+    **/
+    count<T extends ChatTagLeadCountArgs>(
+      args?: Subset<T, ChatTagLeadCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ChatTagLeadCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ChatTagLead.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatTagLeadAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ChatTagLeadAggregateArgs>(args: Subset<T, ChatTagLeadAggregateArgs>): Prisma.PrismaPromise<GetChatTagLeadAggregateType<T>>
+
+    /**
+     * Group by ChatTagLead.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatTagLeadGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ChatTagLeadGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ChatTagLeadGroupByArgs['orderBy'] }
+        : { orderBy?: ChatTagLeadGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ChatTagLeadGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetChatTagLeadGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ChatTagLead model
+   */
+  readonly fields: ChatTagLeadFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ChatTagLead.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ChatTagLeadClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    tag<T extends ChatTagDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ChatTagDefaultArgs<ExtArgs>>): Prisma__ChatTagClient<$Result.GetResult<Prisma.$ChatTagPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    lead<T extends LeadDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LeadDefaultArgs<ExtArgs>>): Prisma__LeadClient<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ChatTagLead model
+   */
+  interface ChatTagLeadFieldRefs {
+    readonly id: FieldRef<"ChatTagLead", 'String'>
+    readonly tagId: FieldRef<"ChatTagLead", 'String'>
+    readonly leadId: FieldRef<"ChatTagLead", 'String'>
+    readonly criadoEm: FieldRef<"ChatTagLead", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ChatTagLead findUnique
+   */
+  export type ChatTagLeadFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTagLead
+     */
+    select?: ChatTagLeadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTagLead
+     */
+    omit?: ChatTagLeadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagLeadInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatTagLead to fetch.
+     */
+    where: ChatTagLeadWhereUniqueInput
+  }
+
+  /**
+   * ChatTagLead findUniqueOrThrow
+   */
+  export type ChatTagLeadFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTagLead
+     */
+    select?: ChatTagLeadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTagLead
+     */
+    omit?: ChatTagLeadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagLeadInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatTagLead to fetch.
+     */
+    where: ChatTagLeadWhereUniqueInput
+  }
+
+  /**
+   * ChatTagLead findFirst
+   */
+  export type ChatTagLeadFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTagLead
+     */
+    select?: ChatTagLeadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTagLead
+     */
+    omit?: ChatTagLeadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagLeadInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatTagLead to fetch.
+     */
+    where?: ChatTagLeadWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChatTagLeads to fetch.
+     */
+    orderBy?: ChatTagLeadOrderByWithRelationInput | ChatTagLeadOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ChatTagLeads.
+     */
+    cursor?: ChatTagLeadWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChatTagLeads from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChatTagLeads.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ChatTagLeads.
+     */
+    distinct?: ChatTagLeadScalarFieldEnum | ChatTagLeadScalarFieldEnum[]
+  }
+
+  /**
+   * ChatTagLead findFirstOrThrow
+   */
+  export type ChatTagLeadFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTagLead
+     */
+    select?: ChatTagLeadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTagLead
+     */
+    omit?: ChatTagLeadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagLeadInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatTagLead to fetch.
+     */
+    where?: ChatTagLeadWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChatTagLeads to fetch.
+     */
+    orderBy?: ChatTagLeadOrderByWithRelationInput | ChatTagLeadOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ChatTagLeads.
+     */
+    cursor?: ChatTagLeadWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChatTagLeads from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChatTagLeads.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ChatTagLeads.
+     */
+    distinct?: ChatTagLeadScalarFieldEnum | ChatTagLeadScalarFieldEnum[]
+  }
+
+  /**
+   * ChatTagLead findMany
+   */
+  export type ChatTagLeadFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTagLead
+     */
+    select?: ChatTagLeadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTagLead
+     */
+    omit?: ChatTagLeadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagLeadInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatTagLeads to fetch.
+     */
+    where?: ChatTagLeadWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChatTagLeads to fetch.
+     */
+    orderBy?: ChatTagLeadOrderByWithRelationInput | ChatTagLeadOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ChatTagLeads.
+     */
+    cursor?: ChatTagLeadWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChatTagLeads from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChatTagLeads.
+     */
+    skip?: number
+    distinct?: ChatTagLeadScalarFieldEnum | ChatTagLeadScalarFieldEnum[]
+  }
+
+  /**
+   * ChatTagLead create
+   */
+  export type ChatTagLeadCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTagLead
+     */
+    select?: ChatTagLeadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTagLead
+     */
+    omit?: ChatTagLeadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagLeadInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ChatTagLead.
+     */
+    data: XOR<ChatTagLeadCreateInput, ChatTagLeadUncheckedCreateInput>
+  }
+
+  /**
+   * ChatTagLead createMany
+   */
+  export type ChatTagLeadCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ChatTagLeads.
+     */
+    data: ChatTagLeadCreateManyInput | ChatTagLeadCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ChatTagLead createManyAndReturn
+   */
+  export type ChatTagLeadCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTagLead
+     */
+    select?: ChatTagLeadSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTagLead
+     */
+    omit?: ChatTagLeadOmit<ExtArgs> | null
+    /**
+     * The data used to create many ChatTagLeads.
+     */
+    data: ChatTagLeadCreateManyInput | ChatTagLeadCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagLeadIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ChatTagLead update
+   */
+  export type ChatTagLeadUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTagLead
+     */
+    select?: ChatTagLeadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTagLead
+     */
+    omit?: ChatTagLeadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagLeadInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ChatTagLead.
+     */
+    data: XOR<ChatTagLeadUpdateInput, ChatTagLeadUncheckedUpdateInput>
+    /**
+     * Choose, which ChatTagLead to update.
+     */
+    where: ChatTagLeadWhereUniqueInput
+  }
+
+  /**
+   * ChatTagLead updateMany
+   */
+  export type ChatTagLeadUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ChatTagLeads.
+     */
+    data: XOR<ChatTagLeadUpdateManyMutationInput, ChatTagLeadUncheckedUpdateManyInput>
+    /**
+     * Filter which ChatTagLeads to update
+     */
+    where?: ChatTagLeadWhereInput
+    /**
+     * Limit how many ChatTagLeads to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ChatTagLead updateManyAndReturn
+   */
+  export type ChatTagLeadUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTagLead
+     */
+    select?: ChatTagLeadSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTagLead
+     */
+    omit?: ChatTagLeadOmit<ExtArgs> | null
+    /**
+     * The data used to update ChatTagLeads.
+     */
+    data: XOR<ChatTagLeadUpdateManyMutationInput, ChatTagLeadUncheckedUpdateManyInput>
+    /**
+     * Filter which ChatTagLeads to update
+     */
+    where?: ChatTagLeadWhereInput
+    /**
+     * Limit how many ChatTagLeads to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagLeadIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ChatTagLead upsert
+   */
+  export type ChatTagLeadUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTagLead
+     */
+    select?: ChatTagLeadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTagLead
+     */
+    omit?: ChatTagLeadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagLeadInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ChatTagLead to update in case it exists.
+     */
+    where: ChatTagLeadWhereUniqueInput
+    /**
+     * In case the ChatTagLead found by the `where` argument doesn't exist, create a new ChatTagLead with this data.
+     */
+    create: XOR<ChatTagLeadCreateInput, ChatTagLeadUncheckedCreateInput>
+    /**
+     * In case the ChatTagLead was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ChatTagLeadUpdateInput, ChatTagLeadUncheckedUpdateInput>
+  }
+
+  /**
+   * ChatTagLead delete
+   */
+  export type ChatTagLeadDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTagLead
+     */
+    select?: ChatTagLeadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTagLead
+     */
+    omit?: ChatTagLeadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagLeadInclude<ExtArgs> | null
+    /**
+     * Filter which ChatTagLead to delete.
+     */
+    where: ChatTagLeadWhereUniqueInput
+  }
+
+  /**
+   * ChatTagLead deleteMany
+   */
+  export type ChatTagLeadDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ChatTagLeads to delete
+     */
+    where?: ChatTagLeadWhereInput
+    /**
+     * Limit how many ChatTagLeads to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ChatTagLead without action
+   */
+  export type ChatTagLeadDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatTagLead
+     */
+    select?: ChatTagLeadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatTagLead
+     */
+    omit?: ChatTagLeadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatTagLeadInclude<ExtArgs> | null
   }
 
 
@@ -52302,6 +54686,27 @@ export namespace Prisma {
   export type ChatInternalNoteScalarFieldEnum = (typeof ChatInternalNoteScalarFieldEnum)[keyof typeof ChatInternalNoteScalarFieldEnum]
 
 
+  export const ChatTagScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    nome: 'nome',
+    cor: 'cor',
+    criadoEm: 'criadoEm'
+  };
+
+  export type ChatTagScalarFieldEnum = (typeof ChatTagScalarFieldEnum)[keyof typeof ChatTagScalarFieldEnum]
+
+
+  export const ChatTagLeadScalarFieldEnum: {
+    id: 'id',
+    tagId: 'tagId',
+    leadId: 'leadId',
+    criadoEm: 'criadoEm'
+  };
+
+  export type ChatTagLeadScalarFieldEnum = (typeof ChatTagLeadScalarFieldEnum)[keyof typeof ChatTagLeadScalarFieldEnum]
+
+
   export const CampaignScalarFieldEnum: {
     id: 'id',
     workspaceId: 'workspaceId',
@@ -53195,6 +55600,7 @@ export namespace Prisma {
     eventos?: TimelineEventListRelationFilter
     mensagensAgendadas?: ScheduledMessageListRelationFilter
     notasInternas?: ChatInternalNoteListRelationFilter
+    tagsChat?: ChatTagLeadListRelationFilter
     atendimento?: XOR<LeadAtendimentoNullableScalarRelationFilter, LeadAtendimentoWhereInput> | null
     transferencias?: AtendimentoTransferenciaListRelationFilter
     botConversa?: XOR<BotConversaNullableScalarRelationFilter, BotConversaWhereInput> | null
@@ -53226,6 +55632,7 @@ export namespace Prisma {
     eventos?: TimelineEventOrderByRelationAggregateInput
     mensagensAgendadas?: ScheduledMessageOrderByRelationAggregateInput
     notasInternas?: ChatInternalNoteOrderByRelationAggregateInput
+    tagsChat?: ChatTagLeadOrderByRelationAggregateInput
     atendimento?: LeadAtendimentoOrderByWithRelationInput
     transferencias?: AtendimentoTransferenciaOrderByRelationAggregateInput
     botConversa?: BotConversaOrderByWithRelationInput
@@ -53260,6 +55667,7 @@ export namespace Prisma {
     eventos?: TimelineEventListRelationFilter
     mensagensAgendadas?: ScheduledMessageListRelationFilter
     notasInternas?: ChatInternalNoteListRelationFilter
+    tagsChat?: ChatTagLeadListRelationFilter
     atendimento?: XOR<LeadAtendimentoNullableScalarRelationFilter, LeadAtendimentoWhereInput> | null
     transferencias?: AtendimentoTransferenciaListRelationFilter
     botConversa?: XOR<BotConversaNullableScalarRelationFilter, BotConversaWhereInput> | null
@@ -53369,6 +55777,116 @@ export namespace Prisma {
     autor?: StringNullableWithAggregatesFilter<"ChatInternalNote"> | string | null
     data?: DateTimeWithAggregatesFilter<"ChatInternalNote"> | Date | string
     leadId?: StringWithAggregatesFilter<"ChatInternalNote"> | string
+  }
+
+  export type ChatTagWhereInput = {
+    AND?: ChatTagWhereInput | ChatTagWhereInput[]
+    OR?: ChatTagWhereInput[]
+    NOT?: ChatTagWhereInput | ChatTagWhereInput[]
+    id?: StringFilter<"ChatTag"> | string
+    workspaceId?: StringFilter<"ChatTag"> | string
+    nome?: StringFilter<"ChatTag"> | string
+    cor?: StringFilter<"ChatTag"> | string
+    criadoEm?: DateTimeFilter<"ChatTag"> | Date | string
+    leads?: ChatTagLeadListRelationFilter
+  }
+
+  export type ChatTagOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    cor?: SortOrder
+    criadoEm?: SortOrder
+    leads?: ChatTagLeadOrderByRelationAggregateInput
+  }
+
+  export type ChatTagWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    workspaceId_nome?: ChatTagWorkspaceIdNomeCompoundUniqueInput
+    AND?: ChatTagWhereInput | ChatTagWhereInput[]
+    OR?: ChatTagWhereInput[]
+    NOT?: ChatTagWhereInput | ChatTagWhereInput[]
+    workspaceId?: StringFilter<"ChatTag"> | string
+    nome?: StringFilter<"ChatTag"> | string
+    cor?: StringFilter<"ChatTag"> | string
+    criadoEm?: DateTimeFilter<"ChatTag"> | Date | string
+    leads?: ChatTagLeadListRelationFilter
+  }, "id" | "workspaceId_nome">
+
+  export type ChatTagOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    cor?: SortOrder
+    criadoEm?: SortOrder
+    _count?: ChatTagCountOrderByAggregateInput
+    _max?: ChatTagMaxOrderByAggregateInput
+    _min?: ChatTagMinOrderByAggregateInput
+  }
+
+  export type ChatTagScalarWhereWithAggregatesInput = {
+    AND?: ChatTagScalarWhereWithAggregatesInput | ChatTagScalarWhereWithAggregatesInput[]
+    OR?: ChatTagScalarWhereWithAggregatesInput[]
+    NOT?: ChatTagScalarWhereWithAggregatesInput | ChatTagScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ChatTag"> | string
+    workspaceId?: StringWithAggregatesFilter<"ChatTag"> | string
+    nome?: StringWithAggregatesFilter<"ChatTag"> | string
+    cor?: StringWithAggregatesFilter<"ChatTag"> | string
+    criadoEm?: DateTimeWithAggregatesFilter<"ChatTag"> | Date | string
+  }
+
+  export type ChatTagLeadWhereInput = {
+    AND?: ChatTagLeadWhereInput | ChatTagLeadWhereInput[]
+    OR?: ChatTagLeadWhereInput[]
+    NOT?: ChatTagLeadWhereInput | ChatTagLeadWhereInput[]
+    id?: StringFilter<"ChatTagLead"> | string
+    tagId?: StringFilter<"ChatTagLead"> | string
+    leadId?: StringFilter<"ChatTagLead"> | string
+    criadoEm?: DateTimeFilter<"ChatTagLead"> | Date | string
+    tag?: XOR<ChatTagScalarRelationFilter, ChatTagWhereInput>
+    lead?: XOR<LeadScalarRelationFilter, LeadWhereInput>
+  }
+
+  export type ChatTagLeadOrderByWithRelationInput = {
+    id?: SortOrder
+    tagId?: SortOrder
+    leadId?: SortOrder
+    criadoEm?: SortOrder
+    tag?: ChatTagOrderByWithRelationInput
+    lead?: LeadOrderByWithRelationInput
+  }
+
+  export type ChatTagLeadWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    tagId_leadId?: ChatTagLeadTagIdLeadIdCompoundUniqueInput
+    AND?: ChatTagLeadWhereInput | ChatTagLeadWhereInput[]
+    OR?: ChatTagLeadWhereInput[]
+    NOT?: ChatTagLeadWhereInput | ChatTagLeadWhereInput[]
+    tagId?: StringFilter<"ChatTagLead"> | string
+    leadId?: StringFilter<"ChatTagLead"> | string
+    criadoEm?: DateTimeFilter<"ChatTagLead"> | Date | string
+    tag?: XOR<ChatTagScalarRelationFilter, ChatTagWhereInput>
+    lead?: XOR<LeadScalarRelationFilter, LeadWhereInput>
+  }, "id" | "tagId_leadId">
+
+  export type ChatTagLeadOrderByWithAggregationInput = {
+    id?: SortOrder
+    tagId?: SortOrder
+    leadId?: SortOrder
+    criadoEm?: SortOrder
+    _count?: ChatTagLeadCountOrderByAggregateInput
+    _max?: ChatTagLeadMaxOrderByAggregateInput
+    _min?: ChatTagLeadMinOrderByAggregateInput
+  }
+
+  export type ChatTagLeadScalarWhereWithAggregatesInput = {
+    AND?: ChatTagLeadScalarWhereWithAggregatesInput | ChatTagLeadScalarWhereWithAggregatesInput[]
+    OR?: ChatTagLeadScalarWhereWithAggregatesInput[]
+    NOT?: ChatTagLeadScalarWhereWithAggregatesInput | ChatTagLeadScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ChatTagLead"> | string
+    tagId?: StringWithAggregatesFilter<"ChatTagLead"> | string
+    leadId?: StringWithAggregatesFilter<"ChatTagLead"> | string
+    criadoEm?: DateTimeWithAggregatesFilter<"ChatTagLead"> | Date | string
   }
 
   export type CampaignWhereInput = {
@@ -56586,6 +59104,7 @@ export namespace Prisma {
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
@@ -56616,6 +59135,7 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -56646,6 +59166,7 @@ export namespace Prisma {
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
@@ -56676,6 +59197,7 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -56800,6 +59322,113 @@ export namespace Prisma {
     autor?: NullableStringFieldUpdateOperationsInput | string | null
     data?: DateTimeFieldUpdateOperationsInput | Date | string
     leadId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type ChatTagCreateInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    cor?: string
+    criadoEm?: Date | string
+    leads?: ChatTagLeadCreateNestedManyWithoutTagInput
+  }
+
+  export type ChatTagUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    cor?: string
+    criadoEm?: Date | string
+    leads?: ChatTagLeadUncheckedCreateNestedManyWithoutTagInput
+  }
+
+  export type ChatTagUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    cor?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    leads?: ChatTagLeadUpdateManyWithoutTagNestedInput
+  }
+
+  export type ChatTagUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    cor?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    leads?: ChatTagLeadUncheckedUpdateManyWithoutTagNestedInput
+  }
+
+  export type ChatTagCreateManyInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    cor?: string
+    criadoEm?: Date | string
+  }
+
+  export type ChatTagUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    cor?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatTagUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    cor?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatTagLeadCreateInput = {
+    id?: string
+    criadoEm?: Date | string
+    tag: ChatTagCreateNestedOneWithoutLeadsInput
+    lead: LeadCreateNestedOneWithoutTagsChatInput
+  }
+
+  export type ChatTagLeadUncheckedCreateInput = {
+    id?: string
+    tagId: string
+    leadId: string
+    criadoEm?: Date | string
+  }
+
+  export type ChatTagLeadUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    tag?: ChatTagUpdateOneRequiredWithoutLeadsNestedInput
+    lead?: LeadUpdateOneRequiredWithoutTagsChatNestedInput
+  }
+
+  export type ChatTagLeadUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tagId?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatTagLeadCreateManyInput = {
+    id?: string
+    tagId: string
+    leadId: string
+    criadoEm?: Date | string
+  }
+
+  export type ChatTagLeadUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatTagLeadUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tagId?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CampaignCreateInput = {
@@ -60499,6 +63128,12 @@ export namespace Prisma {
     none?: ChatInternalNoteWhereInput
   }
 
+  export type ChatTagLeadListRelationFilter = {
+    every?: ChatTagLeadWhereInput
+    some?: ChatTagLeadWhereInput
+    none?: ChatTagLeadWhereInput
+  }
+
   export type LeadAtendimentoNullableScalarRelationFilter = {
     is?: LeadAtendimentoWhereInput | null
     isNot?: LeadAtendimentoWhereInput | null
@@ -60538,6 +63173,10 @@ export namespace Prisma {
   }
 
   export type ChatInternalNoteOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ChatTagLeadOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -60736,6 +63375,66 @@ export namespace Prisma {
     autor?: SortOrder
     data?: SortOrder
     leadId?: SortOrder
+  }
+
+  export type ChatTagWorkspaceIdNomeCompoundUniqueInput = {
+    workspaceId: string
+    nome: string
+  }
+
+  export type ChatTagCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    cor?: SortOrder
+    criadoEm?: SortOrder
+  }
+
+  export type ChatTagMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    cor?: SortOrder
+    criadoEm?: SortOrder
+  }
+
+  export type ChatTagMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    cor?: SortOrder
+    criadoEm?: SortOrder
+  }
+
+  export type ChatTagScalarRelationFilter = {
+    is?: ChatTagWhereInput
+    isNot?: ChatTagWhereInput
+  }
+
+  export type ChatTagLeadTagIdLeadIdCompoundUniqueInput = {
+    tagId: string
+    leadId: string
+  }
+
+  export type ChatTagLeadCountOrderByAggregateInput = {
+    id?: SortOrder
+    tagId?: SortOrder
+    leadId?: SortOrder
+    criadoEm?: SortOrder
+  }
+
+  export type ChatTagLeadMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tagId?: SortOrder
+    leadId?: SortOrder
+    criadoEm?: SortOrder
+  }
+
+  export type ChatTagLeadMinOrderByAggregateInput = {
+    id?: SortOrder
+    tagId?: SortOrder
+    leadId?: SortOrder
+    criadoEm?: SortOrder
   }
 
   export type EnumCampaignStatusFilter<$PrismaModel = never> = {
@@ -62937,6 +65636,13 @@ export namespace Prisma {
     connect?: ChatInternalNoteWhereUniqueInput | ChatInternalNoteWhereUniqueInput[]
   }
 
+  export type ChatTagLeadCreateNestedManyWithoutLeadInput = {
+    create?: XOR<ChatTagLeadCreateWithoutLeadInput, ChatTagLeadUncheckedCreateWithoutLeadInput> | ChatTagLeadCreateWithoutLeadInput[] | ChatTagLeadUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: ChatTagLeadCreateOrConnectWithoutLeadInput | ChatTagLeadCreateOrConnectWithoutLeadInput[]
+    createMany?: ChatTagLeadCreateManyLeadInputEnvelope
+    connect?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+  }
+
   export type LeadAtendimentoCreateNestedOneWithoutLeadInput = {
     create?: XOR<LeadAtendimentoCreateWithoutLeadInput, LeadAtendimentoUncheckedCreateWithoutLeadInput>
     connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutLeadInput
@@ -62988,6 +65694,13 @@ export namespace Prisma {
     connectOrCreate?: ChatInternalNoteCreateOrConnectWithoutLeadInput | ChatInternalNoteCreateOrConnectWithoutLeadInput[]
     createMany?: ChatInternalNoteCreateManyLeadInputEnvelope
     connect?: ChatInternalNoteWhereUniqueInput | ChatInternalNoteWhereUniqueInput[]
+  }
+
+  export type ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput = {
+    create?: XOR<ChatTagLeadCreateWithoutLeadInput, ChatTagLeadUncheckedCreateWithoutLeadInput> | ChatTagLeadCreateWithoutLeadInput[] | ChatTagLeadUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: ChatTagLeadCreateOrConnectWithoutLeadInput | ChatTagLeadCreateOrConnectWithoutLeadInput[]
+    createMany?: ChatTagLeadCreateManyLeadInputEnvelope
+    connect?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
   }
 
   export type LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput = {
@@ -63101,6 +65814,20 @@ export namespace Prisma {
     deleteMany?: ChatInternalNoteScalarWhereInput | ChatInternalNoteScalarWhereInput[]
   }
 
+  export type ChatTagLeadUpdateManyWithoutLeadNestedInput = {
+    create?: XOR<ChatTagLeadCreateWithoutLeadInput, ChatTagLeadUncheckedCreateWithoutLeadInput> | ChatTagLeadCreateWithoutLeadInput[] | ChatTagLeadUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: ChatTagLeadCreateOrConnectWithoutLeadInput | ChatTagLeadCreateOrConnectWithoutLeadInput[]
+    upsert?: ChatTagLeadUpsertWithWhereUniqueWithoutLeadInput | ChatTagLeadUpsertWithWhereUniqueWithoutLeadInput[]
+    createMany?: ChatTagLeadCreateManyLeadInputEnvelope
+    set?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+    disconnect?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+    delete?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+    connect?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+    update?: ChatTagLeadUpdateWithWhereUniqueWithoutLeadInput | ChatTagLeadUpdateWithWhereUniqueWithoutLeadInput[]
+    updateMany?: ChatTagLeadUpdateManyWithWhereWithoutLeadInput | ChatTagLeadUpdateManyWithWhereWithoutLeadInput[]
+    deleteMany?: ChatTagLeadScalarWhereInput | ChatTagLeadScalarWhereInput[]
+  }
+
   export type LeadAtendimentoUpdateOneWithoutLeadNestedInput = {
     create?: XOR<LeadAtendimentoCreateWithoutLeadInput, LeadAtendimentoUncheckedCreateWithoutLeadInput>
     connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutLeadInput
@@ -63201,6 +65928,20 @@ export namespace Prisma {
     deleteMany?: ChatInternalNoteScalarWhereInput | ChatInternalNoteScalarWhereInput[]
   }
 
+  export type ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput = {
+    create?: XOR<ChatTagLeadCreateWithoutLeadInput, ChatTagLeadUncheckedCreateWithoutLeadInput> | ChatTagLeadCreateWithoutLeadInput[] | ChatTagLeadUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: ChatTagLeadCreateOrConnectWithoutLeadInput | ChatTagLeadCreateOrConnectWithoutLeadInput[]
+    upsert?: ChatTagLeadUpsertWithWhereUniqueWithoutLeadInput | ChatTagLeadUpsertWithWhereUniqueWithoutLeadInput[]
+    createMany?: ChatTagLeadCreateManyLeadInputEnvelope
+    set?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+    disconnect?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+    delete?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+    connect?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+    update?: ChatTagLeadUpdateWithWhereUniqueWithoutLeadInput | ChatTagLeadUpdateWithWhereUniqueWithoutLeadInput[]
+    updateMany?: ChatTagLeadUpdateManyWithWhereWithoutLeadInput | ChatTagLeadUpdateManyWithWhereWithoutLeadInput[]
+    deleteMany?: ChatTagLeadScalarWhereInput | ChatTagLeadScalarWhereInput[]
+  }
+
   export type LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput = {
     create?: XOR<LeadAtendimentoCreateWithoutLeadInput, LeadAtendimentoUncheckedCreateWithoutLeadInput>
     connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutLeadInput
@@ -63257,6 +65998,76 @@ export namespace Prisma {
     upsert?: LeadUpsertWithoutNotasInternasInput
     connect?: LeadWhereUniqueInput
     update?: XOR<XOR<LeadUpdateToOneWithWhereWithoutNotasInternasInput, LeadUpdateWithoutNotasInternasInput>, LeadUncheckedUpdateWithoutNotasInternasInput>
+  }
+
+  export type ChatTagLeadCreateNestedManyWithoutTagInput = {
+    create?: XOR<ChatTagLeadCreateWithoutTagInput, ChatTagLeadUncheckedCreateWithoutTagInput> | ChatTagLeadCreateWithoutTagInput[] | ChatTagLeadUncheckedCreateWithoutTagInput[]
+    connectOrCreate?: ChatTagLeadCreateOrConnectWithoutTagInput | ChatTagLeadCreateOrConnectWithoutTagInput[]
+    createMany?: ChatTagLeadCreateManyTagInputEnvelope
+    connect?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+  }
+
+  export type ChatTagLeadUncheckedCreateNestedManyWithoutTagInput = {
+    create?: XOR<ChatTagLeadCreateWithoutTagInput, ChatTagLeadUncheckedCreateWithoutTagInput> | ChatTagLeadCreateWithoutTagInput[] | ChatTagLeadUncheckedCreateWithoutTagInput[]
+    connectOrCreate?: ChatTagLeadCreateOrConnectWithoutTagInput | ChatTagLeadCreateOrConnectWithoutTagInput[]
+    createMany?: ChatTagLeadCreateManyTagInputEnvelope
+    connect?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+  }
+
+  export type ChatTagLeadUpdateManyWithoutTagNestedInput = {
+    create?: XOR<ChatTagLeadCreateWithoutTagInput, ChatTagLeadUncheckedCreateWithoutTagInput> | ChatTagLeadCreateWithoutTagInput[] | ChatTagLeadUncheckedCreateWithoutTagInput[]
+    connectOrCreate?: ChatTagLeadCreateOrConnectWithoutTagInput | ChatTagLeadCreateOrConnectWithoutTagInput[]
+    upsert?: ChatTagLeadUpsertWithWhereUniqueWithoutTagInput | ChatTagLeadUpsertWithWhereUniqueWithoutTagInput[]
+    createMany?: ChatTagLeadCreateManyTagInputEnvelope
+    set?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+    disconnect?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+    delete?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+    connect?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+    update?: ChatTagLeadUpdateWithWhereUniqueWithoutTagInput | ChatTagLeadUpdateWithWhereUniqueWithoutTagInput[]
+    updateMany?: ChatTagLeadUpdateManyWithWhereWithoutTagInput | ChatTagLeadUpdateManyWithWhereWithoutTagInput[]
+    deleteMany?: ChatTagLeadScalarWhereInput | ChatTagLeadScalarWhereInput[]
+  }
+
+  export type ChatTagLeadUncheckedUpdateManyWithoutTagNestedInput = {
+    create?: XOR<ChatTagLeadCreateWithoutTagInput, ChatTagLeadUncheckedCreateWithoutTagInput> | ChatTagLeadCreateWithoutTagInput[] | ChatTagLeadUncheckedCreateWithoutTagInput[]
+    connectOrCreate?: ChatTagLeadCreateOrConnectWithoutTagInput | ChatTagLeadCreateOrConnectWithoutTagInput[]
+    upsert?: ChatTagLeadUpsertWithWhereUniqueWithoutTagInput | ChatTagLeadUpsertWithWhereUniqueWithoutTagInput[]
+    createMany?: ChatTagLeadCreateManyTagInputEnvelope
+    set?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+    disconnect?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+    delete?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+    connect?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+    update?: ChatTagLeadUpdateWithWhereUniqueWithoutTagInput | ChatTagLeadUpdateWithWhereUniqueWithoutTagInput[]
+    updateMany?: ChatTagLeadUpdateManyWithWhereWithoutTagInput | ChatTagLeadUpdateManyWithWhereWithoutTagInput[]
+    deleteMany?: ChatTagLeadScalarWhereInput | ChatTagLeadScalarWhereInput[]
+  }
+
+  export type ChatTagCreateNestedOneWithoutLeadsInput = {
+    create?: XOR<ChatTagCreateWithoutLeadsInput, ChatTagUncheckedCreateWithoutLeadsInput>
+    connectOrCreate?: ChatTagCreateOrConnectWithoutLeadsInput
+    connect?: ChatTagWhereUniqueInput
+  }
+
+  export type LeadCreateNestedOneWithoutTagsChatInput = {
+    create?: XOR<LeadCreateWithoutTagsChatInput, LeadUncheckedCreateWithoutTagsChatInput>
+    connectOrCreate?: LeadCreateOrConnectWithoutTagsChatInput
+    connect?: LeadWhereUniqueInput
+  }
+
+  export type ChatTagUpdateOneRequiredWithoutLeadsNestedInput = {
+    create?: XOR<ChatTagCreateWithoutLeadsInput, ChatTagUncheckedCreateWithoutLeadsInput>
+    connectOrCreate?: ChatTagCreateOrConnectWithoutLeadsInput
+    upsert?: ChatTagUpsertWithoutLeadsInput
+    connect?: ChatTagWhereUniqueInput
+    update?: XOR<XOR<ChatTagUpdateToOneWithWhereWithoutLeadsInput, ChatTagUpdateWithoutLeadsInput>, ChatTagUncheckedUpdateWithoutLeadsInput>
+  }
+
+  export type LeadUpdateOneRequiredWithoutTagsChatNestedInput = {
+    create?: XOR<LeadCreateWithoutTagsChatInput, LeadUncheckedCreateWithoutTagsChatInput>
+    connectOrCreate?: LeadCreateOrConnectWithoutTagsChatInput
+    upsert?: LeadUpsertWithoutTagsChatInput
+    connect?: LeadWhereUniqueInput
+    update?: XOR<XOR<LeadUpdateToOneWithWhereWithoutTagsChatInput, LeadUpdateWithoutTagsChatInput>, LeadUncheckedUpdateWithoutTagsChatInput>
   }
 
   export type CampaignMessageCreateNestedManyWithoutCampanhaInput = {
@@ -65358,6 +68169,28 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ChatTagLeadCreateWithoutLeadInput = {
+    id?: string
+    criadoEm?: Date | string
+    tag: ChatTagCreateNestedOneWithoutLeadsInput
+  }
+
+  export type ChatTagLeadUncheckedCreateWithoutLeadInput = {
+    id?: string
+    tagId: string
+    criadoEm?: Date | string
+  }
+
+  export type ChatTagLeadCreateOrConnectWithoutLeadInput = {
+    where: ChatTagLeadWhereUniqueInput
+    create: XOR<ChatTagLeadCreateWithoutLeadInput, ChatTagLeadUncheckedCreateWithoutLeadInput>
+  }
+
+  export type ChatTagLeadCreateManyLeadInputEnvelope = {
+    data: ChatTagLeadCreateManyLeadInput | ChatTagLeadCreateManyLeadInput[]
+    skipDuplicates?: boolean
+  }
+
   export type LeadAtendimentoCreateWithoutLeadInput = {
     transferidoEm?: Date | string
     departamento?: DepartamentoCreateNestedOneWithoutAtendimentosInput
@@ -65638,6 +68471,32 @@ export namespace Prisma {
     leadId?: StringFilter<"ChatInternalNote"> | string
   }
 
+  export type ChatTagLeadUpsertWithWhereUniqueWithoutLeadInput = {
+    where: ChatTagLeadWhereUniqueInput
+    update: XOR<ChatTagLeadUpdateWithoutLeadInput, ChatTagLeadUncheckedUpdateWithoutLeadInput>
+    create: XOR<ChatTagLeadCreateWithoutLeadInput, ChatTagLeadUncheckedCreateWithoutLeadInput>
+  }
+
+  export type ChatTagLeadUpdateWithWhereUniqueWithoutLeadInput = {
+    where: ChatTagLeadWhereUniqueInput
+    data: XOR<ChatTagLeadUpdateWithoutLeadInput, ChatTagLeadUncheckedUpdateWithoutLeadInput>
+  }
+
+  export type ChatTagLeadUpdateManyWithWhereWithoutLeadInput = {
+    where: ChatTagLeadScalarWhereInput
+    data: XOR<ChatTagLeadUpdateManyMutationInput, ChatTagLeadUncheckedUpdateManyWithoutLeadInput>
+  }
+
+  export type ChatTagLeadScalarWhereInput = {
+    AND?: ChatTagLeadScalarWhereInput | ChatTagLeadScalarWhereInput[]
+    OR?: ChatTagLeadScalarWhereInput[]
+    NOT?: ChatTagLeadScalarWhereInput | ChatTagLeadScalarWhereInput[]
+    id?: StringFilter<"ChatTagLead"> | string
+    tagId?: StringFilter<"ChatTagLead"> | string
+    leadId?: StringFilter<"ChatTagLead"> | string
+    criadoEm?: DateTimeFilter<"ChatTagLead"> | Date | string
+  }
+
   export type LeadAtendimentoUpsertWithoutLeadInput = {
     update: XOR<LeadAtendimentoUpdateWithoutLeadInput, LeadAtendimentoUncheckedUpdateWithoutLeadInput>
     create: XOR<LeadAtendimentoCreateWithoutLeadInput, LeadAtendimentoUncheckedCreateWithoutLeadInput>
@@ -65781,6 +68640,7 @@ export namespace Prisma {
     campanhas?: LeadCampaignCreateNestedManyWithoutLeadInput
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
@@ -65810,6 +68670,7 @@ export namespace Prisma {
     campanhas?: LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -65855,6 +68716,7 @@ export namespace Prisma {
     campanhas?: LeadCampaignUpdateManyWithoutLeadNestedInput
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
@@ -65884,6 +68746,229 @@ export namespace Prisma {
     campanhas?: LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
+  }
+
+  export type ChatTagLeadCreateWithoutTagInput = {
+    id?: string
+    criadoEm?: Date | string
+    lead: LeadCreateNestedOneWithoutTagsChatInput
+  }
+
+  export type ChatTagLeadUncheckedCreateWithoutTagInput = {
+    id?: string
+    leadId: string
+    criadoEm?: Date | string
+  }
+
+  export type ChatTagLeadCreateOrConnectWithoutTagInput = {
+    where: ChatTagLeadWhereUniqueInput
+    create: XOR<ChatTagLeadCreateWithoutTagInput, ChatTagLeadUncheckedCreateWithoutTagInput>
+  }
+
+  export type ChatTagLeadCreateManyTagInputEnvelope = {
+    data: ChatTagLeadCreateManyTagInput | ChatTagLeadCreateManyTagInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ChatTagLeadUpsertWithWhereUniqueWithoutTagInput = {
+    where: ChatTagLeadWhereUniqueInput
+    update: XOR<ChatTagLeadUpdateWithoutTagInput, ChatTagLeadUncheckedUpdateWithoutTagInput>
+    create: XOR<ChatTagLeadCreateWithoutTagInput, ChatTagLeadUncheckedCreateWithoutTagInput>
+  }
+
+  export type ChatTagLeadUpdateWithWhereUniqueWithoutTagInput = {
+    where: ChatTagLeadWhereUniqueInput
+    data: XOR<ChatTagLeadUpdateWithoutTagInput, ChatTagLeadUncheckedUpdateWithoutTagInput>
+  }
+
+  export type ChatTagLeadUpdateManyWithWhereWithoutTagInput = {
+    where: ChatTagLeadScalarWhereInput
+    data: XOR<ChatTagLeadUpdateManyMutationInput, ChatTagLeadUncheckedUpdateManyWithoutTagInput>
+  }
+
+  export type ChatTagCreateWithoutLeadsInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    cor?: string
+    criadoEm?: Date | string
+  }
+
+  export type ChatTagUncheckedCreateWithoutLeadsInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    cor?: string
+    criadoEm?: Date | string
+  }
+
+  export type ChatTagCreateOrConnectWithoutLeadsInput = {
+    where: ChatTagWhereUniqueInput
+    create: XOR<ChatTagCreateWithoutLeadsInput, ChatTagUncheckedCreateWithoutLeadsInput>
+  }
+
+  export type LeadCreateWithoutTagsChatInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    telefone: string
+    produto: string
+    marca: string
+    persona: string
+    regiao: string
+    status?: $Enums.LeadStatus
+    notas?: string | null
+    negocio?: string | null
+    atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
+    entradaCampanhaEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    campanha?: CampaignCreateNestedOneWithoutLeadsInput
+    campanhas?: LeadCampaignCreateNestedManyWithoutLeadInput
+    eventos?: TimelineEventCreateNestedManyWithoutLeadInput
+    mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
+    notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
+  }
+
+  export type LeadUncheckedCreateWithoutTagsChatInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    telefone: string
+    produto: string
+    marca: string
+    persona: string
+    regiao: string
+    status?: $Enums.LeadStatus
+    notas?: string | null
+    negocio?: string | null
+    atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
+    campanhaId?: string | null
+    entradaCampanhaEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    campanhas?: LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
+    eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
+    mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
+    notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
+  }
+
+  export type LeadCreateOrConnectWithoutTagsChatInput = {
+    where: LeadWhereUniqueInput
+    create: XOR<LeadCreateWithoutTagsChatInput, LeadUncheckedCreateWithoutTagsChatInput>
+  }
+
+  export type ChatTagUpsertWithoutLeadsInput = {
+    update: XOR<ChatTagUpdateWithoutLeadsInput, ChatTagUncheckedUpdateWithoutLeadsInput>
+    create: XOR<ChatTagCreateWithoutLeadsInput, ChatTagUncheckedCreateWithoutLeadsInput>
+    where?: ChatTagWhereInput
+  }
+
+  export type ChatTagUpdateToOneWithWhereWithoutLeadsInput = {
+    where?: ChatTagWhereInput
+    data: XOR<ChatTagUpdateWithoutLeadsInput, ChatTagUncheckedUpdateWithoutLeadsInput>
+  }
+
+  export type ChatTagUpdateWithoutLeadsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    cor?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatTagUncheckedUpdateWithoutLeadsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    cor?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadUpsertWithoutTagsChatInput = {
+    update: XOR<LeadUpdateWithoutTagsChatInput, LeadUncheckedUpdateWithoutTagsChatInput>
+    create: XOR<LeadCreateWithoutTagsChatInput, LeadUncheckedCreateWithoutTagsChatInput>
+    where?: LeadWhereInput
+  }
+
+  export type LeadUpdateToOneWithWhereWithoutTagsChatInput = {
+    where?: LeadWhereInput
+    data: XOR<LeadUpdateWithoutTagsChatInput, LeadUncheckedUpdateWithoutTagsChatInput>
+  }
+
+  export type LeadUpdateWithoutTagsChatInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    produto?: StringFieldUpdateOperationsInput | string
+    marca?: StringFieldUpdateOperationsInput | string
+    persona?: StringFieldUpdateOperationsInput | string
+    regiao?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
+    notas?: NullableStringFieldUpdateOperationsInput | string | null
+    negocio?: NullableStringFieldUpdateOperationsInput | string | null
+    atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    campanha?: CampaignUpdateOneWithoutLeadsNestedInput
+    campanhas?: LeadCampaignUpdateManyWithoutLeadNestedInput
+    eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
+    mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
+    notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
+  }
+
+  export type LeadUncheckedUpdateWithoutTagsChatInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    produto?: StringFieldUpdateOperationsInput | string
+    marca?: StringFieldUpdateOperationsInput | string
+    persona?: StringFieldUpdateOperationsInput | string
+    regiao?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
+    notas?: NullableStringFieldUpdateOperationsInput | string | null
+    negocio?: NullableStringFieldUpdateOperationsInput | string | null
+    atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
+    entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    campanhas?: LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
+    eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
+    mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
+    notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -65949,6 +69034,7 @@ export namespace Prisma {
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
@@ -65978,6 +69064,7 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -66184,6 +69271,7 @@ export namespace Prisma {
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
@@ -66213,6 +69301,7 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -66309,6 +69398,7 @@ export namespace Prisma {
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
@@ -66338,6 +69428,7 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -66578,6 +69669,7 @@ export namespace Prisma {
     campanhas?: LeadCampaignCreateNestedManyWithoutLeadInput
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
@@ -66607,6 +69699,7 @@ export namespace Prisma {
     campanhas?: LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -66652,6 +69745,7 @@ export namespace Prisma {
     campanhas?: LeadCampaignUpdateManyWithoutLeadNestedInput
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
@@ -66681,6 +69775,7 @@ export namespace Prisma {
     campanhas?: LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -66710,6 +69805,7 @@ export namespace Prisma {
     campanhas?: LeadCampaignCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
@@ -66739,6 +69835,7 @@ export namespace Prisma {
     campanhas?: LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -66866,6 +69963,7 @@ export namespace Prisma {
     campanhas?: LeadCampaignUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
@@ -66895,6 +69993,7 @@ export namespace Prisma {
     campanhas?: LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -67234,6 +70333,7 @@ export namespace Prisma {
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
@@ -67263,6 +70363,7 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -67351,6 +70452,7 @@ export namespace Prisma {
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
@@ -67380,6 +70482,7 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -68636,6 +71739,7 @@ export namespace Prisma {
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
     followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
@@ -68665,6 +71769,7 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
     followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -68766,6 +71871,7 @@ export namespace Prisma {
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
     followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
@@ -68795,6 +71901,7 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
     followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -68892,6 +71999,7 @@ export namespace Prisma {
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
     followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
@@ -68921,6 +72029,7 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
     followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -68966,6 +72075,7 @@ export namespace Prisma {
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
     followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
@@ -68995,6 +72105,7 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
     followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -69407,6 +72518,7 @@ export namespace Prisma {
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
@@ -69436,6 +72548,7 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -69506,6 +72619,7 @@ export namespace Prisma {
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
@@ -69535,6 +72649,7 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -70210,6 +73325,12 @@ export namespace Prisma {
     data?: Date | string
   }
 
+  export type ChatTagLeadCreateManyLeadInput = {
+    id?: string
+    tagId: string
+    criadoEm?: Date | string
+  }
+
   export type AtendimentoTransferenciaCreateManyLeadInput = {
     id?: string
     deDepartamento?: string | null
@@ -70344,6 +73465,24 @@ export namespace Prisma {
     data?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ChatTagLeadUpdateWithoutLeadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    tag?: ChatTagUpdateOneRequiredWithoutLeadsNestedInput
+  }
+
+  export type ChatTagLeadUncheckedUpdateWithoutLeadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tagId?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatTagLeadUncheckedUpdateManyWithoutLeadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tagId?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type AtendimentoTransferenciaUpdateWithoutLeadInput = {
     id?: StringFieldUpdateOperationsInput | string
     deDepartamento?: NullableStringFieldUpdateOperationsInput | string | null
@@ -70375,6 +73514,30 @@ export namespace Prisma {
     porUsuario?: StringFieldUpdateOperationsInput | string
     motivo?: NullableStringFieldUpdateOperationsInput | string | null
     data?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatTagLeadCreateManyTagInput = {
+    id?: string
+    leadId: string
+    criadoEm?: Date | string
+  }
+
+  export type ChatTagLeadUpdateWithoutTagInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    lead?: LeadUpdateOneRequiredWithoutTagsChatNestedInput
+  }
+
+  export type ChatTagLeadUncheckedUpdateWithoutTagInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatTagLeadUncheckedUpdateManyWithoutTagInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CampaignMessageCreateManyCampanhaInput = {
@@ -70492,6 +73655,7 @@ export namespace Prisma {
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
@@ -70521,6 +73685,7 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
