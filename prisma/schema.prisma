@@ -236,6 +236,11 @@ model Campaign {
   filtroPersona String?
   filtroRegiao  String?
 
+  /// Pasta em que a campanha está organizada (nulo = fora de qualquer pasta).
+  /// Ao excluir a pasta, as campanhas voltam para a raiz (SetNull).
+  pastaId String?
+  pasta   CampaignPasta? @relation(fields: [pastaId], references: [id], onDelete: SetNull)
+
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
@@ -246,6 +251,20 @@ model Campaign {
 
   @@index([status])
   @@index([criadoEm])
+  @@index([workspaceId])
+  @@index([pastaId])
+}
+
+/// Pasta para organizar campanhas na tela de Campanhas (um nível, sem subpastas).
+model CampaignPasta {
+  id          String @id @default(cuid())
+  workspaceId String
+  nome        String
+  criadoEm    DateTime @default(now())
+
+  campanhas Campaign[]
+
+  @@unique([workspaceId, nome])
   @@index([workspaceId])
 }
 

@@ -41,6 +41,11 @@ export type ChatTagLead = $Result.DefaultSelection<Prisma.$ChatTagLeadPayload>
  */
 export type Campaign = $Result.DefaultSelection<Prisma.$CampaignPayload>
 /**
+ * Model CampaignPasta
+ * Pasta para organizar campanhas na tela de Campanhas (um nível, sem subpastas).
+ */
+export type CampaignPasta = $Result.DefaultSelection<Prisma.$CampaignPastaPayload>
+/**
  * Model LeadCampaign
  * 
  */
@@ -598,6 +603,16 @@ export class PrismaClient<
     * ```
     */
   get campaign(): Prisma.CampaignDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.campaignPasta`: Exposes CRUD operations for the **CampaignPasta** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more CampaignPastas
+    * const campaignPastas = await prisma.campaignPasta.findMany()
+    * ```
+    */
+  get campaignPasta(): Prisma.CampaignPastaDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.leadCampaign`: Exposes CRUD operations for the **LeadCampaign** model.
@@ -1463,6 +1478,7 @@ export namespace Prisma {
     ChatTag: 'ChatTag',
     ChatTagLead: 'ChatTagLead',
     Campaign: 'Campaign',
+    CampaignPasta: 'CampaignPasta',
     LeadCampaign: 'LeadCampaign',
     CampaignMessage: 'CampaignMessage',
     ScheduledMessage: 'ScheduledMessage',
@@ -1523,7 +1539,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "lead" | "chatInternalNote" | "chatTag" | "chatTagLead" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "botConversa" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "userFoto" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia" | "funil" | "funilEtapa" | "leadFunil" | "leadFunilMovimento" | "followUpBot" | "chatTemplate" | "followUpTemplate" | "followUpConversa" | "agenteIA" | "internoConversa" | "internoParticipante" | "internoMensagem" | "pushAssinatura" | "pushNotificacao"
+      modelProps: "lead" | "chatInternalNote" | "chatTag" | "chatTagLead" | "campaign" | "campaignPasta" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "botConversa" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "userFoto" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia" | "funil" | "funilEtapa" | "leadFunil" | "leadFunilMovimento" | "followUpBot" | "chatTemplate" | "followUpTemplate" | "followUpConversa" | "agenteIA" | "internoConversa" | "internoParticipante" | "internoMensagem" | "pushAssinatura" | "pushNotificacao"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1894,6 +1910,80 @@ export namespace Prisma {
           count: {
             args: Prisma.CampaignCountArgs<ExtArgs>
             result: $Utils.Optional<CampaignCountAggregateOutputType> | number
+          }
+        }
+      }
+      CampaignPasta: {
+        payload: Prisma.$CampaignPastaPayload<ExtArgs>
+        fields: Prisma.CampaignPastaFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CampaignPastaFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CampaignPastaPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CampaignPastaFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CampaignPastaPayload>
+          }
+          findFirst: {
+            args: Prisma.CampaignPastaFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CampaignPastaPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CampaignPastaFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CampaignPastaPayload>
+          }
+          findMany: {
+            args: Prisma.CampaignPastaFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CampaignPastaPayload>[]
+          }
+          create: {
+            args: Prisma.CampaignPastaCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CampaignPastaPayload>
+          }
+          createMany: {
+            args: Prisma.CampaignPastaCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.CampaignPastaCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CampaignPastaPayload>[]
+          }
+          delete: {
+            args: Prisma.CampaignPastaDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CampaignPastaPayload>
+          }
+          update: {
+            args: Prisma.CampaignPastaUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CampaignPastaPayload>
+          }
+          deleteMany: {
+            args: Prisma.CampaignPastaDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CampaignPastaUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.CampaignPastaUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CampaignPastaPayload>[]
+          }
+          upsert: {
+            args: Prisma.CampaignPastaUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CampaignPastaPayload>
+          }
+          aggregate: {
+            args: Prisma.CampaignPastaAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCampaignPasta>
+          }
+          groupBy: {
+            args: Prisma.CampaignPastaGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CampaignPastaGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.CampaignPastaCountArgs<ExtArgs>
+            result: $Utils.Optional<CampaignPastaCountAggregateOutputType> | number
           }
         }
       }
@@ -5098,6 +5188,7 @@ export namespace Prisma {
     chatTag?: ChatTagOmit
     chatTagLead?: ChatTagLeadOmit
     campaign?: CampaignOmit
+    campaignPasta?: CampaignPastaOmit
     leadCampaign?: LeadCampaignOmit
     campaignMessage?: CampaignMessageOmit
     scheduledMessage?: ScheduledMessageOmit
@@ -5409,6 +5500,37 @@ export namespace Prisma {
    */
   export type CampaignCountOutputTypeCountEventosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TimelineEventWhereInput
+  }
+
+
+  /**
+   * Count Type CampaignPastaCountOutputType
+   */
+
+  export type CampaignPastaCountOutputType = {
+    campanhas: number
+  }
+
+  export type CampaignPastaCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    campanhas?: boolean | CampaignPastaCountOutputTypeCountCampanhasArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * CampaignPastaCountOutputType without action
+   */
+  export type CampaignPastaCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CampaignPastaCountOutputType
+     */
+    select?: CampaignPastaCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * CampaignPastaCountOutputType without action
+   */
+  export type CampaignPastaCountOutputTypeCountCampanhasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CampaignWhereInput
   }
 
 
@@ -10634,6 +10756,7 @@ export namespace Prisma {
     filtroMarca: string | null
     filtroPersona: string | null
     filtroRegiao: string | null
+    pastaId: string | null
     criadoEm: Date | null
     atualizadoEm: Date | null
   }
@@ -10654,6 +10777,7 @@ export namespace Prisma {
     filtroMarca: string | null
     filtroPersona: string | null
     filtroRegiao: string | null
+    pastaId: string | null
     criadoEm: Date | null
     atualizadoEm: Date | null
   }
@@ -10674,6 +10798,7 @@ export namespace Prisma {
     filtroMarca: number
     filtroPersona: number
     filtroRegiao: number
+    pastaId: number
     criadoEm: number
     atualizadoEm: number
     _all: number
@@ -10706,6 +10831,7 @@ export namespace Prisma {
     filtroMarca?: true
     filtroPersona?: true
     filtroRegiao?: true
+    pastaId?: true
     criadoEm?: true
     atualizadoEm?: true
   }
@@ -10726,6 +10852,7 @@ export namespace Prisma {
     filtroMarca?: true
     filtroPersona?: true
     filtroRegiao?: true
+    pastaId?: true
     criadoEm?: true
     atualizadoEm?: true
   }
@@ -10746,6 +10873,7 @@ export namespace Prisma {
     filtroMarca?: true
     filtroPersona?: true
     filtroRegiao?: true
+    pastaId?: true
     criadoEm?: true
     atualizadoEm?: true
     _all?: true
@@ -10853,6 +10981,7 @@ export namespace Prisma {
     filtroMarca: string | null
     filtroPersona: string | null
     filtroRegiao: string | null
+    pastaId: string | null
     criadoEm: Date
     atualizadoEm: Date
     _count: CampaignCountAggregateOutputType | null
@@ -10892,8 +11021,10 @@ export namespace Prisma {
     filtroMarca?: boolean
     filtroPersona?: boolean
     filtroRegiao?: boolean
+    pastaId?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
+    pasta?: boolean | Campaign$pastaArgs<ExtArgs>
     mensagens?: boolean | Campaign$mensagensArgs<ExtArgs>
     leads?: boolean | Campaign$leadsArgs<ExtArgs>
     leadCampaigns?: boolean | Campaign$leadCampaignsArgs<ExtArgs>
@@ -10917,8 +11048,10 @@ export namespace Prisma {
     filtroMarca?: boolean
     filtroPersona?: boolean
     filtroRegiao?: boolean
+    pastaId?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
+    pasta?: boolean | Campaign$pastaArgs<ExtArgs>
   }, ExtArgs["result"]["campaign"]>
 
   export type CampaignSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -10937,8 +11070,10 @@ export namespace Prisma {
     filtroMarca?: boolean
     filtroPersona?: boolean
     filtroRegiao?: boolean
+    pastaId?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
+    pasta?: boolean | Campaign$pastaArgs<ExtArgs>
   }, ExtArgs["result"]["campaign"]>
 
   export type CampaignSelectScalar = {
@@ -10957,24 +11092,31 @@ export namespace Prisma {
     filtroMarca?: boolean
     filtroPersona?: boolean
     filtroRegiao?: boolean
+    pastaId?: boolean
     criadoEm?: boolean
     atualizadoEm?: boolean
   }
 
-  export type CampaignOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "descricao" | "status" | "tipo" | "idImportacao" | "recorrenciaDias" | "dataFinal" | "instanciaNome" | "reiniciadaEm" | "filtroProduto" | "filtroMarca" | "filtroPersona" | "filtroRegiao" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["campaign"]>
+  export type CampaignOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "descricao" | "status" | "tipo" | "idImportacao" | "recorrenciaDias" | "dataFinal" | "instanciaNome" | "reiniciadaEm" | "filtroProduto" | "filtroMarca" | "filtroPersona" | "filtroRegiao" | "pastaId" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["campaign"]>
   export type CampaignInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    pasta?: boolean | Campaign$pastaArgs<ExtArgs>
     mensagens?: boolean | Campaign$mensagensArgs<ExtArgs>
     leads?: boolean | Campaign$leadsArgs<ExtArgs>
     leadCampaigns?: boolean | Campaign$leadCampaignsArgs<ExtArgs>
     eventos?: boolean | Campaign$eventosArgs<ExtArgs>
     _count?: boolean | CampaignCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type CampaignIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type CampaignIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type CampaignIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    pasta?: boolean | Campaign$pastaArgs<ExtArgs>
+  }
+  export type CampaignIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    pasta?: boolean | Campaign$pastaArgs<ExtArgs>
+  }
 
   export type $CampaignPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Campaign"
     objects: {
+      pasta: Prisma.$CampaignPastaPayload<ExtArgs> | null
       mensagens: Prisma.$CampaignMessagePayload<ExtArgs>[]
       leads: Prisma.$LeadPayload<ExtArgs>[]
       leadCampaigns: Prisma.$LeadCampaignPayload<ExtArgs>[]
@@ -11008,6 +11150,11 @@ export namespace Prisma {
       filtroMarca: string | null
       filtroPersona: string | null
       filtroRegiao: string | null
+      /**
+       * Pasta em que a campanha está organizada (nulo = fora de qualquer pasta).
+       * Ao excluir a pasta, as campanhas voltam para a raiz (SetNull).
+       */
+      pastaId: string | null
       criadoEm: Date
       atualizadoEm: Date
     }, ExtArgs["result"]["campaign"]>
@@ -11404,6 +11551,7 @@ export namespace Prisma {
    */
   export interface Prisma__CampaignClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    pasta<T extends Campaign$pastaArgs<ExtArgs> = {}>(args?: Subset<T, Campaign$pastaArgs<ExtArgs>>): Prisma__CampaignPastaClient<$Result.GetResult<Prisma.$CampaignPastaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     mensagens<T extends Campaign$mensagensArgs<ExtArgs> = {}>(args?: Subset<T, Campaign$mensagensArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CampaignMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     leads<T extends Campaign$leadsArgs<ExtArgs> = {}>(args?: Subset<T, Campaign$leadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     leadCampaigns<T extends Campaign$leadCampaignsArgs<ExtArgs> = {}>(args?: Subset<T, Campaign$leadCampaignsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadCampaignPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -11452,6 +11600,7 @@ export namespace Prisma {
     readonly filtroMarca: FieldRef<"Campaign", 'String'>
     readonly filtroPersona: FieldRef<"Campaign", 'String'>
     readonly filtroRegiao: FieldRef<"Campaign", 'String'>
+    readonly pastaId: FieldRef<"Campaign", 'String'>
     readonly criadoEm: FieldRef<"Campaign", 'DateTime'>
     readonly atualizadoEm: FieldRef<"Campaign", 'DateTime'>
   }
@@ -11703,6 +11852,10 @@ export namespace Prisma {
      */
     data: CampaignCreateManyInput | CampaignCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CampaignIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -11773,6 +11926,10 @@ export namespace Prisma {
      * Limit how many Campaigns to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CampaignIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -11839,6 +11996,25 @@ export namespace Prisma {
      * Limit how many Campaigns to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Campaign.pasta
+   */
+  export type Campaign$pastaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CampaignPasta
+     */
+    select?: CampaignPastaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CampaignPasta
+     */
+    omit?: CampaignPastaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CampaignPastaInclude<ExtArgs> | null
+    where?: CampaignPastaWhereInput
   }
 
   /**
@@ -11953,6 +12129,1063 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: CampaignInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model CampaignPasta
+   */
+
+  export type AggregateCampaignPasta = {
+    _count: CampaignPastaCountAggregateOutputType | null
+    _min: CampaignPastaMinAggregateOutputType | null
+    _max: CampaignPastaMaxAggregateOutputType | null
+  }
+
+  export type CampaignPastaMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    nome: string | null
+    criadoEm: Date | null
+  }
+
+  export type CampaignPastaMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    nome: string | null
+    criadoEm: Date | null
+  }
+
+  export type CampaignPastaCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    nome: number
+    criadoEm: number
+    _all: number
+  }
+
+
+  export type CampaignPastaMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    nome?: true
+    criadoEm?: true
+  }
+
+  export type CampaignPastaMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    nome?: true
+    criadoEm?: true
+  }
+
+  export type CampaignPastaCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    nome?: true
+    criadoEm?: true
+    _all?: true
+  }
+
+  export type CampaignPastaAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CampaignPasta to aggregate.
+     */
+    where?: CampaignPastaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CampaignPastas to fetch.
+     */
+    orderBy?: CampaignPastaOrderByWithRelationInput | CampaignPastaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CampaignPastaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CampaignPastas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CampaignPastas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned CampaignPastas
+    **/
+    _count?: true | CampaignPastaCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CampaignPastaMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CampaignPastaMaxAggregateInputType
+  }
+
+  export type GetCampaignPastaAggregateType<T extends CampaignPastaAggregateArgs> = {
+        [P in keyof T & keyof AggregateCampaignPasta]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCampaignPasta[P]>
+      : GetScalarType<T[P], AggregateCampaignPasta[P]>
+  }
+
+
+
+
+  export type CampaignPastaGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CampaignPastaWhereInput
+    orderBy?: CampaignPastaOrderByWithAggregationInput | CampaignPastaOrderByWithAggregationInput[]
+    by: CampaignPastaScalarFieldEnum[] | CampaignPastaScalarFieldEnum
+    having?: CampaignPastaScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CampaignPastaCountAggregateInputType | true
+    _min?: CampaignPastaMinAggregateInputType
+    _max?: CampaignPastaMaxAggregateInputType
+  }
+
+  export type CampaignPastaGroupByOutputType = {
+    id: string
+    workspaceId: string
+    nome: string
+    criadoEm: Date
+    _count: CampaignPastaCountAggregateOutputType | null
+    _min: CampaignPastaMinAggregateOutputType | null
+    _max: CampaignPastaMaxAggregateOutputType | null
+  }
+
+  type GetCampaignPastaGroupByPayload<T extends CampaignPastaGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CampaignPastaGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CampaignPastaGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CampaignPastaGroupByOutputType[P]>
+            : GetScalarType<T[P], CampaignPastaGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CampaignPastaSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    nome?: boolean
+    criadoEm?: boolean
+    campanhas?: boolean | CampaignPasta$campanhasArgs<ExtArgs>
+    _count?: boolean | CampaignPastaCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["campaignPasta"]>
+
+  export type CampaignPastaSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    nome?: boolean
+    criadoEm?: boolean
+  }, ExtArgs["result"]["campaignPasta"]>
+
+  export type CampaignPastaSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    nome?: boolean
+    criadoEm?: boolean
+  }, ExtArgs["result"]["campaignPasta"]>
+
+  export type CampaignPastaSelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    nome?: boolean
+    criadoEm?: boolean
+  }
+
+  export type CampaignPastaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "criadoEm", ExtArgs["result"]["campaignPasta"]>
+  export type CampaignPastaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    campanhas?: boolean | CampaignPasta$campanhasArgs<ExtArgs>
+    _count?: boolean | CampaignPastaCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type CampaignPastaIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type CampaignPastaIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $CampaignPastaPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "CampaignPasta"
+    objects: {
+      campanhas: Prisma.$CampaignPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      workspaceId: string
+      nome: string
+      criadoEm: Date
+    }, ExtArgs["result"]["campaignPasta"]>
+    composites: {}
+  }
+
+  type CampaignPastaGetPayload<S extends boolean | null | undefined | CampaignPastaDefaultArgs> = $Result.GetResult<Prisma.$CampaignPastaPayload, S>
+
+  type CampaignPastaCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<CampaignPastaFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: CampaignPastaCountAggregateInputType | true
+    }
+
+  export interface CampaignPastaDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CampaignPasta'], meta: { name: 'CampaignPasta' } }
+    /**
+     * Find zero or one CampaignPasta that matches the filter.
+     * @param {CampaignPastaFindUniqueArgs} args - Arguments to find a CampaignPasta
+     * @example
+     * // Get one CampaignPasta
+     * const campaignPasta = await prisma.campaignPasta.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CampaignPastaFindUniqueArgs>(args: SelectSubset<T, CampaignPastaFindUniqueArgs<ExtArgs>>): Prisma__CampaignPastaClient<$Result.GetResult<Prisma.$CampaignPastaPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one CampaignPasta that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {CampaignPastaFindUniqueOrThrowArgs} args - Arguments to find a CampaignPasta
+     * @example
+     * // Get one CampaignPasta
+     * const campaignPasta = await prisma.campaignPasta.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CampaignPastaFindUniqueOrThrowArgs>(args: SelectSubset<T, CampaignPastaFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CampaignPastaClient<$Result.GetResult<Prisma.$CampaignPastaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CampaignPasta that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CampaignPastaFindFirstArgs} args - Arguments to find a CampaignPasta
+     * @example
+     * // Get one CampaignPasta
+     * const campaignPasta = await prisma.campaignPasta.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CampaignPastaFindFirstArgs>(args?: SelectSubset<T, CampaignPastaFindFirstArgs<ExtArgs>>): Prisma__CampaignPastaClient<$Result.GetResult<Prisma.$CampaignPastaPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CampaignPasta that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CampaignPastaFindFirstOrThrowArgs} args - Arguments to find a CampaignPasta
+     * @example
+     * // Get one CampaignPasta
+     * const campaignPasta = await prisma.campaignPasta.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CampaignPastaFindFirstOrThrowArgs>(args?: SelectSubset<T, CampaignPastaFindFirstOrThrowArgs<ExtArgs>>): Prisma__CampaignPastaClient<$Result.GetResult<Prisma.$CampaignPastaPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CampaignPastas that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CampaignPastaFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all CampaignPastas
+     * const campaignPastas = await prisma.campaignPasta.findMany()
+     * 
+     * // Get first 10 CampaignPastas
+     * const campaignPastas = await prisma.campaignPasta.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const campaignPastaWithIdOnly = await prisma.campaignPasta.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends CampaignPastaFindManyArgs>(args?: SelectSubset<T, CampaignPastaFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CampaignPastaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a CampaignPasta.
+     * @param {CampaignPastaCreateArgs} args - Arguments to create a CampaignPasta.
+     * @example
+     * // Create one CampaignPasta
+     * const CampaignPasta = await prisma.campaignPasta.create({
+     *   data: {
+     *     // ... data to create a CampaignPasta
+     *   }
+     * })
+     * 
+     */
+    create<T extends CampaignPastaCreateArgs>(args: SelectSubset<T, CampaignPastaCreateArgs<ExtArgs>>): Prisma__CampaignPastaClient<$Result.GetResult<Prisma.$CampaignPastaPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many CampaignPastas.
+     * @param {CampaignPastaCreateManyArgs} args - Arguments to create many CampaignPastas.
+     * @example
+     * // Create many CampaignPastas
+     * const campaignPasta = await prisma.campaignPasta.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CampaignPastaCreateManyArgs>(args?: SelectSubset<T, CampaignPastaCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many CampaignPastas and returns the data saved in the database.
+     * @param {CampaignPastaCreateManyAndReturnArgs} args - Arguments to create many CampaignPastas.
+     * @example
+     * // Create many CampaignPastas
+     * const campaignPasta = await prisma.campaignPasta.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many CampaignPastas and only return the `id`
+     * const campaignPastaWithIdOnly = await prisma.campaignPasta.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends CampaignPastaCreateManyAndReturnArgs>(args?: SelectSubset<T, CampaignPastaCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CampaignPastaPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a CampaignPasta.
+     * @param {CampaignPastaDeleteArgs} args - Arguments to delete one CampaignPasta.
+     * @example
+     * // Delete one CampaignPasta
+     * const CampaignPasta = await prisma.campaignPasta.delete({
+     *   where: {
+     *     // ... filter to delete one CampaignPasta
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CampaignPastaDeleteArgs>(args: SelectSubset<T, CampaignPastaDeleteArgs<ExtArgs>>): Prisma__CampaignPastaClient<$Result.GetResult<Prisma.$CampaignPastaPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one CampaignPasta.
+     * @param {CampaignPastaUpdateArgs} args - Arguments to update one CampaignPasta.
+     * @example
+     * // Update one CampaignPasta
+     * const campaignPasta = await prisma.campaignPasta.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CampaignPastaUpdateArgs>(args: SelectSubset<T, CampaignPastaUpdateArgs<ExtArgs>>): Prisma__CampaignPastaClient<$Result.GetResult<Prisma.$CampaignPastaPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more CampaignPastas.
+     * @param {CampaignPastaDeleteManyArgs} args - Arguments to filter CampaignPastas to delete.
+     * @example
+     * // Delete a few CampaignPastas
+     * const { count } = await prisma.campaignPasta.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CampaignPastaDeleteManyArgs>(args?: SelectSubset<T, CampaignPastaDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CampaignPastas.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CampaignPastaUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many CampaignPastas
+     * const campaignPasta = await prisma.campaignPasta.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CampaignPastaUpdateManyArgs>(args: SelectSubset<T, CampaignPastaUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CampaignPastas and returns the data updated in the database.
+     * @param {CampaignPastaUpdateManyAndReturnArgs} args - Arguments to update many CampaignPastas.
+     * @example
+     * // Update many CampaignPastas
+     * const campaignPasta = await prisma.campaignPasta.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more CampaignPastas and only return the `id`
+     * const campaignPastaWithIdOnly = await prisma.campaignPasta.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends CampaignPastaUpdateManyAndReturnArgs>(args: SelectSubset<T, CampaignPastaUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CampaignPastaPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one CampaignPasta.
+     * @param {CampaignPastaUpsertArgs} args - Arguments to update or create a CampaignPasta.
+     * @example
+     * // Update or create a CampaignPasta
+     * const campaignPasta = await prisma.campaignPasta.upsert({
+     *   create: {
+     *     // ... data to create a CampaignPasta
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the CampaignPasta we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CampaignPastaUpsertArgs>(args: SelectSubset<T, CampaignPastaUpsertArgs<ExtArgs>>): Prisma__CampaignPastaClient<$Result.GetResult<Prisma.$CampaignPastaPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of CampaignPastas.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CampaignPastaCountArgs} args - Arguments to filter CampaignPastas to count.
+     * @example
+     * // Count the number of CampaignPastas
+     * const count = await prisma.campaignPasta.count({
+     *   where: {
+     *     // ... the filter for the CampaignPastas we want to count
+     *   }
+     * })
+    **/
+    count<T extends CampaignPastaCountArgs>(
+      args?: Subset<T, CampaignPastaCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CampaignPastaCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a CampaignPasta.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CampaignPastaAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CampaignPastaAggregateArgs>(args: Subset<T, CampaignPastaAggregateArgs>): Prisma.PrismaPromise<GetCampaignPastaAggregateType<T>>
+
+    /**
+     * Group by CampaignPasta.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CampaignPastaGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CampaignPastaGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CampaignPastaGroupByArgs['orderBy'] }
+        : { orderBy?: CampaignPastaGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CampaignPastaGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCampaignPastaGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the CampaignPasta model
+   */
+  readonly fields: CampaignPastaFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for CampaignPasta.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CampaignPastaClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    campanhas<T extends CampaignPasta$campanhasArgs<ExtArgs> = {}>(args?: Subset<T, CampaignPasta$campanhasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CampaignPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the CampaignPasta model
+   */
+  interface CampaignPastaFieldRefs {
+    readonly id: FieldRef<"CampaignPasta", 'String'>
+    readonly workspaceId: FieldRef<"CampaignPasta", 'String'>
+    readonly nome: FieldRef<"CampaignPasta", 'String'>
+    readonly criadoEm: FieldRef<"CampaignPasta", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * CampaignPasta findUnique
+   */
+  export type CampaignPastaFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CampaignPasta
+     */
+    select?: CampaignPastaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CampaignPasta
+     */
+    omit?: CampaignPastaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CampaignPastaInclude<ExtArgs> | null
+    /**
+     * Filter, which CampaignPasta to fetch.
+     */
+    where: CampaignPastaWhereUniqueInput
+  }
+
+  /**
+   * CampaignPasta findUniqueOrThrow
+   */
+  export type CampaignPastaFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CampaignPasta
+     */
+    select?: CampaignPastaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CampaignPasta
+     */
+    omit?: CampaignPastaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CampaignPastaInclude<ExtArgs> | null
+    /**
+     * Filter, which CampaignPasta to fetch.
+     */
+    where: CampaignPastaWhereUniqueInput
+  }
+
+  /**
+   * CampaignPasta findFirst
+   */
+  export type CampaignPastaFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CampaignPasta
+     */
+    select?: CampaignPastaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CampaignPasta
+     */
+    omit?: CampaignPastaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CampaignPastaInclude<ExtArgs> | null
+    /**
+     * Filter, which CampaignPasta to fetch.
+     */
+    where?: CampaignPastaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CampaignPastas to fetch.
+     */
+    orderBy?: CampaignPastaOrderByWithRelationInput | CampaignPastaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CampaignPastas.
+     */
+    cursor?: CampaignPastaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CampaignPastas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CampaignPastas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CampaignPastas.
+     */
+    distinct?: CampaignPastaScalarFieldEnum | CampaignPastaScalarFieldEnum[]
+  }
+
+  /**
+   * CampaignPasta findFirstOrThrow
+   */
+  export type CampaignPastaFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CampaignPasta
+     */
+    select?: CampaignPastaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CampaignPasta
+     */
+    omit?: CampaignPastaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CampaignPastaInclude<ExtArgs> | null
+    /**
+     * Filter, which CampaignPasta to fetch.
+     */
+    where?: CampaignPastaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CampaignPastas to fetch.
+     */
+    orderBy?: CampaignPastaOrderByWithRelationInput | CampaignPastaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CampaignPastas.
+     */
+    cursor?: CampaignPastaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CampaignPastas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CampaignPastas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CampaignPastas.
+     */
+    distinct?: CampaignPastaScalarFieldEnum | CampaignPastaScalarFieldEnum[]
+  }
+
+  /**
+   * CampaignPasta findMany
+   */
+  export type CampaignPastaFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CampaignPasta
+     */
+    select?: CampaignPastaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CampaignPasta
+     */
+    omit?: CampaignPastaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CampaignPastaInclude<ExtArgs> | null
+    /**
+     * Filter, which CampaignPastas to fetch.
+     */
+    where?: CampaignPastaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CampaignPastas to fetch.
+     */
+    orderBy?: CampaignPastaOrderByWithRelationInput | CampaignPastaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing CampaignPastas.
+     */
+    cursor?: CampaignPastaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CampaignPastas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CampaignPastas.
+     */
+    skip?: number
+    distinct?: CampaignPastaScalarFieldEnum | CampaignPastaScalarFieldEnum[]
+  }
+
+  /**
+   * CampaignPasta create
+   */
+  export type CampaignPastaCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CampaignPasta
+     */
+    select?: CampaignPastaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CampaignPasta
+     */
+    omit?: CampaignPastaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CampaignPastaInclude<ExtArgs> | null
+    /**
+     * The data needed to create a CampaignPasta.
+     */
+    data: XOR<CampaignPastaCreateInput, CampaignPastaUncheckedCreateInput>
+  }
+
+  /**
+   * CampaignPasta createMany
+   */
+  export type CampaignPastaCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many CampaignPastas.
+     */
+    data: CampaignPastaCreateManyInput | CampaignPastaCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * CampaignPasta createManyAndReturn
+   */
+  export type CampaignPastaCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CampaignPasta
+     */
+    select?: CampaignPastaSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CampaignPasta
+     */
+    omit?: CampaignPastaOmit<ExtArgs> | null
+    /**
+     * The data used to create many CampaignPastas.
+     */
+    data: CampaignPastaCreateManyInput | CampaignPastaCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * CampaignPasta update
+   */
+  export type CampaignPastaUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CampaignPasta
+     */
+    select?: CampaignPastaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CampaignPasta
+     */
+    omit?: CampaignPastaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CampaignPastaInclude<ExtArgs> | null
+    /**
+     * The data needed to update a CampaignPasta.
+     */
+    data: XOR<CampaignPastaUpdateInput, CampaignPastaUncheckedUpdateInput>
+    /**
+     * Choose, which CampaignPasta to update.
+     */
+    where: CampaignPastaWhereUniqueInput
+  }
+
+  /**
+   * CampaignPasta updateMany
+   */
+  export type CampaignPastaUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update CampaignPastas.
+     */
+    data: XOR<CampaignPastaUpdateManyMutationInput, CampaignPastaUncheckedUpdateManyInput>
+    /**
+     * Filter which CampaignPastas to update
+     */
+    where?: CampaignPastaWhereInput
+    /**
+     * Limit how many CampaignPastas to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CampaignPasta updateManyAndReturn
+   */
+  export type CampaignPastaUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CampaignPasta
+     */
+    select?: CampaignPastaSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CampaignPasta
+     */
+    omit?: CampaignPastaOmit<ExtArgs> | null
+    /**
+     * The data used to update CampaignPastas.
+     */
+    data: XOR<CampaignPastaUpdateManyMutationInput, CampaignPastaUncheckedUpdateManyInput>
+    /**
+     * Filter which CampaignPastas to update
+     */
+    where?: CampaignPastaWhereInput
+    /**
+     * Limit how many CampaignPastas to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CampaignPasta upsert
+   */
+  export type CampaignPastaUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CampaignPasta
+     */
+    select?: CampaignPastaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CampaignPasta
+     */
+    omit?: CampaignPastaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CampaignPastaInclude<ExtArgs> | null
+    /**
+     * The filter to search for the CampaignPasta to update in case it exists.
+     */
+    where: CampaignPastaWhereUniqueInput
+    /**
+     * In case the CampaignPasta found by the `where` argument doesn't exist, create a new CampaignPasta with this data.
+     */
+    create: XOR<CampaignPastaCreateInput, CampaignPastaUncheckedCreateInput>
+    /**
+     * In case the CampaignPasta was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CampaignPastaUpdateInput, CampaignPastaUncheckedUpdateInput>
+  }
+
+  /**
+   * CampaignPasta delete
+   */
+  export type CampaignPastaDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CampaignPasta
+     */
+    select?: CampaignPastaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CampaignPasta
+     */
+    omit?: CampaignPastaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CampaignPastaInclude<ExtArgs> | null
+    /**
+     * Filter which CampaignPasta to delete.
+     */
+    where: CampaignPastaWhereUniqueInput
+  }
+
+  /**
+   * CampaignPasta deleteMany
+   */
+  export type CampaignPastaDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CampaignPastas to delete
+     */
+    where?: CampaignPastaWhereInput
+    /**
+     * Limit how many CampaignPastas to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * CampaignPasta.campanhas
+   */
+  export type CampaignPasta$campanhasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Campaign
+     */
+    select?: CampaignSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Campaign
+     */
+    omit?: CampaignOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CampaignInclude<ExtArgs> | null
+    where?: CampaignWhereInput
+    orderBy?: CampaignOrderByWithRelationInput | CampaignOrderByWithRelationInput[]
+    cursor?: CampaignWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CampaignScalarFieldEnum | CampaignScalarFieldEnum[]
+  }
+
+  /**
+   * CampaignPasta without action
+   */
+  export type CampaignPastaDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CampaignPasta
+     */
+    select?: CampaignPastaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CampaignPasta
+     */
+    omit?: CampaignPastaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CampaignPastaInclude<ExtArgs> | null
   }
 
 
@@ -59829,11 +61062,22 @@ export namespace Prisma {
     filtroMarca: 'filtroMarca',
     filtroPersona: 'filtroPersona',
     filtroRegiao: 'filtroRegiao',
+    pastaId: 'pastaId',
     criadoEm: 'criadoEm',
     atualizadoEm: 'atualizadoEm'
   };
 
   export type CampaignScalarFieldEnum = (typeof CampaignScalarFieldEnum)[keyof typeof CampaignScalarFieldEnum]
+
+
+  export const CampaignPastaScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    nome: 'nome',
+    criadoEm: 'criadoEm'
+  };
+
+  export type CampaignPastaScalarFieldEnum = (typeof CampaignPastaScalarFieldEnum)[keyof typeof CampaignPastaScalarFieldEnum]
 
 
   export const LeadCampaignScalarFieldEnum: {
@@ -61089,8 +62333,10 @@ export namespace Prisma {
     filtroMarca?: StringNullableFilter<"Campaign"> | string | null
     filtroPersona?: StringNullableFilter<"Campaign"> | string | null
     filtroRegiao?: StringNullableFilter<"Campaign"> | string | null
+    pastaId?: StringNullableFilter<"Campaign"> | string | null
     criadoEm?: DateTimeFilter<"Campaign"> | Date | string
     atualizadoEm?: DateTimeFilter<"Campaign"> | Date | string
+    pasta?: XOR<CampaignPastaNullableScalarRelationFilter, CampaignPastaWhereInput> | null
     mensagens?: CampaignMessageListRelationFilter
     leads?: LeadListRelationFilter
     leadCampaigns?: LeadCampaignListRelationFilter
@@ -61113,8 +62359,10 @@ export namespace Prisma {
     filtroMarca?: SortOrderInput | SortOrder
     filtroPersona?: SortOrderInput | SortOrder
     filtroRegiao?: SortOrderInput | SortOrder
+    pastaId?: SortOrderInput | SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
+    pasta?: CampaignPastaOrderByWithRelationInput
     mensagens?: CampaignMessageOrderByRelationAggregateInput
     leads?: LeadOrderByRelationAggregateInput
     leadCampaigns?: LeadCampaignOrderByRelationAggregateInput
@@ -61140,8 +62388,10 @@ export namespace Prisma {
     filtroMarca?: StringNullableFilter<"Campaign"> | string | null
     filtroPersona?: StringNullableFilter<"Campaign"> | string | null
     filtroRegiao?: StringNullableFilter<"Campaign"> | string | null
+    pastaId?: StringNullableFilter<"Campaign"> | string | null
     criadoEm?: DateTimeFilter<"Campaign"> | Date | string
     atualizadoEm?: DateTimeFilter<"Campaign"> | Date | string
+    pasta?: XOR<CampaignPastaNullableScalarRelationFilter, CampaignPastaWhereInput> | null
     mensagens?: CampaignMessageListRelationFilter
     leads?: LeadListRelationFilter
     leadCampaigns?: LeadCampaignListRelationFilter
@@ -61164,6 +62414,7 @@ export namespace Prisma {
     filtroMarca?: SortOrderInput | SortOrder
     filtroPersona?: SortOrderInput | SortOrder
     filtroRegiao?: SortOrderInput | SortOrder
+    pastaId?: SortOrderInput | SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
     _count?: CampaignCountOrderByAggregateInput
@@ -61192,8 +62443,60 @@ export namespace Prisma {
     filtroMarca?: StringNullableWithAggregatesFilter<"Campaign"> | string | null
     filtroPersona?: StringNullableWithAggregatesFilter<"Campaign"> | string | null
     filtroRegiao?: StringNullableWithAggregatesFilter<"Campaign"> | string | null
+    pastaId?: StringNullableWithAggregatesFilter<"Campaign"> | string | null
     criadoEm?: DateTimeWithAggregatesFilter<"Campaign"> | Date | string
     atualizadoEm?: DateTimeWithAggregatesFilter<"Campaign"> | Date | string
+  }
+
+  export type CampaignPastaWhereInput = {
+    AND?: CampaignPastaWhereInput | CampaignPastaWhereInput[]
+    OR?: CampaignPastaWhereInput[]
+    NOT?: CampaignPastaWhereInput | CampaignPastaWhereInput[]
+    id?: StringFilter<"CampaignPasta"> | string
+    workspaceId?: StringFilter<"CampaignPasta"> | string
+    nome?: StringFilter<"CampaignPasta"> | string
+    criadoEm?: DateTimeFilter<"CampaignPasta"> | Date | string
+    campanhas?: CampaignListRelationFilter
+  }
+
+  export type CampaignPastaOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    criadoEm?: SortOrder
+    campanhas?: CampaignOrderByRelationAggregateInput
+  }
+
+  export type CampaignPastaWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    workspaceId_nome?: CampaignPastaWorkspaceIdNomeCompoundUniqueInput
+    AND?: CampaignPastaWhereInput | CampaignPastaWhereInput[]
+    OR?: CampaignPastaWhereInput[]
+    NOT?: CampaignPastaWhereInput | CampaignPastaWhereInput[]
+    workspaceId?: StringFilter<"CampaignPasta"> | string
+    nome?: StringFilter<"CampaignPasta"> | string
+    criadoEm?: DateTimeFilter<"CampaignPasta"> | Date | string
+    campanhas?: CampaignListRelationFilter
+  }, "id" | "workspaceId_nome">
+
+  export type CampaignPastaOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    criadoEm?: SortOrder
+    _count?: CampaignPastaCountOrderByAggregateInput
+    _max?: CampaignPastaMaxOrderByAggregateInput
+    _min?: CampaignPastaMinOrderByAggregateInput
+  }
+
+  export type CampaignPastaScalarWhereWithAggregatesInput = {
+    AND?: CampaignPastaScalarWhereWithAggregatesInput | CampaignPastaScalarWhereWithAggregatesInput[]
+    OR?: CampaignPastaScalarWhereWithAggregatesInput[]
+    NOT?: CampaignPastaScalarWhereWithAggregatesInput | CampaignPastaScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"CampaignPasta"> | string
+    workspaceId?: StringWithAggregatesFilter<"CampaignPasta"> | string
+    nome?: StringWithAggregatesFilter<"CampaignPasta"> | string
+    criadoEm?: DateTimeWithAggregatesFilter<"CampaignPasta"> | Date | string
   }
 
   export type LeadCampaignWhereInput = {
@@ -64933,6 +66236,7 @@ export namespace Prisma {
     filtroRegiao?: string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
+    pasta?: CampaignPastaCreateNestedOneWithoutCampanhasInput
     mensagens?: CampaignMessageCreateNestedManyWithoutCampanhaInput
     leads?: LeadCreateNestedManyWithoutCampanhaInput
     leadCampaigns?: LeadCampaignCreateNestedManyWithoutCampanhaInput
@@ -64955,6 +66259,7 @@ export namespace Prisma {
     filtroMarca?: string | null
     filtroPersona?: string | null
     filtroRegiao?: string | null
+    pastaId?: string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
     mensagens?: CampaignMessageUncheckedCreateNestedManyWithoutCampanhaInput
@@ -64980,6 +66285,7 @@ export namespace Prisma {
     filtroRegiao?: NullableStringFieldUpdateOperationsInput | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    pasta?: CampaignPastaUpdateOneWithoutCampanhasNestedInput
     mensagens?: CampaignMessageUpdateManyWithoutCampanhaNestedInput
     leads?: LeadUpdateManyWithoutCampanhaNestedInput
     leadCampaigns?: LeadCampaignUpdateManyWithoutCampanhaNestedInput
@@ -65002,6 +66308,7 @@ export namespace Prisma {
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
     filtroRegiao?: NullableStringFieldUpdateOperationsInput | string | null
+    pastaId?: NullableStringFieldUpdateOperationsInput | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     mensagens?: CampaignMessageUncheckedUpdateManyWithoutCampanhaNestedInput
@@ -65026,6 +66333,7 @@ export namespace Prisma {
     filtroMarca?: string | null
     filtroPersona?: string | null
     filtroRegiao?: string | null
+    pastaId?: string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
   }
@@ -65065,8 +66373,62 @@ export namespace Prisma {
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
     filtroRegiao?: NullableStringFieldUpdateOperationsInput | string | null
+    pastaId?: NullableStringFieldUpdateOperationsInput | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CampaignPastaCreateInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    criadoEm?: Date | string
+    campanhas?: CampaignCreateNestedManyWithoutPastaInput
+  }
+
+  export type CampaignPastaUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    criadoEm?: Date | string
+    campanhas?: CampaignUncheckedCreateNestedManyWithoutPastaInput
+  }
+
+  export type CampaignPastaUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    campanhas?: CampaignUpdateManyWithoutPastaNestedInput
+  }
+
+  export type CampaignPastaUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    campanhas?: CampaignUncheckedUpdateManyWithoutPastaNestedInput
+  }
+
+  export type CampaignPastaCreateManyInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    criadoEm?: Date | string
+  }
+
+  export type CampaignPastaUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CampaignPastaUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LeadCampaignCreateInput = {
@@ -69274,6 +70636,11 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type CampaignPastaNullableScalarRelationFilter = {
+    is?: CampaignPastaWhereInput | null
+    isNot?: CampaignPastaWhereInput | null
+  }
+
   export type CampaignMessageListRelationFilter = {
     every?: CampaignMessageWhereInput
     some?: CampaignMessageWhereInput
@@ -69310,6 +70677,7 @@ export namespace Prisma {
     filtroMarca?: SortOrder
     filtroPersona?: SortOrder
     filtroRegiao?: SortOrder
+    pastaId?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
   }
@@ -69335,6 +70703,7 @@ export namespace Prisma {
     filtroMarca?: SortOrder
     filtroPersona?: SortOrder
     filtroRegiao?: SortOrder
+    pastaId?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
   }
@@ -69355,6 +70724,7 @@ export namespace Prisma {
     filtroMarca?: SortOrder
     filtroPersona?: SortOrder
     filtroRegiao?: SortOrder
+    pastaId?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
   }
@@ -69398,6 +70768,42 @@ export namespace Prisma {
     _sum?: NestedIntFilter<$PrismaModel>
     _min?: NestedIntFilter<$PrismaModel>
     _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type CampaignListRelationFilter = {
+    every?: CampaignWhereInput
+    some?: CampaignWhereInput
+    none?: CampaignWhereInput
+  }
+
+  export type CampaignOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CampaignPastaWorkspaceIdNomeCompoundUniqueInput = {
+    workspaceId: string
+    nome: string
+  }
+
+  export type CampaignPastaCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    criadoEm?: SortOrder
+  }
+
+  export type CampaignPastaMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    criadoEm?: SortOrder
+  }
+
+  export type CampaignPastaMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    criadoEm?: SortOrder
   }
 
   export type CampaignScalarRelationFilter = {
@@ -72193,6 +73599,12 @@ export namespace Prisma {
     update?: XOR<XOR<LeadUpdateToOneWithWhereWithoutTagsChatInput, LeadUpdateWithoutTagsChatInput>, LeadUncheckedUpdateWithoutTagsChatInput>
   }
 
+  export type CampaignPastaCreateNestedOneWithoutCampanhasInput = {
+    create?: XOR<CampaignPastaCreateWithoutCampanhasInput, CampaignPastaUncheckedCreateWithoutCampanhasInput>
+    connectOrCreate?: CampaignPastaCreateOrConnectWithoutCampanhasInput
+    connect?: CampaignPastaWhereUniqueInput
+  }
+
   export type CampaignMessageCreateNestedManyWithoutCampanhaInput = {
     create?: XOR<CampaignMessageCreateWithoutCampanhaInput, CampaignMessageUncheckedCreateWithoutCampanhaInput> | CampaignMessageCreateWithoutCampanhaInput[] | CampaignMessageUncheckedCreateWithoutCampanhaInput[]
     connectOrCreate?: CampaignMessageCreateOrConnectWithoutCampanhaInput | CampaignMessageCreateOrConnectWithoutCampanhaInput[]
@@ -72263,6 +73675,16 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type CampaignPastaUpdateOneWithoutCampanhasNestedInput = {
+    create?: XOR<CampaignPastaCreateWithoutCampanhasInput, CampaignPastaUncheckedCreateWithoutCampanhasInput>
+    connectOrCreate?: CampaignPastaCreateOrConnectWithoutCampanhasInput
+    upsert?: CampaignPastaUpsertWithoutCampanhasInput
+    disconnect?: CampaignPastaWhereInput | boolean
+    delete?: CampaignPastaWhereInput | boolean
+    connect?: CampaignPastaWhereUniqueInput
+    update?: XOR<XOR<CampaignPastaUpdateToOneWithWhereWithoutCampanhasInput, CampaignPastaUpdateWithoutCampanhasInput>, CampaignPastaUncheckedUpdateWithoutCampanhasInput>
   }
 
   export type CampaignMessageUpdateManyWithoutCampanhaNestedInput = {
@@ -72375,6 +73797,48 @@ export namespace Prisma {
     update?: TimelineEventUpdateWithWhereUniqueWithoutCampanhaInput | TimelineEventUpdateWithWhereUniqueWithoutCampanhaInput[]
     updateMany?: TimelineEventUpdateManyWithWhereWithoutCampanhaInput | TimelineEventUpdateManyWithWhereWithoutCampanhaInput[]
     deleteMany?: TimelineEventScalarWhereInput | TimelineEventScalarWhereInput[]
+  }
+
+  export type CampaignCreateNestedManyWithoutPastaInput = {
+    create?: XOR<CampaignCreateWithoutPastaInput, CampaignUncheckedCreateWithoutPastaInput> | CampaignCreateWithoutPastaInput[] | CampaignUncheckedCreateWithoutPastaInput[]
+    connectOrCreate?: CampaignCreateOrConnectWithoutPastaInput | CampaignCreateOrConnectWithoutPastaInput[]
+    createMany?: CampaignCreateManyPastaInputEnvelope
+    connect?: CampaignWhereUniqueInput | CampaignWhereUniqueInput[]
+  }
+
+  export type CampaignUncheckedCreateNestedManyWithoutPastaInput = {
+    create?: XOR<CampaignCreateWithoutPastaInput, CampaignUncheckedCreateWithoutPastaInput> | CampaignCreateWithoutPastaInput[] | CampaignUncheckedCreateWithoutPastaInput[]
+    connectOrCreate?: CampaignCreateOrConnectWithoutPastaInput | CampaignCreateOrConnectWithoutPastaInput[]
+    createMany?: CampaignCreateManyPastaInputEnvelope
+    connect?: CampaignWhereUniqueInput | CampaignWhereUniqueInput[]
+  }
+
+  export type CampaignUpdateManyWithoutPastaNestedInput = {
+    create?: XOR<CampaignCreateWithoutPastaInput, CampaignUncheckedCreateWithoutPastaInput> | CampaignCreateWithoutPastaInput[] | CampaignUncheckedCreateWithoutPastaInput[]
+    connectOrCreate?: CampaignCreateOrConnectWithoutPastaInput | CampaignCreateOrConnectWithoutPastaInput[]
+    upsert?: CampaignUpsertWithWhereUniqueWithoutPastaInput | CampaignUpsertWithWhereUniqueWithoutPastaInput[]
+    createMany?: CampaignCreateManyPastaInputEnvelope
+    set?: CampaignWhereUniqueInput | CampaignWhereUniqueInput[]
+    disconnect?: CampaignWhereUniqueInput | CampaignWhereUniqueInput[]
+    delete?: CampaignWhereUniqueInput | CampaignWhereUniqueInput[]
+    connect?: CampaignWhereUniqueInput | CampaignWhereUniqueInput[]
+    update?: CampaignUpdateWithWhereUniqueWithoutPastaInput | CampaignUpdateWithWhereUniqueWithoutPastaInput[]
+    updateMany?: CampaignUpdateManyWithWhereWithoutPastaInput | CampaignUpdateManyWithWhereWithoutPastaInput[]
+    deleteMany?: CampaignScalarWhereInput | CampaignScalarWhereInput[]
+  }
+
+  export type CampaignUncheckedUpdateManyWithoutPastaNestedInput = {
+    create?: XOR<CampaignCreateWithoutPastaInput, CampaignUncheckedCreateWithoutPastaInput> | CampaignCreateWithoutPastaInput[] | CampaignUncheckedCreateWithoutPastaInput[]
+    connectOrCreate?: CampaignCreateOrConnectWithoutPastaInput | CampaignCreateOrConnectWithoutPastaInput[]
+    upsert?: CampaignUpsertWithWhereUniqueWithoutPastaInput | CampaignUpsertWithWhereUniqueWithoutPastaInput[]
+    createMany?: CampaignCreateManyPastaInputEnvelope
+    set?: CampaignWhereUniqueInput | CampaignWhereUniqueInput[]
+    disconnect?: CampaignWhereUniqueInput | CampaignWhereUniqueInput[]
+    delete?: CampaignWhereUniqueInput | CampaignWhereUniqueInput[]
+    connect?: CampaignWhereUniqueInput | CampaignWhereUniqueInput[]
+    update?: CampaignUpdateWithWhereUniqueWithoutPastaInput | CampaignUpdateWithWhereUniqueWithoutPastaInput[]
+    updateMany?: CampaignUpdateManyWithWhereWithoutPastaInput | CampaignUpdateManyWithWhereWithoutPastaInput[]
+    deleteMany?: CampaignScalarWhereInput | CampaignScalarWhereInput[]
   }
 
   export type LeadCreateNestedOneWithoutCampanhasInput = {
@@ -74378,6 +75842,7 @@ export namespace Prisma {
     filtroRegiao?: string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
+    pasta?: CampaignPastaCreateNestedOneWithoutCampanhasInput
     mensagens?: CampaignMessageCreateNestedManyWithoutCampanhaInput
     leadCampaigns?: LeadCampaignCreateNestedManyWithoutCampanhaInput
     eventos?: TimelineEventCreateNestedManyWithoutCampanhaInput
@@ -74399,6 +75864,7 @@ export namespace Prisma {
     filtroMarca?: string | null
     filtroPersona?: string | null
     filtroRegiao?: string | null
+    pastaId?: string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
     mensagens?: CampaignMessageUncheckedCreateNestedManyWithoutCampanhaInput
@@ -74744,6 +76210,7 @@ export namespace Prisma {
     filtroRegiao?: NullableStringFieldUpdateOperationsInput | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    pasta?: CampaignPastaUpdateOneWithoutCampanhasNestedInput
     mensagens?: CampaignMessageUpdateManyWithoutCampanhaNestedInput
     leadCampaigns?: LeadCampaignUpdateManyWithoutCampanhaNestedInput
     eventos?: TimelineEventUpdateManyWithoutCampanhaNestedInput
@@ -74765,6 +76232,7 @@ export namespace Prisma {
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
     filtroRegiao?: NullableStringFieldUpdateOperationsInput | string | null
+    pastaId?: NullableStringFieldUpdateOperationsInput | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     mensagens?: CampaignMessageUncheckedUpdateManyWithoutCampanhaNestedInput
@@ -75472,6 +76940,25 @@ export namespace Prisma {
     followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
 
+  export type CampaignPastaCreateWithoutCampanhasInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    criadoEm?: Date | string
+  }
+
+  export type CampaignPastaUncheckedCreateWithoutCampanhasInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    criadoEm?: Date | string
+  }
+
+  export type CampaignPastaCreateOrConnectWithoutCampanhasInput = {
+    where: CampaignPastaWhereUniqueInput
+    create: XOR<CampaignPastaCreateWithoutCampanhasInput, CampaignPastaUncheckedCreateWithoutCampanhasInput>
+  }
+
   export type CampaignMessageCreateWithoutCampanhaInput = {
     id?: string
     dia: number
@@ -75644,6 +77131,31 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type CampaignPastaUpsertWithoutCampanhasInput = {
+    update: XOR<CampaignPastaUpdateWithoutCampanhasInput, CampaignPastaUncheckedUpdateWithoutCampanhasInput>
+    create: XOR<CampaignPastaCreateWithoutCampanhasInput, CampaignPastaUncheckedCreateWithoutCampanhasInput>
+    where?: CampaignPastaWhereInput
+  }
+
+  export type CampaignPastaUpdateToOneWithWhereWithoutCampanhasInput = {
+    where?: CampaignPastaWhereInput
+    data: XOR<CampaignPastaUpdateWithoutCampanhasInput, CampaignPastaUncheckedUpdateWithoutCampanhasInput>
+  }
+
+  export type CampaignPastaUpdateWithoutCampanhasInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CampaignPastaUncheckedUpdateWithoutCampanhasInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type CampaignMessageUpsertWithWhereUniqueWithoutCampanhaInput = {
     where: CampaignMessageWhereUniqueInput
     update: XOR<CampaignMessageUpdateWithoutCampanhaInput, CampaignMessageUncheckedUpdateWithoutCampanhaInput>
@@ -75749,6 +77261,104 @@ export namespace Prisma {
     data: XOR<TimelineEventUpdateManyMutationInput, TimelineEventUncheckedUpdateManyWithoutCampanhaInput>
   }
 
+  export type CampaignCreateWithoutPastaInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    status?: $Enums.CampaignStatus
+    tipo?: $Enums.CampaignTipo
+    idImportacao?: number
+    recorrenciaDias?: number
+    dataFinal?: Date | string | null
+    instanciaNome?: string | null
+    reiniciadaEm?: Date | string | null
+    filtroProduto?: string | null
+    filtroMarca?: string | null
+    filtroPersona?: string | null
+    filtroRegiao?: string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    mensagens?: CampaignMessageCreateNestedManyWithoutCampanhaInput
+    leads?: LeadCreateNestedManyWithoutCampanhaInput
+    leadCampaigns?: LeadCampaignCreateNestedManyWithoutCampanhaInput
+    eventos?: TimelineEventCreateNestedManyWithoutCampanhaInput
+  }
+
+  export type CampaignUncheckedCreateWithoutPastaInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    status?: $Enums.CampaignStatus
+    tipo?: $Enums.CampaignTipo
+    idImportacao?: number
+    recorrenciaDias?: number
+    dataFinal?: Date | string | null
+    instanciaNome?: string | null
+    reiniciadaEm?: Date | string | null
+    filtroProduto?: string | null
+    filtroMarca?: string | null
+    filtroPersona?: string | null
+    filtroRegiao?: string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    mensagens?: CampaignMessageUncheckedCreateNestedManyWithoutCampanhaInput
+    leads?: LeadUncheckedCreateNestedManyWithoutCampanhaInput
+    leadCampaigns?: LeadCampaignUncheckedCreateNestedManyWithoutCampanhaInput
+    eventos?: TimelineEventUncheckedCreateNestedManyWithoutCampanhaInput
+  }
+
+  export type CampaignCreateOrConnectWithoutPastaInput = {
+    where: CampaignWhereUniqueInput
+    create: XOR<CampaignCreateWithoutPastaInput, CampaignUncheckedCreateWithoutPastaInput>
+  }
+
+  export type CampaignCreateManyPastaInputEnvelope = {
+    data: CampaignCreateManyPastaInput | CampaignCreateManyPastaInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CampaignUpsertWithWhereUniqueWithoutPastaInput = {
+    where: CampaignWhereUniqueInput
+    update: XOR<CampaignUpdateWithoutPastaInput, CampaignUncheckedUpdateWithoutPastaInput>
+    create: XOR<CampaignCreateWithoutPastaInput, CampaignUncheckedCreateWithoutPastaInput>
+  }
+
+  export type CampaignUpdateWithWhereUniqueWithoutPastaInput = {
+    where: CampaignWhereUniqueInput
+    data: XOR<CampaignUpdateWithoutPastaInput, CampaignUncheckedUpdateWithoutPastaInput>
+  }
+
+  export type CampaignUpdateManyWithWhereWithoutPastaInput = {
+    where: CampaignScalarWhereInput
+    data: XOR<CampaignUpdateManyMutationInput, CampaignUncheckedUpdateManyWithoutPastaInput>
+  }
+
+  export type CampaignScalarWhereInput = {
+    AND?: CampaignScalarWhereInput | CampaignScalarWhereInput[]
+    OR?: CampaignScalarWhereInput[]
+    NOT?: CampaignScalarWhereInput | CampaignScalarWhereInput[]
+    id?: StringFilter<"Campaign"> | string
+    workspaceId?: StringFilter<"Campaign"> | string
+    nome?: StringFilter<"Campaign"> | string
+    descricao?: StringNullableFilter<"Campaign"> | string | null
+    status?: EnumCampaignStatusFilter<"Campaign"> | $Enums.CampaignStatus
+    tipo?: EnumCampaignTipoFilter<"Campaign"> | $Enums.CampaignTipo
+    idImportacao?: IntFilter<"Campaign"> | number
+    recorrenciaDias?: IntFilter<"Campaign"> | number
+    dataFinal?: DateTimeNullableFilter<"Campaign"> | Date | string | null
+    instanciaNome?: StringNullableFilter<"Campaign"> | string | null
+    reiniciadaEm?: DateTimeNullableFilter<"Campaign"> | Date | string | null
+    filtroProduto?: StringNullableFilter<"Campaign"> | string | null
+    filtroMarca?: StringNullableFilter<"Campaign"> | string | null
+    filtroPersona?: StringNullableFilter<"Campaign"> | string | null
+    filtroRegiao?: StringNullableFilter<"Campaign"> | string | null
+    pastaId?: StringNullableFilter<"Campaign"> | string | null
+    criadoEm?: DateTimeFilter<"Campaign"> | Date | string
+    atualizadoEm?: DateTimeFilter<"Campaign"> | Date | string
+  }
+
   export type LeadCreateWithoutCampanhasInput = {
     id?: string
     workspaceId: string
@@ -75836,6 +77446,7 @@ export namespace Prisma {
     filtroRegiao?: string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
+    pasta?: CampaignPastaCreateNestedOneWithoutCampanhasInput
     mensagens?: CampaignMessageCreateNestedManyWithoutCampanhaInput
     leads?: LeadCreateNestedManyWithoutCampanhaInput
     eventos?: TimelineEventCreateNestedManyWithoutCampanhaInput
@@ -75857,6 +77468,7 @@ export namespace Prisma {
     filtroMarca?: string | null
     filtroPersona?: string | null
     filtroRegiao?: string | null
+    pastaId?: string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
     mensagens?: CampaignMessageUncheckedCreateNestedManyWithoutCampanhaInput
@@ -75972,6 +77584,7 @@ export namespace Prisma {
     filtroRegiao?: NullableStringFieldUpdateOperationsInput | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    pasta?: CampaignPastaUpdateOneWithoutCampanhasNestedInput
     mensagens?: CampaignMessageUpdateManyWithoutCampanhaNestedInput
     leads?: LeadUpdateManyWithoutCampanhaNestedInput
     eventos?: TimelineEventUpdateManyWithoutCampanhaNestedInput
@@ -75993,6 +77606,7 @@ export namespace Prisma {
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
     filtroRegiao?: NullableStringFieldUpdateOperationsInput | string | null
+    pastaId?: NullableStringFieldUpdateOperationsInput | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     mensagens?: CampaignMessageUncheckedUpdateManyWithoutCampanhaNestedInput
@@ -76018,6 +77632,7 @@ export namespace Prisma {
     filtroRegiao?: string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
+    pasta?: CampaignPastaCreateNestedOneWithoutCampanhasInput
     leads?: LeadCreateNestedManyWithoutCampanhaInput
     leadCampaigns?: LeadCampaignCreateNestedManyWithoutCampanhaInput
     eventos?: TimelineEventCreateNestedManyWithoutCampanhaInput
@@ -76039,6 +77654,7 @@ export namespace Prisma {
     filtroMarca?: string | null
     filtroPersona?: string | null
     filtroRegiao?: string | null
+    pastaId?: string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
     leads?: LeadUncheckedCreateNestedManyWithoutCampanhaInput
@@ -76111,6 +77727,7 @@ export namespace Prisma {
     filtroRegiao?: NullableStringFieldUpdateOperationsInput | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    pasta?: CampaignPastaUpdateOneWithoutCampanhasNestedInput
     leads?: LeadUpdateManyWithoutCampanhaNestedInput
     leadCampaigns?: LeadCampaignUpdateManyWithoutCampanhaNestedInput
     eventos?: TimelineEventUpdateManyWithoutCampanhaNestedInput
@@ -76132,6 +77749,7 @@ export namespace Prisma {
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
     filtroRegiao?: NullableStringFieldUpdateOperationsInput | string | null
+    pastaId?: NullableStringFieldUpdateOperationsInput | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     leads?: LeadUncheckedUpdateManyWithoutCampanhaNestedInput
@@ -76386,6 +78004,7 @@ export namespace Prisma {
     filtroRegiao?: string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
+    pasta?: CampaignPastaCreateNestedOneWithoutCampanhasInput
     mensagens?: CampaignMessageCreateNestedManyWithoutCampanhaInput
     leads?: LeadCreateNestedManyWithoutCampanhaInput
     leadCampaigns?: LeadCampaignCreateNestedManyWithoutCampanhaInput
@@ -76407,6 +78026,7 @@ export namespace Prisma {
     filtroMarca?: string | null
     filtroPersona?: string | null
     filtroRegiao?: string | null
+    pastaId?: string | null
     criadoEm?: Date | string
     atualizadoEm?: Date | string
     mensagens?: CampaignMessageUncheckedCreateNestedManyWithoutCampanhaInput
@@ -76553,6 +78173,7 @@ export namespace Prisma {
     filtroRegiao?: NullableStringFieldUpdateOperationsInput | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    pasta?: CampaignPastaUpdateOneWithoutCampanhasNestedInput
     mensagens?: CampaignMessageUpdateManyWithoutCampanhaNestedInput
     leads?: LeadUpdateManyWithoutCampanhaNestedInput
     leadCampaigns?: LeadCampaignUpdateManyWithoutCampanhaNestedInput
@@ -76574,6 +78195,7 @@ export namespace Prisma {
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
     filtroRegiao?: NullableStringFieldUpdateOperationsInput | string | null
+    pastaId?: NullableStringFieldUpdateOperationsInput | string | null
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
     mensagens?: CampaignMessageUncheckedUpdateManyWithoutCampanhaNestedInput
@@ -81041,6 +82663,93 @@ export namespace Prisma {
     sucesso?: BoolFieldUpdateOperationsInput | boolean
     leadId?: StringFieldUpdateOperationsInput | string
     mensagemId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type CampaignCreateManyPastaInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    status?: $Enums.CampaignStatus
+    tipo?: $Enums.CampaignTipo
+    idImportacao?: number
+    recorrenciaDias?: number
+    dataFinal?: Date | string | null
+    instanciaNome?: string | null
+    reiniciadaEm?: Date | string | null
+    filtroProduto?: string | null
+    filtroMarca?: string | null
+    filtroPersona?: string | null
+    filtroRegiao?: string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type CampaignUpdateWithoutPastaInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
+    tipo?: EnumCampaignTipoFieldUpdateOperationsInput | $Enums.CampaignTipo
+    recorrenciaDias?: IntFieldUpdateOperationsInput | number
+    dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
+    reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
+    filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
+    filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
+    filtroRegiao?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    mensagens?: CampaignMessageUpdateManyWithoutCampanhaNestedInput
+    leads?: LeadUpdateManyWithoutCampanhaNestedInput
+    leadCampaigns?: LeadCampaignUpdateManyWithoutCampanhaNestedInput
+    eventos?: TimelineEventUpdateManyWithoutCampanhaNestedInput
+  }
+
+  export type CampaignUncheckedUpdateWithoutPastaInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
+    tipo?: EnumCampaignTipoFieldUpdateOperationsInput | $Enums.CampaignTipo
+    idImportacao?: IntFieldUpdateOperationsInput | number
+    recorrenciaDias?: IntFieldUpdateOperationsInput | number
+    dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
+    reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
+    filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
+    filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
+    filtroRegiao?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    mensagens?: CampaignMessageUncheckedUpdateManyWithoutCampanhaNestedInput
+    leads?: LeadUncheckedUpdateManyWithoutCampanhaNestedInput
+    leadCampaigns?: LeadCampaignUncheckedUpdateManyWithoutCampanhaNestedInput
+    eventos?: TimelineEventUncheckedUpdateManyWithoutCampanhaNestedInput
+  }
+
+  export type CampaignUncheckedUpdateManyWithoutPastaInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
+    tipo?: EnumCampaignTipoFieldUpdateOperationsInput | $Enums.CampaignTipo
+    idImportacao?: IntFieldUpdateOperationsInput | number
+    recorrenciaDias?: IntFieldUpdateOperationsInput | number
+    dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
+    reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
+    filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
+    filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
+    filtroRegiao?: NullableStringFieldUpdateOperationsInput | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TimelineEventCreateManyMensagemInput = {

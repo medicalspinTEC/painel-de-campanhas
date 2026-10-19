@@ -41,6 +41,7 @@ type CampaignRecord = {
   recorrenciaDias: number
   dataFinal: Date | null
   instanciaNome: string | null
+  pastaId: string | null
   filtroProduto: string | null
   filtroMarca: string | null
   filtroPersona: string | null
@@ -145,6 +146,7 @@ function toCampaign(record: CampaignRecord): Campaign {
     recorrenciaDias: record.recorrenciaDias,
     dataFinal: record.dataFinal?.toISOString() ?? null,
     instanciaNome: record.instanciaNome ?? null,
+    pastaId: record.pastaId ?? null,
     criadoEm: record.criadoEm.toISOString(),
     filtros: {
       produto: record.filtroProduto as Campaign["filtros"]["produto"],
@@ -856,6 +858,8 @@ export async function duplicateCampaign(id: string): Promise<Campaign | null> {
       recorrenciaDias: original.recorrenciaDias,
       dataFinal: original.dataFinal,
       instanciaNome: original.instanciaNome,
+      // A cópia fica na mesma pasta da original.
+      pastaId: original.pastaId,
       filtroProduto: original.filtroProduto,
       filtroMarca: original.filtroMarca,
       filtroPersona: original.filtroPersona,

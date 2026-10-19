@@ -13,6 +13,12 @@ import {
   updateCampaign,
   type CampaignInput,
 } from "@/services/campaigns"
+import {
+  createPasta,
+  deletePasta,
+  moverCampanhaParaPasta,
+  renamePasta,
+} from "@/services/campaign-pastas"
 import { recordAppLog } from "@/services/app-logs"
 import type { CampanhaAnexo, CampaignStatus } from "@/types"
 import { assertSecao } from "@/lib/session"
@@ -245,4 +251,61 @@ export async function deleteCampaignAction(id: string): Promise<CampaignActionRe
   }
   revalidar()
   return { ok: true, message: "Campanha excluída e leads liberados." }
+}
+
+// ---------------------------------------------------------------------------
+// Pastas de campanhas
+// ---------------------------------------------------------------------------
+
+export async function createPastaAction(nome: string): Promise<CampaignActionResult> {
+  await assertSecao("campanhas")
+  try {
+    const res = await createPasta(nome)
+    if (!res.ok) return { ok: false, message: res.message }
+    revalidar()
+    return { ok: true, message: `Pasta ${res.pasta.nome} criada.`, id: res.pasta.id }
+  } catch (error) {
+    await recordAppLog({ origem: "campaigns", mensagem: "Falha ao criar pasta de campanhas.", detalhes: error })
+    return { ok: false, message: "Não foi possível criar a pasta." }
+  }
+}
+
+export async function renamePastaAction(id: string, nome: string): Promise<CampaignActionResult> {
+  await assertSecao("campanhas")
+  try {
+    const res = await renamePasta(id, nome)
+    if (!res.ok) return { ok: false, message: res.message }
+    revalidar()
+    return { ok: true, message: "Pasta renomeada.", id }
+  } catch (error) {
+    await recordAppLog({ origem: "campaigns", mensagem: `Falha ao renomear pasta id=${id}.`, detalhes: error })
+    return { ok: false, message: "Não foi possível renomear a pasta." }
+  }
+}
+
+export async function deletePastaAction(id: string): Promise<CampaignActionResult> {
+  await assertSecao("campanhas")
+  try {
+    const ok = await deletePasta(id)
+    if (!ok) return { ok: false, message: "Pasta não encontrada." }
+    revalidar()
+    return { ok: true, message: "Pasta excluída. As campanhas dela voltaram para a lista principal." }
+  } catch (error) {
+    await recordAppLog({ origem: "campaigns", mensagem: `Falha ao excluir pasta id=${id}.`, detalhes: error })
+    return { ok: false, message: "Não foi possível excluir a pasta." }
+  }
+}
+
+/** `pastaId` nulo tira a campanha da pasta (volta para a lista principal). */
+export async function moverCampanhaPastaAction(campanhaId: string, pastaId: string | null): Promise<CampaignActionResult> {
+  await assertSecao("campanhas")
+  try {
+    const ok = await moverCampanhaParaPasta(campanhaId, pastaId)
+    if (!ok) return { ok: false, message: "Campanha ou pasta não encontrada." }
+    revalidar(campanhaId)
+    return { ok: true, message: pastaId ? "Campanha movida para a pasta." : "Campanha removida da pasta." }
+  } catch (error) {
+    await recordAppLog({ origem: "campaigns", mensagem: `Falha ao mover campanha id=${campanhaId} de pasta.`, detalhes: error })
+    return { ok: false, message: "Não foi possível mover a campanha." }
+  }
 }

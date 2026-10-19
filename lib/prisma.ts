@@ -54,6 +54,7 @@ const DIRETOS = new Set([
   "User",
   "InternoConversa",
   "ChatTag",
+  "CampaignPasta",
 ])
 
 /** Tabelas filhas: nome da relação que leva a uma tabela direta. */
@@ -98,6 +99,7 @@ const FK_MODELO: Record<string, string> = {
   conversaId: "InternoConversa",
   autorId: "User",
   tagId: "ChatTag",
+  pastaId: "CampaignPasta",
 }
 
 /** Campo de relação (to-one) → modelo apontado, para `connect`. */
@@ -117,12 +119,14 @@ const RELACAO_MODELO: Record<string, string> = {
   conversa: "InternoConversa",
   autor: "User",
   tag: "ChatTag",
+  pasta: "CampaignPasta",
 }
 
 /** Campos de relação (inclusive listas): só neles se procura escrita aninhada. Json fica de fora de propósito. */
 const CAMPOS_RELACIONAIS = new Set([
   ...Object.keys(RELACAO_MODELO),
   "campanhas",
+  "pastas",
   "leads",
   "leadCampaigns",
   "mensagens",

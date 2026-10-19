@@ -3,12 +3,13 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
-import { CalendarClock, Copy, MessageSquare, MoreHorizontal, Pause, Play, Trash2, Users, Ban, SquarePen } from "lucide-react"
+import { CalendarClock, Check, Copy, Folder, FolderInput, MessageSquare, MoreHorizontal, Pause, Play, Trash2, Users, Ban, SquarePen } from "lucide-react"
 import { toast } from "sonner"
 
 import {
   deleteCampaignAction,
   duplicateCampaignAction,
+  moverCampanhaPastaAction,
   setCampaignStatusAction,
 } from "@/app/actions/campaigns"
 import { CampaignStatusBadge } from "@/components/shared/status-badges"
@@ -29,13 +30,17 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Progress } from "@/components/ui/progress"
+import type { CampanhaPasta } from "@/lib/campanha-pastas"
 import { formatDate, formatNumber, formatPercent } from "@/lib/format"
 import type { CampaignWithStats } from "@/services/campaigns"
 
-export function CampaignCard({ campanha }: { campanha: CampaignWithStats }) {
+export function CampaignCard({ campanha, pastas = [] }: { campanha: CampaignWithStats; pastas?: CampanhaPasta[] }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [confirmar, setConfirmar] = useState(false)
@@ -57,6 +62,14 @@ export function CampaignCard({ campanha }: { campanha: CampaignWithStats }) {
       }
       toast.success(res.message)
       if (res.id) router.push(`/campanhas/${res.id}/editar`)
+    })
+  }
+
+  function mover(pastaId: string | null) {
+    startTransition(async () => {
+      const res = await moverCampanhaPastaAction(campanha.id, pastaId)
+      if (res.ok) toast.success(res.message)
+      else toast.error(res.message)
     })
   }
 
@@ -141,6 +154,34 @@ export function CampaignCard({ campanha }: { campanha: CampaignWithStats }) {
                   <Copy className="size-4" />
                   Duplicar
                 </DropdownMenuItem>
+                {pastas.length > 0 || campanha.pastaId ? (
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger disabled={pending}>
+                      <FolderInput className="size-4" />
+                      Mover para pasta
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      {pastas.map((p) => (
+                        <DropdownMenuItem
+                          key={p.id}
+                          onClick={() => mover(p.id)}
+                          disabled={pending || p.id === campanha.pastaId}
+                        >
+                          {p.id === campanha.pastaId ? <Check className="size-4" /> : <Folder className="size-4" />}
+                          <span className="truncate">{p.nome}</span>
+                        </DropdownMenuItem>
+                      ))}
+                      {campanha.pastaId ? (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => mover(null)} disabled={pending}>
+                            Tirar da pasta
+                          </DropdownMenuItem>
+                        </>
+                      ) : null}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                ) : null}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem variant="destructive" onClick={() => setConfirmar(true)}>
                   <Trash2 className="size-4" />

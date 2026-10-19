@@ -85,6 +85,8 @@ export interface Campaign {
   dataFinal: string | null
   /** Instância da Evolution que envia as mensagens. Nulo = padrão do ambiente. */
   instanciaNome: string | null
+  /** Pasta onde a campanha está organizada; nulo = sem pasta. */
+  pastaId: string | null
   criadoEm: string
   filtros: {
     produto?: Produto | null
