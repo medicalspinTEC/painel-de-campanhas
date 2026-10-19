@@ -120,6 +120,10 @@ const LEITORES: Record<string, Leitor> = {
     unicaPagina: true,
   },
   AtendimentoTransferencia: porId(prisma.atendimentoTransferencia),
+  Funil: porId(prisma.funil),
+  FunilEtapa: porId(prisma.funilEtapa),
+  LeadFunil: porId(prisma.leadFunil),
+  LeadFunilMovimento: porId(prisma.leadFunilMovimento),
   BotConversa: {
     // A chave primária é o próprio leadId (como em LeadAtendimento).
     contar: () => prisma.botConversa.count(),

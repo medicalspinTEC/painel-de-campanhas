@@ -1,16 +1,20 @@
 "use client"
 
-import { Building2, Headset } from "lucide-react"
+import { Building2, Filter, Headset } from "lucide-react"
 
 import { AtendentesPanel } from "@/components/features/crm/atendentes-panel"
 import { DepartamentosPanel } from "@/components/features/crm/departamentos-panel"
+import { FunisPanel } from "@/components/features/crm/funis-panel"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import type { FunilBoardData, FunilResumo } from "@/lib/funis"
 import type { CrmData } from "@/services/crm"
 import type { FollowUpBotItem } from "@/services/followup"
 
 export function CrmManager({
   dados,
   followUpBots,
+  funis,
+  funilBoardInicial,
   chatAtivo,
   usuarioAtualId,
   ehRoot,
@@ -20,6 +24,9 @@ export function CrmManager({
   dados: CrmData
   /** Bots de follow-up (um por departamento). */
   followUpBots: FollowUpBotItem[]
+  /** Funis de vendas e o quadro do primeiro funil (os demais são carregados ao selecionar). */
+  funis: FunilResumo[]
+  funilBoardInicial: FunilBoardData | null
   chatAtivo: boolean
   usuarioAtualId: string
   /** Só o Root pode criar/promover administradores. */
@@ -39,6 +46,10 @@ export function CrmManager({
         <TabsTrigger value="atendentes">
           <Headset className="size-4" />
           Atendentes
+        </TabsTrigger>
+        <TabsTrigger value="funis">
+          <Filter className="size-4" />
+          Funis
         </TabsTrigger>
       </TabsList>
 
@@ -64,6 +75,9 @@ export function CrmManager({
           usuarioAtualId={usuarioAtualId}
           ehRoot={ehRoot}
         />
+      </TabsContent>
+      <TabsContent value="funis">
+        <FunisPanel funis={funis} boardInicial={funilBoardInicial} />
       </TabsContent>
     </Tabs>
   )

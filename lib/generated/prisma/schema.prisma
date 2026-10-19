@@ -135,6 +135,9 @@ model Lead {
   notasInternas      ChatInternalNote[]
   /// Etiquetas (tags) do chat aplicadas a este lead.
   tagsChat           ChatTagLead[]
+  /// Plugin CRM: funis de vendas em que o lead está (uma etapa por funil) e o histórico de movimentos.
+  funis              LeadFunil[]
+  movimentosFunil    LeadFunilMovimento[]
   /// Plugin CRM: departamento/atendente responsável pela conversa (1:1, opcional).
   atendimento        LeadAtendimento?
   transferencias     AtendimentoTransferencia[]
@@ -947,6 +950,105 @@ model AtendimentoTransferencia {
   porUsuario       String
   motivo           String?
   data             DateTime @default(now())
+
+  @@index([leadId, data])
+}
+
+// ---------------------------------------------------------------------------
+// Plugin CRM: funis de vendas.
+// ---------------------------------------------------------------------------
+
+/// Tipo da etapa de um funil: `aberta` (em andamento), `ganho` (venda fechada) ou `perdido`.
+/// Etapas de ganho/perdido encerram o negócio e entram nos totais de conversão.
+enum FunilEtapaTipo {
+  aberta
+  ganho
+  perdido
+}
+
+/// Funil de vendas (ex.: Vendas, Pós-venda). Um lead pode estar em vários funis, em uma
+/// etapa de cada. Excluir o funil remove as etapas e os vínculos (os leads permanecem).
+model Funil {
+  id String @id @default(cuid())
+
+  /// Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+  workspaceId String
+  nome        String
+  descricao   String?
+  ativo       Boolean @default(true)
+  /// Posição na lista de funis (menor primeiro).
+  ordem       Int     @default(0)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  etapas FunilEtapa[]
+  leads  LeadFunil[]
+
+  @@unique([workspaceId, nome])
+  @@index([workspaceId, ordem])
+}
+
+/// Etapa (coluna) de um funil. A ordem é por `ordem` crescente.
+model FunilEtapa {
+  id String @id @default(cuid())
+
+  funilId String
+  funil   Funil  @relation(fields: [funilId], references: [id], onDelete: Cascade)
+
+  nome  String
+  /// Uma das cores de `lib/funis.ts` (ex.: azul).
+  cor   String         @default("azul")
+  tipo  FunilEtapaTipo @default(aberta)
+  ordem Int            @default(0)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  leads LeadFunil[]
+
+  @@index([funilId, ordem])
+}
+
+/// Lead dentro de um funil, na etapa atual. No máximo uma linha por (lead, funil).
+/// `valor` é o valor estimado do negócio (opcional), somado nos totais da coluna.
+model LeadFunil {
+  id String @id @default(cuid())
+
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  funilId String
+  funil   Funil  @relation(fields: [funilId], references: [id], onDelete: Cascade)
+
+  etapaId String
+  etapa   FunilEtapa @relation(fields: [etapaId], references: [id], onDelete: Cascade)
+
+  valor Float?
+
+  /// Quando entrou na etapa atual.
+  movidoEm     DateTime @default(now())
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@unique([leadId, funilId])
+  @@index([funilId, etapaId])
+  @@index([etapaId])
+}
+
+/// Histórico de movimentos nos funis. Guarda os NOMES no momento do movimento, então o
+/// registro continua legível se o funil ou a etapa forem excluídos depois.
+model LeadFunilMovimento {
+  id     String @id @default(cuid())
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  funil      String
+  deEtapa    String?
+  paraEtapa  String?
+  /// Nome de quem executou a ação.
+  porUsuario String
+  data       DateTime @default(now())
 
   @@index([leadId, data])
 }

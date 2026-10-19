@@ -21,6 +21,7 @@ export async function excluirWorkspace(workspaceId: string, preservarUserId?: st
     await prisma.chatTag.deleteMany({})
     await prisma.campaign.deleteMany({})
     await prisma.departamento.deleteMany({})
+    await prisma.funil.deleteMany({})
     await prisma.produto.deleteMany({})
     await prisma.marca.deleteMany({})
     await prisma.persona.deleteMany({})

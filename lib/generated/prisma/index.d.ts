@@ -220,6 +220,29 @@ export type LeadAtendimento = $Result.DefaultSelection<Prisma.$LeadAtendimentoPa
  */
 export type AtendimentoTransferencia = $Result.DefaultSelection<Prisma.$AtendimentoTransferenciaPayload>
 /**
+ * Model Funil
+ * Funil de vendas (ex.: Vendas, Pós-venda). Um lead pode estar em vários funis, em uma
+ * etapa de cada. Excluir o funil remove as etapas e os vínculos (os leads permanecem).
+ */
+export type Funil = $Result.DefaultSelection<Prisma.$FunilPayload>
+/**
+ * Model FunilEtapa
+ * Etapa (coluna) de um funil. A ordem é por `ordem` crescente.
+ */
+export type FunilEtapa = $Result.DefaultSelection<Prisma.$FunilEtapaPayload>
+/**
+ * Model LeadFunil
+ * Lead dentro de um funil, na etapa atual. No máximo uma linha por (lead, funil).
+ * `valor` é o valor estimado do negócio (opcional), somado nos totais da coluna.
+ */
+export type LeadFunil = $Result.DefaultSelection<Prisma.$LeadFunilPayload>
+/**
+ * Model LeadFunilMovimento
+ * Histórico de movimentos nos funis. Guarda os NOMES no momento do movimento, então o
+ * registro continua legível se o funil ou a etapa forem excluídos depois.
+ */
+export type LeadFunilMovimento = $Result.DefaultSelection<Prisma.$LeadFunilMovimentoPayload>
+/**
  * Model FollowUpBot
  * Bot especialista em FOLLOW-UP de um departamento (no máximo um por departamento).
  * Quando o lead fica `minutosSemResposta` sem responder à última mensagem da equipe, o bot envia
@@ -358,6 +381,15 @@ export const AppLogNivel: {
 
 export type AppLogNivel = (typeof AppLogNivel)[keyof typeof AppLogNivel]
 
+
+export const FunilEtapaTipo: {
+  aberta: 'aberta',
+  ganho: 'ganho',
+  perdido: 'perdido'
+};
+
+export type FunilEtapaTipo = (typeof FunilEtapaTipo)[keyof typeof FunilEtapaTipo]
+
 }
 
 export type LeadStatus = $Enums.LeadStatus
@@ -387,6 +419,10 @@ export const ScheduledMessageStatus: typeof $Enums.ScheduledMessageStatus
 export type AppLogNivel = $Enums.AppLogNivel
 
 export const AppLogNivel: typeof $Enums.AppLogNivel
+
+export type FunilEtapaTipo = $Enums.FunilEtapaTipo
+
+export const FunilEtapaTipo: typeof $Enums.FunilEtapaTipo
 
 /**
  * ##  Prisma Client ʲˢ
@@ -842,6 +878,46 @@ export class PrismaClient<
     * ```
     */
   get atendimentoTransferencia(): Prisma.AtendimentoTransferenciaDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.funil`: Exposes CRUD operations for the **Funil** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Funils
+    * const funils = await prisma.funil.findMany()
+    * ```
+    */
+  get funil(): Prisma.FunilDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.funilEtapa`: Exposes CRUD operations for the **FunilEtapa** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more FunilEtapas
+    * const funilEtapas = await prisma.funilEtapa.findMany()
+    * ```
+    */
+  get funilEtapa(): Prisma.FunilEtapaDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.leadFunil`: Exposes CRUD operations for the **LeadFunil** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LeadFunils
+    * const leadFunils = await prisma.leadFunil.findMany()
+    * ```
+    */
+  get leadFunil(): Prisma.LeadFunilDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.leadFunilMovimento`: Exposes CRUD operations for the **LeadFunilMovimento** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LeadFunilMovimentos
+    * const leadFunilMovimentos = await prisma.leadFunilMovimento.findMany()
+    * ```
+    */
+  get leadFunilMovimento(): Prisma.LeadFunilMovimentoDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.followUpBot`: Exposes CRUD operations for the **FollowUpBot** model.
@@ -1415,6 +1491,10 @@ export namespace Prisma {
     AtendenteDepartamento: 'AtendenteDepartamento',
     LeadAtendimento: 'LeadAtendimento',
     AtendimentoTransferencia: 'AtendimentoTransferencia',
+    Funil: 'Funil',
+    FunilEtapa: 'FunilEtapa',
+    LeadFunil: 'LeadFunil',
+    LeadFunilMovimento: 'LeadFunilMovimento',
     FollowUpBot: 'FollowUpBot',
     ChatTemplate: 'ChatTemplate',
     FollowUpTemplate: 'FollowUpTemplate',
@@ -1443,7 +1523,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "lead" | "chatInternalNote" | "chatTag" | "chatTagLead" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "botConversa" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "userFoto" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia" | "followUpBot" | "chatTemplate" | "followUpTemplate" | "followUpConversa" | "agenteIA" | "internoConversa" | "internoParticipante" | "internoMensagem" | "pushAssinatura" | "pushNotificacao"
+      modelProps: "lead" | "chatInternalNote" | "chatTag" | "chatTagLead" | "campaign" | "leadCampaign" | "campaignMessage" | "scheduledMessage" | "produto" | "marca" | "persona" | "regiao" | "settings" | "webhook" | "appLog" | "timelineEvent" | "inboundWebhookToken" | "mcpToken" | "inboundEvent" | "instance" | "noCodeFlow" | "botConversa" | "noCodeExecution" | "backupConfig" | "backupExecucao" | "workspace" | "user" | "userFoto" | "departamento" | "atendente" | "atendenteDepartamento" | "leadAtendimento" | "atendimentoTransferencia" | "funil" | "funilEtapa" | "leadFunil" | "leadFunilMovimento" | "followUpBot" | "chatTemplate" | "followUpTemplate" | "followUpConversa" | "agenteIA" | "internoConversa" | "internoParticipante" | "internoMensagem" | "pushAssinatura" | "pushNotificacao"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3889,6 +3969,302 @@ export namespace Prisma {
           }
         }
       }
+      Funil: {
+        payload: Prisma.$FunilPayload<ExtArgs>
+        fields: Prisma.FunilFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FunilFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FunilFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilPayload>
+          }
+          findFirst: {
+            args: Prisma.FunilFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FunilFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilPayload>
+          }
+          findMany: {
+            args: Prisma.FunilFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilPayload>[]
+          }
+          create: {
+            args: Prisma.FunilCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilPayload>
+          }
+          createMany: {
+            args: Prisma.FunilCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FunilCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilPayload>[]
+          }
+          delete: {
+            args: Prisma.FunilDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilPayload>
+          }
+          update: {
+            args: Prisma.FunilUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilPayload>
+          }
+          deleteMany: {
+            args: Prisma.FunilDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FunilUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.FunilUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilPayload>[]
+          }
+          upsert: {
+            args: Prisma.FunilUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilPayload>
+          }
+          aggregate: {
+            args: Prisma.FunilAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFunil>
+          }
+          groupBy: {
+            args: Prisma.FunilGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FunilGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FunilCountArgs<ExtArgs>
+            result: $Utils.Optional<FunilCountAggregateOutputType> | number
+          }
+        }
+      }
+      FunilEtapa: {
+        payload: Prisma.$FunilEtapaPayload<ExtArgs>
+        fields: Prisma.FunilEtapaFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FunilEtapaFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilEtapaPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FunilEtapaFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilEtapaPayload>
+          }
+          findFirst: {
+            args: Prisma.FunilEtapaFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilEtapaPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FunilEtapaFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilEtapaPayload>
+          }
+          findMany: {
+            args: Prisma.FunilEtapaFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilEtapaPayload>[]
+          }
+          create: {
+            args: Prisma.FunilEtapaCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilEtapaPayload>
+          }
+          createMany: {
+            args: Prisma.FunilEtapaCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FunilEtapaCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilEtapaPayload>[]
+          }
+          delete: {
+            args: Prisma.FunilEtapaDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilEtapaPayload>
+          }
+          update: {
+            args: Prisma.FunilEtapaUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilEtapaPayload>
+          }
+          deleteMany: {
+            args: Prisma.FunilEtapaDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FunilEtapaUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.FunilEtapaUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilEtapaPayload>[]
+          }
+          upsert: {
+            args: Prisma.FunilEtapaUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FunilEtapaPayload>
+          }
+          aggregate: {
+            args: Prisma.FunilEtapaAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFunilEtapa>
+          }
+          groupBy: {
+            args: Prisma.FunilEtapaGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FunilEtapaGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FunilEtapaCountArgs<ExtArgs>
+            result: $Utils.Optional<FunilEtapaCountAggregateOutputType> | number
+          }
+        }
+      }
+      LeadFunil: {
+        payload: Prisma.$LeadFunilPayload<ExtArgs>
+        fields: Prisma.LeadFunilFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LeadFunilFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LeadFunilFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilPayload>
+          }
+          findFirst: {
+            args: Prisma.LeadFunilFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LeadFunilFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilPayload>
+          }
+          findMany: {
+            args: Prisma.LeadFunilFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilPayload>[]
+          }
+          create: {
+            args: Prisma.LeadFunilCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilPayload>
+          }
+          createMany: {
+            args: Prisma.LeadFunilCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LeadFunilCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilPayload>[]
+          }
+          delete: {
+            args: Prisma.LeadFunilDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilPayload>
+          }
+          update: {
+            args: Prisma.LeadFunilUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilPayload>
+          }
+          deleteMany: {
+            args: Prisma.LeadFunilDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LeadFunilUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.LeadFunilUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilPayload>[]
+          }
+          upsert: {
+            args: Prisma.LeadFunilUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilPayload>
+          }
+          aggregate: {
+            args: Prisma.LeadFunilAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLeadFunil>
+          }
+          groupBy: {
+            args: Prisma.LeadFunilGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LeadFunilGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LeadFunilCountArgs<ExtArgs>
+            result: $Utils.Optional<LeadFunilCountAggregateOutputType> | number
+          }
+        }
+      }
+      LeadFunilMovimento: {
+        payload: Prisma.$LeadFunilMovimentoPayload<ExtArgs>
+        fields: Prisma.LeadFunilMovimentoFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LeadFunilMovimentoFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilMovimentoPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LeadFunilMovimentoFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilMovimentoPayload>
+          }
+          findFirst: {
+            args: Prisma.LeadFunilMovimentoFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilMovimentoPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LeadFunilMovimentoFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilMovimentoPayload>
+          }
+          findMany: {
+            args: Prisma.LeadFunilMovimentoFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilMovimentoPayload>[]
+          }
+          create: {
+            args: Prisma.LeadFunilMovimentoCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilMovimentoPayload>
+          }
+          createMany: {
+            args: Prisma.LeadFunilMovimentoCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LeadFunilMovimentoCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilMovimentoPayload>[]
+          }
+          delete: {
+            args: Prisma.LeadFunilMovimentoDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilMovimentoPayload>
+          }
+          update: {
+            args: Prisma.LeadFunilMovimentoUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilMovimentoPayload>
+          }
+          deleteMany: {
+            args: Prisma.LeadFunilMovimentoDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LeadFunilMovimentoUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.LeadFunilMovimentoUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilMovimentoPayload>[]
+          }
+          upsert: {
+            args: Prisma.LeadFunilMovimentoUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeadFunilMovimentoPayload>
+          }
+          aggregate: {
+            args: Prisma.LeadFunilMovimentoAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLeadFunilMovimento>
+          }
+          groupBy: {
+            args: Prisma.LeadFunilMovimentoGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LeadFunilMovimentoGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LeadFunilMovimentoCountArgs<ExtArgs>
+            result: $Utils.Optional<LeadFunilMovimentoCountAggregateOutputType> | number
+          }
+        }
+      }
       FollowUpBot: {
         payload: Prisma.$FollowUpBotPayload<ExtArgs>
         fields: Prisma.FollowUpBotFieldRefs
@@ -4750,6 +5126,10 @@ export namespace Prisma {
     atendenteDepartamento?: AtendenteDepartamentoOmit
     leadAtendimento?: LeadAtendimentoOmit
     atendimentoTransferencia?: AtendimentoTransferenciaOmit
+    funil?: FunilOmit
+    funilEtapa?: FunilEtapaOmit
+    leadFunil?: LeadFunilOmit
+    leadFunilMovimento?: LeadFunilMovimentoOmit
     followUpBot?: FollowUpBotOmit
     chatTemplate?: ChatTemplateOmit
     followUpTemplate?: FollowUpTemplateOmit
@@ -4859,6 +5239,8 @@ export namespace Prisma {
     mensagensAgendadas: number
     notasInternas: number
     tagsChat: number
+    funis: number
+    movimentosFunil: number
     transferencias: number
   }
 
@@ -4868,6 +5250,8 @@ export namespace Prisma {
     mensagensAgendadas?: boolean | LeadCountOutputTypeCountMensagensAgendadasArgs
     notasInternas?: boolean | LeadCountOutputTypeCountNotasInternasArgs
     tagsChat?: boolean | LeadCountOutputTypeCountTagsChatArgs
+    funis?: boolean | LeadCountOutputTypeCountFunisArgs
+    movimentosFunil?: boolean | LeadCountOutputTypeCountMovimentosFunilArgs
     transferencias?: boolean | LeadCountOutputTypeCountTransferenciasArgs
   }
 
@@ -4915,6 +5299,20 @@ export namespace Prisma {
    */
   export type LeadCountOutputTypeCountTagsChatArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ChatTagLeadWhereInput
+  }
+
+  /**
+   * LeadCountOutputType without action
+   */
+  export type LeadCountOutputTypeCountFunisArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadFunilWhereInput
+  }
+
+  /**
+   * LeadCountOutputType without action
+   */
+  export type LeadCountOutputTypeCountMovimentosFunilArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadFunilMovimentoWhereInput
   }
 
   /**
@@ -5229,6 +5627,77 @@ export namespace Prisma {
    */
   export type AtendenteCountOutputTypeCountAtendimentosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: LeadAtendimentoWhereInput
+  }
+
+
+  /**
+   * Count Type FunilCountOutputType
+   */
+
+  export type FunilCountOutputType = {
+    etapas: number
+    leads: number
+  }
+
+  export type FunilCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    etapas?: boolean | FunilCountOutputTypeCountEtapasArgs
+    leads?: boolean | FunilCountOutputTypeCountLeadsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * FunilCountOutputType without action
+   */
+  export type FunilCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FunilCountOutputType
+     */
+    select?: FunilCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * FunilCountOutputType without action
+   */
+  export type FunilCountOutputTypeCountEtapasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FunilEtapaWhereInput
+  }
+
+  /**
+   * FunilCountOutputType without action
+   */
+  export type FunilCountOutputTypeCountLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadFunilWhereInput
+  }
+
+
+  /**
+   * Count Type FunilEtapaCountOutputType
+   */
+
+  export type FunilEtapaCountOutputType = {
+    leads: number
+  }
+
+  export type FunilEtapaCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    leads?: boolean | FunilEtapaCountOutputTypeCountLeadsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * FunilEtapaCountOutputType without action
+   */
+  export type FunilEtapaCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FunilEtapaCountOutputType
+     */
+    select?: FunilEtapaCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * FunilEtapaCountOutputType without action
+   */
+  export type FunilEtapaCountOutputTypeCountLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadFunilWhereInput
   }
 
 
@@ -5647,6 +6116,8 @@ export namespace Prisma {
     mensagensAgendadas?: boolean | Lead$mensagensAgendadasArgs<ExtArgs>
     notasInternas?: boolean | Lead$notasInternasArgs<ExtArgs>
     tagsChat?: boolean | Lead$tagsChatArgs<ExtArgs>
+    funis?: boolean | Lead$funisArgs<ExtArgs>
+    movimentosFunil?: boolean | Lead$movimentosFunilArgs<ExtArgs>
     atendimento?: boolean | Lead$atendimentoArgs<ExtArgs>
     transferencias?: boolean | Lead$transferenciasArgs<ExtArgs>
     botConversa?: boolean | Lead$botConversaArgs<ExtArgs>
@@ -5730,6 +6201,8 @@ export namespace Prisma {
     mensagensAgendadas?: boolean | Lead$mensagensAgendadasArgs<ExtArgs>
     notasInternas?: boolean | Lead$notasInternasArgs<ExtArgs>
     tagsChat?: boolean | Lead$tagsChatArgs<ExtArgs>
+    funis?: boolean | Lead$funisArgs<ExtArgs>
+    movimentosFunil?: boolean | Lead$movimentosFunilArgs<ExtArgs>
     atendimento?: boolean | Lead$atendimentoArgs<ExtArgs>
     transferencias?: boolean | Lead$transferenciasArgs<ExtArgs>
     botConversa?: boolean | Lead$botConversaArgs<ExtArgs>
@@ -5755,6 +6228,11 @@ export namespace Prisma {
        * Etiquetas (tags) do chat aplicadas a este lead.
        */
       tagsChat: Prisma.$ChatTagLeadPayload<ExtArgs>[]
+      /**
+       * Plugin CRM: funis de vendas em que o lead está (uma etapa por funil) e o histórico de movimentos.
+       */
+      funis: Prisma.$LeadFunilPayload<ExtArgs>[]
+      movimentosFunil: Prisma.$LeadFunilMovimentoPayload<ExtArgs>[]
       /**
        * Plugin CRM: departamento/atendente responsável pela conversa (1:1, opcional).
        */
@@ -6195,6 +6673,8 @@ export namespace Prisma {
     mensagensAgendadas<T extends Lead$mensagensAgendadasArgs<ExtArgs> = {}>(args?: Subset<T, Lead$mensagensAgendadasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduledMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notasInternas<T extends Lead$notasInternasArgs<ExtArgs> = {}>(args?: Subset<T, Lead$notasInternasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatInternalNotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tagsChat<T extends Lead$tagsChatArgs<ExtArgs> = {}>(args?: Subset<T, Lead$tagsChatArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatTagLeadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    funis<T extends Lead$funisArgs<ExtArgs> = {}>(args?: Subset<T, Lead$funisArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadFunilPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    movimentosFunil<T extends Lead$movimentosFunilArgs<ExtArgs> = {}>(args?: Subset<T, Lead$movimentosFunilArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadFunilMovimentoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     atendimento<T extends Lead$atendimentoArgs<ExtArgs> = {}>(args?: Subset<T, Lead$atendimentoArgs<ExtArgs>>): Prisma__LeadAtendimentoClient<$Result.GetResult<Prisma.$LeadAtendimentoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     transferencias<T extends Lead$transferenciasArgs<ExtArgs> = {}>(args?: Subset<T, Lead$transferenciasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AtendimentoTransferenciaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     botConversa<T extends Lead$botConversaArgs<ExtArgs> = {}>(args?: Subset<T, Lead$botConversaArgs<ExtArgs>>): Prisma__BotConversaClient<$Result.GetResult<Prisma.$BotConversaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -6779,6 +7259,54 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ChatTagLeadScalarFieldEnum | ChatTagLeadScalarFieldEnum[]
+  }
+
+  /**
+   * Lead.funis
+   */
+  export type Lead$funisArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunil
+     */
+    select?: LeadFunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunil
+     */
+    omit?: LeadFunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilInclude<ExtArgs> | null
+    where?: LeadFunilWhereInput
+    orderBy?: LeadFunilOrderByWithRelationInput | LeadFunilOrderByWithRelationInput[]
+    cursor?: LeadFunilWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadFunilScalarFieldEnum | LeadFunilScalarFieldEnum[]
+  }
+
+  /**
+   * Lead.movimentosFunil
+   */
+  export type Lead$movimentosFunilArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunilMovimento
+     */
+    select?: LeadFunilMovimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunilMovimento
+     */
+    omit?: LeadFunilMovimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilMovimentoInclude<ExtArgs> | null
+    where?: LeadFunilMovimentoWhereInput
+    orderBy?: LeadFunilMovimentoOrderByWithRelationInput | LeadFunilMovimentoOrderByWithRelationInput[]
+    cursor?: LeadFunilMovimentoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadFunilMovimentoScalarFieldEnum | LeadFunilMovimentoScalarFieldEnum[]
   }
 
   /**
@@ -42888,6 +43416,4584 @@ export namespace Prisma {
 
 
   /**
+   * Model Funil
+   */
+
+  export type AggregateFunil = {
+    _count: FunilCountAggregateOutputType | null
+    _avg: FunilAvgAggregateOutputType | null
+    _sum: FunilSumAggregateOutputType | null
+    _min: FunilMinAggregateOutputType | null
+    _max: FunilMaxAggregateOutputType | null
+  }
+
+  export type FunilAvgAggregateOutputType = {
+    ordem: number | null
+  }
+
+  export type FunilSumAggregateOutputType = {
+    ordem: number | null
+  }
+
+  export type FunilMinAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    nome: string | null
+    descricao: string | null
+    ativo: boolean | null
+    ordem: number | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type FunilMaxAggregateOutputType = {
+    id: string | null
+    workspaceId: string | null
+    nome: string | null
+    descricao: string | null
+    ativo: boolean | null
+    ordem: number | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type FunilCountAggregateOutputType = {
+    id: number
+    workspaceId: number
+    nome: number
+    descricao: number
+    ativo: number
+    ordem: number
+    criadoEm: number
+    atualizadoEm: number
+    _all: number
+  }
+
+
+  export type FunilAvgAggregateInputType = {
+    ordem?: true
+  }
+
+  export type FunilSumAggregateInputType = {
+    ordem?: true
+  }
+
+  export type FunilMinAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    nome?: true
+    descricao?: true
+    ativo?: true
+    ordem?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type FunilMaxAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    nome?: true
+    descricao?: true
+    ativo?: true
+    ordem?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type FunilCountAggregateInputType = {
+    id?: true
+    workspaceId?: true
+    nome?: true
+    descricao?: true
+    ativo?: true
+    ordem?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    _all?: true
+  }
+
+  export type FunilAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Funil to aggregate.
+     */
+    where?: FunilWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Funils to fetch.
+     */
+    orderBy?: FunilOrderByWithRelationInput | FunilOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FunilWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Funils from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Funils.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Funils
+    **/
+    _count?: true | FunilCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: FunilAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: FunilSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FunilMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FunilMaxAggregateInputType
+  }
+
+  export type GetFunilAggregateType<T extends FunilAggregateArgs> = {
+        [P in keyof T & keyof AggregateFunil]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFunil[P]>
+      : GetScalarType<T[P], AggregateFunil[P]>
+  }
+
+
+
+
+  export type FunilGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FunilWhereInput
+    orderBy?: FunilOrderByWithAggregationInput | FunilOrderByWithAggregationInput[]
+    by: FunilScalarFieldEnum[] | FunilScalarFieldEnum
+    having?: FunilScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FunilCountAggregateInputType | true
+    _avg?: FunilAvgAggregateInputType
+    _sum?: FunilSumAggregateInputType
+    _min?: FunilMinAggregateInputType
+    _max?: FunilMaxAggregateInputType
+  }
+
+  export type FunilGroupByOutputType = {
+    id: string
+    workspaceId: string
+    nome: string
+    descricao: string | null
+    ativo: boolean
+    ordem: number
+    criadoEm: Date
+    atualizadoEm: Date
+    _count: FunilCountAggregateOutputType | null
+    _avg: FunilAvgAggregateOutputType | null
+    _sum: FunilSumAggregateOutputType | null
+    _min: FunilMinAggregateOutputType | null
+    _max: FunilMaxAggregateOutputType | null
+  }
+
+  type GetFunilGroupByPayload<T extends FunilGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FunilGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FunilGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FunilGroupByOutputType[P]>
+            : GetScalarType<T[P], FunilGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FunilSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    nome?: boolean
+    descricao?: boolean
+    ativo?: boolean
+    ordem?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    etapas?: boolean | Funil$etapasArgs<ExtArgs>
+    leads?: boolean | Funil$leadsArgs<ExtArgs>
+    _count?: boolean | FunilCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["funil"]>
+
+  export type FunilSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    nome?: boolean
+    descricao?: boolean
+    ativo?: boolean
+    ordem?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }, ExtArgs["result"]["funil"]>
+
+  export type FunilSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workspaceId?: boolean
+    nome?: boolean
+    descricao?: boolean
+    ativo?: boolean
+    ordem?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }, ExtArgs["result"]["funil"]>
+
+  export type FunilSelectScalar = {
+    id?: boolean
+    workspaceId?: boolean
+    nome?: boolean
+    descricao?: boolean
+    ativo?: boolean
+    ordem?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }
+
+  export type FunilOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "descricao" | "ativo" | "ordem" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["funil"]>
+  export type FunilInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    etapas?: boolean | Funil$etapasArgs<ExtArgs>
+    leads?: boolean | Funil$leadsArgs<ExtArgs>
+    _count?: boolean | FunilCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type FunilIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type FunilIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $FunilPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Funil"
+    objects: {
+      etapas: Prisma.$FunilEtapaPayload<ExtArgs>[]
+      leads: Prisma.$LeadFunilPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      /**
+       * Instância (espaço de dados) dona deste registro. Ver `Workspace`.
+       */
+      workspaceId: string
+      nome: string
+      descricao: string | null
+      ativo: boolean
+      /**
+       * Posição na lista de funis (menor primeiro).
+       */
+      ordem: number
+      criadoEm: Date
+      atualizadoEm: Date
+    }, ExtArgs["result"]["funil"]>
+    composites: {}
+  }
+
+  type FunilGetPayload<S extends boolean | null | undefined | FunilDefaultArgs> = $Result.GetResult<Prisma.$FunilPayload, S>
+
+  type FunilCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<FunilFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: FunilCountAggregateInputType | true
+    }
+
+  export interface FunilDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Funil'], meta: { name: 'Funil' } }
+    /**
+     * Find zero or one Funil that matches the filter.
+     * @param {FunilFindUniqueArgs} args - Arguments to find a Funil
+     * @example
+     * // Get one Funil
+     * const funil = await prisma.funil.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FunilFindUniqueArgs>(args: SelectSubset<T, FunilFindUniqueArgs<ExtArgs>>): Prisma__FunilClient<$Result.GetResult<Prisma.$FunilPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Funil that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {FunilFindUniqueOrThrowArgs} args - Arguments to find a Funil
+     * @example
+     * // Get one Funil
+     * const funil = await prisma.funil.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FunilFindUniqueOrThrowArgs>(args: SelectSubset<T, FunilFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FunilClient<$Result.GetResult<Prisma.$FunilPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Funil that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FunilFindFirstArgs} args - Arguments to find a Funil
+     * @example
+     * // Get one Funil
+     * const funil = await prisma.funil.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FunilFindFirstArgs>(args?: SelectSubset<T, FunilFindFirstArgs<ExtArgs>>): Prisma__FunilClient<$Result.GetResult<Prisma.$FunilPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Funil that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FunilFindFirstOrThrowArgs} args - Arguments to find a Funil
+     * @example
+     * // Get one Funil
+     * const funil = await prisma.funil.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FunilFindFirstOrThrowArgs>(args?: SelectSubset<T, FunilFindFirstOrThrowArgs<ExtArgs>>): Prisma__FunilClient<$Result.GetResult<Prisma.$FunilPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Funils that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FunilFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Funils
+     * const funils = await prisma.funil.findMany()
+     * 
+     * // Get first 10 Funils
+     * const funils = await prisma.funil.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const funilWithIdOnly = await prisma.funil.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FunilFindManyArgs>(args?: SelectSubset<T, FunilFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FunilPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Funil.
+     * @param {FunilCreateArgs} args - Arguments to create a Funil.
+     * @example
+     * // Create one Funil
+     * const Funil = await prisma.funil.create({
+     *   data: {
+     *     // ... data to create a Funil
+     *   }
+     * })
+     * 
+     */
+    create<T extends FunilCreateArgs>(args: SelectSubset<T, FunilCreateArgs<ExtArgs>>): Prisma__FunilClient<$Result.GetResult<Prisma.$FunilPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Funils.
+     * @param {FunilCreateManyArgs} args - Arguments to create many Funils.
+     * @example
+     * // Create many Funils
+     * const funil = await prisma.funil.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FunilCreateManyArgs>(args?: SelectSubset<T, FunilCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Funils and returns the data saved in the database.
+     * @param {FunilCreateManyAndReturnArgs} args - Arguments to create many Funils.
+     * @example
+     * // Create many Funils
+     * const funil = await prisma.funil.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Funils and only return the `id`
+     * const funilWithIdOnly = await prisma.funil.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FunilCreateManyAndReturnArgs>(args?: SelectSubset<T, FunilCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FunilPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Funil.
+     * @param {FunilDeleteArgs} args - Arguments to delete one Funil.
+     * @example
+     * // Delete one Funil
+     * const Funil = await prisma.funil.delete({
+     *   where: {
+     *     // ... filter to delete one Funil
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FunilDeleteArgs>(args: SelectSubset<T, FunilDeleteArgs<ExtArgs>>): Prisma__FunilClient<$Result.GetResult<Prisma.$FunilPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Funil.
+     * @param {FunilUpdateArgs} args - Arguments to update one Funil.
+     * @example
+     * // Update one Funil
+     * const funil = await prisma.funil.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FunilUpdateArgs>(args: SelectSubset<T, FunilUpdateArgs<ExtArgs>>): Prisma__FunilClient<$Result.GetResult<Prisma.$FunilPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Funils.
+     * @param {FunilDeleteManyArgs} args - Arguments to filter Funils to delete.
+     * @example
+     * // Delete a few Funils
+     * const { count } = await prisma.funil.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FunilDeleteManyArgs>(args?: SelectSubset<T, FunilDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Funils.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FunilUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Funils
+     * const funil = await prisma.funil.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FunilUpdateManyArgs>(args: SelectSubset<T, FunilUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Funils and returns the data updated in the database.
+     * @param {FunilUpdateManyAndReturnArgs} args - Arguments to update many Funils.
+     * @example
+     * // Update many Funils
+     * const funil = await prisma.funil.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Funils and only return the `id`
+     * const funilWithIdOnly = await prisma.funil.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends FunilUpdateManyAndReturnArgs>(args: SelectSubset<T, FunilUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FunilPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Funil.
+     * @param {FunilUpsertArgs} args - Arguments to update or create a Funil.
+     * @example
+     * // Update or create a Funil
+     * const funil = await prisma.funil.upsert({
+     *   create: {
+     *     // ... data to create a Funil
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Funil we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FunilUpsertArgs>(args: SelectSubset<T, FunilUpsertArgs<ExtArgs>>): Prisma__FunilClient<$Result.GetResult<Prisma.$FunilPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Funils.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FunilCountArgs} args - Arguments to filter Funils to count.
+     * @example
+     * // Count the number of Funils
+     * const count = await prisma.funil.count({
+     *   where: {
+     *     // ... the filter for the Funils we want to count
+     *   }
+     * })
+    **/
+    count<T extends FunilCountArgs>(
+      args?: Subset<T, FunilCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FunilCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Funil.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FunilAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FunilAggregateArgs>(args: Subset<T, FunilAggregateArgs>): Prisma.PrismaPromise<GetFunilAggregateType<T>>
+
+    /**
+     * Group by Funil.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FunilGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FunilGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FunilGroupByArgs['orderBy'] }
+        : { orderBy?: FunilGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FunilGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFunilGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Funil model
+   */
+  readonly fields: FunilFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Funil.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FunilClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    etapas<T extends Funil$etapasArgs<ExtArgs> = {}>(args?: Subset<T, Funil$etapasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FunilEtapaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    leads<T extends Funil$leadsArgs<ExtArgs> = {}>(args?: Subset<T, Funil$leadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadFunilPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Funil model
+   */
+  interface FunilFieldRefs {
+    readonly id: FieldRef<"Funil", 'String'>
+    readonly workspaceId: FieldRef<"Funil", 'String'>
+    readonly nome: FieldRef<"Funil", 'String'>
+    readonly descricao: FieldRef<"Funil", 'String'>
+    readonly ativo: FieldRef<"Funil", 'Boolean'>
+    readonly ordem: FieldRef<"Funil", 'Int'>
+    readonly criadoEm: FieldRef<"Funil", 'DateTime'>
+    readonly atualizadoEm: FieldRef<"Funil", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Funil findUnique
+   */
+  export type FunilFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Funil
+     */
+    select?: FunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Funil
+     */
+    omit?: FunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilInclude<ExtArgs> | null
+    /**
+     * Filter, which Funil to fetch.
+     */
+    where: FunilWhereUniqueInput
+  }
+
+  /**
+   * Funil findUniqueOrThrow
+   */
+  export type FunilFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Funil
+     */
+    select?: FunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Funil
+     */
+    omit?: FunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilInclude<ExtArgs> | null
+    /**
+     * Filter, which Funil to fetch.
+     */
+    where: FunilWhereUniqueInput
+  }
+
+  /**
+   * Funil findFirst
+   */
+  export type FunilFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Funil
+     */
+    select?: FunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Funil
+     */
+    omit?: FunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilInclude<ExtArgs> | null
+    /**
+     * Filter, which Funil to fetch.
+     */
+    where?: FunilWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Funils to fetch.
+     */
+    orderBy?: FunilOrderByWithRelationInput | FunilOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Funils.
+     */
+    cursor?: FunilWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Funils from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Funils.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Funils.
+     */
+    distinct?: FunilScalarFieldEnum | FunilScalarFieldEnum[]
+  }
+
+  /**
+   * Funil findFirstOrThrow
+   */
+  export type FunilFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Funil
+     */
+    select?: FunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Funil
+     */
+    omit?: FunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilInclude<ExtArgs> | null
+    /**
+     * Filter, which Funil to fetch.
+     */
+    where?: FunilWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Funils to fetch.
+     */
+    orderBy?: FunilOrderByWithRelationInput | FunilOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Funils.
+     */
+    cursor?: FunilWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Funils from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Funils.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Funils.
+     */
+    distinct?: FunilScalarFieldEnum | FunilScalarFieldEnum[]
+  }
+
+  /**
+   * Funil findMany
+   */
+  export type FunilFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Funil
+     */
+    select?: FunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Funil
+     */
+    omit?: FunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilInclude<ExtArgs> | null
+    /**
+     * Filter, which Funils to fetch.
+     */
+    where?: FunilWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Funils to fetch.
+     */
+    orderBy?: FunilOrderByWithRelationInput | FunilOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Funils.
+     */
+    cursor?: FunilWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Funils from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Funils.
+     */
+    skip?: number
+    distinct?: FunilScalarFieldEnum | FunilScalarFieldEnum[]
+  }
+
+  /**
+   * Funil create
+   */
+  export type FunilCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Funil
+     */
+    select?: FunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Funil
+     */
+    omit?: FunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Funil.
+     */
+    data: XOR<FunilCreateInput, FunilUncheckedCreateInput>
+  }
+
+  /**
+   * Funil createMany
+   */
+  export type FunilCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Funils.
+     */
+    data: FunilCreateManyInput | FunilCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Funil createManyAndReturn
+   */
+  export type FunilCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Funil
+     */
+    select?: FunilSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Funil
+     */
+    omit?: FunilOmit<ExtArgs> | null
+    /**
+     * The data used to create many Funils.
+     */
+    data: FunilCreateManyInput | FunilCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Funil update
+   */
+  export type FunilUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Funil
+     */
+    select?: FunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Funil
+     */
+    omit?: FunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Funil.
+     */
+    data: XOR<FunilUpdateInput, FunilUncheckedUpdateInput>
+    /**
+     * Choose, which Funil to update.
+     */
+    where: FunilWhereUniqueInput
+  }
+
+  /**
+   * Funil updateMany
+   */
+  export type FunilUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Funils.
+     */
+    data: XOR<FunilUpdateManyMutationInput, FunilUncheckedUpdateManyInput>
+    /**
+     * Filter which Funils to update
+     */
+    where?: FunilWhereInput
+    /**
+     * Limit how many Funils to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Funil updateManyAndReturn
+   */
+  export type FunilUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Funil
+     */
+    select?: FunilSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Funil
+     */
+    omit?: FunilOmit<ExtArgs> | null
+    /**
+     * The data used to update Funils.
+     */
+    data: XOR<FunilUpdateManyMutationInput, FunilUncheckedUpdateManyInput>
+    /**
+     * Filter which Funils to update
+     */
+    where?: FunilWhereInput
+    /**
+     * Limit how many Funils to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Funil upsert
+   */
+  export type FunilUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Funil
+     */
+    select?: FunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Funil
+     */
+    omit?: FunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Funil to update in case it exists.
+     */
+    where: FunilWhereUniqueInput
+    /**
+     * In case the Funil found by the `where` argument doesn't exist, create a new Funil with this data.
+     */
+    create: XOR<FunilCreateInput, FunilUncheckedCreateInput>
+    /**
+     * In case the Funil was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FunilUpdateInput, FunilUncheckedUpdateInput>
+  }
+
+  /**
+   * Funil delete
+   */
+  export type FunilDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Funil
+     */
+    select?: FunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Funil
+     */
+    omit?: FunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilInclude<ExtArgs> | null
+    /**
+     * Filter which Funil to delete.
+     */
+    where: FunilWhereUniqueInput
+  }
+
+  /**
+   * Funil deleteMany
+   */
+  export type FunilDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Funils to delete
+     */
+    where?: FunilWhereInput
+    /**
+     * Limit how many Funils to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Funil.etapas
+   */
+  export type Funil$etapasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FunilEtapa
+     */
+    select?: FunilEtapaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FunilEtapa
+     */
+    omit?: FunilEtapaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilEtapaInclude<ExtArgs> | null
+    where?: FunilEtapaWhereInput
+    orderBy?: FunilEtapaOrderByWithRelationInput | FunilEtapaOrderByWithRelationInput[]
+    cursor?: FunilEtapaWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FunilEtapaScalarFieldEnum | FunilEtapaScalarFieldEnum[]
+  }
+
+  /**
+   * Funil.leads
+   */
+  export type Funil$leadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunil
+     */
+    select?: LeadFunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunil
+     */
+    omit?: LeadFunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilInclude<ExtArgs> | null
+    where?: LeadFunilWhereInput
+    orderBy?: LeadFunilOrderByWithRelationInput | LeadFunilOrderByWithRelationInput[]
+    cursor?: LeadFunilWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadFunilScalarFieldEnum | LeadFunilScalarFieldEnum[]
+  }
+
+  /**
+   * Funil without action
+   */
+  export type FunilDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Funil
+     */
+    select?: FunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Funil
+     */
+    omit?: FunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model FunilEtapa
+   */
+
+  export type AggregateFunilEtapa = {
+    _count: FunilEtapaCountAggregateOutputType | null
+    _avg: FunilEtapaAvgAggregateOutputType | null
+    _sum: FunilEtapaSumAggregateOutputType | null
+    _min: FunilEtapaMinAggregateOutputType | null
+    _max: FunilEtapaMaxAggregateOutputType | null
+  }
+
+  export type FunilEtapaAvgAggregateOutputType = {
+    ordem: number | null
+  }
+
+  export type FunilEtapaSumAggregateOutputType = {
+    ordem: number | null
+  }
+
+  export type FunilEtapaMinAggregateOutputType = {
+    id: string | null
+    funilId: string | null
+    nome: string | null
+    cor: string | null
+    tipo: $Enums.FunilEtapaTipo | null
+    ordem: number | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type FunilEtapaMaxAggregateOutputType = {
+    id: string | null
+    funilId: string | null
+    nome: string | null
+    cor: string | null
+    tipo: $Enums.FunilEtapaTipo | null
+    ordem: number | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type FunilEtapaCountAggregateOutputType = {
+    id: number
+    funilId: number
+    nome: number
+    cor: number
+    tipo: number
+    ordem: number
+    criadoEm: number
+    atualizadoEm: number
+    _all: number
+  }
+
+
+  export type FunilEtapaAvgAggregateInputType = {
+    ordem?: true
+  }
+
+  export type FunilEtapaSumAggregateInputType = {
+    ordem?: true
+  }
+
+  export type FunilEtapaMinAggregateInputType = {
+    id?: true
+    funilId?: true
+    nome?: true
+    cor?: true
+    tipo?: true
+    ordem?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type FunilEtapaMaxAggregateInputType = {
+    id?: true
+    funilId?: true
+    nome?: true
+    cor?: true
+    tipo?: true
+    ordem?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type FunilEtapaCountAggregateInputType = {
+    id?: true
+    funilId?: true
+    nome?: true
+    cor?: true
+    tipo?: true
+    ordem?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    _all?: true
+  }
+
+  export type FunilEtapaAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FunilEtapa to aggregate.
+     */
+    where?: FunilEtapaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FunilEtapas to fetch.
+     */
+    orderBy?: FunilEtapaOrderByWithRelationInput | FunilEtapaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FunilEtapaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FunilEtapas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FunilEtapas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned FunilEtapas
+    **/
+    _count?: true | FunilEtapaCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: FunilEtapaAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: FunilEtapaSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FunilEtapaMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FunilEtapaMaxAggregateInputType
+  }
+
+  export type GetFunilEtapaAggregateType<T extends FunilEtapaAggregateArgs> = {
+        [P in keyof T & keyof AggregateFunilEtapa]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFunilEtapa[P]>
+      : GetScalarType<T[P], AggregateFunilEtapa[P]>
+  }
+
+
+
+
+  export type FunilEtapaGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FunilEtapaWhereInput
+    orderBy?: FunilEtapaOrderByWithAggregationInput | FunilEtapaOrderByWithAggregationInput[]
+    by: FunilEtapaScalarFieldEnum[] | FunilEtapaScalarFieldEnum
+    having?: FunilEtapaScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FunilEtapaCountAggregateInputType | true
+    _avg?: FunilEtapaAvgAggregateInputType
+    _sum?: FunilEtapaSumAggregateInputType
+    _min?: FunilEtapaMinAggregateInputType
+    _max?: FunilEtapaMaxAggregateInputType
+  }
+
+  export type FunilEtapaGroupByOutputType = {
+    id: string
+    funilId: string
+    nome: string
+    cor: string
+    tipo: $Enums.FunilEtapaTipo
+    ordem: number
+    criadoEm: Date
+    atualizadoEm: Date
+    _count: FunilEtapaCountAggregateOutputType | null
+    _avg: FunilEtapaAvgAggregateOutputType | null
+    _sum: FunilEtapaSumAggregateOutputType | null
+    _min: FunilEtapaMinAggregateOutputType | null
+    _max: FunilEtapaMaxAggregateOutputType | null
+  }
+
+  type GetFunilEtapaGroupByPayload<T extends FunilEtapaGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FunilEtapaGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FunilEtapaGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FunilEtapaGroupByOutputType[P]>
+            : GetScalarType<T[P], FunilEtapaGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FunilEtapaSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    funilId?: boolean
+    nome?: boolean
+    cor?: boolean
+    tipo?: boolean
+    ordem?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    funil?: boolean | FunilDefaultArgs<ExtArgs>
+    leads?: boolean | FunilEtapa$leadsArgs<ExtArgs>
+    _count?: boolean | FunilEtapaCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["funilEtapa"]>
+
+  export type FunilEtapaSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    funilId?: boolean
+    nome?: boolean
+    cor?: boolean
+    tipo?: boolean
+    ordem?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    funil?: boolean | FunilDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["funilEtapa"]>
+
+  export type FunilEtapaSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    funilId?: boolean
+    nome?: boolean
+    cor?: boolean
+    tipo?: boolean
+    ordem?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    funil?: boolean | FunilDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["funilEtapa"]>
+
+  export type FunilEtapaSelectScalar = {
+    id?: boolean
+    funilId?: boolean
+    nome?: boolean
+    cor?: boolean
+    tipo?: boolean
+    ordem?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }
+
+  export type FunilEtapaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "funilId" | "nome" | "cor" | "tipo" | "ordem" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["funilEtapa"]>
+  export type FunilEtapaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    funil?: boolean | FunilDefaultArgs<ExtArgs>
+    leads?: boolean | FunilEtapa$leadsArgs<ExtArgs>
+    _count?: boolean | FunilEtapaCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type FunilEtapaIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    funil?: boolean | FunilDefaultArgs<ExtArgs>
+  }
+  export type FunilEtapaIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    funil?: boolean | FunilDefaultArgs<ExtArgs>
+  }
+
+  export type $FunilEtapaPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "FunilEtapa"
+    objects: {
+      funil: Prisma.$FunilPayload<ExtArgs>
+      leads: Prisma.$LeadFunilPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      funilId: string
+      nome: string
+      /**
+       * Uma das cores de `lib/funis.ts` (ex.: azul).
+       */
+      cor: string
+      tipo: $Enums.FunilEtapaTipo
+      ordem: number
+      criadoEm: Date
+      atualizadoEm: Date
+    }, ExtArgs["result"]["funilEtapa"]>
+    composites: {}
+  }
+
+  type FunilEtapaGetPayload<S extends boolean | null | undefined | FunilEtapaDefaultArgs> = $Result.GetResult<Prisma.$FunilEtapaPayload, S>
+
+  type FunilEtapaCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<FunilEtapaFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: FunilEtapaCountAggregateInputType | true
+    }
+
+  export interface FunilEtapaDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FunilEtapa'], meta: { name: 'FunilEtapa' } }
+    /**
+     * Find zero or one FunilEtapa that matches the filter.
+     * @param {FunilEtapaFindUniqueArgs} args - Arguments to find a FunilEtapa
+     * @example
+     * // Get one FunilEtapa
+     * const funilEtapa = await prisma.funilEtapa.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FunilEtapaFindUniqueArgs>(args: SelectSubset<T, FunilEtapaFindUniqueArgs<ExtArgs>>): Prisma__FunilEtapaClient<$Result.GetResult<Prisma.$FunilEtapaPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one FunilEtapa that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {FunilEtapaFindUniqueOrThrowArgs} args - Arguments to find a FunilEtapa
+     * @example
+     * // Get one FunilEtapa
+     * const funilEtapa = await prisma.funilEtapa.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FunilEtapaFindUniqueOrThrowArgs>(args: SelectSubset<T, FunilEtapaFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FunilEtapaClient<$Result.GetResult<Prisma.$FunilEtapaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FunilEtapa that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FunilEtapaFindFirstArgs} args - Arguments to find a FunilEtapa
+     * @example
+     * // Get one FunilEtapa
+     * const funilEtapa = await prisma.funilEtapa.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FunilEtapaFindFirstArgs>(args?: SelectSubset<T, FunilEtapaFindFirstArgs<ExtArgs>>): Prisma__FunilEtapaClient<$Result.GetResult<Prisma.$FunilEtapaPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FunilEtapa that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FunilEtapaFindFirstOrThrowArgs} args - Arguments to find a FunilEtapa
+     * @example
+     * // Get one FunilEtapa
+     * const funilEtapa = await prisma.funilEtapa.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FunilEtapaFindFirstOrThrowArgs>(args?: SelectSubset<T, FunilEtapaFindFirstOrThrowArgs<ExtArgs>>): Prisma__FunilEtapaClient<$Result.GetResult<Prisma.$FunilEtapaPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more FunilEtapas that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FunilEtapaFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all FunilEtapas
+     * const funilEtapas = await prisma.funilEtapa.findMany()
+     * 
+     * // Get first 10 FunilEtapas
+     * const funilEtapas = await prisma.funilEtapa.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const funilEtapaWithIdOnly = await prisma.funilEtapa.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FunilEtapaFindManyArgs>(args?: SelectSubset<T, FunilEtapaFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FunilEtapaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a FunilEtapa.
+     * @param {FunilEtapaCreateArgs} args - Arguments to create a FunilEtapa.
+     * @example
+     * // Create one FunilEtapa
+     * const FunilEtapa = await prisma.funilEtapa.create({
+     *   data: {
+     *     // ... data to create a FunilEtapa
+     *   }
+     * })
+     * 
+     */
+    create<T extends FunilEtapaCreateArgs>(args: SelectSubset<T, FunilEtapaCreateArgs<ExtArgs>>): Prisma__FunilEtapaClient<$Result.GetResult<Prisma.$FunilEtapaPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many FunilEtapas.
+     * @param {FunilEtapaCreateManyArgs} args - Arguments to create many FunilEtapas.
+     * @example
+     * // Create many FunilEtapas
+     * const funilEtapa = await prisma.funilEtapa.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FunilEtapaCreateManyArgs>(args?: SelectSubset<T, FunilEtapaCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many FunilEtapas and returns the data saved in the database.
+     * @param {FunilEtapaCreateManyAndReturnArgs} args - Arguments to create many FunilEtapas.
+     * @example
+     * // Create many FunilEtapas
+     * const funilEtapa = await prisma.funilEtapa.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many FunilEtapas and only return the `id`
+     * const funilEtapaWithIdOnly = await prisma.funilEtapa.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FunilEtapaCreateManyAndReturnArgs>(args?: SelectSubset<T, FunilEtapaCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FunilEtapaPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a FunilEtapa.
+     * @param {FunilEtapaDeleteArgs} args - Arguments to delete one FunilEtapa.
+     * @example
+     * // Delete one FunilEtapa
+     * const FunilEtapa = await prisma.funilEtapa.delete({
+     *   where: {
+     *     // ... filter to delete one FunilEtapa
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FunilEtapaDeleteArgs>(args: SelectSubset<T, FunilEtapaDeleteArgs<ExtArgs>>): Prisma__FunilEtapaClient<$Result.GetResult<Prisma.$FunilEtapaPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one FunilEtapa.
+     * @param {FunilEtapaUpdateArgs} args - Arguments to update one FunilEtapa.
+     * @example
+     * // Update one FunilEtapa
+     * const funilEtapa = await prisma.funilEtapa.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FunilEtapaUpdateArgs>(args: SelectSubset<T, FunilEtapaUpdateArgs<ExtArgs>>): Prisma__FunilEtapaClient<$Result.GetResult<Prisma.$FunilEtapaPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more FunilEtapas.
+     * @param {FunilEtapaDeleteManyArgs} args - Arguments to filter FunilEtapas to delete.
+     * @example
+     * // Delete a few FunilEtapas
+     * const { count } = await prisma.funilEtapa.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FunilEtapaDeleteManyArgs>(args?: SelectSubset<T, FunilEtapaDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FunilEtapas.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FunilEtapaUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many FunilEtapas
+     * const funilEtapa = await prisma.funilEtapa.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FunilEtapaUpdateManyArgs>(args: SelectSubset<T, FunilEtapaUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FunilEtapas and returns the data updated in the database.
+     * @param {FunilEtapaUpdateManyAndReturnArgs} args - Arguments to update many FunilEtapas.
+     * @example
+     * // Update many FunilEtapas
+     * const funilEtapa = await prisma.funilEtapa.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more FunilEtapas and only return the `id`
+     * const funilEtapaWithIdOnly = await prisma.funilEtapa.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends FunilEtapaUpdateManyAndReturnArgs>(args: SelectSubset<T, FunilEtapaUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FunilEtapaPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one FunilEtapa.
+     * @param {FunilEtapaUpsertArgs} args - Arguments to update or create a FunilEtapa.
+     * @example
+     * // Update or create a FunilEtapa
+     * const funilEtapa = await prisma.funilEtapa.upsert({
+     *   create: {
+     *     // ... data to create a FunilEtapa
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the FunilEtapa we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FunilEtapaUpsertArgs>(args: SelectSubset<T, FunilEtapaUpsertArgs<ExtArgs>>): Prisma__FunilEtapaClient<$Result.GetResult<Prisma.$FunilEtapaPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of FunilEtapas.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FunilEtapaCountArgs} args - Arguments to filter FunilEtapas to count.
+     * @example
+     * // Count the number of FunilEtapas
+     * const count = await prisma.funilEtapa.count({
+     *   where: {
+     *     // ... the filter for the FunilEtapas we want to count
+     *   }
+     * })
+    **/
+    count<T extends FunilEtapaCountArgs>(
+      args?: Subset<T, FunilEtapaCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FunilEtapaCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a FunilEtapa.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FunilEtapaAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FunilEtapaAggregateArgs>(args: Subset<T, FunilEtapaAggregateArgs>): Prisma.PrismaPromise<GetFunilEtapaAggregateType<T>>
+
+    /**
+     * Group by FunilEtapa.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FunilEtapaGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FunilEtapaGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FunilEtapaGroupByArgs['orderBy'] }
+        : { orderBy?: FunilEtapaGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FunilEtapaGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFunilEtapaGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the FunilEtapa model
+   */
+  readonly fields: FunilEtapaFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for FunilEtapa.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FunilEtapaClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    funil<T extends FunilDefaultArgs<ExtArgs> = {}>(args?: Subset<T, FunilDefaultArgs<ExtArgs>>): Prisma__FunilClient<$Result.GetResult<Prisma.$FunilPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    leads<T extends FunilEtapa$leadsArgs<ExtArgs> = {}>(args?: Subset<T, FunilEtapa$leadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadFunilPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the FunilEtapa model
+   */
+  interface FunilEtapaFieldRefs {
+    readonly id: FieldRef<"FunilEtapa", 'String'>
+    readonly funilId: FieldRef<"FunilEtapa", 'String'>
+    readonly nome: FieldRef<"FunilEtapa", 'String'>
+    readonly cor: FieldRef<"FunilEtapa", 'String'>
+    readonly tipo: FieldRef<"FunilEtapa", 'FunilEtapaTipo'>
+    readonly ordem: FieldRef<"FunilEtapa", 'Int'>
+    readonly criadoEm: FieldRef<"FunilEtapa", 'DateTime'>
+    readonly atualizadoEm: FieldRef<"FunilEtapa", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * FunilEtapa findUnique
+   */
+  export type FunilEtapaFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FunilEtapa
+     */
+    select?: FunilEtapaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FunilEtapa
+     */
+    omit?: FunilEtapaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilEtapaInclude<ExtArgs> | null
+    /**
+     * Filter, which FunilEtapa to fetch.
+     */
+    where: FunilEtapaWhereUniqueInput
+  }
+
+  /**
+   * FunilEtapa findUniqueOrThrow
+   */
+  export type FunilEtapaFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FunilEtapa
+     */
+    select?: FunilEtapaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FunilEtapa
+     */
+    omit?: FunilEtapaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilEtapaInclude<ExtArgs> | null
+    /**
+     * Filter, which FunilEtapa to fetch.
+     */
+    where: FunilEtapaWhereUniqueInput
+  }
+
+  /**
+   * FunilEtapa findFirst
+   */
+  export type FunilEtapaFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FunilEtapa
+     */
+    select?: FunilEtapaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FunilEtapa
+     */
+    omit?: FunilEtapaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilEtapaInclude<ExtArgs> | null
+    /**
+     * Filter, which FunilEtapa to fetch.
+     */
+    where?: FunilEtapaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FunilEtapas to fetch.
+     */
+    orderBy?: FunilEtapaOrderByWithRelationInput | FunilEtapaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FunilEtapas.
+     */
+    cursor?: FunilEtapaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FunilEtapas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FunilEtapas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FunilEtapas.
+     */
+    distinct?: FunilEtapaScalarFieldEnum | FunilEtapaScalarFieldEnum[]
+  }
+
+  /**
+   * FunilEtapa findFirstOrThrow
+   */
+  export type FunilEtapaFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FunilEtapa
+     */
+    select?: FunilEtapaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FunilEtapa
+     */
+    omit?: FunilEtapaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilEtapaInclude<ExtArgs> | null
+    /**
+     * Filter, which FunilEtapa to fetch.
+     */
+    where?: FunilEtapaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FunilEtapas to fetch.
+     */
+    orderBy?: FunilEtapaOrderByWithRelationInput | FunilEtapaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FunilEtapas.
+     */
+    cursor?: FunilEtapaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FunilEtapas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FunilEtapas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FunilEtapas.
+     */
+    distinct?: FunilEtapaScalarFieldEnum | FunilEtapaScalarFieldEnum[]
+  }
+
+  /**
+   * FunilEtapa findMany
+   */
+  export type FunilEtapaFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FunilEtapa
+     */
+    select?: FunilEtapaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FunilEtapa
+     */
+    omit?: FunilEtapaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilEtapaInclude<ExtArgs> | null
+    /**
+     * Filter, which FunilEtapas to fetch.
+     */
+    where?: FunilEtapaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FunilEtapas to fetch.
+     */
+    orderBy?: FunilEtapaOrderByWithRelationInput | FunilEtapaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing FunilEtapas.
+     */
+    cursor?: FunilEtapaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FunilEtapas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FunilEtapas.
+     */
+    skip?: number
+    distinct?: FunilEtapaScalarFieldEnum | FunilEtapaScalarFieldEnum[]
+  }
+
+  /**
+   * FunilEtapa create
+   */
+  export type FunilEtapaCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FunilEtapa
+     */
+    select?: FunilEtapaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FunilEtapa
+     */
+    omit?: FunilEtapaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilEtapaInclude<ExtArgs> | null
+    /**
+     * The data needed to create a FunilEtapa.
+     */
+    data: XOR<FunilEtapaCreateInput, FunilEtapaUncheckedCreateInput>
+  }
+
+  /**
+   * FunilEtapa createMany
+   */
+  export type FunilEtapaCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many FunilEtapas.
+     */
+    data: FunilEtapaCreateManyInput | FunilEtapaCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * FunilEtapa createManyAndReturn
+   */
+  export type FunilEtapaCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FunilEtapa
+     */
+    select?: FunilEtapaSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FunilEtapa
+     */
+    omit?: FunilEtapaOmit<ExtArgs> | null
+    /**
+     * The data used to create many FunilEtapas.
+     */
+    data: FunilEtapaCreateManyInput | FunilEtapaCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilEtapaIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * FunilEtapa update
+   */
+  export type FunilEtapaUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FunilEtapa
+     */
+    select?: FunilEtapaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FunilEtapa
+     */
+    omit?: FunilEtapaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilEtapaInclude<ExtArgs> | null
+    /**
+     * The data needed to update a FunilEtapa.
+     */
+    data: XOR<FunilEtapaUpdateInput, FunilEtapaUncheckedUpdateInput>
+    /**
+     * Choose, which FunilEtapa to update.
+     */
+    where: FunilEtapaWhereUniqueInput
+  }
+
+  /**
+   * FunilEtapa updateMany
+   */
+  export type FunilEtapaUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update FunilEtapas.
+     */
+    data: XOR<FunilEtapaUpdateManyMutationInput, FunilEtapaUncheckedUpdateManyInput>
+    /**
+     * Filter which FunilEtapas to update
+     */
+    where?: FunilEtapaWhereInput
+    /**
+     * Limit how many FunilEtapas to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * FunilEtapa updateManyAndReturn
+   */
+  export type FunilEtapaUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FunilEtapa
+     */
+    select?: FunilEtapaSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FunilEtapa
+     */
+    omit?: FunilEtapaOmit<ExtArgs> | null
+    /**
+     * The data used to update FunilEtapas.
+     */
+    data: XOR<FunilEtapaUpdateManyMutationInput, FunilEtapaUncheckedUpdateManyInput>
+    /**
+     * Filter which FunilEtapas to update
+     */
+    where?: FunilEtapaWhereInput
+    /**
+     * Limit how many FunilEtapas to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilEtapaIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * FunilEtapa upsert
+   */
+  export type FunilEtapaUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FunilEtapa
+     */
+    select?: FunilEtapaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FunilEtapa
+     */
+    omit?: FunilEtapaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilEtapaInclude<ExtArgs> | null
+    /**
+     * The filter to search for the FunilEtapa to update in case it exists.
+     */
+    where: FunilEtapaWhereUniqueInput
+    /**
+     * In case the FunilEtapa found by the `where` argument doesn't exist, create a new FunilEtapa with this data.
+     */
+    create: XOR<FunilEtapaCreateInput, FunilEtapaUncheckedCreateInput>
+    /**
+     * In case the FunilEtapa was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FunilEtapaUpdateInput, FunilEtapaUncheckedUpdateInput>
+  }
+
+  /**
+   * FunilEtapa delete
+   */
+  export type FunilEtapaDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FunilEtapa
+     */
+    select?: FunilEtapaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FunilEtapa
+     */
+    omit?: FunilEtapaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilEtapaInclude<ExtArgs> | null
+    /**
+     * Filter which FunilEtapa to delete.
+     */
+    where: FunilEtapaWhereUniqueInput
+  }
+
+  /**
+   * FunilEtapa deleteMany
+   */
+  export type FunilEtapaDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FunilEtapas to delete
+     */
+    where?: FunilEtapaWhereInput
+    /**
+     * Limit how many FunilEtapas to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * FunilEtapa.leads
+   */
+  export type FunilEtapa$leadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunil
+     */
+    select?: LeadFunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunil
+     */
+    omit?: LeadFunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilInclude<ExtArgs> | null
+    where?: LeadFunilWhereInput
+    orderBy?: LeadFunilOrderByWithRelationInput | LeadFunilOrderByWithRelationInput[]
+    cursor?: LeadFunilWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeadFunilScalarFieldEnum | LeadFunilScalarFieldEnum[]
+  }
+
+  /**
+   * FunilEtapa without action
+   */
+  export type FunilEtapaDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FunilEtapa
+     */
+    select?: FunilEtapaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FunilEtapa
+     */
+    omit?: FunilEtapaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FunilEtapaInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LeadFunil
+   */
+
+  export type AggregateLeadFunil = {
+    _count: LeadFunilCountAggregateOutputType | null
+    _avg: LeadFunilAvgAggregateOutputType | null
+    _sum: LeadFunilSumAggregateOutputType | null
+    _min: LeadFunilMinAggregateOutputType | null
+    _max: LeadFunilMaxAggregateOutputType | null
+  }
+
+  export type LeadFunilAvgAggregateOutputType = {
+    valor: number | null
+  }
+
+  export type LeadFunilSumAggregateOutputType = {
+    valor: number | null
+  }
+
+  export type LeadFunilMinAggregateOutputType = {
+    id: string | null
+    leadId: string | null
+    funilId: string | null
+    etapaId: string | null
+    valor: number | null
+    movidoEm: Date | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type LeadFunilMaxAggregateOutputType = {
+    id: string | null
+    leadId: string | null
+    funilId: string | null
+    etapaId: string | null
+    valor: number | null
+    movidoEm: Date | null
+    criadoEm: Date | null
+    atualizadoEm: Date | null
+  }
+
+  export type LeadFunilCountAggregateOutputType = {
+    id: number
+    leadId: number
+    funilId: number
+    etapaId: number
+    valor: number
+    movidoEm: number
+    criadoEm: number
+    atualizadoEm: number
+    _all: number
+  }
+
+
+  export type LeadFunilAvgAggregateInputType = {
+    valor?: true
+  }
+
+  export type LeadFunilSumAggregateInputType = {
+    valor?: true
+  }
+
+  export type LeadFunilMinAggregateInputType = {
+    id?: true
+    leadId?: true
+    funilId?: true
+    etapaId?: true
+    valor?: true
+    movidoEm?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type LeadFunilMaxAggregateInputType = {
+    id?: true
+    leadId?: true
+    funilId?: true
+    etapaId?: true
+    valor?: true
+    movidoEm?: true
+    criadoEm?: true
+    atualizadoEm?: true
+  }
+
+  export type LeadFunilCountAggregateInputType = {
+    id?: true
+    leadId?: true
+    funilId?: true
+    etapaId?: true
+    valor?: true
+    movidoEm?: true
+    criadoEm?: true
+    atualizadoEm?: true
+    _all?: true
+  }
+
+  export type LeadFunilAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadFunil to aggregate.
+     */
+    where?: LeadFunilWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadFunils to fetch.
+     */
+    orderBy?: LeadFunilOrderByWithRelationInput | LeadFunilOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LeadFunilWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadFunils from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadFunils.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LeadFunils
+    **/
+    _count?: true | LeadFunilCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: LeadFunilAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: LeadFunilSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LeadFunilMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LeadFunilMaxAggregateInputType
+  }
+
+  export type GetLeadFunilAggregateType<T extends LeadFunilAggregateArgs> = {
+        [P in keyof T & keyof AggregateLeadFunil]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLeadFunil[P]>
+      : GetScalarType<T[P], AggregateLeadFunil[P]>
+  }
+
+
+
+
+  export type LeadFunilGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadFunilWhereInput
+    orderBy?: LeadFunilOrderByWithAggregationInput | LeadFunilOrderByWithAggregationInput[]
+    by: LeadFunilScalarFieldEnum[] | LeadFunilScalarFieldEnum
+    having?: LeadFunilScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LeadFunilCountAggregateInputType | true
+    _avg?: LeadFunilAvgAggregateInputType
+    _sum?: LeadFunilSumAggregateInputType
+    _min?: LeadFunilMinAggregateInputType
+    _max?: LeadFunilMaxAggregateInputType
+  }
+
+  export type LeadFunilGroupByOutputType = {
+    id: string
+    leadId: string
+    funilId: string
+    etapaId: string
+    valor: number | null
+    movidoEm: Date
+    criadoEm: Date
+    atualizadoEm: Date
+    _count: LeadFunilCountAggregateOutputType | null
+    _avg: LeadFunilAvgAggregateOutputType | null
+    _sum: LeadFunilSumAggregateOutputType | null
+    _min: LeadFunilMinAggregateOutputType | null
+    _max: LeadFunilMaxAggregateOutputType | null
+  }
+
+  type GetLeadFunilGroupByPayload<T extends LeadFunilGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LeadFunilGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LeadFunilGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LeadFunilGroupByOutputType[P]>
+            : GetScalarType<T[P], LeadFunilGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LeadFunilSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    leadId?: boolean
+    funilId?: boolean
+    etapaId?: boolean
+    valor?: boolean
+    movidoEm?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    funil?: boolean | FunilDefaultArgs<ExtArgs>
+    etapa?: boolean | FunilEtapaDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leadFunil"]>
+
+  export type LeadFunilSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    leadId?: boolean
+    funilId?: boolean
+    etapaId?: boolean
+    valor?: boolean
+    movidoEm?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    funil?: boolean | FunilDefaultArgs<ExtArgs>
+    etapa?: boolean | FunilEtapaDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leadFunil"]>
+
+  export type LeadFunilSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    leadId?: boolean
+    funilId?: boolean
+    etapaId?: boolean
+    valor?: boolean
+    movidoEm?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    funil?: boolean | FunilDefaultArgs<ExtArgs>
+    etapa?: boolean | FunilEtapaDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leadFunil"]>
+
+  export type LeadFunilSelectScalar = {
+    id?: boolean
+    leadId?: boolean
+    funilId?: boolean
+    etapaId?: boolean
+    valor?: boolean
+    movidoEm?: boolean
+    criadoEm?: boolean
+    atualizadoEm?: boolean
+  }
+
+  export type LeadFunilOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "leadId" | "funilId" | "etapaId" | "valor" | "movidoEm" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["leadFunil"]>
+  export type LeadFunilInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    funil?: boolean | FunilDefaultArgs<ExtArgs>
+    etapa?: boolean | FunilEtapaDefaultArgs<ExtArgs>
+  }
+  export type LeadFunilIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    funil?: boolean | FunilDefaultArgs<ExtArgs>
+    etapa?: boolean | FunilEtapaDefaultArgs<ExtArgs>
+  }
+  export type LeadFunilIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+    funil?: boolean | FunilDefaultArgs<ExtArgs>
+    etapa?: boolean | FunilEtapaDefaultArgs<ExtArgs>
+  }
+
+  export type $LeadFunilPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LeadFunil"
+    objects: {
+      lead: Prisma.$LeadPayload<ExtArgs>
+      funil: Prisma.$FunilPayload<ExtArgs>
+      etapa: Prisma.$FunilEtapaPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      leadId: string
+      funilId: string
+      etapaId: string
+      valor: number | null
+      /**
+       * Quando entrou na etapa atual.
+       */
+      movidoEm: Date
+      criadoEm: Date
+      atualizadoEm: Date
+    }, ExtArgs["result"]["leadFunil"]>
+    composites: {}
+  }
+
+  type LeadFunilGetPayload<S extends boolean | null | undefined | LeadFunilDefaultArgs> = $Result.GetResult<Prisma.$LeadFunilPayload, S>
+
+  type LeadFunilCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<LeadFunilFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: LeadFunilCountAggregateInputType | true
+    }
+
+  export interface LeadFunilDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LeadFunil'], meta: { name: 'LeadFunil' } }
+    /**
+     * Find zero or one LeadFunil that matches the filter.
+     * @param {LeadFunilFindUniqueArgs} args - Arguments to find a LeadFunil
+     * @example
+     * // Get one LeadFunil
+     * const leadFunil = await prisma.leadFunil.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LeadFunilFindUniqueArgs>(args: SelectSubset<T, LeadFunilFindUniqueArgs<ExtArgs>>): Prisma__LeadFunilClient<$Result.GetResult<Prisma.$LeadFunilPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one LeadFunil that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {LeadFunilFindUniqueOrThrowArgs} args - Arguments to find a LeadFunil
+     * @example
+     * // Get one LeadFunil
+     * const leadFunil = await prisma.leadFunil.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LeadFunilFindUniqueOrThrowArgs>(args: SelectSubset<T, LeadFunilFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LeadFunilClient<$Result.GetResult<Prisma.$LeadFunilPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first LeadFunil that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadFunilFindFirstArgs} args - Arguments to find a LeadFunil
+     * @example
+     * // Get one LeadFunil
+     * const leadFunil = await prisma.leadFunil.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LeadFunilFindFirstArgs>(args?: SelectSubset<T, LeadFunilFindFirstArgs<ExtArgs>>): Prisma__LeadFunilClient<$Result.GetResult<Prisma.$LeadFunilPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first LeadFunil that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadFunilFindFirstOrThrowArgs} args - Arguments to find a LeadFunil
+     * @example
+     * // Get one LeadFunil
+     * const leadFunil = await prisma.leadFunil.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LeadFunilFindFirstOrThrowArgs>(args?: SelectSubset<T, LeadFunilFindFirstOrThrowArgs<ExtArgs>>): Prisma__LeadFunilClient<$Result.GetResult<Prisma.$LeadFunilPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more LeadFunils that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadFunilFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LeadFunils
+     * const leadFunils = await prisma.leadFunil.findMany()
+     * 
+     * // Get first 10 LeadFunils
+     * const leadFunils = await prisma.leadFunil.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const leadFunilWithIdOnly = await prisma.leadFunil.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LeadFunilFindManyArgs>(args?: SelectSubset<T, LeadFunilFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadFunilPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a LeadFunil.
+     * @param {LeadFunilCreateArgs} args - Arguments to create a LeadFunil.
+     * @example
+     * // Create one LeadFunil
+     * const LeadFunil = await prisma.leadFunil.create({
+     *   data: {
+     *     // ... data to create a LeadFunil
+     *   }
+     * })
+     * 
+     */
+    create<T extends LeadFunilCreateArgs>(args: SelectSubset<T, LeadFunilCreateArgs<ExtArgs>>): Prisma__LeadFunilClient<$Result.GetResult<Prisma.$LeadFunilPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many LeadFunils.
+     * @param {LeadFunilCreateManyArgs} args - Arguments to create many LeadFunils.
+     * @example
+     * // Create many LeadFunils
+     * const leadFunil = await prisma.leadFunil.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LeadFunilCreateManyArgs>(args?: SelectSubset<T, LeadFunilCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LeadFunils and returns the data saved in the database.
+     * @param {LeadFunilCreateManyAndReturnArgs} args - Arguments to create many LeadFunils.
+     * @example
+     * // Create many LeadFunils
+     * const leadFunil = await prisma.leadFunil.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LeadFunils and only return the `id`
+     * const leadFunilWithIdOnly = await prisma.leadFunil.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LeadFunilCreateManyAndReturnArgs>(args?: SelectSubset<T, LeadFunilCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadFunilPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a LeadFunil.
+     * @param {LeadFunilDeleteArgs} args - Arguments to delete one LeadFunil.
+     * @example
+     * // Delete one LeadFunil
+     * const LeadFunil = await prisma.leadFunil.delete({
+     *   where: {
+     *     // ... filter to delete one LeadFunil
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LeadFunilDeleteArgs>(args: SelectSubset<T, LeadFunilDeleteArgs<ExtArgs>>): Prisma__LeadFunilClient<$Result.GetResult<Prisma.$LeadFunilPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one LeadFunil.
+     * @param {LeadFunilUpdateArgs} args - Arguments to update one LeadFunil.
+     * @example
+     * // Update one LeadFunil
+     * const leadFunil = await prisma.leadFunil.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LeadFunilUpdateArgs>(args: SelectSubset<T, LeadFunilUpdateArgs<ExtArgs>>): Prisma__LeadFunilClient<$Result.GetResult<Prisma.$LeadFunilPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more LeadFunils.
+     * @param {LeadFunilDeleteManyArgs} args - Arguments to filter LeadFunils to delete.
+     * @example
+     * // Delete a few LeadFunils
+     * const { count } = await prisma.leadFunil.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LeadFunilDeleteManyArgs>(args?: SelectSubset<T, LeadFunilDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LeadFunils.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadFunilUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LeadFunils
+     * const leadFunil = await prisma.leadFunil.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LeadFunilUpdateManyArgs>(args: SelectSubset<T, LeadFunilUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LeadFunils and returns the data updated in the database.
+     * @param {LeadFunilUpdateManyAndReturnArgs} args - Arguments to update many LeadFunils.
+     * @example
+     * // Update many LeadFunils
+     * const leadFunil = await prisma.leadFunil.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more LeadFunils and only return the `id`
+     * const leadFunilWithIdOnly = await prisma.leadFunil.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends LeadFunilUpdateManyAndReturnArgs>(args: SelectSubset<T, LeadFunilUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadFunilPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one LeadFunil.
+     * @param {LeadFunilUpsertArgs} args - Arguments to update or create a LeadFunil.
+     * @example
+     * // Update or create a LeadFunil
+     * const leadFunil = await prisma.leadFunil.upsert({
+     *   create: {
+     *     // ... data to create a LeadFunil
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LeadFunil we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LeadFunilUpsertArgs>(args: SelectSubset<T, LeadFunilUpsertArgs<ExtArgs>>): Prisma__LeadFunilClient<$Result.GetResult<Prisma.$LeadFunilPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of LeadFunils.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadFunilCountArgs} args - Arguments to filter LeadFunils to count.
+     * @example
+     * // Count the number of LeadFunils
+     * const count = await prisma.leadFunil.count({
+     *   where: {
+     *     // ... the filter for the LeadFunils we want to count
+     *   }
+     * })
+    **/
+    count<T extends LeadFunilCountArgs>(
+      args?: Subset<T, LeadFunilCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LeadFunilCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LeadFunil.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadFunilAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LeadFunilAggregateArgs>(args: Subset<T, LeadFunilAggregateArgs>): Prisma.PrismaPromise<GetLeadFunilAggregateType<T>>
+
+    /**
+     * Group by LeadFunil.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadFunilGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LeadFunilGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LeadFunilGroupByArgs['orderBy'] }
+        : { orderBy?: LeadFunilGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LeadFunilGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLeadFunilGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LeadFunil model
+   */
+  readonly fields: LeadFunilFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LeadFunil.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LeadFunilClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    lead<T extends LeadDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LeadDefaultArgs<ExtArgs>>): Prisma__LeadClient<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    funil<T extends FunilDefaultArgs<ExtArgs> = {}>(args?: Subset<T, FunilDefaultArgs<ExtArgs>>): Prisma__FunilClient<$Result.GetResult<Prisma.$FunilPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    etapa<T extends FunilEtapaDefaultArgs<ExtArgs> = {}>(args?: Subset<T, FunilEtapaDefaultArgs<ExtArgs>>): Prisma__FunilEtapaClient<$Result.GetResult<Prisma.$FunilEtapaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LeadFunil model
+   */
+  interface LeadFunilFieldRefs {
+    readonly id: FieldRef<"LeadFunil", 'String'>
+    readonly leadId: FieldRef<"LeadFunil", 'String'>
+    readonly funilId: FieldRef<"LeadFunil", 'String'>
+    readonly etapaId: FieldRef<"LeadFunil", 'String'>
+    readonly valor: FieldRef<"LeadFunil", 'Float'>
+    readonly movidoEm: FieldRef<"LeadFunil", 'DateTime'>
+    readonly criadoEm: FieldRef<"LeadFunil", 'DateTime'>
+    readonly atualizadoEm: FieldRef<"LeadFunil", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LeadFunil findUnique
+   */
+  export type LeadFunilFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunil
+     */
+    select?: LeadFunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunil
+     */
+    omit?: LeadFunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadFunil to fetch.
+     */
+    where: LeadFunilWhereUniqueInput
+  }
+
+  /**
+   * LeadFunil findUniqueOrThrow
+   */
+  export type LeadFunilFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunil
+     */
+    select?: LeadFunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunil
+     */
+    omit?: LeadFunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadFunil to fetch.
+     */
+    where: LeadFunilWhereUniqueInput
+  }
+
+  /**
+   * LeadFunil findFirst
+   */
+  export type LeadFunilFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunil
+     */
+    select?: LeadFunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunil
+     */
+    omit?: LeadFunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadFunil to fetch.
+     */
+    where?: LeadFunilWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadFunils to fetch.
+     */
+    orderBy?: LeadFunilOrderByWithRelationInput | LeadFunilOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadFunils.
+     */
+    cursor?: LeadFunilWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadFunils from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadFunils.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadFunils.
+     */
+    distinct?: LeadFunilScalarFieldEnum | LeadFunilScalarFieldEnum[]
+  }
+
+  /**
+   * LeadFunil findFirstOrThrow
+   */
+  export type LeadFunilFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunil
+     */
+    select?: LeadFunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunil
+     */
+    omit?: LeadFunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadFunil to fetch.
+     */
+    where?: LeadFunilWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadFunils to fetch.
+     */
+    orderBy?: LeadFunilOrderByWithRelationInput | LeadFunilOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadFunils.
+     */
+    cursor?: LeadFunilWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadFunils from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadFunils.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadFunils.
+     */
+    distinct?: LeadFunilScalarFieldEnum | LeadFunilScalarFieldEnum[]
+  }
+
+  /**
+   * LeadFunil findMany
+   */
+  export type LeadFunilFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunil
+     */
+    select?: LeadFunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunil
+     */
+    omit?: LeadFunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadFunils to fetch.
+     */
+    where?: LeadFunilWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadFunils to fetch.
+     */
+    orderBy?: LeadFunilOrderByWithRelationInput | LeadFunilOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LeadFunils.
+     */
+    cursor?: LeadFunilWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadFunils from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadFunils.
+     */
+    skip?: number
+    distinct?: LeadFunilScalarFieldEnum | LeadFunilScalarFieldEnum[]
+  }
+
+  /**
+   * LeadFunil create
+   */
+  export type LeadFunilCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunil
+     */
+    select?: LeadFunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunil
+     */
+    omit?: LeadFunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LeadFunil.
+     */
+    data: XOR<LeadFunilCreateInput, LeadFunilUncheckedCreateInput>
+  }
+
+  /**
+   * LeadFunil createMany
+   */
+  export type LeadFunilCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LeadFunils.
+     */
+    data: LeadFunilCreateManyInput | LeadFunilCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LeadFunil createManyAndReturn
+   */
+  export type LeadFunilCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunil
+     */
+    select?: LeadFunilSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunil
+     */
+    omit?: LeadFunilOmit<ExtArgs> | null
+    /**
+     * The data used to create many LeadFunils.
+     */
+    data: LeadFunilCreateManyInput | LeadFunilCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LeadFunil update
+   */
+  export type LeadFunilUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunil
+     */
+    select?: LeadFunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunil
+     */
+    omit?: LeadFunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LeadFunil.
+     */
+    data: XOR<LeadFunilUpdateInput, LeadFunilUncheckedUpdateInput>
+    /**
+     * Choose, which LeadFunil to update.
+     */
+    where: LeadFunilWhereUniqueInput
+  }
+
+  /**
+   * LeadFunil updateMany
+   */
+  export type LeadFunilUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LeadFunils.
+     */
+    data: XOR<LeadFunilUpdateManyMutationInput, LeadFunilUncheckedUpdateManyInput>
+    /**
+     * Filter which LeadFunils to update
+     */
+    where?: LeadFunilWhereInput
+    /**
+     * Limit how many LeadFunils to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * LeadFunil updateManyAndReturn
+   */
+  export type LeadFunilUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunil
+     */
+    select?: LeadFunilSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunil
+     */
+    omit?: LeadFunilOmit<ExtArgs> | null
+    /**
+     * The data used to update LeadFunils.
+     */
+    data: XOR<LeadFunilUpdateManyMutationInput, LeadFunilUncheckedUpdateManyInput>
+    /**
+     * Filter which LeadFunils to update
+     */
+    where?: LeadFunilWhereInput
+    /**
+     * Limit how many LeadFunils to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LeadFunil upsert
+   */
+  export type LeadFunilUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunil
+     */
+    select?: LeadFunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunil
+     */
+    omit?: LeadFunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LeadFunil to update in case it exists.
+     */
+    where: LeadFunilWhereUniqueInput
+    /**
+     * In case the LeadFunil found by the `where` argument doesn't exist, create a new LeadFunil with this data.
+     */
+    create: XOR<LeadFunilCreateInput, LeadFunilUncheckedCreateInput>
+    /**
+     * In case the LeadFunil was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LeadFunilUpdateInput, LeadFunilUncheckedUpdateInput>
+  }
+
+  /**
+   * LeadFunil delete
+   */
+  export type LeadFunilDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunil
+     */
+    select?: LeadFunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunil
+     */
+    omit?: LeadFunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilInclude<ExtArgs> | null
+    /**
+     * Filter which LeadFunil to delete.
+     */
+    where: LeadFunilWhereUniqueInput
+  }
+
+  /**
+   * LeadFunil deleteMany
+   */
+  export type LeadFunilDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadFunils to delete
+     */
+    where?: LeadFunilWhereInput
+    /**
+     * Limit how many LeadFunils to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * LeadFunil without action
+   */
+  export type LeadFunilDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunil
+     */
+    select?: LeadFunilSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunil
+     */
+    omit?: LeadFunilOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LeadFunilMovimento
+   */
+
+  export type AggregateLeadFunilMovimento = {
+    _count: LeadFunilMovimentoCountAggregateOutputType | null
+    _min: LeadFunilMovimentoMinAggregateOutputType | null
+    _max: LeadFunilMovimentoMaxAggregateOutputType | null
+  }
+
+  export type LeadFunilMovimentoMinAggregateOutputType = {
+    id: string | null
+    leadId: string | null
+    funil: string | null
+    deEtapa: string | null
+    paraEtapa: string | null
+    porUsuario: string | null
+    data: Date | null
+  }
+
+  export type LeadFunilMovimentoMaxAggregateOutputType = {
+    id: string | null
+    leadId: string | null
+    funil: string | null
+    deEtapa: string | null
+    paraEtapa: string | null
+    porUsuario: string | null
+    data: Date | null
+  }
+
+  export type LeadFunilMovimentoCountAggregateOutputType = {
+    id: number
+    leadId: number
+    funil: number
+    deEtapa: number
+    paraEtapa: number
+    porUsuario: number
+    data: number
+    _all: number
+  }
+
+
+  export type LeadFunilMovimentoMinAggregateInputType = {
+    id?: true
+    leadId?: true
+    funil?: true
+    deEtapa?: true
+    paraEtapa?: true
+    porUsuario?: true
+    data?: true
+  }
+
+  export type LeadFunilMovimentoMaxAggregateInputType = {
+    id?: true
+    leadId?: true
+    funil?: true
+    deEtapa?: true
+    paraEtapa?: true
+    porUsuario?: true
+    data?: true
+  }
+
+  export type LeadFunilMovimentoCountAggregateInputType = {
+    id?: true
+    leadId?: true
+    funil?: true
+    deEtapa?: true
+    paraEtapa?: true
+    porUsuario?: true
+    data?: true
+    _all?: true
+  }
+
+  export type LeadFunilMovimentoAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadFunilMovimento to aggregate.
+     */
+    where?: LeadFunilMovimentoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadFunilMovimentos to fetch.
+     */
+    orderBy?: LeadFunilMovimentoOrderByWithRelationInput | LeadFunilMovimentoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LeadFunilMovimentoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadFunilMovimentos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadFunilMovimentos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LeadFunilMovimentos
+    **/
+    _count?: true | LeadFunilMovimentoCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LeadFunilMovimentoMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LeadFunilMovimentoMaxAggregateInputType
+  }
+
+  export type GetLeadFunilMovimentoAggregateType<T extends LeadFunilMovimentoAggregateArgs> = {
+        [P in keyof T & keyof AggregateLeadFunilMovimento]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLeadFunilMovimento[P]>
+      : GetScalarType<T[P], AggregateLeadFunilMovimento[P]>
+  }
+
+
+
+
+  export type LeadFunilMovimentoGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadFunilMovimentoWhereInput
+    orderBy?: LeadFunilMovimentoOrderByWithAggregationInput | LeadFunilMovimentoOrderByWithAggregationInput[]
+    by: LeadFunilMovimentoScalarFieldEnum[] | LeadFunilMovimentoScalarFieldEnum
+    having?: LeadFunilMovimentoScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LeadFunilMovimentoCountAggregateInputType | true
+    _min?: LeadFunilMovimentoMinAggregateInputType
+    _max?: LeadFunilMovimentoMaxAggregateInputType
+  }
+
+  export type LeadFunilMovimentoGroupByOutputType = {
+    id: string
+    leadId: string
+    funil: string
+    deEtapa: string | null
+    paraEtapa: string | null
+    porUsuario: string
+    data: Date
+    _count: LeadFunilMovimentoCountAggregateOutputType | null
+    _min: LeadFunilMovimentoMinAggregateOutputType | null
+    _max: LeadFunilMovimentoMaxAggregateOutputType | null
+  }
+
+  type GetLeadFunilMovimentoGroupByPayload<T extends LeadFunilMovimentoGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LeadFunilMovimentoGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LeadFunilMovimentoGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LeadFunilMovimentoGroupByOutputType[P]>
+            : GetScalarType<T[P], LeadFunilMovimentoGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LeadFunilMovimentoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    leadId?: boolean
+    funil?: boolean
+    deEtapa?: boolean
+    paraEtapa?: boolean
+    porUsuario?: boolean
+    data?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leadFunilMovimento"]>
+
+  export type LeadFunilMovimentoSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    leadId?: boolean
+    funil?: boolean
+    deEtapa?: boolean
+    paraEtapa?: boolean
+    porUsuario?: boolean
+    data?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leadFunilMovimento"]>
+
+  export type LeadFunilMovimentoSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    leadId?: boolean
+    funil?: boolean
+    deEtapa?: boolean
+    paraEtapa?: boolean
+    porUsuario?: boolean
+    data?: boolean
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leadFunilMovimento"]>
+
+  export type LeadFunilMovimentoSelectScalar = {
+    id?: boolean
+    leadId?: boolean
+    funil?: boolean
+    deEtapa?: boolean
+    paraEtapa?: boolean
+    porUsuario?: boolean
+    data?: boolean
+  }
+
+  export type LeadFunilMovimentoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "leadId" | "funil" | "deEtapa" | "paraEtapa" | "porUsuario" | "data", ExtArgs["result"]["leadFunilMovimento"]>
+  export type LeadFunilMovimentoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }
+  export type LeadFunilMovimentoIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }
+  export type LeadFunilMovimentoIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lead?: boolean | LeadDefaultArgs<ExtArgs>
+  }
+
+  export type $LeadFunilMovimentoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LeadFunilMovimento"
+    objects: {
+      lead: Prisma.$LeadPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      leadId: string
+      funil: string
+      deEtapa: string | null
+      paraEtapa: string | null
+      /**
+       * Nome de quem executou a ação.
+       */
+      porUsuario: string
+      data: Date
+    }, ExtArgs["result"]["leadFunilMovimento"]>
+    composites: {}
+  }
+
+  type LeadFunilMovimentoGetPayload<S extends boolean | null | undefined | LeadFunilMovimentoDefaultArgs> = $Result.GetResult<Prisma.$LeadFunilMovimentoPayload, S>
+
+  type LeadFunilMovimentoCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<LeadFunilMovimentoFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: LeadFunilMovimentoCountAggregateInputType | true
+    }
+
+  export interface LeadFunilMovimentoDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LeadFunilMovimento'], meta: { name: 'LeadFunilMovimento' } }
+    /**
+     * Find zero or one LeadFunilMovimento that matches the filter.
+     * @param {LeadFunilMovimentoFindUniqueArgs} args - Arguments to find a LeadFunilMovimento
+     * @example
+     * // Get one LeadFunilMovimento
+     * const leadFunilMovimento = await prisma.leadFunilMovimento.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LeadFunilMovimentoFindUniqueArgs>(args: SelectSubset<T, LeadFunilMovimentoFindUniqueArgs<ExtArgs>>): Prisma__LeadFunilMovimentoClient<$Result.GetResult<Prisma.$LeadFunilMovimentoPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one LeadFunilMovimento that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {LeadFunilMovimentoFindUniqueOrThrowArgs} args - Arguments to find a LeadFunilMovimento
+     * @example
+     * // Get one LeadFunilMovimento
+     * const leadFunilMovimento = await prisma.leadFunilMovimento.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LeadFunilMovimentoFindUniqueOrThrowArgs>(args: SelectSubset<T, LeadFunilMovimentoFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LeadFunilMovimentoClient<$Result.GetResult<Prisma.$LeadFunilMovimentoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first LeadFunilMovimento that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadFunilMovimentoFindFirstArgs} args - Arguments to find a LeadFunilMovimento
+     * @example
+     * // Get one LeadFunilMovimento
+     * const leadFunilMovimento = await prisma.leadFunilMovimento.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LeadFunilMovimentoFindFirstArgs>(args?: SelectSubset<T, LeadFunilMovimentoFindFirstArgs<ExtArgs>>): Prisma__LeadFunilMovimentoClient<$Result.GetResult<Prisma.$LeadFunilMovimentoPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first LeadFunilMovimento that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadFunilMovimentoFindFirstOrThrowArgs} args - Arguments to find a LeadFunilMovimento
+     * @example
+     * // Get one LeadFunilMovimento
+     * const leadFunilMovimento = await prisma.leadFunilMovimento.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LeadFunilMovimentoFindFirstOrThrowArgs>(args?: SelectSubset<T, LeadFunilMovimentoFindFirstOrThrowArgs<ExtArgs>>): Prisma__LeadFunilMovimentoClient<$Result.GetResult<Prisma.$LeadFunilMovimentoPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more LeadFunilMovimentos that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadFunilMovimentoFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LeadFunilMovimentos
+     * const leadFunilMovimentos = await prisma.leadFunilMovimento.findMany()
+     * 
+     * // Get first 10 LeadFunilMovimentos
+     * const leadFunilMovimentos = await prisma.leadFunilMovimento.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const leadFunilMovimentoWithIdOnly = await prisma.leadFunilMovimento.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LeadFunilMovimentoFindManyArgs>(args?: SelectSubset<T, LeadFunilMovimentoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadFunilMovimentoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a LeadFunilMovimento.
+     * @param {LeadFunilMovimentoCreateArgs} args - Arguments to create a LeadFunilMovimento.
+     * @example
+     * // Create one LeadFunilMovimento
+     * const LeadFunilMovimento = await prisma.leadFunilMovimento.create({
+     *   data: {
+     *     // ... data to create a LeadFunilMovimento
+     *   }
+     * })
+     * 
+     */
+    create<T extends LeadFunilMovimentoCreateArgs>(args: SelectSubset<T, LeadFunilMovimentoCreateArgs<ExtArgs>>): Prisma__LeadFunilMovimentoClient<$Result.GetResult<Prisma.$LeadFunilMovimentoPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many LeadFunilMovimentos.
+     * @param {LeadFunilMovimentoCreateManyArgs} args - Arguments to create many LeadFunilMovimentos.
+     * @example
+     * // Create many LeadFunilMovimentos
+     * const leadFunilMovimento = await prisma.leadFunilMovimento.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LeadFunilMovimentoCreateManyArgs>(args?: SelectSubset<T, LeadFunilMovimentoCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LeadFunilMovimentos and returns the data saved in the database.
+     * @param {LeadFunilMovimentoCreateManyAndReturnArgs} args - Arguments to create many LeadFunilMovimentos.
+     * @example
+     * // Create many LeadFunilMovimentos
+     * const leadFunilMovimento = await prisma.leadFunilMovimento.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LeadFunilMovimentos and only return the `id`
+     * const leadFunilMovimentoWithIdOnly = await prisma.leadFunilMovimento.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LeadFunilMovimentoCreateManyAndReturnArgs>(args?: SelectSubset<T, LeadFunilMovimentoCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadFunilMovimentoPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a LeadFunilMovimento.
+     * @param {LeadFunilMovimentoDeleteArgs} args - Arguments to delete one LeadFunilMovimento.
+     * @example
+     * // Delete one LeadFunilMovimento
+     * const LeadFunilMovimento = await prisma.leadFunilMovimento.delete({
+     *   where: {
+     *     // ... filter to delete one LeadFunilMovimento
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LeadFunilMovimentoDeleteArgs>(args: SelectSubset<T, LeadFunilMovimentoDeleteArgs<ExtArgs>>): Prisma__LeadFunilMovimentoClient<$Result.GetResult<Prisma.$LeadFunilMovimentoPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one LeadFunilMovimento.
+     * @param {LeadFunilMovimentoUpdateArgs} args - Arguments to update one LeadFunilMovimento.
+     * @example
+     * // Update one LeadFunilMovimento
+     * const leadFunilMovimento = await prisma.leadFunilMovimento.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LeadFunilMovimentoUpdateArgs>(args: SelectSubset<T, LeadFunilMovimentoUpdateArgs<ExtArgs>>): Prisma__LeadFunilMovimentoClient<$Result.GetResult<Prisma.$LeadFunilMovimentoPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more LeadFunilMovimentos.
+     * @param {LeadFunilMovimentoDeleteManyArgs} args - Arguments to filter LeadFunilMovimentos to delete.
+     * @example
+     * // Delete a few LeadFunilMovimentos
+     * const { count } = await prisma.leadFunilMovimento.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LeadFunilMovimentoDeleteManyArgs>(args?: SelectSubset<T, LeadFunilMovimentoDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LeadFunilMovimentos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadFunilMovimentoUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LeadFunilMovimentos
+     * const leadFunilMovimento = await prisma.leadFunilMovimento.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LeadFunilMovimentoUpdateManyArgs>(args: SelectSubset<T, LeadFunilMovimentoUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LeadFunilMovimentos and returns the data updated in the database.
+     * @param {LeadFunilMovimentoUpdateManyAndReturnArgs} args - Arguments to update many LeadFunilMovimentos.
+     * @example
+     * // Update many LeadFunilMovimentos
+     * const leadFunilMovimento = await prisma.leadFunilMovimento.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more LeadFunilMovimentos and only return the `id`
+     * const leadFunilMovimentoWithIdOnly = await prisma.leadFunilMovimento.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends LeadFunilMovimentoUpdateManyAndReturnArgs>(args: SelectSubset<T, LeadFunilMovimentoUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadFunilMovimentoPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one LeadFunilMovimento.
+     * @param {LeadFunilMovimentoUpsertArgs} args - Arguments to update or create a LeadFunilMovimento.
+     * @example
+     * // Update or create a LeadFunilMovimento
+     * const leadFunilMovimento = await prisma.leadFunilMovimento.upsert({
+     *   create: {
+     *     // ... data to create a LeadFunilMovimento
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LeadFunilMovimento we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LeadFunilMovimentoUpsertArgs>(args: SelectSubset<T, LeadFunilMovimentoUpsertArgs<ExtArgs>>): Prisma__LeadFunilMovimentoClient<$Result.GetResult<Prisma.$LeadFunilMovimentoPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of LeadFunilMovimentos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadFunilMovimentoCountArgs} args - Arguments to filter LeadFunilMovimentos to count.
+     * @example
+     * // Count the number of LeadFunilMovimentos
+     * const count = await prisma.leadFunilMovimento.count({
+     *   where: {
+     *     // ... the filter for the LeadFunilMovimentos we want to count
+     *   }
+     * })
+    **/
+    count<T extends LeadFunilMovimentoCountArgs>(
+      args?: Subset<T, LeadFunilMovimentoCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LeadFunilMovimentoCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LeadFunilMovimento.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadFunilMovimentoAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LeadFunilMovimentoAggregateArgs>(args: Subset<T, LeadFunilMovimentoAggregateArgs>): Prisma.PrismaPromise<GetLeadFunilMovimentoAggregateType<T>>
+
+    /**
+     * Group by LeadFunilMovimento.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeadFunilMovimentoGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LeadFunilMovimentoGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LeadFunilMovimentoGroupByArgs['orderBy'] }
+        : { orderBy?: LeadFunilMovimentoGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LeadFunilMovimentoGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLeadFunilMovimentoGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LeadFunilMovimento model
+   */
+  readonly fields: LeadFunilMovimentoFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LeadFunilMovimento.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LeadFunilMovimentoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    lead<T extends LeadDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LeadDefaultArgs<ExtArgs>>): Prisma__LeadClient<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LeadFunilMovimento model
+   */
+  interface LeadFunilMovimentoFieldRefs {
+    readonly id: FieldRef<"LeadFunilMovimento", 'String'>
+    readonly leadId: FieldRef<"LeadFunilMovimento", 'String'>
+    readonly funil: FieldRef<"LeadFunilMovimento", 'String'>
+    readonly deEtapa: FieldRef<"LeadFunilMovimento", 'String'>
+    readonly paraEtapa: FieldRef<"LeadFunilMovimento", 'String'>
+    readonly porUsuario: FieldRef<"LeadFunilMovimento", 'String'>
+    readonly data: FieldRef<"LeadFunilMovimento", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LeadFunilMovimento findUnique
+   */
+  export type LeadFunilMovimentoFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunilMovimento
+     */
+    select?: LeadFunilMovimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunilMovimento
+     */
+    omit?: LeadFunilMovimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilMovimentoInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadFunilMovimento to fetch.
+     */
+    where: LeadFunilMovimentoWhereUniqueInput
+  }
+
+  /**
+   * LeadFunilMovimento findUniqueOrThrow
+   */
+  export type LeadFunilMovimentoFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunilMovimento
+     */
+    select?: LeadFunilMovimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunilMovimento
+     */
+    omit?: LeadFunilMovimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilMovimentoInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadFunilMovimento to fetch.
+     */
+    where: LeadFunilMovimentoWhereUniqueInput
+  }
+
+  /**
+   * LeadFunilMovimento findFirst
+   */
+  export type LeadFunilMovimentoFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunilMovimento
+     */
+    select?: LeadFunilMovimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunilMovimento
+     */
+    omit?: LeadFunilMovimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilMovimentoInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadFunilMovimento to fetch.
+     */
+    where?: LeadFunilMovimentoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadFunilMovimentos to fetch.
+     */
+    orderBy?: LeadFunilMovimentoOrderByWithRelationInput | LeadFunilMovimentoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadFunilMovimentos.
+     */
+    cursor?: LeadFunilMovimentoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadFunilMovimentos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadFunilMovimentos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadFunilMovimentos.
+     */
+    distinct?: LeadFunilMovimentoScalarFieldEnum | LeadFunilMovimentoScalarFieldEnum[]
+  }
+
+  /**
+   * LeadFunilMovimento findFirstOrThrow
+   */
+  export type LeadFunilMovimentoFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunilMovimento
+     */
+    select?: LeadFunilMovimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunilMovimento
+     */
+    omit?: LeadFunilMovimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilMovimentoInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadFunilMovimento to fetch.
+     */
+    where?: LeadFunilMovimentoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadFunilMovimentos to fetch.
+     */
+    orderBy?: LeadFunilMovimentoOrderByWithRelationInput | LeadFunilMovimentoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeadFunilMovimentos.
+     */
+    cursor?: LeadFunilMovimentoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadFunilMovimentos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadFunilMovimentos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeadFunilMovimentos.
+     */
+    distinct?: LeadFunilMovimentoScalarFieldEnum | LeadFunilMovimentoScalarFieldEnum[]
+  }
+
+  /**
+   * LeadFunilMovimento findMany
+   */
+  export type LeadFunilMovimentoFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunilMovimento
+     */
+    select?: LeadFunilMovimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunilMovimento
+     */
+    omit?: LeadFunilMovimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilMovimentoInclude<ExtArgs> | null
+    /**
+     * Filter, which LeadFunilMovimentos to fetch.
+     */
+    where?: LeadFunilMovimentoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeadFunilMovimentos to fetch.
+     */
+    orderBy?: LeadFunilMovimentoOrderByWithRelationInput | LeadFunilMovimentoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LeadFunilMovimentos.
+     */
+    cursor?: LeadFunilMovimentoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeadFunilMovimentos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeadFunilMovimentos.
+     */
+    skip?: number
+    distinct?: LeadFunilMovimentoScalarFieldEnum | LeadFunilMovimentoScalarFieldEnum[]
+  }
+
+  /**
+   * LeadFunilMovimento create
+   */
+  export type LeadFunilMovimentoCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunilMovimento
+     */
+    select?: LeadFunilMovimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunilMovimento
+     */
+    omit?: LeadFunilMovimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilMovimentoInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LeadFunilMovimento.
+     */
+    data: XOR<LeadFunilMovimentoCreateInput, LeadFunilMovimentoUncheckedCreateInput>
+  }
+
+  /**
+   * LeadFunilMovimento createMany
+   */
+  export type LeadFunilMovimentoCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LeadFunilMovimentos.
+     */
+    data: LeadFunilMovimentoCreateManyInput | LeadFunilMovimentoCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LeadFunilMovimento createManyAndReturn
+   */
+  export type LeadFunilMovimentoCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunilMovimento
+     */
+    select?: LeadFunilMovimentoSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunilMovimento
+     */
+    omit?: LeadFunilMovimentoOmit<ExtArgs> | null
+    /**
+     * The data used to create many LeadFunilMovimentos.
+     */
+    data: LeadFunilMovimentoCreateManyInput | LeadFunilMovimentoCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilMovimentoIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LeadFunilMovimento update
+   */
+  export type LeadFunilMovimentoUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunilMovimento
+     */
+    select?: LeadFunilMovimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunilMovimento
+     */
+    omit?: LeadFunilMovimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilMovimentoInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LeadFunilMovimento.
+     */
+    data: XOR<LeadFunilMovimentoUpdateInput, LeadFunilMovimentoUncheckedUpdateInput>
+    /**
+     * Choose, which LeadFunilMovimento to update.
+     */
+    where: LeadFunilMovimentoWhereUniqueInput
+  }
+
+  /**
+   * LeadFunilMovimento updateMany
+   */
+  export type LeadFunilMovimentoUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LeadFunilMovimentos.
+     */
+    data: XOR<LeadFunilMovimentoUpdateManyMutationInput, LeadFunilMovimentoUncheckedUpdateManyInput>
+    /**
+     * Filter which LeadFunilMovimentos to update
+     */
+    where?: LeadFunilMovimentoWhereInput
+    /**
+     * Limit how many LeadFunilMovimentos to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * LeadFunilMovimento updateManyAndReturn
+   */
+  export type LeadFunilMovimentoUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunilMovimento
+     */
+    select?: LeadFunilMovimentoSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunilMovimento
+     */
+    omit?: LeadFunilMovimentoOmit<ExtArgs> | null
+    /**
+     * The data used to update LeadFunilMovimentos.
+     */
+    data: XOR<LeadFunilMovimentoUpdateManyMutationInput, LeadFunilMovimentoUncheckedUpdateManyInput>
+    /**
+     * Filter which LeadFunilMovimentos to update
+     */
+    where?: LeadFunilMovimentoWhereInput
+    /**
+     * Limit how many LeadFunilMovimentos to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilMovimentoIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LeadFunilMovimento upsert
+   */
+  export type LeadFunilMovimentoUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunilMovimento
+     */
+    select?: LeadFunilMovimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunilMovimento
+     */
+    omit?: LeadFunilMovimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilMovimentoInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LeadFunilMovimento to update in case it exists.
+     */
+    where: LeadFunilMovimentoWhereUniqueInput
+    /**
+     * In case the LeadFunilMovimento found by the `where` argument doesn't exist, create a new LeadFunilMovimento with this data.
+     */
+    create: XOR<LeadFunilMovimentoCreateInput, LeadFunilMovimentoUncheckedCreateInput>
+    /**
+     * In case the LeadFunilMovimento was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LeadFunilMovimentoUpdateInput, LeadFunilMovimentoUncheckedUpdateInput>
+  }
+
+  /**
+   * LeadFunilMovimento delete
+   */
+  export type LeadFunilMovimentoDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunilMovimento
+     */
+    select?: LeadFunilMovimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunilMovimento
+     */
+    omit?: LeadFunilMovimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilMovimentoInclude<ExtArgs> | null
+    /**
+     * Filter which LeadFunilMovimento to delete.
+     */
+    where: LeadFunilMovimentoWhereUniqueInput
+  }
+
+  /**
+   * LeadFunilMovimento deleteMany
+   */
+  export type LeadFunilMovimentoDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeadFunilMovimentos to delete
+     */
+    where?: LeadFunilMovimentoWhereInput
+    /**
+     * Limit how many LeadFunilMovimentos to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * LeadFunilMovimento without action
+   */
+  export type LeadFunilMovimentoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadFunilMovimento
+     */
+    select?: LeadFunilMovimentoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadFunilMovimento
+     */
+    omit?: LeadFunilMovimentoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadFunilMovimentoInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model FollowUpBot
    */
 
@@ -55160,6 +60266,61 @@ export namespace Prisma {
   export type AtendimentoTransferenciaScalarFieldEnum = (typeof AtendimentoTransferenciaScalarFieldEnum)[keyof typeof AtendimentoTransferenciaScalarFieldEnum]
 
 
+  export const FunilScalarFieldEnum: {
+    id: 'id',
+    workspaceId: 'workspaceId',
+    nome: 'nome',
+    descricao: 'descricao',
+    ativo: 'ativo',
+    ordem: 'ordem',
+    criadoEm: 'criadoEm',
+    atualizadoEm: 'atualizadoEm'
+  };
+
+  export type FunilScalarFieldEnum = (typeof FunilScalarFieldEnum)[keyof typeof FunilScalarFieldEnum]
+
+
+  export const FunilEtapaScalarFieldEnum: {
+    id: 'id',
+    funilId: 'funilId',
+    nome: 'nome',
+    cor: 'cor',
+    tipo: 'tipo',
+    ordem: 'ordem',
+    criadoEm: 'criadoEm',
+    atualizadoEm: 'atualizadoEm'
+  };
+
+  export type FunilEtapaScalarFieldEnum = (typeof FunilEtapaScalarFieldEnum)[keyof typeof FunilEtapaScalarFieldEnum]
+
+
+  export const LeadFunilScalarFieldEnum: {
+    id: 'id',
+    leadId: 'leadId',
+    funilId: 'funilId',
+    etapaId: 'etapaId',
+    valor: 'valor',
+    movidoEm: 'movidoEm',
+    criadoEm: 'criadoEm',
+    atualizadoEm: 'atualizadoEm'
+  };
+
+  export type LeadFunilScalarFieldEnum = (typeof LeadFunilScalarFieldEnum)[keyof typeof LeadFunilScalarFieldEnum]
+
+
+  export const LeadFunilMovimentoScalarFieldEnum: {
+    id: 'id',
+    leadId: 'leadId',
+    funil: 'funil',
+    deEtapa: 'deEtapa',
+    paraEtapa: 'paraEtapa',
+    porUsuario: 'porUsuario',
+    data: 'data'
+  };
+
+  export type LeadFunilMovimentoScalarFieldEnum = (typeof LeadFunilMovimentoScalarFieldEnum)[keyof typeof LeadFunilMovimentoScalarFieldEnum]
+
+
   export const FollowUpBotScalarFieldEnum: {
     id: 'id',
     workspaceId: 'workspaceId',
@@ -55556,6 +60717,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'FunilEtapaTipo'
+   */
+  export type EnumFunilEtapaTipoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FunilEtapaTipo'>
+    
+
+
+  /**
+   * Reference to a field of type 'FunilEtapaTipo[]'
+   */
+  export type ListEnumFunilEtapaTipoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FunilEtapaTipo[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -55601,6 +60776,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageListRelationFilter
     notasInternas?: ChatInternalNoteListRelationFilter
     tagsChat?: ChatTagLeadListRelationFilter
+    funis?: LeadFunilListRelationFilter
+    movimentosFunil?: LeadFunilMovimentoListRelationFilter
     atendimento?: XOR<LeadAtendimentoNullableScalarRelationFilter, LeadAtendimentoWhereInput> | null
     transferencias?: AtendimentoTransferenciaListRelationFilter
     botConversa?: XOR<BotConversaNullableScalarRelationFilter, BotConversaWhereInput> | null
@@ -55633,6 +60810,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageOrderByRelationAggregateInput
     notasInternas?: ChatInternalNoteOrderByRelationAggregateInput
     tagsChat?: ChatTagLeadOrderByRelationAggregateInput
+    funis?: LeadFunilOrderByRelationAggregateInput
+    movimentosFunil?: LeadFunilMovimentoOrderByRelationAggregateInput
     atendimento?: LeadAtendimentoOrderByWithRelationInput
     transferencias?: AtendimentoTransferenciaOrderByRelationAggregateInput
     botConversa?: BotConversaOrderByWithRelationInput
@@ -55668,6 +60847,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageListRelationFilter
     notasInternas?: ChatInternalNoteListRelationFilter
     tagsChat?: ChatTagLeadListRelationFilter
+    funis?: LeadFunilListRelationFilter
+    movimentosFunil?: LeadFunilMovimentoListRelationFilter
     atendimento?: XOR<LeadAtendimentoNullableScalarRelationFilter, LeadAtendimentoWhereInput> | null
     transferencias?: AtendimentoTransferenciaListRelationFilter
     botConversa?: XOR<BotConversaNullableScalarRelationFilter, BotConversaWhereInput> | null
@@ -58215,6 +63396,301 @@ export namespace Prisma {
     data?: DateTimeWithAggregatesFilter<"AtendimentoTransferencia"> | Date | string
   }
 
+  export type FunilWhereInput = {
+    AND?: FunilWhereInput | FunilWhereInput[]
+    OR?: FunilWhereInput[]
+    NOT?: FunilWhereInput | FunilWhereInput[]
+    id?: StringFilter<"Funil"> | string
+    workspaceId?: StringFilter<"Funil"> | string
+    nome?: StringFilter<"Funil"> | string
+    descricao?: StringNullableFilter<"Funil"> | string | null
+    ativo?: BoolFilter<"Funil"> | boolean
+    ordem?: IntFilter<"Funil"> | number
+    criadoEm?: DateTimeFilter<"Funil"> | Date | string
+    atualizadoEm?: DateTimeFilter<"Funil"> | Date | string
+    etapas?: FunilEtapaListRelationFilter
+    leads?: LeadFunilListRelationFilter
+  }
+
+  export type FunilOrderByWithRelationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    descricao?: SortOrderInput | SortOrder
+    ativo?: SortOrder
+    ordem?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    etapas?: FunilEtapaOrderByRelationAggregateInput
+    leads?: LeadFunilOrderByRelationAggregateInput
+  }
+
+  export type FunilWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    workspaceId_nome?: FunilWorkspaceIdNomeCompoundUniqueInput
+    AND?: FunilWhereInput | FunilWhereInput[]
+    OR?: FunilWhereInput[]
+    NOT?: FunilWhereInput | FunilWhereInput[]
+    workspaceId?: StringFilter<"Funil"> | string
+    nome?: StringFilter<"Funil"> | string
+    descricao?: StringNullableFilter<"Funil"> | string | null
+    ativo?: BoolFilter<"Funil"> | boolean
+    ordem?: IntFilter<"Funil"> | number
+    criadoEm?: DateTimeFilter<"Funil"> | Date | string
+    atualizadoEm?: DateTimeFilter<"Funil"> | Date | string
+    etapas?: FunilEtapaListRelationFilter
+    leads?: LeadFunilListRelationFilter
+  }, "id" | "workspaceId_nome">
+
+  export type FunilOrderByWithAggregationInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    descricao?: SortOrderInput | SortOrder
+    ativo?: SortOrder
+    ordem?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    _count?: FunilCountOrderByAggregateInput
+    _avg?: FunilAvgOrderByAggregateInput
+    _max?: FunilMaxOrderByAggregateInput
+    _min?: FunilMinOrderByAggregateInput
+    _sum?: FunilSumOrderByAggregateInput
+  }
+
+  export type FunilScalarWhereWithAggregatesInput = {
+    AND?: FunilScalarWhereWithAggregatesInput | FunilScalarWhereWithAggregatesInput[]
+    OR?: FunilScalarWhereWithAggregatesInput[]
+    NOT?: FunilScalarWhereWithAggregatesInput | FunilScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Funil"> | string
+    workspaceId?: StringWithAggregatesFilter<"Funil"> | string
+    nome?: StringWithAggregatesFilter<"Funil"> | string
+    descricao?: StringNullableWithAggregatesFilter<"Funil"> | string | null
+    ativo?: BoolWithAggregatesFilter<"Funil"> | boolean
+    ordem?: IntWithAggregatesFilter<"Funil"> | number
+    criadoEm?: DateTimeWithAggregatesFilter<"Funil"> | Date | string
+    atualizadoEm?: DateTimeWithAggregatesFilter<"Funil"> | Date | string
+  }
+
+  export type FunilEtapaWhereInput = {
+    AND?: FunilEtapaWhereInput | FunilEtapaWhereInput[]
+    OR?: FunilEtapaWhereInput[]
+    NOT?: FunilEtapaWhereInput | FunilEtapaWhereInput[]
+    id?: StringFilter<"FunilEtapa"> | string
+    funilId?: StringFilter<"FunilEtapa"> | string
+    nome?: StringFilter<"FunilEtapa"> | string
+    cor?: StringFilter<"FunilEtapa"> | string
+    tipo?: EnumFunilEtapaTipoFilter<"FunilEtapa"> | $Enums.FunilEtapaTipo
+    ordem?: IntFilter<"FunilEtapa"> | number
+    criadoEm?: DateTimeFilter<"FunilEtapa"> | Date | string
+    atualizadoEm?: DateTimeFilter<"FunilEtapa"> | Date | string
+    funil?: XOR<FunilScalarRelationFilter, FunilWhereInput>
+    leads?: LeadFunilListRelationFilter
+  }
+
+  export type FunilEtapaOrderByWithRelationInput = {
+    id?: SortOrder
+    funilId?: SortOrder
+    nome?: SortOrder
+    cor?: SortOrder
+    tipo?: SortOrder
+    ordem?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    funil?: FunilOrderByWithRelationInput
+    leads?: LeadFunilOrderByRelationAggregateInput
+  }
+
+  export type FunilEtapaWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: FunilEtapaWhereInput | FunilEtapaWhereInput[]
+    OR?: FunilEtapaWhereInput[]
+    NOT?: FunilEtapaWhereInput | FunilEtapaWhereInput[]
+    funilId?: StringFilter<"FunilEtapa"> | string
+    nome?: StringFilter<"FunilEtapa"> | string
+    cor?: StringFilter<"FunilEtapa"> | string
+    tipo?: EnumFunilEtapaTipoFilter<"FunilEtapa"> | $Enums.FunilEtapaTipo
+    ordem?: IntFilter<"FunilEtapa"> | number
+    criadoEm?: DateTimeFilter<"FunilEtapa"> | Date | string
+    atualizadoEm?: DateTimeFilter<"FunilEtapa"> | Date | string
+    funil?: XOR<FunilScalarRelationFilter, FunilWhereInput>
+    leads?: LeadFunilListRelationFilter
+  }, "id">
+
+  export type FunilEtapaOrderByWithAggregationInput = {
+    id?: SortOrder
+    funilId?: SortOrder
+    nome?: SortOrder
+    cor?: SortOrder
+    tipo?: SortOrder
+    ordem?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    _count?: FunilEtapaCountOrderByAggregateInput
+    _avg?: FunilEtapaAvgOrderByAggregateInput
+    _max?: FunilEtapaMaxOrderByAggregateInput
+    _min?: FunilEtapaMinOrderByAggregateInput
+    _sum?: FunilEtapaSumOrderByAggregateInput
+  }
+
+  export type FunilEtapaScalarWhereWithAggregatesInput = {
+    AND?: FunilEtapaScalarWhereWithAggregatesInput | FunilEtapaScalarWhereWithAggregatesInput[]
+    OR?: FunilEtapaScalarWhereWithAggregatesInput[]
+    NOT?: FunilEtapaScalarWhereWithAggregatesInput | FunilEtapaScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"FunilEtapa"> | string
+    funilId?: StringWithAggregatesFilter<"FunilEtapa"> | string
+    nome?: StringWithAggregatesFilter<"FunilEtapa"> | string
+    cor?: StringWithAggregatesFilter<"FunilEtapa"> | string
+    tipo?: EnumFunilEtapaTipoWithAggregatesFilter<"FunilEtapa"> | $Enums.FunilEtapaTipo
+    ordem?: IntWithAggregatesFilter<"FunilEtapa"> | number
+    criadoEm?: DateTimeWithAggregatesFilter<"FunilEtapa"> | Date | string
+    atualizadoEm?: DateTimeWithAggregatesFilter<"FunilEtapa"> | Date | string
+  }
+
+  export type LeadFunilWhereInput = {
+    AND?: LeadFunilWhereInput | LeadFunilWhereInput[]
+    OR?: LeadFunilWhereInput[]
+    NOT?: LeadFunilWhereInput | LeadFunilWhereInput[]
+    id?: StringFilter<"LeadFunil"> | string
+    leadId?: StringFilter<"LeadFunil"> | string
+    funilId?: StringFilter<"LeadFunil"> | string
+    etapaId?: StringFilter<"LeadFunil"> | string
+    valor?: FloatNullableFilter<"LeadFunil"> | number | null
+    movidoEm?: DateTimeFilter<"LeadFunil"> | Date | string
+    criadoEm?: DateTimeFilter<"LeadFunil"> | Date | string
+    atualizadoEm?: DateTimeFilter<"LeadFunil"> | Date | string
+    lead?: XOR<LeadScalarRelationFilter, LeadWhereInput>
+    funil?: XOR<FunilScalarRelationFilter, FunilWhereInput>
+    etapa?: XOR<FunilEtapaScalarRelationFilter, FunilEtapaWhereInput>
+  }
+
+  export type LeadFunilOrderByWithRelationInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    funilId?: SortOrder
+    etapaId?: SortOrder
+    valor?: SortOrderInput | SortOrder
+    movidoEm?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    lead?: LeadOrderByWithRelationInput
+    funil?: FunilOrderByWithRelationInput
+    etapa?: FunilEtapaOrderByWithRelationInput
+  }
+
+  export type LeadFunilWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    leadId_funilId?: LeadFunilLeadIdFunilIdCompoundUniqueInput
+    AND?: LeadFunilWhereInput | LeadFunilWhereInput[]
+    OR?: LeadFunilWhereInput[]
+    NOT?: LeadFunilWhereInput | LeadFunilWhereInput[]
+    leadId?: StringFilter<"LeadFunil"> | string
+    funilId?: StringFilter<"LeadFunil"> | string
+    etapaId?: StringFilter<"LeadFunil"> | string
+    valor?: FloatNullableFilter<"LeadFunil"> | number | null
+    movidoEm?: DateTimeFilter<"LeadFunil"> | Date | string
+    criadoEm?: DateTimeFilter<"LeadFunil"> | Date | string
+    atualizadoEm?: DateTimeFilter<"LeadFunil"> | Date | string
+    lead?: XOR<LeadScalarRelationFilter, LeadWhereInput>
+    funil?: XOR<FunilScalarRelationFilter, FunilWhereInput>
+    etapa?: XOR<FunilEtapaScalarRelationFilter, FunilEtapaWhereInput>
+  }, "id" | "leadId_funilId">
+
+  export type LeadFunilOrderByWithAggregationInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    funilId?: SortOrder
+    etapaId?: SortOrder
+    valor?: SortOrderInput | SortOrder
+    movidoEm?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+    _count?: LeadFunilCountOrderByAggregateInput
+    _avg?: LeadFunilAvgOrderByAggregateInput
+    _max?: LeadFunilMaxOrderByAggregateInput
+    _min?: LeadFunilMinOrderByAggregateInput
+    _sum?: LeadFunilSumOrderByAggregateInput
+  }
+
+  export type LeadFunilScalarWhereWithAggregatesInput = {
+    AND?: LeadFunilScalarWhereWithAggregatesInput | LeadFunilScalarWhereWithAggregatesInput[]
+    OR?: LeadFunilScalarWhereWithAggregatesInput[]
+    NOT?: LeadFunilScalarWhereWithAggregatesInput | LeadFunilScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LeadFunil"> | string
+    leadId?: StringWithAggregatesFilter<"LeadFunil"> | string
+    funilId?: StringWithAggregatesFilter<"LeadFunil"> | string
+    etapaId?: StringWithAggregatesFilter<"LeadFunil"> | string
+    valor?: FloatNullableWithAggregatesFilter<"LeadFunil"> | number | null
+    movidoEm?: DateTimeWithAggregatesFilter<"LeadFunil"> | Date | string
+    criadoEm?: DateTimeWithAggregatesFilter<"LeadFunil"> | Date | string
+    atualizadoEm?: DateTimeWithAggregatesFilter<"LeadFunil"> | Date | string
+  }
+
+  export type LeadFunilMovimentoWhereInput = {
+    AND?: LeadFunilMovimentoWhereInput | LeadFunilMovimentoWhereInput[]
+    OR?: LeadFunilMovimentoWhereInput[]
+    NOT?: LeadFunilMovimentoWhereInput | LeadFunilMovimentoWhereInput[]
+    id?: StringFilter<"LeadFunilMovimento"> | string
+    leadId?: StringFilter<"LeadFunilMovimento"> | string
+    funil?: StringFilter<"LeadFunilMovimento"> | string
+    deEtapa?: StringNullableFilter<"LeadFunilMovimento"> | string | null
+    paraEtapa?: StringNullableFilter<"LeadFunilMovimento"> | string | null
+    porUsuario?: StringFilter<"LeadFunilMovimento"> | string
+    data?: DateTimeFilter<"LeadFunilMovimento"> | Date | string
+    lead?: XOR<LeadScalarRelationFilter, LeadWhereInput>
+  }
+
+  export type LeadFunilMovimentoOrderByWithRelationInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    funil?: SortOrder
+    deEtapa?: SortOrderInput | SortOrder
+    paraEtapa?: SortOrderInput | SortOrder
+    porUsuario?: SortOrder
+    data?: SortOrder
+    lead?: LeadOrderByWithRelationInput
+  }
+
+  export type LeadFunilMovimentoWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: LeadFunilMovimentoWhereInput | LeadFunilMovimentoWhereInput[]
+    OR?: LeadFunilMovimentoWhereInput[]
+    NOT?: LeadFunilMovimentoWhereInput | LeadFunilMovimentoWhereInput[]
+    leadId?: StringFilter<"LeadFunilMovimento"> | string
+    funil?: StringFilter<"LeadFunilMovimento"> | string
+    deEtapa?: StringNullableFilter<"LeadFunilMovimento"> | string | null
+    paraEtapa?: StringNullableFilter<"LeadFunilMovimento"> | string | null
+    porUsuario?: StringFilter<"LeadFunilMovimento"> | string
+    data?: DateTimeFilter<"LeadFunilMovimento"> | Date | string
+    lead?: XOR<LeadScalarRelationFilter, LeadWhereInput>
+  }, "id">
+
+  export type LeadFunilMovimentoOrderByWithAggregationInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    funil?: SortOrder
+    deEtapa?: SortOrderInput | SortOrder
+    paraEtapa?: SortOrderInput | SortOrder
+    porUsuario?: SortOrder
+    data?: SortOrder
+    _count?: LeadFunilMovimentoCountOrderByAggregateInput
+    _max?: LeadFunilMovimentoMaxOrderByAggregateInput
+    _min?: LeadFunilMovimentoMinOrderByAggregateInput
+  }
+
+  export type LeadFunilMovimentoScalarWhereWithAggregatesInput = {
+    AND?: LeadFunilMovimentoScalarWhereWithAggregatesInput | LeadFunilMovimentoScalarWhereWithAggregatesInput[]
+    OR?: LeadFunilMovimentoScalarWhereWithAggregatesInput[]
+    NOT?: LeadFunilMovimentoScalarWhereWithAggregatesInput | LeadFunilMovimentoScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LeadFunilMovimento"> | string
+    leadId?: StringWithAggregatesFilter<"LeadFunilMovimento"> | string
+    funil?: StringWithAggregatesFilter<"LeadFunilMovimento"> | string
+    deEtapa?: StringNullableWithAggregatesFilter<"LeadFunilMovimento"> | string | null
+    paraEtapa?: StringNullableWithAggregatesFilter<"LeadFunilMovimento"> | string | null
+    porUsuario?: StringWithAggregatesFilter<"LeadFunilMovimento"> | string
+    data?: DateTimeWithAggregatesFilter<"LeadFunilMovimento"> | Date | string
+  }
+
   export type FollowUpBotWhereInput = {
     AND?: FollowUpBotWhereInput | FollowUpBotWhereInput[]
     OR?: FollowUpBotWhereInput[]
@@ -59105,6 +64581,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
@@ -59136,6 +64614,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilUncheckedCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -59167,6 +64647,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
@@ -59198,6 +64680,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUncheckedUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -62048,6 +67532,314 @@ export namespace Prisma {
     data?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type FunilCreateInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    ordem?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    etapas?: FunilEtapaCreateNestedManyWithoutFunilInput
+    leads?: LeadFunilCreateNestedManyWithoutFunilInput
+  }
+
+  export type FunilUncheckedCreateInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    ordem?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    etapas?: FunilEtapaUncheckedCreateNestedManyWithoutFunilInput
+    leads?: LeadFunilUncheckedCreateNestedManyWithoutFunilInput
+  }
+
+  export type FunilUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    etapas?: FunilEtapaUpdateManyWithoutFunilNestedInput
+    leads?: LeadFunilUpdateManyWithoutFunilNestedInput
+  }
+
+  export type FunilUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    etapas?: FunilEtapaUncheckedUpdateManyWithoutFunilNestedInput
+    leads?: LeadFunilUncheckedUpdateManyWithoutFunilNestedInput
+  }
+
+  export type FunilCreateManyInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    ordem?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type FunilUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FunilUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FunilEtapaCreateInput = {
+    id?: string
+    nome: string
+    cor?: string
+    tipo?: $Enums.FunilEtapaTipo
+    ordem?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    funil: FunilCreateNestedOneWithoutEtapasInput
+    leads?: LeadFunilCreateNestedManyWithoutEtapaInput
+  }
+
+  export type FunilEtapaUncheckedCreateInput = {
+    id?: string
+    funilId: string
+    nome: string
+    cor?: string
+    tipo?: $Enums.FunilEtapaTipo
+    ordem?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    leads?: LeadFunilUncheckedCreateNestedManyWithoutEtapaInput
+  }
+
+  export type FunilEtapaUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    cor?: StringFieldUpdateOperationsInput | string
+    tipo?: EnumFunilEtapaTipoFieldUpdateOperationsInput | $Enums.FunilEtapaTipo
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    funil?: FunilUpdateOneRequiredWithoutEtapasNestedInput
+    leads?: LeadFunilUpdateManyWithoutEtapaNestedInput
+  }
+
+  export type FunilEtapaUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    funilId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    cor?: StringFieldUpdateOperationsInput | string
+    tipo?: EnumFunilEtapaTipoFieldUpdateOperationsInput | $Enums.FunilEtapaTipo
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    leads?: LeadFunilUncheckedUpdateManyWithoutEtapaNestedInput
+  }
+
+  export type FunilEtapaCreateManyInput = {
+    id?: string
+    funilId: string
+    nome: string
+    cor?: string
+    tipo?: $Enums.FunilEtapaTipo
+    ordem?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type FunilEtapaUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    cor?: StringFieldUpdateOperationsInput | string
+    tipo?: EnumFunilEtapaTipoFieldUpdateOperationsInput | $Enums.FunilEtapaTipo
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FunilEtapaUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    funilId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    cor?: StringFieldUpdateOperationsInput | string
+    tipo?: EnumFunilEtapaTipoFieldUpdateOperationsInput | $Enums.FunilEtapaTipo
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadFunilCreateInput = {
+    id?: string
+    valor?: number | null
+    movidoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    lead: LeadCreateNestedOneWithoutFunisInput
+    funil: FunilCreateNestedOneWithoutLeadsInput
+    etapa: FunilEtapaCreateNestedOneWithoutLeadsInput
+  }
+
+  export type LeadFunilUncheckedCreateInput = {
+    id?: string
+    leadId: string
+    funilId: string
+    etapaId: string
+    valor?: number | null
+    movidoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type LeadFunilUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    valor?: NullableFloatFieldUpdateOperationsInput | number | null
+    movidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    lead?: LeadUpdateOneRequiredWithoutFunisNestedInput
+    funil?: FunilUpdateOneRequiredWithoutLeadsNestedInput
+    etapa?: FunilEtapaUpdateOneRequiredWithoutLeadsNestedInput
+  }
+
+  export type LeadFunilUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    funilId?: StringFieldUpdateOperationsInput | string
+    etapaId?: StringFieldUpdateOperationsInput | string
+    valor?: NullableFloatFieldUpdateOperationsInput | number | null
+    movidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadFunilCreateManyInput = {
+    id?: string
+    leadId: string
+    funilId: string
+    etapaId: string
+    valor?: number | null
+    movidoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type LeadFunilUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    valor?: NullableFloatFieldUpdateOperationsInput | number | null
+    movidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadFunilUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    funilId?: StringFieldUpdateOperationsInput | string
+    etapaId?: StringFieldUpdateOperationsInput | string
+    valor?: NullableFloatFieldUpdateOperationsInput | number | null
+    movidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadFunilMovimentoCreateInput = {
+    id?: string
+    funil: string
+    deEtapa?: string | null
+    paraEtapa?: string | null
+    porUsuario: string
+    data?: Date | string
+    lead: LeadCreateNestedOneWithoutMovimentosFunilInput
+  }
+
+  export type LeadFunilMovimentoUncheckedCreateInput = {
+    id?: string
+    leadId: string
+    funil: string
+    deEtapa?: string | null
+    paraEtapa?: string | null
+    porUsuario: string
+    data?: Date | string
+  }
+
+  export type LeadFunilMovimentoUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    funil?: StringFieldUpdateOperationsInput | string
+    deEtapa?: NullableStringFieldUpdateOperationsInput | string | null
+    paraEtapa?: NullableStringFieldUpdateOperationsInput | string | null
+    porUsuario?: StringFieldUpdateOperationsInput | string
+    data?: DateTimeFieldUpdateOperationsInput | Date | string
+    lead?: LeadUpdateOneRequiredWithoutMovimentosFunilNestedInput
+  }
+
+  export type LeadFunilMovimentoUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    funil?: StringFieldUpdateOperationsInput | string
+    deEtapa?: NullableStringFieldUpdateOperationsInput | string | null
+    paraEtapa?: NullableStringFieldUpdateOperationsInput | string | null
+    porUsuario?: StringFieldUpdateOperationsInput | string
+    data?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadFunilMovimentoCreateManyInput = {
+    id?: string
+    leadId: string
+    funil: string
+    deEtapa?: string | null
+    paraEtapa?: string | null
+    porUsuario: string
+    data?: Date | string
+  }
+
+  export type LeadFunilMovimentoUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    funil?: StringFieldUpdateOperationsInput | string
+    deEtapa?: NullableStringFieldUpdateOperationsInput | string | null
+    paraEtapa?: NullableStringFieldUpdateOperationsInput | string | null
+    porUsuario?: StringFieldUpdateOperationsInput | string
+    data?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadFunilMovimentoUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    funil?: StringFieldUpdateOperationsInput | string
+    deEtapa?: NullableStringFieldUpdateOperationsInput | string | null
+    paraEtapa?: NullableStringFieldUpdateOperationsInput | string | null
+    porUsuario?: StringFieldUpdateOperationsInput | string
+    data?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type FollowUpBotCreateInput = {
     id?: string
     workspaceId: string
@@ -63134,6 +68926,18 @@ export namespace Prisma {
     none?: ChatTagLeadWhereInput
   }
 
+  export type LeadFunilListRelationFilter = {
+    every?: LeadFunilWhereInput
+    some?: LeadFunilWhereInput
+    none?: LeadFunilWhereInput
+  }
+
+  export type LeadFunilMovimentoListRelationFilter = {
+    every?: LeadFunilMovimentoWhereInput
+    some?: LeadFunilMovimentoWhereInput
+    none?: LeadFunilMovimentoWhereInput
+  }
+
   export type LeadAtendimentoNullableScalarRelationFilter = {
     is?: LeadAtendimentoWhereInput | null
     isNot?: LeadAtendimentoWhereInput | null
@@ -63177,6 +68981,14 @@ export namespace Prisma {
   }
 
   export type ChatTagLeadOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LeadFunilOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LeadFunilMovimentoOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -65077,6 +70889,233 @@ export namespace Prisma {
     data?: SortOrder
   }
 
+  export type FunilEtapaListRelationFilter = {
+    every?: FunilEtapaWhereInput
+    some?: FunilEtapaWhereInput
+    none?: FunilEtapaWhereInput
+  }
+
+  export type FunilEtapaOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type FunilWorkspaceIdNomeCompoundUniqueInput = {
+    workspaceId: string
+    nome: string
+  }
+
+  export type FunilCountOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    descricao?: SortOrder
+    ativo?: SortOrder
+    ordem?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type FunilAvgOrderByAggregateInput = {
+    ordem?: SortOrder
+  }
+
+  export type FunilMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    descricao?: SortOrder
+    ativo?: SortOrder
+    ordem?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type FunilMinOrderByAggregateInput = {
+    id?: SortOrder
+    workspaceId?: SortOrder
+    nome?: SortOrder
+    descricao?: SortOrder
+    ativo?: SortOrder
+    ordem?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type FunilSumOrderByAggregateInput = {
+    ordem?: SortOrder
+  }
+
+  export type EnumFunilEtapaTipoFilter<$PrismaModel = never> = {
+    equals?: $Enums.FunilEtapaTipo | EnumFunilEtapaTipoFieldRefInput<$PrismaModel>
+    in?: $Enums.FunilEtapaTipo[] | ListEnumFunilEtapaTipoFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FunilEtapaTipo[] | ListEnumFunilEtapaTipoFieldRefInput<$PrismaModel>
+    not?: NestedEnumFunilEtapaTipoFilter<$PrismaModel> | $Enums.FunilEtapaTipo
+  }
+
+  export type FunilScalarRelationFilter = {
+    is?: FunilWhereInput
+    isNot?: FunilWhereInput
+  }
+
+  export type FunilEtapaCountOrderByAggregateInput = {
+    id?: SortOrder
+    funilId?: SortOrder
+    nome?: SortOrder
+    cor?: SortOrder
+    tipo?: SortOrder
+    ordem?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type FunilEtapaAvgOrderByAggregateInput = {
+    ordem?: SortOrder
+  }
+
+  export type FunilEtapaMaxOrderByAggregateInput = {
+    id?: SortOrder
+    funilId?: SortOrder
+    nome?: SortOrder
+    cor?: SortOrder
+    tipo?: SortOrder
+    ordem?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type FunilEtapaMinOrderByAggregateInput = {
+    id?: SortOrder
+    funilId?: SortOrder
+    nome?: SortOrder
+    cor?: SortOrder
+    tipo?: SortOrder
+    ordem?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type FunilEtapaSumOrderByAggregateInput = {
+    ordem?: SortOrder
+  }
+
+  export type EnumFunilEtapaTipoWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FunilEtapaTipo | EnumFunilEtapaTipoFieldRefInput<$PrismaModel>
+    in?: $Enums.FunilEtapaTipo[] | ListEnumFunilEtapaTipoFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FunilEtapaTipo[] | ListEnumFunilEtapaTipoFieldRefInput<$PrismaModel>
+    not?: NestedEnumFunilEtapaTipoWithAggregatesFilter<$PrismaModel> | $Enums.FunilEtapaTipo
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFunilEtapaTipoFilter<$PrismaModel>
+    _max?: NestedEnumFunilEtapaTipoFilter<$PrismaModel>
+  }
+
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type FunilEtapaScalarRelationFilter = {
+    is?: FunilEtapaWhereInput
+    isNot?: FunilEtapaWhereInput
+  }
+
+  export type LeadFunilLeadIdFunilIdCompoundUniqueInput = {
+    leadId: string
+    funilId: string
+  }
+
+  export type LeadFunilCountOrderByAggregateInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    funilId?: SortOrder
+    etapaId?: SortOrder
+    valor?: SortOrder
+    movidoEm?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type LeadFunilAvgOrderByAggregateInput = {
+    valor?: SortOrder
+  }
+
+  export type LeadFunilMaxOrderByAggregateInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    funilId?: SortOrder
+    etapaId?: SortOrder
+    valor?: SortOrder
+    movidoEm?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type LeadFunilMinOrderByAggregateInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    funilId?: SortOrder
+    etapaId?: SortOrder
+    valor?: SortOrder
+    movidoEm?: SortOrder
+    criadoEm?: SortOrder
+    atualizadoEm?: SortOrder
+  }
+
+  export type LeadFunilSumOrderByAggregateInput = {
+    valor?: SortOrder
+  }
+
+  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
+  export type LeadFunilMovimentoCountOrderByAggregateInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    funil?: SortOrder
+    deEtapa?: SortOrder
+    paraEtapa?: SortOrder
+    porUsuario?: SortOrder
+    data?: SortOrder
+  }
+
+  export type LeadFunilMovimentoMaxOrderByAggregateInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    funil?: SortOrder
+    deEtapa?: SortOrder
+    paraEtapa?: SortOrder
+    porUsuario?: SortOrder
+    data?: SortOrder
+  }
+
+  export type LeadFunilMovimentoMinOrderByAggregateInput = {
+    id?: SortOrder
+    leadId?: SortOrder
+    funil?: SortOrder
+    deEtapa?: SortOrder
+    paraEtapa?: SortOrder
+    porUsuario?: SortOrder
+    data?: SortOrder
+  }
+
   export type FollowUpTemplateListRelationFilter = {
     every?: FollowUpTemplateWhereInput
     some?: FollowUpTemplateWhereInput
@@ -65643,6 +71682,20 @@ export namespace Prisma {
     connect?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
   }
 
+  export type LeadFunilCreateNestedManyWithoutLeadInput = {
+    create?: XOR<LeadFunilCreateWithoutLeadInput, LeadFunilUncheckedCreateWithoutLeadInput> | LeadFunilCreateWithoutLeadInput[] | LeadFunilUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: LeadFunilCreateOrConnectWithoutLeadInput | LeadFunilCreateOrConnectWithoutLeadInput[]
+    createMany?: LeadFunilCreateManyLeadInputEnvelope
+    connect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+  }
+
+  export type LeadFunilMovimentoCreateNestedManyWithoutLeadInput = {
+    create?: XOR<LeadFunilMovimentoCreateWithoutLeadInput, LeadFunilMovimentoUncheckedCreateWithoutLeadInput> | LeadFunilMovimentoCreateWithoutLeadInput[] | LeadFunilMovimentoUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: LeadFunilMovimentoCreateOrConnectWithoutLeadInput | LeadFunilMovimentoCreateOrConnectWithoutLeadInput[]
+    createMany?: LeadFunilMovimentoCreateManyLeadInputEnvelope
+    connect?: LeadFunilMovimentoWhereUniqueInput | LeadFunilMovimentoWhereUniqueInput[]
+  }
+
   export type LeadAtendimentoCreateNestedOneWithoutLeadInput = {
     create?: XOR<LeadAtendimentoCreateWithoutLeadInput, LeadAtendimentoUncheckedCreateWithoutLeadInput>
     connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutLeadInput
@@ -65701,6 +71754,20 @@ export namespace Prisma {
     connectOrCreate?: ChatTagLeadCreateOrConnectWithoutLeadInput | ChatTagLeadCreateOrConnectWithoutLeadInput[]
     createMany?: ChatTagLeadCreateManyLeadInputEnvelope
     connect?: ChatTagLeadWhereUniqueInput | ChatTagLeadWhereUniqueInput[]
+  }
+
+  export type LeadFunilUncheckedCreateNestedManyWithoutLeadInput = {
+    create?: XOR<LeadFunilCreateWithoutLeadInput, LeadFunilUncheckedCreateWithoutLeadInput> | LeadFunilCreateWithoutLeadInput[] | LeadFunilUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: LeadFunilCreateOrConnectWithoutLeadInput | LeadFunilCreateOrConnectWithoutLeadInput[]
+    createMany?: LeadFunilCreateManyLeadInputEnvelope
+    connect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+  }
+
+  export type LeadFunilMovimentoUncheckedCreateNestedManyWithoutLeadInput = {
+    create?: XOR<LeadFunilMovimentoCreateWithoutLeadInput, LeadFunilMovimentoUncheckedCreateWithoutLeadInput> | LeadFunilMovimentoCreateWithoutLeadInput[] | LeadFunilMovimentoUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: LeadFunilMovimentoCreateOrConnectWithoutLeadInput | LeadFunilMovimentoCreateOrConnectWithoutLeadInput[]
+    createMany?: LeadFunilMovimentoCreateManyLeadInputEnvelope
+    connect?: LeadFunilMovimentoWhereUniqueInput | LeadFunilMovimentoWhereUniqueInput[]
   }
 
   export type LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput = {
@@ -65828,6 +71895,34 @@ export namespace Prisma {
     deleteMany?: ChatTagLeadScalarWhereInput | ChatTagLeadScalarWhereInput[]
   }
 
+  export type LeadFunilUpdateManyWithoutLeadNestedInput = {
+    create?: XOR<LeadFunilCreateWithoutLeadInput, LeadFunilUncheckedCreateWithoutLeadInput> | LeadFunilCreateWithoutLeadInput[] | LeadFunilUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: LeadFunilCreateOrConnectWithoutLeadInput | LeadFunilCreateOrConnectWithoutLeadInput[]
+    upsert?: LeadFunilUpsertWithWhereUniqueWithoutLeadInput | LeadFunilUpsertWithWhereUniqueWithoutLeadInput[]
+    createMany?: LeadFunilCreateManyLeadInputEnvelope
+    set?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    disconnect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    delete?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    connect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    update?: LeadFunilUpdateWithWhereUniqueWithoutLeadInput | LeadFunilUpdateWithWhereUniqueWithoutLeadInput[]
+    updateMany?: LeadFunilUpdateManyWithWhereWithoutLeadInput | LeadFunilUpdateManyWithWhereWithoutLeadInput[]
+    deleteMany?: LeadFunilScalarWhereInput | LeadFunilScalarWhereInput[]
+  }
+
+  export type LeadFunilMovimentoUpdateManyWithoutLeadNestedInput = {
+    create?: XOR<LeadFunilMovimentoCreateWithoutLeadInput, LeadFunilMovimentoUncheckedCreateWithoutLeadInput> | LeadFunilMovimentoCreateWithoutLeadInput[] | LeadFunilMovimentoUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: LeadFunilMovimentoCreateOrConnectWithoutLeadInput | LeadFunilMovimentoCreateOrConnectWithoutLeadInput[]
+    upsert?: LeadFunilMovimentoUpsertWithWhereUniqueWithoutLeadInput | LeadFunilMovimentoUpsertWithWhereUniqueWithoutLeadInput[]
+    createMany?: LeadFunilMovimentoCreateManyLeadInputEnvelope
+    set?: LeadFunilMovimentoWhereUniqueInput | LeadFunilMovimentoWhereUniqueInput[]
+    disconnect?: LeadFunilMovimentoWhereUniqueInput | LeadFunilMovimentoWhereUniqueInput[]
+    delete?: LeadFunilMovimentoWhereUniqueInput | LeadFunilMovimentoWhereUniqueInput[]
+    connect?: LeadFunilMovimentoWhereUniqueInput | LeadFunilMovimentoWhereUniqueInput[]
+    update?: LeadFunilMovimentoUpdateWithWhereUniqueWithoutLeadInput | LeadFunilMovimentoUpdateWithWhereUniqueWithoutLeadInput[]
+    updateMany?: LeadFunilMovimentoUpdateManyWithWhereWithoutLeadInput | LeadFunilMovimentoUpdateManyWithWhereWithoutLeadInput[]
+    deleteMany?: LeadFunilMovimentoScalarWhereInput | LeadFunilMovimentoScalarWhereInput[]
+  }
+
   export type LeadAtendimentoUpdateOneWithoutLeadNestedInput = {
     create?: XOR<LeadAtendimentoCreateWithoutLeadInput, LeadAtendimentoUncheckedCreateWithoutLeadInput>
     connectOrCreate?: LeadAtendimentoCreateOrConnectWithoutLeadInput
@@ -65940,6 +72035,34 @@ export namespace Prisma {
     update?: ChatTagLeadUpdateWithWhereUniqueWithoutLeadInput | ChatTagLeadUpdateWithWhereUniqueWithoutLeadInput[]
     updateMany?: ChatTagLeadUpdateManyWithWhereWithoutLeadInput | ChatTagLeadUpdateManyWithWhereWithoutLeadInput[]
     deleteMany?: ChatTagLeadScalarWhereInput | ChatTagLeadScalarWhereInput[]
+  }
+
+  export type LeadFunilUncheckedUpdateManyWithoutLeadNestedInput = {
+    create?: XOR<LeadFunilCreateWithoutLeadInput, LeadFunilUncheckedCreateWithoutLeadInput> | LeadFunilCreateWithoutLeadInput[] | LeadFunilUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: LeadFunilCreateOrConnectWithoutLeadInput | LeadFunilCreateOrConnectWithoutLeadInput[]
+    upsert?: LeadFunilUpsertWithWhereUniqueWithoutLeadInput | LeadFunilUpsertWithWhereUniqueWithoutLeadInput[]
+    createMany?: LeadFunilCreateManyLeadInputEnvelope
+    set?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    disconnect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    delete?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    connect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    update?: LeadFunilUpdateWithWhereUniqueWithoutLeadInput | LeadFunilUpdateWithWhereUniqueWithoutLeadInput[]
+    updateMany?: LeadFunilUpdateManyWithWhereWithoutLeadInput | LeadFunilUpdateManyWithWhereWithoutLeadInput[]
+    deleteMany?: LeadFunilScalarWhereInput | LeadFunilScalarWhereInput[]
+  }
+
+  export type LeadFunilMovimentoUncheckedUpdateManyWithoutLeadNestedInput = {
+    create?: XOR<LeadFunilMovimentoCreateWithoutLeadInput, LeadFunilMovimentoUncheckedCreateWithoutLeadInput> | LeadFunilMovimentoCreateWithoutLeadInput[] | LeadFunilMovimentoUncheckedCreateWithoutLeadInput[]
+    connectOrCreate?: LeadFunilMovimentoCreateOrConnectWithoutLeadInput | LeadFunilMovimentoCreateOrConnectWithoutLeadInput[]
+    upsert?: LeadFunilMovimentoUpsertWithWhereUniqueWithoutLeadInput | LeadFunilMovimentoUpsertWithWhereUniqueWithoutLeadInput[]
+    createMany?: LeadFunilMovimentoCreateManyLeadInputEnvelope
+    set?: LeadFunilMovimentoWhereUniqueInput | LeadFunilMovimentoWhereUniqueInput[]
+    disconnect?: LeadFunilMovimentoWhereUniqueInput | LeadFunilMovimentoWhereUniqueInput[]
+    delete?: LeadFunilMovimentoWhereUniqueInput | LeadFunilMovimentoWhereUniqueInput[]
+    connect?: LeadFunilMovimentoWhereUniqueInput | LeadFunilMovimentoWhereUniqueInput[]
+    update?: LeadFunilMovimentoUpdateWithWhereUniqueWithoutLeadInput | LeadFunilMovimentoUpdateWithWhereUniqueWithoutLeadInput[]
+    updateMany?: LeadFunilMovimentoUpdateManyWithWhereWithoutLeadInput | LeadFunilMovimentoUpdateManyWithWhereWithoutLeadInput[]
+    deleteMany?: LeadFunilMovimentoScalarWhereInput | LeadFunilMovimentoScalarWhereInput[]
   }
 
   export type LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput = {
@@ -67234,6 +73357,214 @@ export namespace Prisma {
     update?: XOR<XOR<LeadUpdateToOneWithWhereWithoutTransferenciasInput, LeadUpdateWithoutTransferenciasInput>, LeadUncheckedUpdateWithoutTransferenciasInput>
   }
 
+  export type FunilEtapaCreateNestedManyWithoutFunilInput = {
+    create?: XOR<FunilEtapaCreateWithoutFunilInput, FunilEtapaUncheckedCreateWithoutFunilInput> | FunilEtapaCreateWithoutFunilInput[] | FunilEtapaUncheckedCreateWithoutFunilInput[]
+    connectOrCreate?: FunilEtapaCreateOrConnectWithoutFunilInput | FunilEtapaCreateOrConnectWithoutFunilInput[]
+    createMany?: FunilEtapaCreateManyFunilInputEnvelope
+    connect?: FunilEtapaWhereUniqueInput | FunilEtapaWhereUniqueInput[]
+  }
+
+  export type LeadFunilCreateNestedManyWithoutFunilInput = {
+    create?: XOR<LeadFunilCreateWithoutFunilInput, LeadFunilUncheckedCreateWithoutFunilInput> | LeadFunilCreateWithoutFunilInput[] | LeadFunilUncheckedCreateWithoutFunilInput[]
+    connectOrCreate?: LeadFunilCreateOrConnectWithoutFunilInput | LeadFunilCreateOrConnectWithoutFunilInput[]
+    createMany?: LeadFunilCreateManyFunilInputEnvelope
+    connect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+  }
+
+  export type FunilEtapaUncheckedCreateNestedManyWithoutFunilInput = {
+    create?: XOR<FunilEtapaCreateWithoutFunilInput, FunilEtapaUncheckedCreateWithoutFunilInput> | FunilEtapaCreateWithoutFunilInput[] | FunilEtapaUncheckedCreateWithoutFunilInput[]
+    connectOrCreate?: FunilEtapaCreateOrConnectWithoutFunilInput | FunilEtapaCreateOrConnectWithoutFunilInput[]
+    createMany?: FunilEtapaCreateManyFunilInputEnvelope
+    connect?: FunilEtapaWhereUniqueInput | FunilEtapaWhereUniqueInput[]
+  }
+
+  export type LeadFunilUncheckedCreateNestedManyWithoutFunilInput = {
+    create?: XOR<LeadFunilCreateWithoutFunilInput, LeadFunilUncheckedCreateWithoutFunilInput> | LeadFunilCreateWithoutFunilInput[] | LeadFunilUncheckedCreateWithoutFunilInput[]
+    connectOrCreate?: LeadFunilCreateOrConnectWithoutFunilInput | LeadFunilCreateOrConnectWithoutFunilInput[]
+    createMany?: LeadFunilCreateManyFunilInputEnvelope
+    connect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+  }
+
+  export type FunilEtapaUpdateManyWithoutFunilNestedInput = {
+    create?: XOR<FunilEtapaCreateWithoutFunilInput, FunilEtapaUncheckedCreateWithoutFunilInput> | FunilEtapaCreateWithoutFunilInput[] | FunilEtapaUncheckedCreateWithoutFunilInput[]
+    connectOrCreate?: FunilEtapaCreateOrConnectWithoutFunilInput | FunilEtapaCreateOrConnectWithoutFunilInput[]
+    upsert?: FunilEtapaUpsertWithWhereUniqueWithoutFunilInput | FunilEtapaUpsertWithWhereUniqueWithoutFunilInput[]
+    createMany?: FunilEtapaCreateManyFunilInputEnvelope
+    set?: FunilEtapaWhereUniqueInput | FunilEtapaWhereUniqueInput[]
+    disconnect?: FunilEtapaWhereUniqueInput | FunilEtapaWhereUniqueInput[]
+    delete?: FunilEtapaWhereUniqueInput | FunilEtapaWhereUniqueInput[]
+    connect?: FunilEtapaWhereUniqueInput | FunilEtapaWhereUniqueInput[]
+    update?: FunilEtapaUpdateWithWhereUniqueWithoutFunilInput | FunilEtapaUpdateWithWhereUniqueWithoutFunilInput[]
+    updateMany?: FunilEtapaUpdateManyWithWhereWithoutFunilInput | FunilEtapaUpdateManyWithWhereWithoutFunilInput[]
+    deleteMany?: FunilEtapaScalarWhereInput | FunilEtapaScalarWhereInput[]
+  }
+
+  export type LeadFunilUpdateManyWithoutFunilNestedInput = {
+    create?: XOR<LeadFunilCreateWithoutFunilInput, LeadFunilUncheckedCreateWithoutFunilInput> | LeadFunilCreateWithoutFunilInput[] | LeadFunilUncheckedCreateWithoutFunilInput[]
+    connectOrCreate?: LeadFunilCreateOrConnectWithoutFunilInput | LeadFunilCreateOrConnectWithoutFunilInput[]
+    upsert?: LeadFunilUpsertWithWhereUniqueWithoutFunilInput | LeadFunilUpsertWithWhereUniqueWithoutFunilInput[]
+    createMany?: LeadFunilCreateManyFunilInputEnvelope
+    set?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    disconnect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    delete?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    connect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    update?: LeadFunilUpdateWithWhereUniqueWithoutFunilInput | LeadFunilUpdateWithWhereUniqueWithoutFunilInput[]
+    updateMany?: LeadFunilUpdateManyWithWhereWithoutFunilInput | LeadFunilUpdateManyWithWhereWithoutFunilInput[]
+    deleteMany?: LeadFunilScalarWhereInput | LeadFunilScalarWhereInput[]
+  }
+
+  export type FunilEtapaUncheckedUpdateManyWithoutFunilNestedInput = {
+    create?: XOR<FunilEtapaCreateWithoutFunilInput, FunilEtapaUncheckedCreateWithoutFunilInput> | FunilEtapaCreateWithoutFunilInput[] | FunilEtapaUncheckedCreateWithoutFunilInput[]
+    connectOrCreate?: FunilEtapaCreateOrConnectWithoutFunilInput | FunilEtapaCreateOrConnectWithoutFunilInput[]
+    upsert?: FunilEtapaUpsertWithWhereUniqueWithoutFunilInput | FunilEtapaUpsertWithWhereUniqueWithoutFunilInput[]
+    createMany?: FunilEtapaCreateManyFunilInputEnvelope
+    set?: FunilEtapaWhereUniqueInput | FunilEtapaWhereUniqueInput[]
+    disconnect?: FunilEtapaWhereUniqueInput | FunilEtapaWhereUniqueInput[]
+    delete?: FunilEtapaWhereUniqueInput | FunilEtapaWhereUniqueInput[]
+    connect?: FunilEtapaWhereUniqueInput | FunilEtapaWhereUniqueInput[]
+    update?: FunilEtapaUpdateWithWhereUniqueWithoutFunilInput | FunilEtapaUpdateWithWhereUniqueWithoutFunilInput[]
+    updateMany?: FunilEtapaUpdateManyWithWhereWithoutFunilInput | FunilEtapaUpdateManyWithWhereWithoutFunilInput[]
+    deleteMany?: FunilEtapaScalarWhereInput | FunilEtapaScalarWhereInput[]
+  }
+
+  export type LeadFunilUncheckedUpdateManyWithoutFunilNestedInput = {
+    create?: XOR<LeadFunilCreateWithoutFunilInput, LeadFunilUncheckedCreateWithoutFunilInput> | LeadFunilCreateWithoutFunilInput[] | LeadFunilUncheckedCreateWithoutFunilInput[]
+    connectOrCreate?: LeadFunilCreateOrConnectWithoutFunilInput | LeadFunilCreateOrConnectWithoutFunilInput[]
+    upsert?: LeadFunilUpsertWithWhereUniqueWithoutFunilInput | LeadFunilUpsertWithWhereUniqueWithoutFunilInput[]
+    createMany?: LeadFunilCreateManyFunilInputEnvelope
+    set?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    disconnect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    delete?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    connect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    update?: LeadFunilUpdateWithWhereUniqueWithoutFunilInput | LeadFunilUpdateWithWhereUniqueWithoutFunilInput[]
+    updateMany?: LeadFunilUpdateManyWithWhereWithoutFunilInput | LeadFunilUpdateManyWithWhereWithoutFunilInput[]
+    deleteMany?: LeadFunilScalarWhereInput | LeadFunilScalarWhereInput[]
+  }
+
+  export type FunilCreateNestedOneWithoutEtapasInput = {
+    create?: XOR<FunilCreateWithoutEtapasInput, FunilUncheckedCreateWithoutEtapasInput>
+    connectOrCreate?: FunilCreateOrConnectWithoutEtapasInput
+    connect?: FunilWhereUniqueInput
+  }
+
+  export type LeadFunilCreateNestedManyWithoutEtapaInput = {
+    create?: XOR<LeadFunilCreateWithoutEtapaInput, LeadFunilUncheckedCreateWithoutEtapaInput> | LeadFunilCreateWithoutEtapaInput[] | LeadFunilUncheckedCreateWithoutEtapaInput[]
+    connectOrCreate?: LeadFunilCreateOrConnectWithoutEtapaInput | LeadFunilCreateOrConnectWithoutEtapaInput[]
+    createMany?: LeadFunilCreateManyEtapaInputEnvelope
+    connect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+  }
+
+  export type LeadFunilUncheckedCreateNestedManyWithoutEtapaInput = {
+    create?: XOR<LeadFunilCreateWithoutEtapaInput, LeadFunilUncheckedCreateWithoutEtapaInput> | LeadFunilCreateWithoutEtapaInput[] | LeadFunilUncheckedCreateWithoutEtapaInput[]
+    connectOrCreate?: LeadFunilCreateOrConnectWithoutEtapaInput | LeadFunilCreateOrConnectWithoutEtapaInput[]
+    createMany?: LeadFunilCreateManyEtapaInputEnvelope
+    connect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+  }
+
+  export type EnumFunilEtapaTipoFieldUpdateOperationsInput = {
+    set?: $Enums.FunilEtapaTipo
+  }
+
+  export type FunilUpdateOneRequiredWithoutEtapasNestedInput = {
+    create?: XOR<FunilCreateWithoutEtapasInput, FunilUncheckedCreateWithoutEtapasInput>
+    connectOrCreate?: FunilCreateOrConnectWithoutEtapasInput
+    upsert?: FunilUpsertWithoutEtapasInput
+    connect?: FunilWhereUniqueInput
+    update?: XOR<XOR<FunilUpdateToOneWithWhereWithoutEtapasInput, FunilUpdateWithoutEtapasInput>, FunilUncheckedUpdateWithoutEtapasInput>
+  }
+
+  export type LeadFunilUpdateManyWithoutEtapaNestedInput = {
+    create?: XOR<LeadFunilCreateWithoutEtapaInput, LeadFunilUncheckedCreateWithoutEtapaInput> | LeadFunilCreateWithoutEtapaInput[] | LeadFunilUncheckedCreateWithoutEtapaInput[]
+    connectOrCreate?: LeadFunilCreateOrConnectWithoutEtapaInput | LeadFunilCreateOrConnectWithoutEtapaInput[]
+    upsert?: LeadFunilUpsertWithWhereUniqueWithoutEtapaInput | LeadFunilUpsertWithWhereUniqueWithoutEtapaInput[]
+    createMany?: LeadFunilCreateManyEtapaInputEnvelope
+    set?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    disconnect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    delete?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    connect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    update?: LeadFunilUpdateWithWhereUniqueWithoutEtapaInput | LeadFunilUpdateWithWhereUniqueWithoutEtapaInput[]
+    updateMany?: LeadFunilUpdateManyWithWhereWithoutEtapaInput | LeadFunilUpdateManyWithWhereWithoutEtapaInput[]
+    deleteMany?: LeadFunilScalarWhereInput | LeadFunilScalarWhereInput[]
+  }
+
+  export type LeadFunilUncheckedUpdateManyWithoutEtapaNestedInput = {
+    create?: XOR<LeadFunilCreateWithoutEtapaInput, LeadFunilUncheckedCreateWithoutEtapaInput> | LeadFunilCreateWithoutEtapaInput[] | LeadFunilUncheckedCreateWithoutEtapaInput[]
+    connectOrCreate?: LeadFunilCreateOrConnectWithoutEtapaInput | LeadFunilCreateOrConnectWithoutEtapaInput[]
+    upsert?: LeadFunilUpsertWithWhereUniqueWithoutEtapaInput | LeadFunilUpsertWithWhereUniqueWithoutEtapaInput[]
+    createMany?: LeadFunilCreateManyEtapaInputEnvelope
+    set?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    disconnect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    delete?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    connect?: LeadFunilWhereUniqueInput | LeadFunilWhereUniqueInput[]
+    update?: LeadFunilUpdateWithWhereUniqueWithoutEtapaInput | LeadFunilUpdateWithWhereUniqueWithoutEtapaInput[]
+    updateMany?: LeadFunilUpdateManyWithWhereWithoutEtapaInput | LeadFunilUpdateManyWithWhereWithoutEtapaInput[]
+    deleteMany?: LeadFunilScalarWhereInput | LeadFunilScalarWhereInput[]
+  }
+
+  export type LeadCreateNestedOneWithoutFunisInput = {
+    create?: XOR<LeadCreateWithoutFunisInput, LeadUncheckedCreateWithoutFunisInput>
+    connectOrCreate?: LeadCreateOrConnectWithoutFunisInput
+    connect?: LeadWhereUniqueInput
+  }
+
+  export type FunilCreateNestedOneWithoutLeadsInput = {
+    create?: XOR<FunilCreateWithoutLeadsInput, FunilUncheckedCreateWithoutLeadsInput>
+    connectOrCreate?: FunilCreateOrConnectWithoutLeadsInput
+    connect?: FunilWhereUniqueInput
+  }
+
+  export type FunilEtapaCreateNestedOneWithoutLeadsInput = {
+    create?: XOR<FunilEtapaCreateWithoutLeadsInput, FunilEtapaUncheckedCreateWithoutLeadsInput>
+    connectOrCreate?: FunilEtapaCreateOrConnectWithoutLeadsInput
+    connect?: FunilEtapaWhereUniqueInput
+  }
+
+  export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type LeadUpdateOneRequiredWithoutFunisNestedInput = {
+    create?: XOR<LeadCreateWithoutFunisInput, LeadUncheckedCreateWithoutFunisInput>
+    connectOrCreate?: LeadCreateOrConnectWithoutFunisInput
+    upsert?: LeadUpsertWithoutFunisInput
+    connect?: LeadWhereUniqueInput
+    update?: XOR<XOR<LeadUpdateToOneWithWhereWithoutFunisInput, LeadUpdateWithoutFunisInput>, LeadUncheckedUpdateWithoutFunisInput>
+  }
+
+  export type FunilUpdateOneRequiredWithoutLeadsNestedInput = {
+    create?: XOR<FunilCreateWithoutLeadsInput, FunilUncheckedCreateWithoutLeadsInput>
+    connectOrCreate?: FunilCreateOrConnectWithoutLeadsInput
+    upsert?: FunilUpsertWithoutLeadsInput
+    connect?: FunilWhereUniqueInput
+    update?: XOR<XOR<FunilUpdateToOneWithWhereWithoutLeadsInput, FunilUpdateWithoutLeadsInput>, FunilUncheckedUpdateWithoutLeadsInput>
+  }
+
+  export type FunilEtapaUpdateOneRequiredWithoutLeadsNestedInput = {
+    create?: XOR<FunilEtapaCreateWithoutLeadsInput, FunilEtapaUncheckedCreateWithoutLeadsInput>
+    connectOrCreate?: FunilEtapaCreateOrConnectWithoutLeadsInput
+    upsert?: FunilEtapaUpsertWithoutLeadsInput
+    connect?: FunilEtapaWhereUniqueInput
+    update?: XOR<XOR<FunilEtapaUpdateToOneWithWhereWithoutLeadsInput, FunilEtapaUpdateWithoutLeadsInput>, FunilEtapaUncheckedUpdateWithoutLeadsInput>
+  }
+
+  export type LeadCreateNestedOneWithoutMovimentosFunilInput = {
+    create?: XOR<LeadCreateWithoutMovimentosFunilInput, LeadUncheckedCreateWithoutMovimentosFunilInput>
+    connectOrCreate?: LeadCreateOrConnectWithoutMovimentosFunilInput
+    connect?: LeadWhereUniqueInput
+  }
+
+  export type LeadUpdateOneRequiredWithoutMovimentosFunilNestedInput = {
+    create?: XOR<LeadCreateWithoutMovimentosFunilInput, LeadUncheckedCreateWithoutMovimentosFunilInput>
+    connectOrCreate?: LeadCreateOrConnectWithoutMovimentosFunilInput
+    upsert?: LeadUpsertWithoutMovimentosFunilInput
+    connect?: LeadWhereUniqueInput
+    update?: XOR<XOR<LeadUpdateToOneWithWhereWithoutMovimentosFunilInput, LeadUpdateWithoutMovimentosFunilInput>, LeadUncheckedUpdateWithoutMovimentosFunilInput>
+  }
+
   export type DepartamentoCreateNestedOneWithoutFollowUpBotInput = {
     create?: XOR<DepartamentoCreateWithoutFollowUpBotInput, DepartamentoUncheckedCreateWithoutFollowUpBotInput>
     connectOrCreate?: DepartamentoCreateOrConnectWithoutFollowUpBotInput
@@ -67996,6 +74327,39 @@ export namespace Prisma {
     _max?: NestedBytesFilter<$PrismaModel>
   }
 
+  export type NestedEnumFunilEtapaTipoFilter<$PrismaModel = never> = {
+    equals?: $Enums.FunilEtapaTipo | EnumFunilEtapaTipoFieldRefInput<$PrismaModel>
+    in?: $Enums.FunilEtapaTipo[] | ListEnumFunilEtapaTipoFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FunilEtapaTipo[] | ListEnumFunilEtapaTipoFieldRefInput<$PrismaModel>
+    not?: NestedEnumFunilEtapaTipoFilter<$PrismaModel> | $Enums.FunilEtapaTipo
+  }
+
+  export type NestedEnumFunilEtapaTipoWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FunilEtapaTipo | EnumFunilEtapaTipoFieldRefInput<$PrismaModel>
+    in?: $Enums.FunilEtapaTipo[] | ListEnumFunilEtapaTipoFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FunilEtapaTipo[] | ListEnumFunilEtapaTipoFieldRefInput<$PrismaModel>
+    not?: NestedEnumFunilEtapaTipoWithAggregatesFilter<$PrismaModel> | $Enums.FunilEtapaTipo
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFunilEtapaTipoFilter<$PrismaModel>
+    _max?: NestedEnumFunilEtapaTipoFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
   export type CampaignCreateWithoutLeadsInput = {
     id?: string
     workspaceId: string
@@ -68188,6 +74552,64 @@ export namespace Prisma {
 
   export type ChatTagLeadCreateManyLeadInputEnvelope = {
     data: ChatTagLeadCreateManyLeadInput | ChatTagLeadCreateManyLeadInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LeadFunilCreateWithoutLeadInput = {
+    id?: string
+    valor?: number | null
+    movidoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    funil: FunilCreateNestedOneWithoutLeadsInput
+    etapa: FunilEtapaCreateNestedOneWithoutLeadsInput
+  }
+
+  export type LeadFunilUncheckedCreateWithoutLeadInput = {
+    id?: string
+    funilId: string
+    etapaId: string
+    valor?: number | null
+    movidoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type LeadFunilCreateOrConnectWithoutLeadInput = {
+    where: LeadFunilWhereUniqueInput
+    create: XOR<LeadFunilCreateWithoutLeadInput, LeadFunilUncheckedCreateWithoutLeadInput>
+  }
+
+  export type LeadFunilCreateManyLeadInputEnvelope = {
+    data: LeadFunilCreateManyLeadInput | LeadFunilCreateManyLeadInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LeadFunilMovimentoCreateWithoutLeadInput = {
+    id?: string
+    funil: string
+    deEtapa?: string | null
+    paraEtapa?: string | null
+    porUsuario: string
+    data?: Date | string
+  }
+
+  export type LeadFunilMovimentoUncheckedCreateWithoutLeadInput = {
+    id?: string
+    funil: string
+    deEtapa?: string | null
+    paraEtapa?: string | null
+    porUsuario: string
+    data?: Date | string
+  }
+
+  export type LeadFunilMovimentoCreateOrConnectWithoutLeadInput = {
+    where: LeadFunilMovimentoWhereUniqueInput
+    create: XOR<LeadFunilMovimentoCreateWithoutLeadInput, LeadFunilMovimentoUncheckedCreateWithoutLeadInput>
+  }
+
+  export type LeadFunilMovimentoCreateManyLeadInputEnvelope = {
+    data: LeadFunilMovimentoCreateManyLeadInput | LeadFunilMovimentoCreateManyLeadInput[]
     skipDuplicates?: boolean
   }
 
@@ -68497,6 +74919,65 @@ export namespace Prisma {
     criadoEm?: DateTimeFilter<"ChatTagLead"> | Date | string
   }
 
+  export type LeadFunilUpsertWithWhereUniqueWithoutLeadInput = {
+    where: LeadFunilWhereUniqueInput
+    update: XOR<LeadFunilUpdateWithoutLeadInput, LeadFunilUncheckedUpdateWithoutLeadInput>
+    create: XOR<LeadFunilCreateWithoutLeadInput, LeadFunilUncheckedCreateWithoutLeadInput>
+  }
+
+  export type LeadFunilUpdateWithWhereUniqueWithoutLeadInput = {
+    where: LeadFunilWhereUniqueInput
+    data: XOR<LeadFunilUpdateWithoutLeadInput, LeadFunilUncheckedUpdateWithoutLeadInput>
+  }
+
+  export type LeadFunilUpdateManyWithWhereWithoutLeadInput = {
+    where: LeadFunilScalarWhereInput
+    data: XOR<LeadFunilUpdateManyMutationInput, LeadFunilUncheckedUpdateManyWithoutLeadInput>
+  }
+
+  export type LeadFunilScalarWhereInput = {
+    AND?: LeadFunilScalarWhereInput | LeadFunilScalarWhereInput[]
+    OR?: LeadFunilScalarWhereInput[]
+    NOT?: LeadFunilScalarWhereInput | LeadFunilScalarWhereInput[]
+    id?: StringFilter<"LeadFunil"> | string
+    leadId?: StringFilter<"LeadFunil"> | string
+    funilId?: StringFilter<"LeadFunil"> | string
+    etapaId?: StringFilter<"LeadFunil"> | string
+    valor?: FloatNullableFilter<"LeadFunil"> | number | null
+    movidoEm?: DateTimeFilter<"LeadFunil"> | Date | string
+    criadoEm?: DateTimeFilter<"LeadFunil"> | Date | string
+    atualizadoEm?: DateTimeFilter<"LeadFunil"> | Date | string
+  }
+
+  export type LeadFunilMovimentoUpsertWithWhereUniqueWithoutLeadInput = {
+    where: LeadFunilMovimentoWhereUniqueInput
+    update: XOR<LeadFunilMovimentoUpdateWithoutLeadInput, LeadFunilMovimentoUncheckedUpdateWithoutLeadInput>
+    create: XOR<LeadFunilMovimentoCreateWithoutLeadInput, LeadFunilMovimentoUncheckedCreateWithoutLeadInput>
+  }
+
+  export type LeadFunilMovimentoUpdateWithWhereUniqueWithoutLeadInput = {
+    where: LeadFunilMovimentoWhereUniqueInput
+    data: XOR<LeadFunilMovimentoUpdateWithoutLeadInput, LeadFunilMovimentoUncheckedUpdateWithoutLeadInput>
+  }
+
+  export type LeadFunilMovimentoUpdateManyWithWhereWithoutLeadInput = {
+    where: LeadFunilMovimentoScalarWhereInput
+    data: XOR<LeadFunilMovimentoUpdateManyMutationInput, LeadFunilMovimentoUncheckedUpdateManyWithoutLeadInput>
+  }
+
+  export type LeadFunilMovimentoScalarWhereInput = {
+    AND?: LeadFunilMovimentoScalarWhereInput | LeadFunilMovimentoScalarWhereInput[]
+    OR?: LeadFunilMovimentoScalarWhereInput[]
+    NOT?: LeadFunilMovimentoScalarWhereInput | LeadFunilMovimentoScalarWhereInput[]
+    id?: StringFilter<"LeadFunilMovimento"> | string
+    leadId?: StringFilter<"LeadFunilMovimento"> | string
+    funil?: StringFilter<"LeadFunilMovimento"> | string
+    deEtapa?: StringNullableFilter<"LeadFunilMovimento"> | string | null
+    paraEtapa?: StringNullableFilter<"LeadFunilMovimento"> | string | null
+    porUsuario?: StringFilter<"LeadFunilMovimento"> | string
+    data?: DateTimeFilter<"LeadFunilMovimento"> | Date | string
+  }
+
   export type LeadAtendimentoUpsertWithoutLeadInput = {
     update: XOR<LeadAtendimentoUpdateWithoutLeadInput, LeadAtendimentoUncheckedUpdateWithoutLeadInput>
     create: XOR<LeadAtendimentoCreateWithoutLeadInput, LeadAtendimentoUncheckedCreateWithoutLeadInput>
@@ -68641,6 +75122,8 @@ export namespace Prisma {
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
@@ -68671,6 +75154,8 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilUncheckedCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -68717,6 +75202,8 @@ export namespace Prisma {
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
@@ -68747,6 +75234,8 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUncheckedUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -68836,6 +75325,8 @@ export namespace Prisma {
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
@@ -68866,6 +75357,8 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilUncheckedCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -68939,6 +75432,8 @@ export namespace Prisma {
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
@@ -68969,6 +75464,8 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUncheckedUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -69035,6 +75532,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
@@ -69065,6 +75564,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilUncheckedCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -69272,6 +75773,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
@@ -69302,6 +75805,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilUncheckedCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -69399,6 +75904,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
@@ -69429,6 +75936,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUncheckedUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -69670,6 +76179,8 @@ export namespace Prisma {
     eventos?: TimelineEventCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
@@ -69700,6 +76211,8 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilUncheckedCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -69746,6 +76259,8 @@ export namespace Prisma {
     eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
@@ -69776,6 +76291,8 @@ export namespace Prisma {
     eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUncheckedUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -69806,6 +76323,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
@@ -69836,6 +76355,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilUncheckedCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -69964,6 +76485,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
@@ -69994,6 +76517,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUncheckedUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -70334,6 +76859,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
@@ -70364,6 +76891,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilUncheckedCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -70453,6 +76982,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
@@ -70483,6 +77014,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUncheckedUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -71740,6 +78273,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoCreateNestedManyWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
     followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
@@ -71770,6 +78305,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilUncheckedCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedCreateNestedManyWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
     followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -71872,6 +78409,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUpdateManyWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
     followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
@@ -71902,6 +78441,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUncheckedUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedUpdateManyWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
     followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -72000,6 +78541,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
     followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
@@ -72030,6 +78573,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilUncheckedCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
     followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -72076,6 +78621,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
     followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
@@ -72106,7 +78653,639 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUncheckedUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
+    botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
+  }
+
+  export type FunilEtapaCreateWithoutFunilInput = {
+    id?: string
+    nome: string
+    cor?: string
+    tipo?: $Enums.FunilEtapaTipo
+    ordem?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    leads?: LeadFunilCreateNestedManyWithoutEtapaInput
+  }
+
+  export type FunilEtapaUncheckedCreateWithoutFunilInput = {
+    id?: string
+    nome: string
+    cor?: string
+    tipo?: $Enums.FunilEtapaTipo
+    ordem?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    leads?: LeadFunilUncheckedCreateNestedManyWithoutEtapaInput
+  }
+
+  export type FunilEtapaCreateOrConnectWithoutFunilInput = {
+    where: FunilEtapaWhereUniqueInput
+    create: XOR<FunilEtapaCreateWithoutFunilInput, FunilEtapaUncheckedCreateWithoutFunilInput>
+  }
+
+  export type FunilEtapaCreateManyFunilInputEnvelope = {
+    data: FunilEtapaCreateManyFunilInput | FunilEtapaCreateManyFunilInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LeadFunilCreateWithoutFunilInput = {
+    id?: string
+    valor?: number | null
+    movidoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    lead: LeadCreateNestedOneWithoutFunisInput
+    etapa: FunilEtapaCreateNestedOneWithoutLeadsInput
+  }
+
+  export type LeadFunilUncheckedCreateWithoutFunilInput = {
+    id?: string
+    leadId: string
+    etapaId: string
+    valor?: number | null
+    movidoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type LeadFunilCreateOrConnectWithoutFunilInput = {
+    where: LeadFunilWhereUniqueInput
+    create: XOR<LeadFunilCreateWithoutFunilInput, LeadFunilUncheckedCreateWithoutFunilInput>
+  }
+
+  export type LeadFunilCreateManyFunilInputEnvelope = {
+    data: LeadFunilCreateManyFunilInput | LeadFunilCreateManyFunilInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type FunilEtapaUpsertWithWhereUniqueWithoutFunilInput = {
+    where: FunilEtapaWhereUniqueInput
+    update: XOR<FunilEtapaUpdateWithoutFunilInput, FunilEtapaUncheckedUpdateWithoutFunilInput>
+    create: XOR<FunilEtapaCreateWithoutFunilInput, FunilEtapaUncheckedCreateWithoutFunilInput>
+  }
+
+  export type FunilEtapaUpdateWithWhereUniqueWithoutFunilInput = {
+    where: FunilEtapaWhereUniqueInput
+    data: XOR<FunilEtapaUpdateWithoutFunilInput, FunilEtapaUncheckedUpdateWithoutFunilInput>
+  }
+
+  export type FunilEtapaUpdateManyWithWhereWithoutFunilInput = {
+    where: FunilEtapaScalarWhereInput
+    data: XOR<FunilEtapaUpdateManyMutationInput, FunilEtapaUncheckedUpdateManyWithoutFunilInput>
+  }
+
+  export type FunilEtapaScalarWhereInput = {
+    AND?: FunilEtapaScalarWhereInput | FunilEtapaScalarWhereInput[]
+    OR?: FunilEtapaScalarWhereInput[]
+    NOT?: FunilEtapaScalarWhereInput | FunilEtapaScalarWhereInput[]
+    id?: StringFilter<"FunilEtapa"> | string
+    funilId?: StringFilter<"FunilEtapa"> | string
+    nome?: StringFilter<"FunilEtapa"> | string
+    cor?: StringFilter<"FunilEtapa"> | string
+    tipo?: EnumFunilEtapaTipoFilter<"FunilEtapa"> | $Enums.FunilEtapaTipo
+    ordem?: IntFilter<"FunilEtapa"> | number
+    criadoEm?: DateTimeFilter<"FunilEtapa"> | Date | string
+    atualizadoEm?: DateTimeFilter<"FunilEtapa"> | Date | string
+  }
+
+  export type LeadFunilUpsertWithWhereUniqueWithoutFunilInput = {
+    where: LeadFunilWhereUniqueInput
+    update: XOR<LeadFunilUpdateWithoutFunilInput, LeadFunilUncheckedUpdateWithoutFunilInput>
+    create: XOR<LeadFunilCreateWithoutFunilInput, LeadFunilUncheckedCreateWithoutFunilInput>
+  }
+
+  export type LeadFunilUpdateWithWhereUniqueWithoutFunilInput = {
+    where: LeadFunilWhereUniqueInput
+    data: XOR<LeadFunilUpdateWithoutFunilInput, LeadFunilUncheckedUpdateWithoutFunilInput>
+  }
+
+  export type LeadFunilUpdateManyWithWhereWithoutFunilInput = {
+    where: LeadFunilScalarWhereInput
+    data: XOR<LeadFunilUpdateManyMutationInput, LeadFunilUncheckedUpdateManyWithoutFunilInput>
+  }
+
+  export type FunilCreateWithoutEtapasInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    ordem?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    leads?: LeadFunilCreateNestedManyWithoutFunilInput
+  }
+
+  export type FunilUncheckedCreateWithoutEtapasInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    ordem?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    leads?: LeadFunilUncheckedCreateNestedManyWithoutFunilInput
+  }
+
+  export type FunilCreateOrConnectWithoutEtapasInput = {
+    where: FunilWhereUniqueInput
+    create: XOR<FunilCreateWithoutEtapasInput, FunilUncheckedCreateWithoutEtapasInput>
+  }
+
+  export type LeadFunilCreateWithoutEtapaInput = {
+    id?: string
+    valor?: number | null
+    movidoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    lead: LeadCreateNestedOneWithoutFunisInput
+    funil: FunilCreateNestedOneWithoutLeadsInput
+  }
+
+  export type LeadFunilUncheckedCreateWithoutEtapaInput = {
+    id?: string
+    leadId: string
+    funilId: string
+    valor?: number | null
+    movidoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type LeadFunilCreateOrConnectWithoutEtapaInput = {
+    where: LeadFunilWhereUniqueInput
+    create: XOR<LeadFunilCreateWithoutEtapaInput, LeadFunilUncheckedCreateWithoutEtapaInput>
+  }
+
+  export type LeadFunilCreateManyEtapaInputEnvelope = {
+    data: LeadFunilCreateManyEtapaInput | LeadFunilCreateManyEtapaInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type FunilUpsertWithoutEtapasInput = {
+    update: XOR<FunilUpdateWithoutEtapasInput, FunilUncheckedUpdateWithoutEtapasInput>
+    create: XOR<FunilCreateWithoutEtapasInput, FunilUncheckedCreateWithoutEtapasInput>
+    where?: FunilWhereInput
+  }
+
+  export type FunilUpdateToOneWithWhereWithoutEtapasInput = {
+    where?: FunilWhereInput
+    data: XOR<FunilUpdateWithoutEtapasInput, FunilUncheckedUpdateWithoutEtapasInput>
+  }
+
+  export type FunilUpdateWithoutEtapasInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    leads?: LeadFunilUpdateManyWithoutFunilNestedInput
+  }
+
+  export type FunilUncheckedUpdateWithoutEtapasInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    leads?: LeadFunilUncheckedUpdateManyWithoutFunilNestedInput
+  }
+
+  export type LeadFunilUpsertWithWhereUniqueWithoutEtapaInput = {
+    where: LeadFunilWhereUniqueInput
+    update: XOR<LeadFunilUpdateWithoutEtapaInput, LeadFunilUncheckedUpdateWithoutEtapaInput>
+    create: XOR<LeadFunilCreateWithoutEtapaInput, LeadFunilUncheckedCreateWithoutEtapaInput>
+  }
+
+  export type LeadFunilUpdateWithWhereUniqueWithoutEtapaInput = {
+    where: LeadFunilWhereUniqueInput
+    data: XOR<LeadFunilUpdateWithoutEtapaInput, LeadFunilUncheckedUpdateWithoutEtapaInput>
+  }
+
+  export type LeadFunilUpdateManyWithWhereWithoutEtapaInput = {
+    where: LeadFunilScalarWhereInput
+    data: XOR<LeadFunilUpdateManyMutationInput, LeadFunilUncheckedUpdateManyWithoutEtapaInput>
+  }
+
+  export type LeadCreateWithoutFunisInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    telefone: string
+    produto: string
+    marca: string
+    persona: string
+    regiao: string
+    status?: $Enums.LeadStatus
+    notas?: string | null
+    negocio?: string | null
+    atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
+    entradaCampanhaEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    campanha?: CampaignCreateNestedOneWithoutLeadsInput
+    campanhas?: LeadCampaignCreateNestedManyWithoutLeadInput
+    eventos?: TimelineEventCreateNestedManyWithoutLeadInput
+    mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
+    notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
+  }
+
+  export type LeadUncheckedCreateWithoutFunisInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    telefone: string
+    produto: string
+    marca: string
+    persona: string
+    regiao: string
+    status?: $Enums.LeadStatus
+    notas?: string | null
+    negocio?: string | null
+    atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
+    campanhaId?: string | null
+    entradaCampanhaEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    campanhas?: LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
+    eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
+    mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
+    notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
+  }
+
+  export type LeadCreateOrConnectWithoutFunisInput = {
+    where: LeadWhereUniqueInput
+    create: XOR<LeadCreateWithoutFunisInput, LeadUncheckedCreateWithoutFunisInput>
+  }
+
+  export type FunilCreateWithoutLeadsInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    ordem?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    etapas?: FunilEtapaCreateNestedManyWithoutFunilInput
+  }
+
+  export type FunilUncheckedCreateWithoutLeadsInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    descricao?: string | null
+    ativo?: boolean
+    ordem?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    etapas?: FunilEtapaUncheckedCreateNestedManyWithoutFunilInput
+  }
+
+  export type FunilCreateOrConnectWithoutLeadsInput = {
+    where: FunilWhereUniqueInput
+    create: XOR<FunilCreateWithoutLeadsInput, FunilUncheckedCreateWithoutLeadsInput>
+  }
+
+  export type FunilEtapaCreateWithoutLeadsInput = {
+    id?: string
+    nome: string
+    cor?: string
+    tipo?: $Enums.FunilEtapaTipo
+    ordem?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    funil: FunilCreateNestedOneWithoutEtapasInput
+  }
+
+  export type FunilEtapaUncheckedCreateWithoutLeadsInput = {
+    id?: string
+    funilId: string
+    nome: string
+    cor?: string
+    tipo?: $Enums.FunilEtapaTipo
+    ordem?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type FunilEtapaCreateOrConnectWithoutLeadsInput = {
+    where: FunilEtapaWhereUniqueInput
+    create: XOR<FunilEtapaCreateWithoutLeadsInput, FunilEtapaUncheckedCreateWithoutLeadsInput>
+  }
+
+  export type LeadUpsertWithoutFunisInput = {
+    update: XOR<LeadUpdateWithoutFunisInput, LeadUncheckedUpdateWithoutFunisInput>
+    create: XOR<LeadCreateWithoutFunisInput, LeadUncheckedCreateWithoutFunisInput>
+    where?: LeadWhereInput
+  }
+
+  export type LeadUpdateToOneWithWhereWithoutFunisInput = {
+    where?: LeadWhereInput
+    data: XOR<LeadUpdateWithoutFunisInput, LeadUncheckedUpdateWithoutFunisInput>
+  }
+
+  export type LeadUpdateWithoutFunisInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    produto?: StringFieldUpdateOperationsInput | string
+    marca?: StringFieldUpdateOperationsInput | string
+    persona?: StringFieldUpdateOperationsInput | string
+    regiao?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
+    notas?: NullableStringFieldUpdateOperationsInput | string | null
+    negocio?: NullableStringFieldUpdateOperationsInput | string | null
+    atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    campanha?: CampaignUpdateOneWithoutLeadsNestedInput
+    campanhas?: LeadCampaignUpdateManyWithoutLeadNestedInput
+    eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
+    mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
+    notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
+  }
+
+  export type LeadUncheckedUpdateWithoutFunisInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    produto?: StringFieldUpdateOperationsInput | string
+    marca?: StringFieldUpdateOperationsInput | string
+    persona?: StringFieldUpdateOperationsInput | string
+    regiao?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
+    notas?: NullableStringFieldUpdateOperationsInput | string | null
+    negocio?: NullableStringFieldUpdateOperationsInput | string | null
+    atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
+    entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    campanhas?: LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
+    eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
+    mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
+    notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
+  }
+
+  export type FunilUpsertWithoutLeadsInput = {
+    update: XOR<FunilUpdateWithoutLeadsInput, FunilUncheckedUpdateWithoutLeadsInput>
+    create: XOR<FunilCreateWithoutLeadsInput, FunilUncheckedCreateWithoutLeadsInput>
+    where?: FunilWhereInput
+  }
+
+  export type FunilUpdateToOneWithWhereWithoutLeadsInput = {
+    where?: FunilWhereInput
+    data: XOR<FunilUpdateWithoutLeadsInput, FunilUncheckedUpdateWithoutLeadsInput>
+  }
+
+  export type FunilUpdateWithoutLeadsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    etapas?: FunilEtapaUpdateManyWithoutFunilNestedInput
+  }
+
+  export type FunilUncheckedUpdateWithoutLeadsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    descricao?: NullableStringFieldUpdateOperationsInput | string | null
+    ativo?: BoolFieldUpdateOperationsInput | boolean
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    etapas?: FunilEtapaUncheckedUpdateManyWithoutFunilNestedInput
+  }
+
+  export type FunilEtapaUpsertWithoutLeadsInput = {
+    update: XOR<FunilEtapaUpdateWithoutLeadsInput, FunilEtapaUncheckedUpdateWithoutLeadsInput>
+    create: XOR<FunilEtapaCreateWithoutLeadsInput, FunilEtapaUncheckedCreateWithoutLeadsInput>
+    where?: FunilEtapaWhereInput
+  }
+
+  export type FunilEtapaUpdateToOneWithWhereWithoutLeadsInput = {
+    where?: FunilEtapaWhereInput
+    data: XOR<FunilEtapaUpdateWithoutLeadsInput, FunilEtapaUncheckedUpdateWithoutLeadsInput>
+  }
+
+  export type FunilEtapaUpdateWithoutLeadsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    cor?: StringFieldUpdateOperationsInput | string
+    tipo?: EnumFunilEtapaTipoFieldUpdateOperationsInput | $Enums.FunilEtapaTipo
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    funil?: FunilUpdateOneRequiredWithoutEtapasNestedInput
+  }
+
+  export type FunilEtapaUncheckedUpdateWithoutLeadsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    funilId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    cor?: StringFieldUpdateOperationsInput | string
+    tipo?: EnumFunilEtapaTipoFieldUpdateOperationsInput | $Enums.FunilEtapaTipo
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadCreateWithoutMovimentosFunilInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    telefone: string
+    produto: string
+    marca: string
+    persona: string
+    regiao: string
+    status?: $Enums.LeadStatus
+    notas?: string | null
+    negocio?: string | null
+    atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
+    entradaCampanhaEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    campanha?: CampaignCreateNestedOneWithoutLeadsInput
+    campanhas?: LeadCampaignCreateNestedManyWithoutLeadInput
+    eventos?: TimelineEventCreateNestedManyWithoutLeadInput
+    mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
+    notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaCreateNestedOneWithoutLeadInput
+  }
+
+  export type LeadUncheckedCreateWithoutMovimentosFunilInput = {
+    id?: string
+    workspaceId: string
+    nome: string
+    telefone: string
+    produto: string
+    marca: string
+    persona: string
+    regiao: string
+    status?: $Enums.LeadStatus
+    notas?: string | null
+    negocio?: string | null
+    atividade?: string | null
+    cnpj?: string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: Date | string | null
+    campanhaId?: string | null
+    entradaCampanhaEm?: Date | string | null
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+    campanhas?: LeadCampaignUncheckedCreateNestedManyWithoutLeadInput
+    eventos?: TimelineEventUncheckedCreateNestedManyWithoutLeadInput
+    mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
+    notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
+    tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilUncheckedCreateNestedManyWithoutLeadInput
+    atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
+    transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
+    botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
+    followUpConversa?: FollowUpConversaUncheckedCreateNestedOneWithoutLeadInput
+  }
+
+  export type LeadCreateOrConnectWithoutMovimentosFunilInput = {
+    where: LeadWhereUniqueInput
+    create: XOR<LeadCreateWithoutMovimentosFunilInput, LeadUncheckedCreateWithoutMovimentosFunilInput>
+  }
+
+  export type LeadUpsertWithoutMovimentosFunilInput = {
+    update: XOR<LeadUpdateWithoutMovimentosFunilInput, LeadUncheckedUpdateWithoutMovimentosFunilInput>
+    create: XOR<LeadCreateWithoutMovimentosFunilInput, LeadUncheckedCreateWithoutMovimentosFunilInput>
+    where?: LeadWhereInput
+  }
+
+  export type LeadUpdateToOneWithWhereWithoutMovimentosFunilInput = {
+    where?: LeadWhereInput
+    data: XOR<LeadUpdateWithoutMovimentosFunilInput, LeadUncheckedUpdateWithoutMovimentosFunilInput>
+  }
+
+  export type LeadUpdateWithoutMovimentosFunilInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    produto?: StringFieldUpdateOperationsInput | string
+    marca?: StringFieldUpdateOperationsInput | string
+    persona?: StringFieldUpdateOperationsInput | string
+    regiao?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
+    notas?: NullableStringFieldUpdateOperationsInput | string | null
+    negocio?: NullableStringFieldUpdateOperationsInput | string | null
+    atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    campanha?: CampaignUpdateOneWithoutLeadsNestedInput
+    campanhas?: LeadCampaignUpdateManyWithoutLeadNestedInput
+    eventos?: TimelineEventUpdateManyWithoutLeadNestedInput
+    mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
+    notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
+    botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
+    followUpConversa?: FollowUpConversaUpdateOneWithoutLeadNestedInput
+  }
+
+  export type LeadUncheckedUpdateWithoutMovimentosFunilInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workspaceId?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    telefone?: StringFieldUpdateOperationsInput | string
+    produto?: StringFieldUpdateOperationsInput | string
+    marca?: StringFieldUpdateOperationsInput | string
+    persona?: StringFieldUpdateOperationsInput | string
+    regiao?: StringFieldUpdateOperationsInput | string
+    status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
+    notas?: NullableStringFieldUpdateOperationsInput | string | null
+    negocio?: NullableStringFieldUpdateOperationsInput | string | null
+    atividade?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpj?: NullableStringFieldUpdateOperationsInput | string | null
+    cnpjDados?: NullableJsonNullValueInput | InputJsonValue
+    cnpjConsultadoEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    campanhaId?: NullableStringFieldUpdateOperationsInput | string | null
+    entradaCampanhaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    campanhas?: LeadCampaignUncheckedUpdateManyWithoutLeadNestedInput
+    eventos?: TimelineEventUncheckedUpdateManyWithoutLeadNestedInput
+    mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
+    notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
+    tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUncheckedUpdateManyWithoutLeadNestedInput
+    atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
+    transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
     followUpConversa?: FollowUpConversaUncheckedUpdateOneWithoutLeadNestedInput
   }
@@ -72519,6 +79698,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaCreateNestedOneWithoutLeadInput
@@ -72549,6 +79730,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedCreateNestedManyWithoutLeadInput
     notasInternas?: ChatInternalNoteUncheckedCreateNestedManyWithoutLeadInput
     tagsChat?: ChatTagLeadUncheckedCreateNestedManyWithoutLeadInput
+    funis?: LeadFunilUncheckedCreateNestedManyWithoutLeadInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedCreateNestedManyWithoutLeadInput
     atendimento?: LeadAtendimentoUncheckedCreateNestedOneWithoutLeadInput
     transferencias?: AtendimentoTransferenciaUncheckedCreateNestedManyWithoutLeadInput
     botConversa?: BotConversaUncheckedCreateNestedOneWithoutLeadInput
@@ -72620,6 +79803,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
@@ -72650,6 +79835,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUncheckedUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -73331,6 +80518,25 @@ export namespace Prisma {
     criadoEm?: Date | string
   }
 
+  export type LeadFunilCreateManyLeadInput = {
+    id?: string
+    funilId: string
+    etapaId: string
+    valor?: number | null
+    movidoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type LeadFunilMovimentoCreateManyLeadInput = {
+    id?: string
+    funil: string
+    deEtapa?: string | null
+    paraEtapa?: string | null
+    porUsuario: string
+    data?: Date | string
+  }
+
   export type AtendimentoTransferenciaCreateManyLeadInput = {
     id?: string
     deDepartamento?: string | null
@@ -73481,6 +80687,63 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     tagId?: StringFieldUpdateOperationsInput | string
     criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadFunilUpdateWithoutLeadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    valor?: NullableFloatFieldUpdateOperationsInput | number | null
+    movidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    funil?: FunilUpdateOneRequiredWithoutLeadsNestedInput
+    etapa?: FunilEtapaUpdateOneRequiredWithoutLeadsNestedInput
+  }
+
+  export type LeadFunilUncheckedUpdateWithoutLeadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    funilId?: StringFieldUpdateOperationsInput | string
+    etapaId?: StringFieldUpdateOperationsInput | string
+    valor?: NullableFloatFieldUpdateOperationsInput | number | null
+    movidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadFunilUncheckedUpdateManyWithoutLeadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    funilId?: StringFieldUpdateOperationsInput | string
+    etapaId?: StringFieldUpdateOperationsInput | string
+    valor?: NullableFloatFieldUpdateOperationsInput | number | null
+    movidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadFunilMovimentoUpdateWithoutLeadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    funil?: StringFieldUpdateOperationsInput | string
+    deEtapa?: NullableStringFieldUpdateOperationsInput | string | null
+    paraEtapa?: NullableStringFieldUpdateOperationsInput | string | null
+    porUsuario?: StringFieldUpdateOperationsInput | string
+    data?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadFunilMovimentoUncheckedUpdateWithoutLeadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    funil?: StringFieldUpdateOperationsInput | string
+    deEtapa?: NullableStringFieldUpdateOperationsInput | string | null
+    paraEtapa?: NullableStringFieldUpdateOperationsInput | string | null
+    porUsuario?: StringFieldUpdateOperationsInput | string
+    data?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadFunilMovimentoUncheckedUpdateManyWithoutLeadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    funil?: StringFieldUpdateOperationsInput | string
+    deEtapa?: NullableStringFieldUpdateOperationsInput | string | null
+    paraEtapa?: NullableStringFieldUpdateOperationsInput | string | null
+    porUsuario?: StringFieldUpdateOperationsInput | string
+    data?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AtendimentoTransferenciaUpdateWithoutLeadInput = {
@@ -73656,6 +80919,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUpdateOneWithoutLeadNestedInput
@@ -73686,6 +80951,8 @@ export namespace Prisma {
     mensagensAgendadas?: ScheduledMessageUncheckedUpdateManyWithoutLeadNestedInput
     notasInternas?: ChatInternalNoteUncheckedUpdateManyWithoutLeadNestedInput
     tagsChat?: ChatTagLeadUncheckedUpdateManyWithoutLeadNestedInput
+    funis?: LeadFunilUncheckedUpdateManyWithoutLeadNestedInput
+    movimentosFunil?: LeadFunilMovimentoUncheckedUpdateManyWithoutLeadNestedInput
     atendimento?: LeadAtendimentoUncheckedUpdateOneWithoutLeadNestedInput
     transferencias?: AtendimentoTransferenciaUncheckedUpdateManyWithoutLeadNestedInput
     botConversa?: BotConversaUncheckedUpdateOneWithoutLeadNestedInput
@@ -74246,6 +81513,128 @@ export namespace Prisma {
     leadId?: StringFieldUpdateOperationsInput | string
     departamentoId?: NullableStringFieldUpdateOperationsInput | string | null
     transferidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FunilEtapaCreateManyFunilInput = {
+    id?: string
+    nome: string
+    cor?: string
+    tipo?: $Enums.FunilEtapaTipo
+    ordem?: number
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type LeadFunilCreateManyFunilInput = {
+    id?: string
+    leadId: string
+    etapaId: string
+    valor?: number | null
+    movidoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type FunilEtapaUpdateWithoutFunilInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    cor?: StringFieldUpdateOperationsInput | string
+    tipo?: EnumFunilEtapaTipoFieldUpdateOperationsInput | $Enums.FunilEtapaTipo
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    leads?: LeadFunilUpdateManyWithoutEtapaNestedInput
+  }
+
+  export type FunilEtapaUncheckedUpdateWithoutFunilInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    cor?: StringFieldUpdateOperationsInput | string
+    tipo?: EnumFunilEtapaTipoFieldUpdateOperationsInput | $Enums.FunilEtapaTipo
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    leads?: LeadFunilUncheckedUpdateManyWithoutEtapaNestedInput
+  }
+
+  export type FunilEtapaUncheckedUpdateManyWithoutFunilInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nome?: StringFieldUpdateOperationsInput | string
+    cor?: StringFieldUpdateOperationsInput | string
+    tipo?: EnumFunilEtapaTipoFieldUpdateOperationsInput | $Enums.FunilEtapaTipo
+    ordem?: IntFieldUpdateOperationsInput | number
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadFunilUpdateWithoutFunilInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    valor?: NullableFloatFieldUpdateOperationsInput | number | null
+    movidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    lead?: LeadUpdateOneRequiredWithoutFunisNestedInput
+    etapa?: FunilEtapaUpdateOneRequiredWithoutLeadsNestedInput
+  }
+
+  export type LeadFunilUncheckedUpdateWithoutFunilInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    etapaId?: StringFieldUpdateOperationsInput | string
+    valor?: NullableFloatFieldUpdateOperationsInput | number | null
+    movidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadFunilUncheckedUpdateManyWithoutFunilInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    etapaId?: StringFieldUpdateOperationsInput | string
+    valor?: NullableFloatFieldUpdateOperationsInput | number | null
+    movidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadFunilCreateManyEtapaInput = {
+    id?: string
+    leadId: string
+    funilId: string
+    valor?: number | null
+    movidoEm?: Date | string
+    criadoEm?: Date | string
+    atualizadoEm?: Date | string
+  }
+
+  export type LeadFunilUpdateWithoutEtapaInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    valor?: NullableFloatFieldUpdateOperationsInput | number | null
+    movidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    lead?: LeadUpdateOneRequiredWithoutFunisNestedInput
+    funil?: FunilUpdateOneRequiredWithoutLeadsNestedInput
+  }
+
+  export type LeadFunilUncheckedUpdateWithoutEtapaInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    funilId?: StringFieldUpdateOperationsInput | string
+    valor?: NullableFloatFieldUpdateOperationsInput | number | null
+    movidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeadFunilUncheckedUpdateManyWithoutEtapaInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    leadId?: StringFieldUpdateOperationsInput | string
+    funilId?: StringFieldUpdateOperationsInput | string
+    valor?: NullableFloatFieldUpdateOperationsInput | number | null
+    movidoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    criadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
+    atualizadoEm?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type FollowUpTemplateCreateManyBotInput = {
