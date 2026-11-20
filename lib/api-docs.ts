@@ -328,6 +328,7 @@ export const API_DOCS: Record<string, EndpointDoc> = {
       { nome: "recorrenciaDias", tipo: "number", descricao: "Opcional; intervalo de recorrência em dias. Padrão 0." },
       { nome: "dataFinal", tipo: "string | null", descricao: "Opcional; data final (ISO ou YYYY-MM-DD)." },
       { nome: "filtros", tipo: "object", descricao: "Opcional; { produto, marca, persona, regiao } — cada um enum ou null." },
+      { nome: "filtrosAtivos", tipo: "boolean", descricao: "Opcional; padrão true. Com false os filtros são ignorados e a campanha NÃO vincula leads automaticamente (nasce vazia, só com `leadIds`)." },
       { nome: "leadIds", tipo: "string[]", descricao: "Opcional; leads iniciais a vincular." },
     ],
     requestExample: `{
@@ -392,6 +393,7 @@ export const API_DOCS: Record<string, EndpointDoc> = {
       { nome: "recorrenciaDias", tipo: "number", descricao: "Opcional; padrão 0." },
       { nome: "dataFinal", tipo: "string | null", descricao: "Opcional." },
       { nome: "filtros", tipo: "object", descricao: "Opcional; { produto, marca, persona, regiao }." },
+      { nome: "filtrosAtivos", tipo: "boolean", descricao: "Opcional; se omitido, mantém o valor atual da campanha. Com false os filtros são ignorados e só valem os `leadIds`." },
       { nome: "leadIds", tipo: "string[]", descricao: "Opcional." },
     ],
     requestExample: `{

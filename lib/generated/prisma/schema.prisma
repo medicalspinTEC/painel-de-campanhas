@@ -230,6 +230,11 @@ model Campaign {
   // permite reenviar a mensagem inicial aos leads.
   reiniciadaEm DateTime?
 
+  /// Liga/desliga os filtros de público. Desligado, a campanha NÃO vincula leads
+  /// automaticamente (nasce vazia); só entram os leads escolhidos manualmente,
+  /// importados ou adicionados depois. Campanhas antigas ficam com `true`.
+  filtrosAtivos Boolean @default(true)
+
   // Filtros de público da campanha (nulo = sem restrição na dimensão).
   filtroProduto String?
   filtroMarca   String?

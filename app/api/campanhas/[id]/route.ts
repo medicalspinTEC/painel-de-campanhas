@@ -78,6 +78,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       dataFinal: body.dataFinal ?? null,
       instanciaNome: "instanciaNome" in body ? (body.instanciaNome ?? null) : atual.instanciaNome,
       filtros: body.filtros ?? { produto: null, marca: null, persona: null, regiao: null },
+      // Omitido = mantém como está na campanha.
+      filtrosAtivos: typeof body.filtrosAtivos === "boolean" ? body.filtrosAtivos : atual.filtrosAtivos,
       leadIds: body.leadIds,
       mensagens: body.mensagens,
       leadMensagens: body.leadMensagens,

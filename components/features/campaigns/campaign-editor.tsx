@@ -20,6 +20,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { formatNumber, renderTemplate } from "@/lib/format"
@@ -140,6 +141,9 @@ export function CampaignEditor({
       ? campanha.instanciaNome
       : instancias[0]?.nome ?? SEM_INSTANCIA,
   )
+  // Filtros de público são opcionais. Campanha nova nasce com eles DESLIGADOS (vazia, sem vincular
+  // leads sozinha); ao editar, respeita o que foi salvo.
+  const [filtrosAtivos, setFiltrosAtivos] = useState<boolean>(campanha?.filtrosAtivos ?? false)
   const [produto, setProduto] = useState(campanha?.filtros.produto ?? QUALQUER)
   const [marca, setMarca] = useState(campanha?.filtros.marca ?? QUALQUER)
   const [persona, setPersona] = useState(campanha?.filtros.persona ?? QUALQUER)
@@ -297,11 +301,12 @@ export function CampaignEditor({
       // UTC (fusos negativos), e ao reler o `slice(0, 10)` mostraria +1 dia.
       dataFinal: dataFinal ? `${dataFinal}T23:59:59.999Z` : null,
       instanciaNome: instancia === SEM_INSTANCIA ? null : instancia,
+      filtrosAtivos: individual ? false : filtrosAtivos,
       filtros: {
-        produto: produto === QUALQUER ? null : (produto as Campaign["filtros"]["produto"]),
-        marca: marca === QUALQUER ? null : (marca as Campaign["filtros"]["marca"]),
-        persona: persona === QUALQUER ? null : (persona as Campaign["filtros"]["persona"]),
-        regiao: regiao === QUALQUER ? null : (regiao as Campaign["filtros"]["regiao"]),
+        produto: !filtrosAtivos || produto === QUALQUER ? null : (produto as Campaign["filtros"]["produto"]),
+        marca: !filtrosAtivos || marca === QUALQUER ? null : (marca as Campaign["filtros"]["marca"]),
+        persona: !filtrosAtivos || persona === QUALQUER ? null : (persona as Campaign["filtros"]["persona"]),
+        regiao: !filtrosAtivos || regiao === QUALQUER ? null : (regiao as Campaign["filtros"]["regiao"]),
       },
       leadIds: leadIdsSelecionados,
       mensagens: individual
@@ -599,7 +604,7 @@ export function CampaignEditor({
             <CardDescription>
               {individual
                 ? "Selecione os leads e escreva a mensagem de cada um."
-                : "Selecione leads específicos para entrar nesta campanha. Ao selecionar pelo menos um, os filtros de público-alvo abaixo são ignorados e só entram os leads marcados aqui."}
+                : "Selecione leads específicos para entrar nesta campanha. Ao selecionar pelo menos um, os filtros de público-alvo abaixo são ignorados e só entram os leads marcados aqui. Sem ninguém marcado e com os filtros desativados, a campanha fica vazia."}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
@@ -661,14 +666,27 @@ export function CampaignEditor({
         <>
         <Card>
           <CardHeader>
-            <CardTitle>Público-alvo</CardTitle>
-            <CardDescription>
-              {leadIdsSelecionados.length > 0
-                ? "Ignorados: há leads selecionados manualmente ao lado, e a vinculação manual manda."
-                : "Ao salvar a campanha, entram os leads que já atendem aos filtros. Leads cadastrados depois não entram sozinhos."}
-            </CardDescription>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-col gap-1.5">
+                <CardTitle>Filtros de público-alvo</CardTitle>
+                <CardDescription>
+                  {!filtrosAtivos
+                    ? "Desativados: nenhum lead é vinculado automaticamente. A campanha pode ficar vazia e receber leads depois."
+                    : leadIdsSelecionados.length > 0
+                      ? "Ignorados: há leads selecionados manualmente ao lado, e a vinculação manual manda."
+                      : "Ao salvar a campanha, entram os leads que já atendem aos filtros. Leads cadastrados depois não entram sozinhos."}
+                </CardDescription>
+              </div>
+              <Switch
+                checked={filtrosAtivos}
+                onCheckedChange={setFiltrosAtivos}
+                aria-label="Usar filtros de público-alvo"
+              />
+            </div>
           </CardHeader>
-          <CardContent className={cn("flex flex-col gap-3", leadIdsSelecionados.length > 0 && "opacity-50")}>
+          <CardContent className={cn("flex flex-col gap-3", filtrosAtivos && leadIdsSelecionados.length > 0 && "opacity-50")}>
+            {filtrosAtivos ? (
+            <>
             <CreatableSelectField
               value={produto}
               onValueChange={setProduto}
@@ -709,6 +727,8 @@ export function CampaignEditor({
                 </span>
               </div>
             </div>
+            </>
+            ) : null}
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <CalendarClock className="size-3.5" />
               {mensagens.length} mensagens em {Math.max(...mensagens.map((m) => m.dia), 0)} dias

@@ -886,6 +886,7 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
       filtroMarca: z.string().optional(),
       filtroPersona: z.string().optional(),
       filtroRegiao: z.string().optional(),
+      filtrosAtivos: z.boolean().optional().describe("false = campanha sem vinculação automática por filtro (nasce vazia, só com leadIds). Padrão: true."),
       leadIds: z.array(z.string()).optional().describe("IDs de leads específicos a incluir, além dos filtros."),
       mensagens: z
         .array(
@@ -897,7 +898,7 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
         )
         .min(1),
     },
-    async ({ nome, descricao, status, recorrenciaDias, dataFinal, instanciaNome, filtroProduto, filtroMarca, filtroPersona, filtroRegiao, leadIds, mensagens }) => {
+    async ({ nome, descricao, status, recorrenciaDias, dataFinal, instanciaNome, filtroProduto, filtroMarca, filtroPersona, filtroRegiao, filtrosAtivos, leadIds, mensagens }) => {
       const input: CampaignInput = {
         nome,
         descricao,
@@ -912,6 +913,7 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
           persona: filtroPersona ?? null,
           regiao: filtroRegiao ?? null,
         },
+        filtrosAtivos,
         leadIds,
         mensagens,
       }
@@ -936,6 +938,7 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
       filtroMarca: z.string().nullable().optional(),
       filtroPersona: z.string().nullable().optional(),
       filtroRegiao: z.string().nullable().optional(),
+      filtrosAtivos: z.boolean().optional().describe("Liga/desliga os filtros de público da campanha."),
       leadIds: z.array(z.string()).optional().describe("Substitui os leads vinculados por exatamente estes."),
       mensagens: z
         .array(
@@ -954,7 +957,11 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
       if (!atual) return errorResult("Campanha não encontrada.")
 
       const mudouFiltro =
-        args.filtroProduto !== undefined || args.filtroMarca !== undefined || args.filtroPersona !== undefined || args.filtroRegiao !== undefined
+        args.filtroProduto !== undefined ||
+        args.filtroMarca !== undefined ||
+        args.filtroPersona !== undefined ||
+        args.filtroRegiao !== undefined ||
+        args.filtrosAtivos !== undefined
       const filtro = (novo: string | null | undefined, antigo: string | null | undefined) =>
         novo !== undefined ? textoOuNull(novo) : (antigo ?? null)
 
@@ -980,6 +987,7 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
           ...base,
           tipo: "individual",
           filtros: atual.filtros,
+          filtrosAtivos: atual.filtrosAtivos,
           leadIds: idsAtuais,
           mensagens: [],
           leadMensagens: Object.fromEntries(Object.entries(individuais).map(([leadId, item]) => [leadId, item.mensagem])),
@@ -994,6 +1002,7 @@ export async function createAppMcpServer(opcoes: { ferramentas: readonly string[
             persona: filtro(args.filtroPersona, atual.filtros.persona),
             regiao: filtro(args.filtroRegiao, atual.filtros.regiao),
           },
+          filtrosAtivos: args.filtrosAtivos ?? atual.filtrosAtivos,
           leadIds: args.leadIds ?? (mudouFiltro ? undefined : idsAtuais),
           mensagens: args.mensagens ?? atual.mensagens,
         }

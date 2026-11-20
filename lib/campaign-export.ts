@@ -54,7 +54,13 @@ function linhasResumo({ campanha, vinculados, saidos }: CampaignExportData): [st
     ["Instância de envio", campanha.instanciaNome ?? "Instância mais recente do app"],
     [
       "Filtros de público",
-      campanha.tipo === "individual" ? "Seleção manual" : filtros.length ? filtros.join(" · ") : "Todos os leads",
+      campanha.tipo === "individual"
+        ? "Seleção manual"
+        : !campanha.filtrosAtivos
+          ? "Desativados (vinculação manual)"
+          : filtros.length
+            ? filtros.join(" · ")
+            : "Todos os leads",
     ],
     ["Total de leads", String(campanha.totalLeads)],
     ["Responderam", String(responderam)],
