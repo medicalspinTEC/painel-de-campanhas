@@ -10752,6 +10752,7 @@ export namespace Prisma {
     dataFinal: Date | null
     instanciaNome: string | null
     reiniciadaEm: Date | null
+    filtrosAtivos: boolean | null
     filtroProduto: string | null
     filtroMarca: string | null
     filtroPersona: string | null
@@ -10773,6 +10774,7 @@ export namespace Prisma {
     dataFinal: Date | null
     instanciaNome: string | null
     reiniciadaEm: Date | null
+    filtrosAtivos: boolean | null
     filtroProduto: string | null
     filtroMarca: string | null
     filtroPersona: string | null
@@ -10794,6 +10796,7 @@ export namespace Prisma {
     dataFinal: number
     instanciaNome: number
     reiniciadaEm: number
+    filtrosAtivos: number
     filtroProduto: number
     filtroMarca: number
     filtroPersona: number
@@ -10827,6 +10830,7 @@ export namespace Prisma {
     dataFinal?: true
     instanciaNome?: true
     reiniciadaEm?: true
+    filtrosAtivos?: true
     filtroProduto?: true
     filtroMarca?: true
     filtroPersona?: true
@@ -10848,6 +10852,7 @@ export namespace Prisma {
     dataFinal?: true
     instanciaNome?: true
     reiniciadaEm?: true
+    filtrosAtivos?: true
     filtroProduto?: true
     filtroMarca?: true
     filtroPersona?: true
@@ -10869,6 +10874,7 @@ export namespace Prisma {
     dataFinal?: true
     instanciaNome?: true
     reiniciadaEm?: true
+    filtrosAtivos?: true
     filtroProduto?: true
     filtroMarca?: true
     filtroPersona?: true
@@ -10977,6 +10983,7 @@ export namespace Prisma {
     dataFinal: Date | null
     instanciaNome: string | null
     reiniciadaEm: Date | null
+    filtrosAtivos: boolean
     filtroProduto: string | null
     filtroMarca: string | null
     filtroPersona: string | null
@@ -11017,6 +11024,7 @@ export namespace Prisma {
     dataFinal?: boolean
     instanciaNome?: boolean
     reiniciadaEm?: boolean
+    filtrosAtivos?: boolean
     filtroProduto?: boolean
     filtroMarca?: boolean
     filtroPersona?: boolean
@@ -11044,6 +11052,7 @@ export namespace Prisma {
     dataFinal?: boolean
     instanciaNome?: boolean
     reiniciadaEm?: boolean
+    filtrosAtivos?: boolean
     filtroProduto?: boolean
     filtroMarca?: boolean
     filtroPersona?: boolean
@@ -11066,6 +11075,7 @@ export namespace Prisma {
     dataFinal?: boolean
     instanciaNome?: boolean
     reiniciadaEm?: boolean
+    filtrosAtivos?: boolean
     filtroProduto?: boolean
     filtroMarca?: boolean
     filtroPersona?: boolean
@@ -11088,6 +11098,7 @@ export namespace Prisma {
     dataFinal?: boolean
     instanciaNome?: boolean
     reiniciadaEm?: boolean
+    filtrosAtivos?: boolean
     filtroProduto?: boolean
     filtroMarca?: boolean
     filtroPersona?: boolean
@@ -11097,7 +11108,7 @@ export namespace Prisma {
     atualizadoEm?: boolean
   }
 
-  export type CampaignOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "descricao" | "status" | "tipo" | "idImportacao" | "recorrenciaDias" | "dataFinal" | "instanciaNome" | "reiniciadaEm" | "filtroProduto" | "filtroMarca" | "filtroPersona" | "filtroRegiao" | "pastaId" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["campaign"]>
+  export type CampaignOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workspaceId" | "nome" | "descricao" | "status" | "tipo" | "idImportacao" | "recorrenciaDias" | "dataFinal" | "instanciaNome" | "reiniciadaEm" | "filtrosAtivos" | "filtroProduto" | "filtroMarca" | "filtroPersona" | "filtroRegiao" | "pastaId" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["campaign"]>
   export type CampaignInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     pasta?: boolean | Campaign$pastaArgs<ExtArgs>
     mensagens?: boolean | Campaign$mensagensArgs<ExtArgs>
@@ -11146,6 +11157,12 @@ export namespace Prisma {
       dataFinal: Date | null
       instanciaNome: string | null
       reiniciadaEm: Date | null
+      /**
+       * Liga/desliga os filtros de público. Desligado, a campanha NÃO vincula leads
+       * automaticamente (nasce vazia); só entram os leads escolhidos manualmente,
+       * importados ou adicionados depois. Campanhas antigas ficam com `true`.
+       */
+      filtrosAtivos: boolean
       filtroProduto: string | null
       filtroMarca: string | null
       filtroPersona: string | null
@@ -11596,6 +11613,7 @@ export namespace Prisma {
     readonly dataFinal: FieldRef<"Campaign", 'DateTime'>
     readonly instanciaNome: FieldRef<"Campaign", 'String'>
     readonly reiniciadaEm: FieldRef<"Campaign", 'DateTime'>
+    readonly filtrosAtivos: FieldRef<"Campaign", 'Boolean'>
     readonly filtroProduto: FieldRef<"Campaign", 'String'>
     readonly filtroMarca: FieldRef<"Campaign", 'String'>
     readonly filtroPersona: FieldRef<"Campaign", 'String'>
@@ -61058,6 +61076,7 @@ export namespace Prisma {
     dataFinal: 'dataFinal',
     instanciaNome: 'instanciaNome',
     reiniciadaEm: 'reiniciadaEm',
+    filtrosAtivos: 'filtrosAtivos',
     filtroProduto: 'filtroProduto',
     filtroMarca: 'filtroMarca',
     filtroPersona: 'filtroPersona',
@@ -61884,6 +61903,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'ScheduledMessageStatus'
    */
   export type EnumScheduledMessageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScheduledMessageStatus'>
@@ -61894,13 +61920,6 @@ export namespace Prisma {
    * Reference to a field of type 'ScheduledMessageStatus[]'
    */
   export type ListEnumScheduledMessageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScheduledMessageStatus[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Boolean'
-   */
-  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -62329,6 +62348,7 @@ export namespace Prisma {
     dataFinal?: DateTimeNullableFilter<"Campaign"> | Date | string | null
     instanciaNome?: StringNullableFilter<"Campaign"> | string | null
     reiniciadaEm?: DateTimeNullableFilter<"Campaign"> | Date | string | null
+    filtrosAtivos?: BoolFilter<"Campaign"> | boolean
     filtroProduto?: StringNullableFilter<"Campaign"> | string | null
     filtroMarca?: StringNullableFilter<"Campaign"> | string | null
     filtroPersona?: StringNullableFilter<"Campaign"> | string | null
@@ -62355,6 +62375,7 @@ export namespace Prisma {
     dataFinal?: SortOrderInput | SortOrder
     instanciaNome?: SortOrderInput | SortOrder
     reiniciadaEm?: SortOrderInput | SortOrder
+    filtrosAtivos?: SortOrder
     filtroProduto?: SortOrderInput | SortOrder
     filtroMarca?: SortOrderInput | SortOrder
     filtroPersona?: SortOrderInput | SortOrder
@@ -62384,6 +62405,7 @@ export namespace Prisma {
     dataFinal?: DateTimeNullableFilter<"Campaign"> | Date | string | null
     instanciaNome?: StringNullableFilter<"Campaign"> | string | null
     reiniciadaEm?: DateTimeNullableFilter<"Campaign"> | Date | string | null
+    filtrosAtivos?: BoolFilter<"Campaign"> | boolean
     filtroProduto?: StringNullableFilter<"Campaign"> | string | null
     filtroMarca?: StringNullableFilter<"Campaign"> | string | null
     filtroPersona?: StringNullableFilter<"Campaign"> | string | null
@@ -62410,6 +62432,7 @@ export namespace Prisma {
     dataFinal?: SortOrderInput | SortOrder
     instanciaNome?: SortOrderInput | SortOrder
     reiniciadaEm?: SortOrderInput | SortOrder
+    filtrosAtivos?: SortOrder
     filtroProduto?: SortOrderInput | SortOrder
     filtroMarca?: SortOrderInput | SortOrder
     filtroPersona?: SortOrderInput | SortOrder
@@ -62439,6 +62462,7 @@ export namespace Prisma {
     dataFinal?: DateTimeNullableWithAggregatesFilter<"Campaign"> | Date | string | null
     instanciaNome?: StringNullableWithAggregatesFilter<"Campaign"> | string | null
     reiniciadaEm?: DateTimeNullableWithAggregatesFilter<"Campaign"> | Date | string | null
+    filtrosAtivos?: BoolWithAggregatesFilter<"Campaign"> | boolean
     filtroProduto?: StringNullableWithAggregatesFilter<"Campaign"> | string | null
     filtroMarca?: StringNullableWithAggregatesFilter<"Campaign"> | string | null
     filtroPersona?: StringNullableWithAggregatesFilter<"Campaign"> | string | null
@@ -66230,6 +66254,7 @@ export namespace Prisma {
     dataFinal?: Date | string | null
     instanciaNome?: string | null
     reiniciadaEm?: Date | string | null
+    filtrosAtivos?: boolean
     filtroProduto?: string | null
     filtroMarca?: string | null
     filtroPersona?: string | null
@@ -66255,6 +66280,7 @@ export namespace Prisma {
     dataFinal?: Date | string | null
     instanciaNome?: string | null
     reiniciadaEm?: Date | string | null
+    filtrosAtivos?: boolean
     filtroProduto?: string | null
     filtroMarca?: string | null
     filtroPersona?: string | null
@@ -66279,6 +66305,7 @@ export namespace Prisma {
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
     reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtrosAtivos?: BoolFieldUpdateOperationsInput | boolean
     filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
@@ -66304,6 +66331,7 @@ export namespace Prisma {
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
     reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtrosAtivos?: BoolFieldUpdateOperationsInput | boolean
     filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
@@ -66329,6 +66357,7 @@ export namespace Prisma {
     dataFinal?: Date | string | null
     instanciaNome?: string | null
     reiniciadaEm?: Date | string | null
+    filtrosAtivos?: boolean
     filtroProduto?: string | null
     filtroMarca?: string | null
     filtroPersona?: string | null
@@ -66349,6 +66378,7 @@ export namespace Prisma {
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
     reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtrosAtivos?: BoolFieldUpdateOperationsInput | boolean
     filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
@@ -66369,6 +66399,7 @@ export namespace Prisma {
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
     reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtrosAtivos?: BoolFieldUpdateOperationsInput | boolean
     filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
@@ -70636,6 +70667,11 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type CampaignPastaNullableScalarRelationFilter = {
     is?: CampaignPastaWhereInput | null
     isNot?: CampaignPastaWhereInput | null
@@ -70673,6 +70709,7 @@ export namespace Prisma {
     dataFinal?: SortOrder
     instanciaNome?: SortOrder
     reiniciadaEm?: SortOrder
+    filtrosAtivos?: SortOrder
     filtroProduto?: SortOrder
     filtroMarca?: SortOrder
     filtroPersona?: SortOrder
@@ -70699,6 +70736,7 @@ export namespace Prisma {
     dataFinal?: SortOrder
     instanciaNome?: SortOrder
     reiniciadaEm?: SortOrder
+    filtrosAtivos?: SortOrder
     filtroProduto?: SortOrder
     filtroMarca?: SortOrder
     filtroPersona?: SortOrder
@@ -70720,6 +70758,7 @@ export namespace Prisma {
     dataFinal?: SortOrder
     instanciaNome?: SortOrder
     reiniciadaEm?: SortOrder
+    filtrosAtivos?: SortOrder
     filtroProduto?: SortOrder
     filtroMarca?: SortOrder
     filtroPersona?: SortOrder
@@ -70768,6 +70807,14 @@ export namespace Prisma {
     _sum?: NestedIntFilter<$PrismaModel>
     _min?: NestedIntFilter<$PrismaModel>
     _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type CampaignListRelationFilter = {
@@ -70992,11 +71039,6 @@ export namespace Prisma {
     _max?: NestedEnumScheduledMessageStatusFilter<$PrismaModel>
   }
 
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
   export type ProdutoWorkspaceIdNomeCompoundUniqueInput = {
     workspaceId: string
     nome: string
@@ -71038,14 +71080,6 @@ export namespace Prisma {
     idImportacao?: SortOrder
     criadoEm?: SortOrder
     atualizadoEm?: SortOrder
-  }
-
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type MarcaWorkspaceIdNomeCompoundUniqueInput = {
@@ -73677,6 +73711,10 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
   export type CampaignPastaUpdateOneWithoutCampanhasNestedInput = {
     create?: XOR<CampaignPastaCreateWithoutCampanhasInput, CampaignPastaUncheckedCreateWithoutCampanhasInput>
     connectOrCreate?: CampaignPastaCreateOrConnectWithoutCampanhasInput
@@ -73949,10 +73987,6 @@ export namespace Prisma {
     upsert?: LeadUpsertWithoutMensagensAgendadasInput
     connect?: LeadWhereUniqueInput
     update?: XOR<XOR<LeadUpdateToOneWithWhereWithoutMensagensAgendadasInput, LeadUpdateWithoutMensagensAgendadasInput>, LeadUncheckedUpdateWithoutMensagensAgendadasInput>
-  }
-
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
   }
 
   export type WebhookCreateeventosInput = {
@@ -75596,6 +75630,11 @@ export namespace Prisma {
     not?: NestedEnumCampaignTipoFilter<$PrismaModel> | $Enums.CampaignTipo
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type NestedEnumCampaignStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.CampaignStatus | EnumCampaignStatusFieldRefInput<$PrismaModel>
     in?: $Enums.CampaignStatus[] | ListEnumCampaignStatusFieldRefInput<$PrismaModel>
@@ -75643,6 +75682,14 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -75685,19 +75732,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumScheduledMessageStatusFilter<$PrismaModel>
     _max?: NestedEnumScheduledMessageStatusFilter<$PrismaModel>
-  }
-
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedEnumAppLogNivelFilter<$PrismaModel = never> = {
@@ -75836,6 +75870,7 @@ export namespace Prisma {
     dataFinal?: Date | string | null
     instanciaNome?: string | null
     reiniciadaEm?: Date | string | null
+    filtrosAtivos?: boolean
     filtroProduto?: string | null
     filtroMarca?: string | null
     filtroPersona?: string | null
@@ -75860,6 +75895,7 @@ export namespace Prisma {
     dataFinal?: Date | string | null
     instanciaNome?: string | null
     reiniciadaEm?: Date | string | null
+    filtrosAtivos?: boolean
     filtroProduto?: string | null
     filtroMarca?: string | null
     filtroPersona?: string | null
@@ -76204,6 +76240,7 @@ export namespace Prisma {
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
     reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtrosAtivos?: BoolFieldUpdateOperationsInput | boolean
     filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
@@ -76228,6 +76265,7 @@ export namespace Prisma {
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
     reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtrosAtivos?: BoolFieldUpdateOperationsInput | boolean
     filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
@@ -77273,6 +77311,7 @@ export namespace Prisma {
     dataFinal?: Date | string | null
     instanciaNome?: string | null
     reiniciadaEm?: Date | string | null
+    filtrosAtivos?: boolean
     filtroProduto?: string | null
     filtroMarca?: string | null
     filtroPersona?: string | null
@@ -77297,6 +77336,7 @@ export namespace Prisma {
     dataFinal?: Date | string | null
     instanciaNome?: string | null
     reiniciadaEm?: Date | string | null
+    filtrosAtivos?: boolean
     filtroProduto?: string | null
     filtroMarca?: string | null
     filtroPersona?: string | null
@@ -77350,6 +77390,7 @@ export namespace Prisma {
     dataFinal?: DateTimeNullableFilter<"Campaign"> | Date | string | null
     instanciaNome?: StringNullableFilter<"Campaign"> | string | null
     reiniciadaEm?: DateTimeNullableFilter<"Campaign"> | Date | string | null
+    filtrosAtivos?: BoolFilter<"Campaign"> | boolean
     filtroProduto?: StringNullableFilter<"Campaign"> | string | null
     filtroMarca?: StringNullableFilter<"Campaign"> | string | null
     filtroPersona?: StringNullableFilter<"Campaign"> | string | null
@@ -77440,6 +77481,7 @@ export namespace Prisma {
     dataFinal?: Date | string | null
     instanciaNome?: string | null
     reiniciadaEm?: Date | string | null
+    filtrosAtivos?: boolean
     filtroProduto?: string | null
     filtroMarca?: string | null
     filtroPersona?: string | null
@@ -77464,6 +77506,7 @@ export namespace Prisma {
     dataFinal?: Date | string | null
     instanciaNome?: string | null
     reiniciadaEm?: Date | string | null
+    filtrosAtivos?: boolean
     filtroProduto?: string | null
     filtroMarca?: string | null
     filtroPersona?: string | null
@@ -77578,6 +77621,7 @@ export namespace Prisma {
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
     reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtrosAtivos?: BoolFieldUpdateOperationsInput | boolean
     filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
@@ -77602,6 +77646,7 @@ export namespace Prisma {
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
     reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtrosAtivos?: BoolFieldUpdateOperationsInput | boolean
     filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
@@ -77626,6 +77671,7 @@ export namespace Prisma {
     dataFinal?: Date | string | null
     instanciaNome?: string | null
     reiniciadaEm?: Date | string | null
+    filtrosAtivos?: boolean
     filtroProduto?: string | null
     filtroMarca?: string | null
     filtroPersona?: string | null
@@ -77650,6 +77696,7 @@ export namespace Prisma {
     dataFinal?: Date | string | null
     instanciaNome?: string | null
     reiniciadaEm?: Date | string | null
+    filtrosAtivos?: boolean
     filtroProduto?: string | null
     filtroMarca?: string | null
     filtroPersona?: string | null
@@ -77721,6 +77768,7 @@ export namespace Prisma {
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
     reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtrosAtivos?: BoolFieldUpdateOperationsInput | boolean
     filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
@@ -77745,6 +77793,7 @@ export namespace Prisma {
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
     reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtrosAtivos?: BoolFieldUpdateOperationsInput | boolean
     filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
@@ -77998,6 +78047,7 @@ export namespace Prisma {
     dataFinal?: Date | string | null
     instanciaNome?: string | null
     reiniciadaEm?: Date | string | null
+    filtrosAtivos?: boolean
     filtroProduto?: string | null
     filtroMarca?: string | null
     filtroPersona?: string | null
@@ -78022,6 +78072,7 @@ export namespace Prisma {
     dataFinal?: Date | string | null
     instanciaNome?: string | null
     reiniciadaEm?: Date | string | null
+    filtrosAtivos?: boolean
     filtroProduto?: string | null
     filtroMarca?: string | null
     filtroPersona?: string | null
@@ -78167,6 +78218,7 @@ export namespace Prisma {
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
     reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtrosAtivos?: BoolFieldUpdateOperationsInput | boolean
     filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
@@ -78191,6 +78243,7 @@ export namespace Prisma {
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
     reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtrosAtivos?: BoolFieldUpdateOperationsInput | boolean
     filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
@@ -82677,6 +82730,7 @@ export namespace Prisma {
     dataFinal?: Date | string | null
     instanciaNome?: string | null
     reiniciadaEm?: Date | string | null
+    filtrosAtivos?: boolean
     filtroProduto?: string | null
     filtroMarca?: string | null
     filtroPersona?: string | null
@@ -82696,6 +82750,7 @@ export namespace Prisma {
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
     reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtrosAtivos?: BoolFieldUpdateOperationsInput | boolean
     filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
@@ -82720,6 +82775,7 @@ export namespace Prisma {
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
     reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtrosAtivos?: BoolFieldUpdateOperationsInput | boolean
     filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null
@@ -82744,6 +82800,7 @@ export namespace Prisma {
     dataFinal?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     instanciaNome?: NullableStringFieldUpdateOperationsInput | string | null
     reiniciadaEm?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    filtrosAtivos?: BoolFieldUpdateOperationsInput | boolean
     filtroProduto?: NullableStringFieldUpdateOperationsInput | string | null
     filtroMarca?: NullableStringFieldUpdateOperationsInput | string | null
     filtroPersona?: NullableStringFieldUpdateOperationsInput | string | null

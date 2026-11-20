@@ -64,6 +64,7 @@ export async function POST(request: Request) {
       dataFinal: body.dataFinal ?? null,
       instanciaNome: body.instanciaNome ?? null,
       filtros: body.filtros ?? { produto: null, marca: null, persona: null, regiao: null },
+      filtrosAtivos: typeof body.filtrosAtivos === "boolean" ? body.filtrosAtivos : undefined,
       leadIds: body.leadIds,
       mensagens: body.mensagens,
       leadMensagens: body.leadMensagens,

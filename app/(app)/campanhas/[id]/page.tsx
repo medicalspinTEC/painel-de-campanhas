@@ -174,6 +174,8 @@ export default async function CampanhaPage({ params }: { params: Promise<{ id: s
             <Detalhe rotulo="Filtros de público">
               {campanha.tipo === "individual" ? (
                 <span className="text-muted-foreground">Seleção manual (sem filtros automáticos)</span>
+              ) : !campanha.filtrosAtivos ? (
+                <span className="text-muted-foreground">Desativados (sem vinculação automática)</span>
               ) : filtros.length === 0 ? (
                 <span className="text-muted-foreground">Todos os leads</span>
               ) : (

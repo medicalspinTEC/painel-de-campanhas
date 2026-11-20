@@ -148,6 +148,7 @@ function toCampaign(record: CampaignRecord): Campaign {
     instanciaNome: record.instanciaNome ?? null,
     pastaId: record.pastaId ?? null,
     criadoEm: record.criadoEm.toISOString(),
+    filtrosAtivos: record.filtrosAtivos,
     filtros: {
       produto: record.filtroProduto as Campaign["filtros"]["produto"],
       marca: record.filtroMarca as Campaign["filtros"]["marca"],
@@ -428,6 +429,11 @@ export interface CampaignInput {
   /** Instância que envia as mensagens. Nulo/ausente = instância mais recente do app. */
   instanciaNome?: string | null
   filtros: Campaign["filtros"]
+  /**
+   * Liga os filtros de público. Omitido = `true` (comportamento histórico da API/MCP).
+   * `false` = a campanha não vincula leads por filtro (só os de `leadIds`).
+   */
+  filtrosAtivos?: boolean
   leadIds?: string[]
   /** Sequência de mensagens. Só usada quando `tipo` é `padrao`. */
   mensagens: Array<Omit<CampaignMessage, "id"> & { id?: string }>
@@ -447,10 +453,12 @@ function toCampaignData(input: CampaignInput) {
     recorrenciaDias: input.recorrenciaDias,
     dataFinal: input.dataFinal ? new Date(input.dataFinal) : null,
     instanciaNome: input.instanciaNome?.trim() || null,
-    filtroProduto: input.filtros.produto ?? null,
-    filtroMarca: input.filtros.marca ?? null,
-    filtroPersona: input.filtros.persona ?? null,
-    filtroRegiao: input.filtros.regiao ?? null,
+    filtrosAtivos: input.filtrosAtivos ?? true,
+    // Filtros desligados não guardam valores: evita que apareçam como restrição ativa.
+    filtroProduto: input.filtrosAtivos === false ? null : (input.filtros.produto ?? null),
+    filtroMarca: input.filtrosAtivos === false ? null : (input.filtros.marca ?? null),
+    filtroPersona: input.filtrosAtivos === false ? null : (input.filtros.persona ?? null),
+    filtroRegiao: input.filtrosAtivos === false ? null : (input.filtros.regiao ?? null),
   }
 }
 
@@ -570,14 +578,17 @@ async function leadsQueAtendemAosFiltros(filtros: Campaign["filtros"]): Promise<
  * ignorados por completo — mesmo que outros leads também atendam a eles. Os
  * filtros automáticos só se aplicam quando não há nenhuma seleção manual;
  * nesse caso, se todos os filtros forem "qualquer", toda a base é incluída
- * (mesmo comportamento de antes).
+ * (mesmo comportamento de antes). Com os filtros DESATIVADOS na campanha, nada
+ * é vinculado automaticamente: só valem os leads manuais (campanha vazia).
  */
 async function leadsFinaisDaCampanha(
   filtros: Campaign["filtros"],
   leadIdsManuais: string[] | undefined,
+  filtrosAtivos = true,
 ): Promise<string[]> {
   const manuais = [...new Set((leadIdsManuais ?? []).filter(Boolean))]
   if (manuais.length > 0) return manuais
+  if (!filtrosAtivos) return []
   return leadsQueAtendemAosFiltros(filtros)
 }
 
@@ -707,7 +718,7 @@ export async function createCampaign(entrada: CampaignInput): Promise<Campaign> 
   // Individual: só vincula quem foi selecionado manualmente (não há filtro de
   // público automático, já que leads futuros não teriam mensagem definida).
   const leadIdsFinais =
-    tipo === "individual" ? [...new Set((input.leadIds ?? []).filter(Boolean))] : await leadsFinaisDaCampanha(criada.filtros, input.leadIds)
+    tipo === "individual" ? [...new Set((input.leadIds ?? []).filter(Boolean))] : await leadsFinaisDaCampanha(criada.filtros, input.leadIds, criada.filtrosAtivos)
   if (leadIdsFinais.length) {
     await sincronizarLeadsDaCampanha(criada.id, leadIdsFinais)
     if (tipo === "individual") await sincronizarMensagensIndividuais(criada.id, input.leadMensagens)
@@ -795,7 +806,7 @@ export async function updateCampaign(id: string, entrada: CampaignInput): Promis
   const leadIdsFinais =
     tipo === "individual"
       ? [...new Set((input.leadIds ?? []).filter(Boolean))]
-      : await leadsFinaisDaCampanha(atualizada.filtros, input.leadIds)
+      : await leadsFinaisDaCampanha(atualizada.filtros, input.leadIds, atualizada.filtrosAtivos)
   await sincronizarLeadsDaCampanha(atualizada.id, leadIdsFinais, id)
   if (tipo === "individual") await sincronizarMensagensIndividuais(atualizada.id, input.leadMensagens)
   if (input.status === "ativa") {
@@ -860,6 +871,7 @@ export async function duplicateCampaign(id: string): Promise<Campaign | null> {
       instanciaNome: original.instanciaNome,
       // A cópia fica na mesma pasta da original.
       pastaId: original.pastaId,
+      filtrosAtivos: original.filtrosAtivos,
       filtroProduto: original.filtroProduto,
       filtroMarca: original.filtroMarca,
       filtroPersona: original.filtroPersona,
@@ -1376,6 +1388,8 @@ export async function createFollowUpCampaign(campanhaId: string): Promise<Follow
       recorrenciaDias: original.recorrenciaDias,
       dataFinal: null,
       instanciaNome: original.instanciaNome,
+      // Reengajamento é vinculado direto aos leads que saíram: sem filtros.
+      filtrosAtivos: false,
       filtroProduto: null,
       filtroMarca: null,
       filtroPersona: null,

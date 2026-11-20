@@ -88,6 +88,11 @@ export interface Campaign {
   /** Pasta onde a campanha está organizada; nulo = sem pasta. */
   pastaId: string | null
   criadoEm: string
+  /**
+   * Quando false, os filtros de público não vinculam leads sozinhos: a campanha
+   * pode ser criada vazia e só recebe leads escolhidos manualmente/importados.
+   */
+  filtrosAtivos: boolean
   filtros: {
     produto?: Produto | null
     marca?: Marca | null
